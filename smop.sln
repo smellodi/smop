@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop", "smop\Smop.csproj", "{C77C68AC-A3DA-468F-B409-BA48794E52E9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.Comm", "smop.comm\Smop.Comm.csproj", "{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C77C68AC-A3DA-468F-B409-BA48794E52E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C77C68AC-A3DA-468F-B409-BA48794E52E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C77C68AC-A3DA-468F-B409-BA48794E52E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C77C68AC-A3DA-468F-B409-BA48794E52E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F212647-C254-42A5-B84E-8C47533F325F}
+	EndGlobalSection
+EndGlobal

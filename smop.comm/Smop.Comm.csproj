@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>SMOP</RootNamespace>
+    <Authors>Oleg Spakov</Authors>
+    <Company>Tampere University</Company>
+    <Description>Smellodi Odor Printer [Comm module]</Description>
+    <Copyright>(c) 2023</Copyright>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+</Project>

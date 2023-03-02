@@ -83,7 +83,7 @@ namespace SMOP.Pages
         {
             if (!_com.IsOpen)
             {
-                Result result = _com.Start(address);
+                Result result = _com.Open(address);
 
                 if (result.Error != Error.Success)
                 {
@@ -117,7 +117,7 @@ namespace SMOP.Pages
             {
                 _pid.Stop();
                 _mfc.Stop();
-                _com.Stop();
+                _com.Close();
             }
 
             SaveSettings();

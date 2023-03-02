@@ -1,20 +1,22 @@
-﻿namespace SMOP.Comm.Packets
+﻿using System.Linq;
+
+namespace SMOP.Comm.Packets
 {
     public class Version : Response
     {
         public string Hardware { get; }
         public string Software { get; }
         public string Protocol { get; }
-        public static Version? From(Response msg)
+        public static Version? From(Response response)
         {
-            if (msg?.Type != PacketType.Version || msg?.Payload.Length != 3)
+            if (response?.Type != Type.Version || response?.Payload.Length != 3)
             {
                 return null;
             }
 
-            return new Version(msg.Payload);
+            return new Version(response.Payload);
         }
-        public Version(byte[] data) : base(PacketType.Version, data)
+        public Version(byte[] data) : base(Type.Version, data)
         {
             Hardware = $"{(data[0] & 0xF0) >> 4}.{data[0] & 0x0F}";
             Software = $"{(data[1] & 0xF0) >> 4}.{data[1] & 0x0F}";
@@ -23,6 +25,15 @@
         public override string ToString()
         {
             return $"{_type} [Hardware: {Hardware}, Software: {Software}, Protocol: {Protocol}]";
+        }
+
+        // Internal
+
+        internal Version(string[] version) : base(Type.Version, version.Select(v => (byte)((((byte)v[0] - '0') << 4) | (byte)v[2] - '0')).ToArray())
+        {
+            Hardware = version[0];
+            Software = version[1];
+            Protocol = version[2];
         }
     }
 }

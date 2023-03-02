@@ -65,13 +65,13 @@ namespace SMOP.Comm.Emulator
                 error = _source.ReadMessages(new PacketType[] {
                     PacketType.Ack,
                     PacketType.MFCResult
-                }, out Packet[] msgs);
+                }, out Packets[] msgs);
                 result = msgs.Length > 0 ? msgs[0] as MessageResult : null;
                 mfcResult = msgs.Length > 1 ? msgs[1] as MessageMFCResult : null;
             }
             else
             {
-                error = _source.ReadMessage(PacketType.Ack, out Packet? msg);
+                error = _source.ReadMessage(PacketType.Ack, out Packets? msg);
                 result = msg as MessageResult;
             }
 

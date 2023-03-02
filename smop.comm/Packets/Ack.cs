@@ -2,17 +2,17 @@
 {
     public class Ack : Response
     {
-        public new Result Result { get; }
-        public static Ack? From(Response msg)
+        public Result Result { get; }
+        public static Ack? From(Response response)
         {
-            if (msg?.Type != PacketType.Ack || msg?.Payload.Length != 1)
+            if (response?.Type != Type.Ack || response?.Payload.Length != 1)
             {
                 return null;
             }
 
-            return new Ack((Result)msg.Payload[0]);
+            return new Ack((Result)response.Payload[0]);
         }
-        public Ack(Result result) : base(PacketType.Ack, new byte[] { (byte)result })
+        public Ack(Result result) : base(Type.Ack, new byte[] { (byte)result })
         {
             Result = result;
         }

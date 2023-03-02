@@ -47,13 +47,13 @@ namespace SMOP.Comm.Emulator
                 error = _source.ReadMessages(new PacketType[] {
                     PacketType.Ack,
                     PacketType.Sample
-                }, out Packet[] msgs);
+                }, out Packets[] msgs);
                 result = msgs.Length > 0 ? msgs[0] as MessageResult : null;
                 sample = msgs.Length > 1 ? msgs[1] as MessageSample : null;
             }
             else
             {
-                error = _source.ReadMessage(PacketType.Ack, out Packet? msg1);
+                error = _source.ReadMessage(PacketType.Ack, out Packets? msg1);
                 result = msg1 as MessageResult;
             }
 

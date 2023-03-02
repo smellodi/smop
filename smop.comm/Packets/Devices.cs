@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SMOP.Comm.Packets
 {
@@ -6,42 +7,42 @@ namespace SMOP.Comm.Packets
     {
         public static int MaxOdorModuleCount { get; } = 9;
 
-        public bool HasBaseModule { get; }
-        public bool HasDilutionModule { get; }
-        
+        public bool HasBaseModule => _payload![0] != 0;
+        public bool HasDilutionModule => _payload![10] != 0;
+
         public bool HasOdor(int index)
         {
             return index < MaxOdorModuleCount ? _payload![index + 1] != 0 : false;
         }
 
-        public static Devices? From(Response msg)
+        public static Devices? From(Response response)
         {
-            if (msg?.Type != PacketType.Devices || msg?.Payload.Length != MaxOdorModuleCount + 2)
+            if (response?.Type != Type.Devices || response?.Payload.Length != MaxOdorModuleCount + 2)
             {
                 return null;
             }
 
-            return new Devices(msg.Payload);
+            return new Devices(response.Payload);
         }
 
-        public Devices(byte[] data) : base(PacketType.Version, data)
-        {
-            HasBaseModule = data[0] != 0;
-            HasDilutionModule = data[10] != 0;
-        }
+        public Devices(byte[] data) : base(Type.Devices, data) { }
 
         public override string ToString()
         {
             var flags = new List<string>()
             {
-                $"Base module: {HasBaseModule}",
+                $"Base module: {HasBaseModule.AsFlag()}",
             };
             for (int i = 0; i < MaxOdorModuleCount; i++ )
             {
-                flags.Add($"Odor{i + 1}: {HasOdor(i)}");
+                flags.Add($"Odor{i + 1}: {HasOdor(i).AsFlag()}");
             }
-            flags.Add($"Dilution module: {HasDilutionModule}");
-            return $"{_type} [{string.Join(", ", flags)}]";
+            flags.Add($"Dilution module: {HasDilutionModule.AsFlag()}");
+            return $"{_type}\n    {string.Join("\n    ", flags)}";
         }
+
+        // Internal
+
+        internal Devices(bool[] flag) : base(Type.Devices, flag.Select(f => (byte)(f ? 1 : 0)).ToArray()) { }
     }
 }

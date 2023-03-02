@@ -46,7 +46,7 @@ namespace SMOP.Comm.Emulator
 
         public Error ReadMessage(PacketType type, out Packet? msg)
         {
-            var result = ReadMessages(new PacketType[] { type }, out Packet[] msgs);
+            var result = ReadMessages(new PacketType[] { type }, out Packets[] msgs);
             msg = msgs.Length > 0 ? msgs[0] : null;
             return result;
         }
@@ -55,14 +55,14 @@ namespace SMOP.Comm.Emulator
         {
             //Debug?.Invoke(this, $"REQ {string.Join(',', types)}");
 
-            List<Packet> replies = new();
-            List<Request> requests = new();
+            List<Packets> replies = new();
+            List<TimedRequest> requests = new();
 
             lock (_requests)
             {
                 foreach (var type in types)
                 {
-                    Request req = new(type);
+                    TimedRequest req = new(type);
                     _requests.Enqueue(req);
                     requests.Add(req);
                 }
@@ -70,7 +70,7 @@ namespace SMOP.Comm.Emulator
 
             foreach (var req in requests)
             {
-                if (!req.WaitUntilUnlocked())
+                if (!req.WaitUntilReceived())
                 {
                     req.IsValid = false;
                     Debug?.Invoke(this, $"REQ !TIMEOUT after {req.Duration} ms: {req.Type}");
@@ -78,9 +78,9 @@ namespace SMOP.Comm.Emulator
                     return Error.Timeout;
                 }
 
-                if (req.Message != null && req.IsValid)
+                if (req.Response != null && req.IsValid)
                 {
-                    replies.Add(req.Message);
+                    replies.Add(req.Response);
                 }
             }
 
@@ -94,7 +94,7 @@ namespace SMOP.Comm.Emulator
 
         const int INTERVAL = 10;
 
-        readonly Queue<Request> _requests = new();
+        readonly Queue<TimedRequest> _requests = new();
 
         Thread? _samplingThread = null;
         int _pause = 0;
@@ -116,11 +116,11 @@ namespace SMOP.Comm.Emulator
 
                 //Debug?.Invoke(this, $"READ [cycle start]");
 
-                Error error = Read(out Packet? message);
+                Error error = Read(out Packets? message);
 
                 lock (_requests)
                 {
-                    Request? req = null;
+                    TimedRequest? req = null;
                     while (_requests.Count > 0 && !(req = _requests.Peek()).IsValid)
                     {
                         _requests.Dequeue();
@@ -172,7 +172,7 @@ namespace SMOP.Comm.Emulator
                 try { Thread.Sleep(INTERVAL); }
                 catch (ThreadInterruptedException) { break; }  // will exit the loop upon Interrupt is called
 
-                Request? req = null;
+                TimedRequest? req = null;
                 lock (_requests)
                 {
                     if (_requests.Count > 0)
@@ -201,7 +201,7 @@ namespace SMOP.Comm.Emulator
 
                     if (req.Type == PacketType.Ack)
                     {
-                        message = new MessageResult(Packet.Result.OK);
+                        message = new MessageResult(Packets.Result.OK);
                     }
                     /*NEW
                     else if (req.Type == MessageType.Sample)

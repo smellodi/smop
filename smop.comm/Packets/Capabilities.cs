@@ -1,42 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SMOP.Comm.Packets
 {
     public class Capabilities : Response
     {
-        public bool Has(Device.Capabality capability) => _caps[capability];
+        public bool Has(Device.Capability capability) => _caps[capability];
 
-        public static Capabilities? From(Response msg)
+        public static Capabilities? From(Response response)
         {
-            if (msg?.Type != PacketType.Capabilities || msg?.Payload.Length != 17)
+            if (response?.Type != Type.Capabilities || response?.Payload.Length != 17)
             {
                 return null;
             }
 
-            return new Capabilities(msg.Payload);
+            return new Capabilities(response.Payload);
         }
 
-        public Capabilities(byte[] data) : base(PacketType.Capabilities, data)
+        public Capabilities(byte[] data) : base(Type.Capabilities, data)
         {
-            foreach (var capID in Enum.GetValues(typeof(Device.Capabality)))
+            foreach (var capID in Enum.GetValues(typeof(Device.Capability)))
             {
-                _caps.Add((Device.Capabality)capID, data[(int)capID] != 0);
+                _caps.Add((Device.Capability)capID, data[(int)capID] != 0);
             }
         }
 
         public override string ToString()
         {
-            var caps = new List<string>();
-            foreach (var (key, value) in _caps)
-            {
-                caps.Add($"{key} = {value}");
-            }
-            return $"{_type} [{string.Join(", ", caps)}]";
+            var caps = _caps.Select(cap => $"{cap.Key} = {cap.Value.AsFlag()}");
+            return $"{_type}\n    {string.Join("\n    ", caps)}";
         }
 
         // Internal
 
-        readonly Dictionary<Device.Capabality, bool> _caps = new();
+        readonly Dictionary<Device.Capability, bool> _caps = new();
+
+        internal Capabilities(Dictionary<Device.Capability,bool> caps) : base(Type.Capabilities, caps.Select(cap => (byte)(cap.Value ? 1 : 0)).ToArray())
+        {
+            _caps = caps;
+        }
     }
 }

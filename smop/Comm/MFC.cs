@@ -533,7 +533,7 @@ namespace SMOP.Comm
                 error = Error.InvalidData;
                 reason = $"Wrong RESULT response packet for '{command}'";
             }
-            else if (result.Result != Packet.Result.OK)
+            else if (result.Result != Packets.Result.OK)
             {
                 error = (Error)((int)Error.DeviceError | (int)result.Result);
                 reason = $"Got '{result.Result}' from the port for '{command}'";

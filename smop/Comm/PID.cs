@@ -284,7 +284,7 @@ namespace SMOP.Comm
                 error = Error.InvalidData;
                 reason = $"Wrong RESULT response packet for '{command}'";
             }
-            else if (result.Result != Packet.Result.OK)
+            else if (result.Result != Packets.Result.OK)
             {
                 error = (Error)((int)Error.DeviceError | (int)result.Result);
                 reason = $"Got '{result.Result}' from the port for '{command}'";
@@ -321,7 +321,7 @@ namespace SMOP.Comm
             var result = Initialize();
             if (result.Error != Error.Success)
             {
-                Packet.Result deviceError = (Packet.Result)((int)result.Error & ~(int)Error.DeviceError);
+                Packets.Result deviceError = (Packets.Result)((int)result.Error & ~(int)Error.DeviceError);
                 Utils.MsgBox.Error("PID", Utils.L10n.T("DeviceError") + $"\n[{deviceError}] {result.Reason}");
             }
         }

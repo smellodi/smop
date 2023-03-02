@@ -74,7 +74,7 @@
     <PackageReference Include="LiveCharts.Wpf.Core" Version="0.9.8" />
     <PackageReference Include="NAudio" Version="2.0.1" />
     <PackageReference Include="ScottPlot.WPF" Version="4.1.16" />
-    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
+    <PackageReference Include="System.IO.Ports" Version="7.0.0" />
     <PackageReference Include="System.Management" Version="5.0.0" />
     <PackageReference Include="WPFLocalizeExtension" Version="3.9.0" />
   </ItemGroup>
@@ -174,6 +174,10 @@
 
   <ItemGroup>
     <Folder Include="Assets\sounds\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\smop.comm\Smop.Comm.csproj" />
   </ItemGroup>
 
 </Project>

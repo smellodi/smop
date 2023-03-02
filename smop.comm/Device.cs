@@ -17,7 +17,7 @@
             DiluionAir = 10,
         }
 
-        public enum Capabality
+        public enum Capability
         {
             // Sensors
 
@@ -96,27 +96,27 @@
 
         public enum Sensor
         {
-            PID = Capabality.PID,
-            BeadThermistor = Capabality.BeadThermistor,
-            ChassisThermometer = Capabality.ChassisThermometer,
-            OdorSourceThermometer = Capabality.OdorSourceThermometer,
-            GeneralPurposeThermometer = Capabality.GeneralPurposeThermometer,
-            InputAirHumiditySensor = Capabality.InputAirHumiditySensor,
-            OutputAirHumiditySensor = Capabality.OutputAirHumiditySensor,
-            PressureSensor = Capabality.PressureSensor,
-            OdorantFlowSensor = Capabality.OdorantFlowSensor,
-            DilutionAirFlowSensor = Capabality.DilutionAirFlowSensor,
-            OdorantValveSensor = Capabality.OdorantValveSensor,
-            OutputValveSensor = Capabality.OutputValveSensor,
+            PID = Capability.PID,
+            BeadThermistor = Capability.BeadThermistor,
+            ChassisThermometer = Capability.ChassisThermometer,
+            OdorSourceThermometer = Capability.OdorSourceThermometer,
+            GeneralPurposeThermometer = Capability.GeneralPurposeThermometer,
+            InputAirHumiditySensor = Capability.InputAirHumiditySensor,
+            OutputAirHumiditySensor = Capability.OutputAirHumiditySensor,
+            PressureSensor = Capability.PressureSensor,
+            OdorantFlowSensor = Capability.OdorantFlowSensor,
+            DilutionAirFlowSensor = Capability.DilutionAirFlowSensor,
+            OdorantValveSensor = Capability.OdorantValveSensor,
+            OutputValveSensor = Capability.OutputValveSensor,
         }
 
         public enum Controller
         {
-            OdorantFlow = Capabality.OdorantFlowController,
-            DilutionAirFlow = Capabality.DilutionAirFlowController,
-            ChassisTemperature = Capabality.ChassisTemperatureController,
-            OdorantValve = Capabality.OdorantValveController,
-            OutputValve = Capabality.OutputValveController,
+            OdorantFlow = Capability.OdorantFlowController,
+            DilutionAirFlow = Capability.DilutionAirFlowController,
+            ChassisTemperature = Capability.ChassisTemperatureController,
+            OdorantValve = Capability.OdorantValveController,
+            OutputValve = Capability.OutputValveController,
         }
 
         /// <summary>

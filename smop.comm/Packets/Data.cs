@@ -49,7 +49,8 @@ namespace SMOP.Comm.Packets
 
             Measurements = measurements.ToArray();
         }
-        public override string ToString() => $"{_type} [{Measurements.Length} devices]\n    " + string.Join("\n    ", Measurements.Select(m => m.ToString()));
+        public override string ToString() => $"{_type} [{Measurements.Length} devices]\n    Timestamp: {Timestamp}\n    " +
+            string.Join("\n    ", Measurements.Select(m => m.ToString()));
 
         // Internal
         internal Data(int timestamp, Measurement[] measurements) : base(Type.Data, new object[] {
@@ -57,6 +58,7 @@ namespace SMOP.Comm.Packets
                 measurements.SelectMany(m => m.ToArray()).ToArray()
             }.SelectMany(v => (byte[])v).ToArray())
         {
+            Timestamp = timestamp;
             Measurements = measurements;
         }
     }

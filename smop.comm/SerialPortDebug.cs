@@ -70,7 +70,7 @@ namespace SMOP.Comm
         Queue<Request> _requests = new();
         Queue<byte[]> _responses = new();
 
-        System.Timers.Timer _dataTimer = new(100);
+        System.Timers.Timer _dataTimer = new(2000);
         Stopwatch _stopwatch = Stopwatch.StartNew();
 
         private void MakeResponse(Request req)

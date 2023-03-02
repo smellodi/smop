@@ -2,6 +2,7 @@
 using SMOP.Comm.Packets;
 using System.IO.Ports;
 
+int linesToScrollUp = 0;
 var commands = new Dictionary<string, Request?>()
 {
     { "ver", new QueryVersion() },
@@ -29,13 +30,18 @@ var commands = new Dictionary<string, Request?>()
 
 // Port opening
 
-Console.WriteLine("Testing Smellody Dor Display via SerialPort...\n");
+Console.Title = "Smellody Odor Presenter (SMOP)";
+Console.WriteLine("Testing Smellody Odor Presenter (SMOP)...\n");
 Console.Write("Available ports: ");
 var ports = string.Join(", ", SerialPort.GetPortNames());
 Console.WriteLine(string.IsNullOrEmpty(ports) ? "none" : ports);
 Console.WriteLine("");
 
 CommPort _port = new CommPort();
+_port.Opened += (s, e) => Console.WriteLine("[PORT] opened");
+_port.Closed += (s, e) => Console.WriteLine("[PORT] closed");
+_port.Data += async (s, e) => await Task.Run(() => HandleData(e));
+//_port.Debug += async (s, e) => await Task.Run(() => Console.WriteLine($"[PORT] debug: {e}"));
 
 do
 {
@@ -82,10 +88,25 @@ while (true)
         Console.WriteLine($"Received: {ack}");
     if (result.Error == Error.Success && resonse != null)
         Console.WriteLine("  " + resonse);
+
+    linesToScrollUp = 0;
 }
 
 // Exit
 
 _port.Close();
 
-Console.WriteLine("Testing finished.");
+Console.WriteLine("\nTesting finished.");
+
+
+void HandleData(Data e)
+{
+    if (Console.CursorLeft > 0)
+        Console.WriteLine("\n");
+    var line = Console.CursorTop;
+    if (linesToScrollUp > 0)
+        Console.CursorTop -= linesToScrollUp;
+    Console.WriteLine("  " + e);
+    if (linesToScrollUp == 0)
+        linesToScrollUp = Console.CursorTop - line;
+}

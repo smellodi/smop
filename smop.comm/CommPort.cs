@@ -5,10 +5,6 @@ using System.IO.Ports;
 using System.Threading;
 using System.Collections.Generic;
 using SMOP.Comm.Packets;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Timers;
-using System.Windows.Markup;
 
 namespace SMOP.Comm
 {

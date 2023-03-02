@@ -101,7 +101,8 @@ namespace SMOP.Comm
         public byte[] ToArray() => new byte[] { Byte0, Byte1, Byte2, Byte3 };
         public static byte[] ToArray(double value) => ToArray((float)value);
         public static byte[] ToArray(float value) => new FourBytes(value).ToArray();
-        public static byte[] ToArray(int value) => new FourBytes(value).ToArray();
+        public static byte[] ToArray(int value) => new FourBytes((uint)value).ToArray();
+        public static byte[] ToArray(uint value) => new FourBytes(value).ToArray();
         public static float ToFloat(byte[] array) => new FourBytes(array).Float;
         public static uint ToInt(byte[] array) => new FourBytes(array).Int;
     }

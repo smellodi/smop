@@ -3,6 +3,12 @@ using System.Threading;
 
 namespace SMOP.Comm
 {
+    /// <summary>
+    /// This class only translates all method calls to an instance of <see cref="SerialPort"/>
+    /// This class is needed only because using <see cref="ISerialPort"/> interface allows 
+    /// testing the <see cref="SMOP.Comm"/> module without opening a real serial port
+    /// (we use <see cref="SerialPortDebug"/> for this purpose).
+    /// </summary>
     public class SerialPortCOM : ISerialPort
     {
         public bool IsOpen => _port.IsOpen;
@@ -16,7 +22,7 @@ namespace SMOP.Comm
                 StopBits = PORT_STOP_BITS,
                 Parity = PORT_PARITY,
                 BaudRate = PORT_SPEED,
-                DataBits = 8,
+                DataBits = PORT_DATA_BITS,
                 DtrEnable = true,
                 RtsEnable = true,
                 DiscardNull = false,
@@ -49,6 +55,7 @@ namespace SMOP.Comm
         const int PORT_SPEED = 230400;
         const Parity PORT_PARITY = Parity.None;
         const StopBits PORT_STOP_BITS = StopBits.One;
+        const int PORT_DATA_BITS = 8;
         const int PORT_WRITE_TIMEOUT = 300;     // only for writing.. reading should be able to hand until it returns with some data 
 
         readonly SerialPort _port;

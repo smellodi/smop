@@ -9,7 +9,7 @@ using SMOP.Comm.Packets;
 namespace SMOP.Comm
 {
     /// <summary>
-    /// Communication over COM port with the odor display
+    /// Communication over COM port with the odor printer
     /// </summary>
     public class CommPort
     {
@@ -26,9 +26,9 @@ namespace SMOP.Comm
         public event EventHandler? Closed;
 
         /// <summary>
-        /// Fires when high-level error (Sistem.IO.Ports.SerialPort) is received from COM port
+        /// Fires when high-level OS error is received from COM port
         /// </summary>
-        public event EventHandler<Result>? RequestResult;
+        public event EventHandler<Result>? COMError;
 
         /// <summary>
         /// Fires when the device pushes Data packet a request
@@ -43,6 +43,10 @@ namespace SMOP.Comm
         public event EventHandler<string>? Debug;
 
         public bool IsOpen { get; private set; } = false;
+
+        /// <summary>
+        /// High-level OS error of the last read/write operation
+        /// </summary>
         public SerialError? PortError { get; private set; } = null;
 
         /// <summary>
@@ -71,7 +75,7 @@ namespace SMOP.Comm
         /// <summary>
         /// Opens the communication port
         /// </summary>
-        /// <param name="portName">COM1..COM255</param>
+        /// <param name="portName">COM1..COM255, or empty string to start simulation</param>
         /// <returns>Error code and description</returns>
         public Result Open(string? portName)
         {
@@ -79,7 +83,7 @@ namespace SMOP.Comm
 
             try
             {
-                _port = OpenSerialPort(string.IsNullOrEmpty(portName) ? "debug" : portName);
+                _port = OpenSerialPort(portName);
             }
             catch (Exception ex)
             {
@@ -117,16 +121,26 @@ namespace SMOP.Comm
             };
         }
 
-        public Result Request<T,U>(T req, out Ack? ack, out U? res)
+        /// <summary>
+        /// Sends a request to the device
+        /// </summary>
+        /// <typeparam name="T">Request type</typeparam>
+        /// <typeparam name="U">Response type</typeparam>
+        /// <param name="request">Resquest</param>
+        /// <param name="ack">Ack response packet </param>
+        /// <param name="response">Another response packet, if any</param>
+        /// <returns>Error code and description</returns>
+        public Result Request<T,U>(T request, out Ack? ack, out U? response)
             where T : Request
             where U : Response
         {
-            var error = GetResponse(req, out ack, out Response? reply);
+            var error = GetResponse(request, out ack, out Response? res);
             if (error == Error.Success && ack?.Result != Packets.Result.OK)
             {
                 error = Error.DeviceError;
             }
-            res = reply as U;
+            response = res as U;
+
             return new Result()
             {
                 Error = error,
@@ -179,9 +193,9 @@ namespace SMOP.Comm
         /// <param name="portName">COM1..COM255</param>
         /// <returns>The port</returns>
         /// <exception cref="ArgumentException">Invalid COM port</exception>
-        private ISerialPort OpenSerialPort(string portName)
+        private ISerialPort OpenSerialPort(string? portName)
         {
-            if (portName == "debug")
+            if (string.IsNullOrEmpty(portName))
             {
                 var debugPort = new SerialPortDebug();
                 debugPort.Open();
@@ -198,7 +212,7 @@ namespace SMOP.Comm
             port.ErrorReceived += (s, e) =>
             {
                 PortError = e.EventType;
-                RequestResult?.Invoke(this, new Result()
+                COMError?.Invoke(this, new Result()
                 {
                     Error = (Error)Marshal.GetLastWin32Error(),
                     Reason = $"COM internal error ({e.EventType})"

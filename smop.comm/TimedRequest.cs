@@ -4,7 +4,7 @@ using System.Threading;
 namespace SMOP.Comm
 {
     /// <summary>
-    /// The request used internally in <see cref="CommPort"/> to maintain the order of requests
+    /// The request used internally in <see cref="CommPort"/> to matcg responses with the corresponding requests
     /// </summary>
     internal class TimedRequest
     {
@@ -46,7 +46,7 @@ namespace SMOP.Comm
 
         // Internal
 
-        const int WAIT_INTERVAL = 1000;
+        const int WAIT_INTERVAL = 500;
 
         readonly AutoResetEvent _mutex = new(false);
     }

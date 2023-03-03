@@ -5,6 +5,9 @@ using SMOP.Comm.Packets;
 
 namespace SMOP.Comm
 {
+    /// <summary>
+    /// This class is used to debug communication with the device via <see cref="CommPort"/>
+    /// </summary>
     public class SerialPortDebug : ISerialPort
     {
         public bool IsOpen => _isOpen;

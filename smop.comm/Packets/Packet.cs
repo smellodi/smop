@@ -205,6 +205,9 @@ namespace SMOP.Comm.Packets
         }
     }
 
+    /// <summary>
+    /// Used as a base class for all packets moving from PC to the device
+    /// </summary>
     public class Request : Packet
     {
         public Request(Type type, byte[]? payload = null) : base(type, payload)
@@ -239,6 +242,9 @@ namespace SMOP.Comm.Packets
         }
     }
 
+    /// <summary>
+    /// Used as a base class for all packets moving from the device to PC
+    /// </summary>
     public class Response : Packet
     {
         public byte[] Payload => _payload!;

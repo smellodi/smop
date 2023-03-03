@@ -49,7 +49,7 @@
     }
 
     /// <summary>
-    /// (error, reason) pair is used to return from <see cref="CommPort"/> public methods
+    /// (error, reason) pair used to return from <see cref="CommPort"/> public methods
     /// </summary>
     public class Result
     {

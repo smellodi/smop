@@ -40,7 +40,7 @@ namespace SMOP.Pages
 
         // Internal
 
-        readonly USB _usb = new();
+        readonly COMUtils _usb = new();
         readonly Storage _storage = Storage.Instance;
         readonly CommPort _com = CommPort.Instance;
         readonly MFC _mfc = MFC.Instance;

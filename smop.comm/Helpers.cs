@@ -107,7 +107,7 @@ namespace SMOP.Comm
         public static uint ToInt(byte[] array) => new FourBytes(array).Int;
     }
 
-    public static class BoolExt
+    internal static class BoolExt
     {
         public static string AsFlag(this bool self) => self ? "ON" : "OFF";
     }

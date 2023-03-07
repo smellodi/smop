@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace SMOP.Comm
 {
@@ -113,6 +114,19 @@ namespace SMOP.Comm
     internal static class BoolExt
     {
         public static string AsFlag(this bool self) => self ? "ON" : "OFF";
+    }
+
+    internal static class SensorExt
+    {
+        public static string AsName(this Device.Sensor self)
+        {
+            var name = self.ToString();
+            var matches = System.Text.RegularExpressions.Regex
+                .Matches(name, "[A-Z][0-9a-z_]+")
+                .Select(m => m.Groups[0].Value)
+                .Where(p => p != "Sensor");
+            return matches.Count() > 0 ? string.Join(" ", matches) : name;
+        }
     }
 
 

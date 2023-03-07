@@ -1,5 +1,6 @@
 ﻿using SMOP.Comm;
 using SMOP.Comm.Packets;
+using System.Diagnostics;
 using System.Windows.Threading;
 
 const bool SHOW_PORT_DEBUG = true;
@@ -68,11 +69,12 @@ if (smopCOMPort != null)
 CommPort _port = new CommPort();
 _port.Opened += (s, e) => Console.WriteLine("[PORT] opened");
 _port.Closed += (s, e) => Console.WriteLine("[PORT] closed");
-_port.Data += async (s, e) => await Task.Run(() => HandleData(e));
+_port.Data += async (s, e) => await Task.Run(() => PrintData(e));
 _port.COMError += (s, e) => Console.WriteLine($"[PORT] {e}");
 
 if (SHOW_PORT_DEBUG)
-    _port.Debug += async (s, e) => await Task.Run(() => Console.WriteLine($"[PORT] debug: {e}"));
+    //_port.Debug += async (s, e) => await Task.Run(() => PrintDebug(e));
+    _port.Debug += (s, e) => PrintDebug(e);
 
 do
 {
@@ -141,21 +143,21 @@ _port.Close();
 Console.WriteLine("\nTesting finished.");
 
 
-void HandleData(Data e)
+void PrintData(Data e)
 {
+    var line = Console.CursorTop;
     if (Console.CursorLeft > 0)
         Console.WriteLine("\n");
-    var line = Console.CursorTop;
-    if (!SHOW_PORT_DEBUG)
+    if (!SHOW_PORT_DEBUG && linesToScrollUp > 0)
     {
-        if (linesToScrollUp > 0)
-            Console.CursorTop -= linesToScrollUp;
+        Console.CursorTop -= linesToScrollUp;
     }
     Console.WriteLine("  " + e);
-    if (!SHOW_PORT_DEBUG)
+    Console.Write("\nCommand: ");
+    if (!SHOW_PORT_DEBUG && linesToScrollUp == 0)
     {
-        if (linesToScrollUp == 0)
-            linesToScrollUp = Console.CursorTop - line;
+        linesToScrollUp = Console.CursorTop - line;
+        Debug.WriteLine(linesToScrollUp);
     }
 }
 
@@ -169,4 +171,11 @@ void PrintHelp()
             Console.WriteLine($"    {cmd.Key,-8} - {cmd.Value.Item1}");
         }
     }
+}
+
+void PrintDebug(string str)
+{
+    if (Console.CursorLeft > 0)
+        Console.WriteLine("");
+    Console.WriteLine($"[PORT] debug: {str}");
 }

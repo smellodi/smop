@@ -167,7 +167,7 @@ namespace SMOP.Comm.Packets
         {
             Volts = value;
         }
-        public override string ToString() => $"PID = {Volts:F3} V";
+        public override string ToString() => $"{Sensor} = {Volts:F3} V";
     }
     public class BeadThermistorValue : SensorValue
     {
@@ -186,7 +186,7 @@ namespace SMOP.Comm.Packets
             Ohms = ohms;
             Volts = volts;
         }
-        public override string ToString() => $"BeadThermistor = {Ohms:F1} Ohm, {Volts:F3} V";
+        public override string ToString() => $"{Sensor} = {Ohms:F1} Ohm, {Volts:F3} V";
     }
     public class ThermometerValue : SensorValue
     {
@@ -199,7 +199,7 @@ namespace SMOP.Comm.Packets
         {
             Celsius = value;
         }
-        public override string ToString() => $"Thermometer = {Celsius:F2}°C";
+        public override string ToString() => $"{Sensor} = {Celsius:F2}°C";
     }
     public class HumidityValue : SensorValue
     {
@@ -218,7 +218,7 @@ namespace SMOP.Comm.Packets
             Percent = percent;
             Celsius = celsius;
         }
-        public override string ToString() => $"Humidity = {Percent:F1}%, {Celsius:F1}°C";
+        public override string ToString() => $"{Sensor} = {Percent:F1}%, {Celsius:F1}°C";
     }
     public class PressureValue : SensorValue
     {
@@ -237,7 +237,7 @@ namespace SMOP.Comm.Packets
             Millibars = millibars;
             Celsius = celsius;
         }
-        public override string ToString() => $"Pressure = {Millibars:F1} mB, {Celsius:F1}°C";
+        public override string ToString() => $"{Sensor} = {Millibars:F1} mB, {Celsius:F1}°C";
     }
     public class GasValue : SensorValue
     {
@@ -260,7 +260,7 @@ namespace SMOP.Comm.Packets
             Celsius = celsius;
             Millibars = millibars;
         }
-        public override string ToString() => $"Gas = {SLPM:F4} L/min, {Millibars:F1} mB, {Celsius:F1}°C";
+        public override string ToString() => $"{Sensor} = {SLPM:F4} L/min, {Millibars:F1} mB, {Celsius:F1}°C";
     }
     public class ValveValue : SensorValue
     {
@@ -273,6 +273,6 @@ namespace SMOP.Comm.Packets
         {
             Opened = opened;
         }
-        public override string ToString() => $"Valve = {Opened.AsFlag()}";
+        public override string ToString() => $"{Sensor} = {Opened.AsFlag()}";
     }
 }

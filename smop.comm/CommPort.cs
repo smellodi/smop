@@ -122,19 +122,20 @@ namespace SMOP.Comm
         }
 
         /// <summary>
-        /// Sends a request to the device
+        /// Sends a request to the device and waits until a reponse is received
+        /// (at least <see cref="Packets.Type.Ack"/> packet, unless an error occurs)
         /// </summary>
         /// <typeparam name="T">Request type</typeparam>
         /// <typeparam name="U">Response type</typeparam>
-        /// <param name="request">Resquest</param>
-        /// <param name="ack">Ack response packet </param>
-        /// <param name="response">Another response packet, if any</param>
+        /// <param name="request">Request</param>
+        /// <param name="ack"><see cref="Packets.Type.Ack"/> response packet </param>
+        /// <param name="response">Another optional response packet</param>
         /// <returns>Error code and description</returns>
         public Result Request<T,U>(T request, out Ack? ack, out U? response)
             where T : Request
             where U : Response
         {
-            var error = GetResponse(request, out ack, out Response? res);
+            var error = GetResponse(request, out ack, out Response? res);   // does not return until the response is received, or an error occurs
             if (error == Error.Success && ack?.Result != Packets.Result.OK)
             {
                 error = Error.DeviceError;
@@ -147,8 +148,10 @@ namespace SMOP.Comm
                 Reason = error switch
                 {
                     Error.Success => "OK",
+                    Error.InvalidData => "The response missing or excessing data packets",
+                    Error.CRC => "Invalid CRC",
+                    Error.AccessFailed => "Failed to reading from the port",
                     Error.Timeout => "No response was received within a reasonable time",
-                    Error.InvalidData => "The response missing or excessing data",
                     Error.DeviceError => ack!.Result switch
                     {
                         Packets.Result.InvalidValue => "Some request parameter has invalid value",
@@ -162,9 +165,9 @@ namespace SMOP.Comm
                         Packets.Result.InvalidDeviceID => "Invalid index or device number",
                         Packets.Result.Busy => "Device is busy and can’t perform the requested operation",
                         Packets.Result.Error => "Unknown error",
-                        _ => throw new Exception("Internal error: unknown device error")
+                        _ => $"Internal error: unknown device error {ack!.Result}"
                     },
-                    _ => ""
+                    _ => $"Internal error: unexpected error {error}"
                 }
             };
         }
@@ -177,29 +180,26 @@ namespace SMOP.Comm
         const int MIN_RESPONSE_LENGTH = 9;      // minimum length: Packet.PREAMBLE_LENGTH + 1B type + 1B from + 1B to + 2B payload length + 1B CRC
 
         readonly Queue<TimedRequest> _requests = new();
-        readonly Stopwatch _stopWatch = Stopwatch.StartNew();
 
         static CommPort? _instance;
 
         ISerialPort? _port;
         Thread? _readingThread;
 
-        long Timestamp => _stopWatch.ElapsedMilliseconds;
-
 
         /// <summary>
         /// Creates and opens a serial port
         /// </summary>
-        /// <param name="portName">COM1..COM255</param>
+        /// <param name="portName">COM1..COM255, or empty to instantiate an emulator</param>
         /// <returns>The port</returns>
         /// <exception cref="ArgumentException">Invalid COM port</exception>
         private ISerialPort OpenSerialPort(string? portName)
         {
             if (string.IsNullOrEmpty(portName))
             {
-                var debugPort = new SerialPortDebug();
-                debugPort.Open();
-                return debugPort;
+                var emulator = new SerialPortEmulator();
+                emulator.Open();
+                return emulator;
             }
 
             if (!portName.StartsWith("COM") || !int.TryParse(portName[3..], out int portID) || portID < 1 || portID > 255)
@@ -227,7 +227,7 @@ namespace SMOP.Comm
         /// </summary>
         /// <param name="request">Request that requires two replies</param>
         /// <param name="result">Result returned by the device</param>
-        /// <param name="response">The reply with some info that was requested</param>
+        /// <param name="response">Optional reply with some info that was requested</param>
         /// <returns>Error</returns>
         private Error GetResponse(Request request, out Ack? result, out Response? response)
         {
@@ -276,6 +276,59 @@ namespace SMOP.Comm
         }
 
         /// <summary>
+        /// Calls to this method must be inside lock(this) { } block
+        /// </summary>
+        /// <param name="type">Packet type</param>
+        /// <param name="res">Packet received</param>
+        /// <returns><see cref="Error.Success"/> or an error code</returns>
+        private Error ReadResponse(Packets.Type type, out Response? res)
+        {
+            var result = ReadResponses(new Packets.Type[] { type }, out Response[] responses);
+            res = responses.Length > 0 ? responses[0] : null;
+            return result;
+        }
+
+        /// <summary>
+        /// Calls to this method must be inside lock(this) { } block
+        /// </summary>
+        /// <param name="types">Packet types</param>
+        /// <param name="responses">Packets received</param>
+        /// <returns><see cref="Error.Success"/> or <see cref="Error.Timeout"/></returns>
+        private Error ReadResponses(Packets.Type[] types, out Response[] responses)
+        {
+            List<TimedRequest> requests = new();
+            List<Response> replies = new();
+
+            lock (_requests)
+            {
+                foreach (var type in types)
+                {
+                    TimedRequest req = new(type);
+                    _requests.Enqueue(req);
+                    requests.Add(req);
+                }
+            }
+
+            foreach (var req in requests)
+            {
+                if (!req.WaitUntilReceived())       // The thread stops here until the response is received (true), or a timeout (false)
+                {
+                    Debug?.Invoke(this, $"REQ !TIMEOUT after {req.Duration} ms: {req.Type}");
+                    responses = replies.ToArray();
+                    return Error.Timeout;
+                }
+
+                if (req.Response != null && req.IsValid)
+                {
+                    replies.Add(req.Response);
+                }
+            }
+
+            responses = replies.ToArray();
+            return Error.Success;
+        }
+
+        /// <summary>
         /// Writes a packet to the port
         /// </summary>
         /// <param name="packet">Packet to write</param>
@@ -293,7 +346,6 @@ namespace SMOP.Comm
 
         /// <summary>
         /// Reads packets from the port. Gets the packet payload length from the second byte.
-        /// Returns error if the time is out.
         /// </summary>
         /// <param name="packet">Packet to be filled with data received from the port</param>
         /// <returns><see cref="Error.Success"/> or an error code</returns>
@@ -307,7 +359,6 @@ namespace SMOP.Comm
             bool isLengthKnown = false;
             int payloadLength = 0;
 
-            // Try to receive bytes; wait more data in POLL_PERIOD pieces;
             while (bytesRemaining > 0)
             {
                 int readCount;
@@ -395,59 +446,8 @@ namespace SMOP.Comm
         }
 
         /// <summary>
-        /// Calls to this method must be inside lock(this) { } block
+        /// The procedure that is running in a separate thread, reading data from the port and assigning replies to requests
         /// </summary>
-        /// <param name="type">Packet type</param>
-        /// <param name="res">Packet received</param>
-        /// <returns><see cref="Error.Success"/> or an error code</returns>
-        private Error ReadResponse(Packets.Type type, out Response? res)
-        {
-            var result = ReadResponses(new Packets.Type[] { type }, out Response[] responses);
-            res = responses.Length > 0 ? responses[0] : null;
-            return result;
-        }
-
-        /// <summary>
-        /// Calls to this method must be inside lock(this) { } block
-        /// </summary>
-        /// <param name="types">Packet types</param>
-        /// <param name="responses">Packets received</param>
-        /// <returns>Success or Timeout</returns>
-        private Error ReadResponses(Packets.Type[] types, out Response[] responses)
-        {
-            //Debug?.Invoke(this,  $"REQ {string.Join(',', types)}");
-            List<TimedRequest> requests = new();
-            List<Response> replies = new();
-
-            lock (_requests)
-            {
-                foreach (var type in types)
-                {
-                    TimedRequest req = new(type);
-                    _requests.Enqueue(req);
-                    requests.Add(req);
-                }
-            }
-
-            foreach (var req in requests)
-            {
-                if (!req.WaitUntilReceived())
-                {
-                    Debug?.Invoke(this, $"REQ !TIMEOUT after {req.Duration} ms: {req.Type}");
-                    responses = replies.ToArray();
-                    return Error.Timeout;
-                }
-
-                if (req.Response != null && req.IsValid)
-                {
-                    replies.Add(req.Response);
-                }
-            }
-
-            responses = replies.ToArray();
-            return Error.Success;
-        }
-
         private void ReadPacketsThread()
         {
             int PAUSE_INTERVAL = 10;
@@ -461,8 +461,6 @@ namespace SMOP.Comm
                 {
                     break;
                 }
-
-                //Debug?.Invoke(this,  $"READ [cycle start]");
 
                 Error error = Read(out Response? response);
                 if (error == Error.NotReady)
@@ -493,6 +491,7 @@ namespace SMOP.Comm
                             
                             if (error == Error.Success)
                             {
+                                /// allows <see cref="ReadResponses(Packets.Type[], out Response[])"/> to continue
                                 request.SetResponse(response);
                             }
                         }
@@ -508,11 +507,9 @@ namespace SMOP.Comm
                     }
                     else
                     {
-                        Debug?.Invoke(this, $"READ ! no packet");
+                        Debug?.Invoke(this, $"RCV !NO_PACKET");
                     }
                 }
-
-                //Debug?.Invoke(this, $"READ [cycle ends]");
             }
         }
     }

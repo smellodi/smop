@@ -16,16 +16,13 @@ namespace SMOP.Comm.Packets
 
             return new Version(response.Payload);
         }
-        public Version(byte[] data) : base(Type.Version, data)
+        public Version(byte[] payload) : base(Type.Version, payload)
         {
-            Hardware = $"{(data[0] & 0xF0) >> 4}.{data[0] & 0x0F}";
-            Software = $"{(data[1] & 0xF0) >> 4}.{data[1] & 0x0F}";
-            Protocol = $"{(data[2] & 0xF0) >> 4}.{data[2] & 0x0F}";
+            Hardware = $"{(payload[0] & 0xF0) >> 4}.{payload[0] & 0x0F}";
+            Software = $"{(payload[1] & 0xF0) >> 4}.{payload[1] & 0x0F}";
+            Protocol = $"{(payload[2] & 0xF0) >> 4}.{payload[2] & 0x0F}";
         }
-        public override string ToString()
-        {
-            return $"{_type} [Hardware: {Hardware}, Software: {Software}, Protocol: {Protocol}]";
-        }
+        public override string ToString() => $"{_type} [Hardware: {Hardware}, Software: {Software}, Protocol: {Protocol}]";
 
         // Internal
 

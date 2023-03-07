@@ -18,11 +18,11 @@ namespace SMOP.Comm.Packets
             return new Capabilities(response.Payload);
         }
 
-        public Capabilities(byte[] data) : base(Type.Capabilities, data)
+        public Capabilities(byte[] payload) : base(Type.Capabilities, payload)
         {
             foreach (var capID in Enum.GetValues(typeof(Device.Capability)))
             {
-                _caps.Add((Device.Capability)capID, data[(int)capID] != 0);
+                _caps.Add((Device.Capability)capID, payload[(int)capID] != 0);
             }
         }
 
@@ -36,9 +36,7 @@ namespace SMOP.Comm.Packets
 
         readonly Dictionary<Device.Capability, bool> _caps = new();
 
-        internal Capabilities(Dictionary<Device.Capability,bool> caps) : base(Type.Capabilities, caps.Select(cap => (byte)(cap.Value ? 0xFF : 0)).ToArray())
-        {
-            _caps = caps;
-        }
+        internal Capabilities(Dictionary<Device.Capability,bool> caps) :
+            base(Type.Capabilities, caps.Select(cap => (byte)(cap.Value ? 0xFF : 0)).ToArray()) { _caps = caps; }
     }
 }

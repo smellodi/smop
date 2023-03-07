@@ -7,7 +7,7 @@ namespace SMOP.Comm
     /// This class only translates all method calls to an instance of <see cref="SerialPort"/>
     /// This class is needed only because using <see cref="ISerialPort"/> interface allows 
     /// testing the <see cref="SMOP.Comm"/> module without opening a real serial port
-    /// (we use <see cref="SerialPortDebug"/> for this purpose).
+    /// (we use <see cref="SerialPortEmulator"/> for this purpose).
     /// </summary>
     public class SerialPortCOM : ISerialPort
     {
@@ -37,10 +37,8 @@ namespace SMOP.Comm
             _port.Open();
 
             Thread.Sleep(150);  // according to the documentation
-            try
-            {
-                _port.BaseStream.Flush();
-            }
+
+            try { _port.BaseStream.Flush(); }
             catch { }  // do nothing
         }
 

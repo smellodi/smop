@@ -62,61 +62,6 @@ namespace SMOP.Comm.Packets
     }
 
     /// <summary>
-    /// Request result present in <see cref="Type.Ack"/> packet
-    /// </summary>
-    public enum Result : byte
-    {
-        /// <summary>
-        /// No error, the request was executed without problems
-        /// </summary>
-        OK = 0,
-        /// <summary>
-        /// Request parameter has an invalid value
-        /// </summary>
-        InvalidValue = 0xF6,
-        /// <summary>
-        /// Resource is not available
-        /// </summary>
-        NotAvailable = 0xF5,
-        /// <summary>
-        /// The device has no enough memory for the operation
-        /// </summary>
-        OutOfMemory = 0xF4,
-        /// <summary>
-        /// Requested operation is not possible in the current operating mode
-        /// </summary>
-        InvalidMode = 0xF3,
-        /// <summary>
-        /// Operation timed out
-        /// </summary>
-        Timeout = 0xF2,
-        /// <summary>
-        /// Data is not available
-        /// </summary>
-        NoData = 0xF1,
-        /// <summary>
-        /// Unknown or unsupported packet type
-        /// </summary>
-        UnknownPacket = 0xF0,
-        /// <summary>
-        /// Invalid amount of data
-        /// </summary>
-        InvalidLength = 0xEF,
-        /// <summary>
-        /// Invalid index or device number 
-        /// </summary>
-        InvalidDeviceID = 0xEE,
-        /// <summary>
-        /// Device is busy and can’t perform the requested operation
-        /// </summary>
-        Busy = 0xED,
-        /// <summary>
-        /// Non-specific error
-        /// </summary>
-        Error = 0x80,
-    }
-
-    /// <summary>
     /// Base class for all packets: <see cref="Request"/> (queries and setters) and <see cref="Response"/>
     /// </summary>
     public abstract class Packet
@@ -130,33 +75,6 @@ namespace SMOP.Comm.Packets
 
         public bool IsValidCRC => CalcChecksum() == _checksum;
         public string ByteString => BitConverter.ToString(ToArray()).Replace("-", ",");
-
-        /// <summary>
-        /// Constructor to be used when receiving a response from COM port
-        /// </summary>
-        /// <param name="buffer">Byte array received from the device, without preamble</param>
-        public Packet(byte[] buffer)
-        {
-            _type = (Type)buffer[0];
-            _from = buffer[1];
-            _to = buffer[2];
-            _payload = buffer[5..^1];
-            _checksum = buffer[^1];
-        }
-
-        /// <summary>
-        /// Base constructor for all requests
-        /// </summary>
-        /// <param name="type">Packet type</param>
-        /// <param name="payload">Packet payload</param>
-        protected Packet(Type type, byte[]? payload = null)
-        {
-            _type = type;
-            _from = SENDER_PC;
-            _to = SENDER_DEVICE;
-            _payload = payload;
-            _checksum = CalcChecksum();
-        }
 
         public byte[] ToArray()
         {
@@ -194,6 +112,33 @@ namespace SMOP.Comm.Packets
         protected byte _to;
 
         protected int Length => _payload?.Length ?? 0;
+
+        /// <summary>
+        /// Constructor to be used when receiving a response from COM port
+        /// </summary>
+        /// <param name="buffer">Byte array received from the device, without preamble</param>
+        protected Packet(byte[] buffer)
+        {
+            _type = (Type)buffer[0];
+            _from = buffer[1];
+            _to = buffer[2];
+            _payload = buffer[5..^1];
+            _checksum = buffer[^1];
+        }
+
+        /// <summary>
+        /// Base constructor for all requests and simulated responses
+        /// </summary>
+        /// <param name="type">Packet type</param>
+        /// <param name="payload">Packet payload</param>
+        protected Packet(Type type, byte[]? payload = null)
+        {
+            _type = type;
+            _from = SENDER_PC;
+            _to = SENDER_DEVICE;
+            _payload = payload;
+            _checksum = CalcChecksum();
+        }
 
         protected byte CalcChecksum()
         {
@@ -241,7 +186,7 @@ namespace SMOP.Comm.Packets
                 Type.SetActuators => new SetActuators(buffer),
                 Type.SetSystem => new SetSystem(buffer),
                 Type.SetMeasurements => new SetMeasurements(buffer),
-                _ => throw new System.Exception($"Unknown request type '{type}'")
+                _ => throw new Exception($"Unknown request type '{type}'")
             };
         }
     }

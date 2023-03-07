@@ -2,6 +2,8 @@
 using SMOP.Comm.Packets;
 using System.Windows.Threading;
 
+const bool SHOW_PORT_DEBUG = true;
+
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing Smellody Odor Printer (SMOP)...\n");
 
@@ -68,7 +70,9 @@ _port.Opened += (s, e) => Console.WriteLine("[PORT] opened");
 _port.Closed += (s, e) => Console.WriteLine("[PORT] closed");
 _port.Data += async (s, e) => await Task.Run(() => HandleData(e));
 _port.COMError += (s, e) => Console.WriteLine($"[PORT] {e}");
-_port.Debug += async (s, e) => await Task.Run(() => Console.WriteLine($"[PORT] debug: {e}"));
+
+if (SHOW_PORT_DEBUG)
+    _port.Debug += async (s, e) => await Task.Run(() => Console.WriteLine($"[PORT] debug: {e}"));
 
 do
 {
@@ -141,12 +145,18 @@ void HandleData(Data e)
 {
     if (Console.CursorLeft > 0)
         Console.WriteLine("\n");
-    //var line = Console.CursorTop;
-    //if (linesToScrollUp > 0)
-    //    Console.CursorTop -= linesToScrollUp;
+    var line = Console.CursorTop;
+    if (!SHOW_PORT_DEBUG)
+    {
+        if (linesToScrollUp > 0)
+            Console.CursorTop -= linesToScrollUp;
+    }
     Console.WriteLine("  " + e);
-    //if (linesToScrollUp == 0)
-    //    linesToScrollUp = Console.CursorTop - line;
+    if (!SHOW_PORT_DEBUG)
+    {
+        if (linesToScrollUp == 0)
+            linesToScrollUp = Console.CursorTop - line;
+    }
 }
 
 void PrintHelp()

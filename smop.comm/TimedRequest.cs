@@ -4,13 +4,16 @@ using System.Threading;
 namespace SMOP.Comm
 {
     /// <summary>
-    /// The request used internally in <see cref="CommPort"/> to matcg responses with the corresponding requests
+    /// The request used internally in <see cref="CommPort"/> to match responses with the corresponding requests
     /// </summary>
     internal class TimedRequest
     {
+        public static int WAIT_INTERVAL = 500;
+
         public Type Type { get; }
+
         /// <summary>
-        /// Stores the response recevied from the port
+        /// Stores the response packet received from the port
         /// </summary>
         public Response? Response { get; private set; } = null;
 
@@ -23,7 +26,7 @@ namespace SMOP.Comm
         }
 
         /// <summary>
-        /// Locks the method call and waits until <see cref="SetResponse(Response)"/> is called.
+        /// Waits until <see cref="SetResponse(Response)"/> is called.
         /// </summary>
         /// <returns>False if the timeout reached</returns>
         public bool WaitUntilReceived()
@@ -43,8 +46,6 @@ namespace SMOP.Comm
         }
 
         // Internal
-
-        const int WAIT_INTERVAL = 500;
 
         readonly AutoResetEvent _mutex = new(false);
         readonly long _timestamp = System.Diagnostics.Stopwatch.GetTimestamp();

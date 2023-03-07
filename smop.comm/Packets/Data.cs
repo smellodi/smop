@@ -49,6 +49,7 @@ namespace SMOP.Comm.Packets
 
             Measurements = measurements.ToArray();
         }
+
         public override string ToString() => $"{_type} [{Measurements.Length} devices]\n    Timestamp: {Timestamp}\n    " +
             string.Join("\n    ", Measurements.Select(m => m.ToString()));
 

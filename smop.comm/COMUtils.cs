@@ -12,6 +12,9 @@ namespace SMOP.Comm
     /// </summary>
     public class COMUtils
     {
+        /// <summary>
+        /// Port descriptor
+        /// </summary>
         public class Port
         {
             public string Name { get; }
@@ -37,7 +40,7 @@ namespace SMOP.Comm
         /// <summary>
         /// List of all COM ports in the system
         /// </summary>
-        public static Port[] Ports => _cache ??= GetAvailableCOMPorts();
+        public static Port[] Ports => _cachedPorts ??= GetAvailableCOMPorts();
 
         /// <summary>
         /// Most likely SMOP port, i.e. the one that has a known description
@@ -58,19 +61,7 @@ namespace SMOP.Comm
             Removed
         }
 
-        static Port[]? _cache = null;
-
-        /*
-        static COMUtils()
-        {
-            Console.WriteLine("==== PnP devices ===");
-            using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity");
-            var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
-            foreach (var rec in records)
-                PrintProperties(rec.Properties);
-            Console.WriteLine("====================");
-        }
-        */
+        static Port[]? _cachedPorts = null;
 
         private void Listen(string source, string target, ActionType actionType)
         {
@@ -79,7 +70,7 @@ namespace SMOP.Comm
 
             watcher.EventArrived += (s, e) =>
             {
-                _cache = null;
+                _cachedPorts = null;
                 Port? port = null;
 
                 try
@@ -166,9 +157,24 @@ namespace SMOP.Comm
             return deviceID == null ? null : new Port(deviceID, descrition, manufacturer);
         }
 
+        // Debugging
+
         static HashSet<string> PropsToPrint = new() { "Caption", "Description", "Manufacturer", "Name", "Service"};
         static HashSet<string> ManufacturersToPrint = new() { "microsoft" };
         static HashSet<string> ManufacturersNotToPrint = new() { "microsoft", "standard", "(standard", "intel", "acer", "rivet", "nvidia", "realtek", "generic" };
+
+        /*
+        static COMUtils()
+        {
+            Console.WriteLine("==== PnP devices ===");
+            using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity");
+            var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
+            foreach (var rec in records)
+                PrintProperties(rec.Properties);
+            Console.WriteLine("====================");
+        }
+        */
+
         static void PrintProperties(PropertyDataCollection props)
         {
             var indent = "    ";

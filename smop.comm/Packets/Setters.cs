@@ -20,20 +20,16 @@ namespace SMOP.Comm.Packets
     }
     public class SetSystem : Request
     {
-        public bool Fans { get; }
-        public bool PIDs { get; }
+        public bool Fans => _payload![0] != 0;
+        public bool PIDs =>_payload![1] != 0;
         public SetSystem(bool fans, bool pids) : base(Type.SetSystem, new byte[] {
             (byte)(fans ? 1 : 0),
             (byte)(pids ? 1 : 0)
-        }) { Fans = fans; PIDs = pids; }
+        }) { }
         public override string ToString() => $"{_type}:" +
             $"\n    Fans {Fans.AsFlag()}" +
             $"\n    PIDs {PIDs.AsFlag()}";
-        internal SetSystem(byte[] buffer) : base(buffer)
-        {
-            Fans = _payload![0] != 0;
-            PIDs = _payload![1] != 0;
-        }
+        internal SetSystem(byte[] buffer) : base(buffer) { }
     }
 
     public class SetMeasurements : Request
@@ -65,7 +61,7 @@ namespace SMOP.Comm.Packets
         {
             if (caps.Count == 0)
             {
-                throw new ArgumentException("Cannot be empty list", nameof(caps));
+                throw new ArgumentException("The list cannot be empty", nameof(caps));
             }
 
             DeviceID = id;
@@ -83,17 +79,20 @@ namespace SMOP.Comm.Packets
                     // value must be 0..1 (float)
                     Device.Controller.OdorantFlow or Device.Controller.DilutionAirFlow =>
                         new FourBytes(Math.Max(Math.Min(value / maxFlowRate, 1), 0)),
+
                     // value must be Celsius 0..50 (float)
                     Device.Controller.ChassisTemperature =>
                         new FourBytes(Math.Max(Math.Min(value, 50), 0)),
+
                     // value must tbe millliseconds (int):
                     //      >0 - sets the time for the valve to stay ON, ms
                     //      0  - turns the valve OFF
                     //      <0 - turns the valve ON
                     Device.Controller.OdorantValve or Device.Controller.OutputValve =>
                         new FourBytes((int)value),
+
                     // not permitted capabilities to be set
-                    _ => throw new Exception($"Unsupported controller with id={(int)ctrl}")
+                    _ => throw new Exception($"Unknown controller '{(int)ctrl}'")
                 };
                 query.AddRange(controllerValue.ToArray());
             }

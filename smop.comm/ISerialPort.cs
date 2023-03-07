@@ -1,8 +1,8 @@
 ﻿namespace SMOP.Comm
 {
     /// <summary>
-    /// The interface lists minimum fuctionality required from <see cref="System.IO.Ports.SerialPort"/>.
-    /// This functionality is implemented in a serial port emulator <see cref="SerialPortDebug"/>.
+    /// The interface lists the minimum fuctionality required from <see cref="System.IO.Ports.SerialPort"/>.
+    /// This functionality is implemented in a serial port emulator <see cref="SerialPortEmulator"/>.
     /// </summary>
     public interface ISerialPort
     {

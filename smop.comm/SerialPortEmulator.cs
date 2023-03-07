@@ -1,19 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using SMOP.Comm.Packets;
 
 namespace SMOP.Comm
 {
     /// <summary>
-    /// This class is used to debug communication with the device via <see cref="CommPort"/>
+    /// This class is used to emulate communication with the device via <see cref="CommPort"/>
     /// </summary>
-    public class SerialPortDebug : ISerialPort
+    public class SerialPortEmulator : ISerialPort
     {
         public bool IsOpen => _isOpen;
 
-        public SerialPortDebug()
+        public SerialPortEmulator()
         {
             _dataTimer.Elapsed += (s, e) =>
             {
@@ -195,6 +194,7 @@ namespace SMOP.Comm
                             new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
                             new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
                             new HumidityValue(Device.Sensor.InputAirHumiditySensor, 60f + Random.Range(0.2f), 27.1f + Random.Range(0.1f)),
+                            new HumidityValue(Device.Sensor.OutputAirHumiditySensor, 55f + Random.Range(0.2f), 26.6f + Random.Range(0.1f)),
                             new PressureValue(1200f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
                             new GasValue(Device.Sensor.OdorantFlowSensor, 5.0f + Random.Range(0.05f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
                             new ValveValue(Device.Sensor.OdorantValveSensor, true),

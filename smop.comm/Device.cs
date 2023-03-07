@@ -122,11 +122,11 @@
         /// <summary>
         /// L/min
         /// </summary>
-        public static float MAX_DILUTION_AIR_FLOW_RATE = 10;
+        public static float MAX_BASE_AIR_FLOW_RATE = 10f;
 
         /// <summary>
         /// L/min
         /// </summary>
-        public static float MAX_ODOR_FLOW_RATE = 1.5f;
+        public static float MAX_ODORED_AIR_FLOW_RATE = 1.5f;
     }
 }

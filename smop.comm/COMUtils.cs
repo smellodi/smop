@@ -60,6 +60,18 @@ namespace SMOP.Comm
 
         static Port[]? _cache = null;
 
+        /*
+        static COMUtils()
+        {
+            Console.WriteLine("==== PnP devices ===");
+            using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity");
+            var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
+            foreach (var rec in records)
+                PrintProperties(rec.Properties);
+            Console.WriteLine("====================");
+        }
+        */
+
         private void Listen(string source, string target, ActionType actionType)
         {
             var query = new WqlEventQuery($"SELECT * FROM {source} WITHIN 2 WHERE TargetInstance ISA '{target}'");
@@ -73,8 +85,6 @@ namespace SMOP.Comm
                 try
                 {
                     var target = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-                    Console.WriteLine($"\nCOM port added/removed");
-                    PrintProperties(target.Properties);
                     port = CreateCOMPort(target.Properties);
                 }
                 catch (Exception ex)
@@ -103,18 +113,20 @@ namespace SMOP.Comm
         {
             var portNames = SerialPort.GetPortNames();
 
-            ManagementBaseObject[]? records;
             IEnumerable<Port>? ports = null;
 
             try
             {
-                using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption like '%(COM%'");
-                records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
-                foreach (var rec in records)
-                    PrintProperties(rec.Properties);
+                using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' OR Caption LIKE '%Smellodi%'");
+                ManagementBaseObject[]? records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
+                //foreach (var rec in records)
+                //    PrintProperties(rec.Properties);
                 ports = records.Select(rec =>
                     {
-                        var name = portNames.FirstOrDefault(name => rec["Caption"]?.ToString()?.Contains($"({name})") ?? false) ?? "";
+                        var name = 
+                            portNames.FirstOrDefault(name => rec["Caption"]?.ToString()?.Contains($"({name})") ?? false) ??
+                            portNames.FirstOrDefault(name => rec["DeviceID"]?.ToString()?.Contains($"{name}") ?? false) ?? 
+                            "";
                         var description = rec["Description"]?.ToString();
                         var manufacturer = rec["Manufacturer"]?.ToString();
                         return new Port(name, description, manufacturer);
@@ -154,11 +166,22 @@ namespace SMOP.Comm
             return deviceID == null ? null : new Port(deviceID, descrition, manufacturer);
         }
 
+        static HashSet<string> PropsToPrint = new() { "Caption", "Description", "Manufacturer", "Name", "Service"};
+        static HashSet<string> ManufacturersToPrint = new() { "microsoft" };
+        static HashSet<string> ManufacturersNotToPrint = new() { "microsoft", "standard", "(standard", "intel", "acer", "rivet", "nvidia", "realtek", "generic" };
         static void PrintProperties(PropertyDataCollection props)
         {
             var indent = "    ";
+            var man = props["Manufacturer"];
+            //if (ManufacturersNotToPrint.Any(m => man?.Value?.ToString()?.ToLower().StartsWith(m) ?? false))
+            //    return;
+            //if (!ManufacturersToPrint.Any(m => man?.Value?.ToString()?.ToLower().StartsWith(m) ?? false))
+            //    return;
+
             foreach (PropertyData p in props)
             {
+                //if (!PropsToPrint.Contains(p.Name))
+                //    continue;
                 if (p.IsArray)
                 {
                     Console.WriteLine($"{indent}{p.Name}: ({p.Type})");

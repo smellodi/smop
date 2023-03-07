@@ -40,21 +40,9 @@ namespace SMOP.Comm.Packets
     {
         public enum Command { Stop = 0, Start = 1, Once = 2 }
         public Command Mode => (Command)_payload![0];
-        public SetMeasurements(Command command) : base(Type.SetMeasurements, new byte[] { (byte)command })
-        {
-            if (Mode == Command.Once)
-            {
-                ExpectedResponse = Type.Data;
-            }
-        }
+        public SetMeasurements(Command command) : base(Type.SetMeasurements, new byte[] { (byte)command }) { }
         public override string ToString() => $"{_type} {Mode}";
-        internal SetMeasurements(byte[] buffer) : base(buffer)
-        {
-            if (Mode == Command.Once)
-            {
-                ExpectedResponse = Type.Data;
-            }
-        }
+        internal SetMeasurements(byte[] buffer) : base(buffer) { }
     }
 
     /// <summary>
@@ -84,6 +72,7 @@ namespace SMOP.Comm.Packets
             Capabilities = caps;
 
             var address = (byte)((byte)id | Packet.DEVICE_MASK);
+            var maxFlowRate = id == Device.ID.Base ? Device.MAX_BASE_AIR_FLOW_RATE : Device.MAX_ODORED_AIR_FLOW_RATE;
 
             var query = new List<byte> { address };
             foreach (var (ctrl, value) in caps)
@@ -92,11 +81,8 @@ namespace SMOP.Comm.Packets
                 FourBytes controllerValue = ctrl switch
                 {
                     // value must be 0..1 (float)
-                    Device.Controller.OdorantFlow =>
-                        new FourBytes(Math.Max(Math.Min(value / Device.MAX_ODOR_FLOW_RATE, Device.MAX_ODOR_FLOW_RATE), 0)),
-                    // value must be 0..1 (float)
-                    Device.Controller.DilutionAirFlow =>
-                        new FourBytes(Math.Max(Math.Min(value / Device.MAX_DILUTION_AIR_FLOW_RATE, Device.MAX_DILUTION_AIR_FLOW_RATE), 0)),
+                    Device.Controller.OdorantFlow or Device.Controller.DilutionAirFlow =>
+                        new FourBytes(Math.Max(Math.Min(value / maxFlowRate, 1), 0)),
                     // value must be Celsius 0..50 (float)
                     Device.Controller.ChassisTemperature =>
                         new FourBytes(Math.Max(Math.Min(value, 50), 0)),
@@ -137,14 +123,26 @@ namespace SMOP.Comm.Packets
                     deviceOrType = payload[index++];
                 }
 
-                if ((index + 3) >= payload.Length || actuator == null)
+                if ((index + 3) >= payload.Length)
                 {
                     break;
                 }
 
-                var value = FourBytes.ToFloat(payload[index..(index + 4)]);
                 Device.Controller ctrl = (Device.Controller)deviceOrType;
-                actuator.Capabilities.Add(ctrl, value);
+                if (ctrl == Device.Controller.OutputValve || ctrl == Device.Controller.OdorantValve)
+                {
+                    caps.Add(ctrl, FourBytes.ToInt(payload[index..(index += 4)]));
+                }
+                else
+                {
+                    var value = FourBytes.ToFloat(payload[index..(index += 4)]);
+                    if (ctrl == Device.Controller.OdorantFlow || ctrl == Device.Controller.DilutionAirFlow)
+                    {
+                        var maxFlowRate = device == Device.ID.Base ? Device.MAX_BASE_AIR_FLOW_RATE : Device.MAX_ODORED_AIR_FLOW_RATE;
+                        value *= maxFlowRate;
+                    }
+                    caps.Add(ctrl, value);
+                }
             }
 
             if (device != null && caps.Count > 0)

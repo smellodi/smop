@@ -285,7 +285,7 @@ namespace SMOP.Comm
 
             var bytes = packet.ToArray();
 
-            Debug?.Invoke(this, $"SND {packet}");
+            Debug?.Invoke(this, $"SND {packet} ({packet.ByteString})");
 
             //await _port.BaseStream.WriteAsync(bytes);
             _port?.Write(bytes, 0, bytes.Length);
@@ -315,7 +315,10 @@ namespace SMOP.Comm
                 {
                     readCount = _port?.Read(buffer, bufferOffset, bytesRemaining) ?? 0;
                     if (readCount == 0)
-                        break;
+                    {
+                        packet = null;
+                        return Error.NotReady;
+                    }
                 }
                 catch
                 {
@@ -459,42 +462,48 @@ namespace SMOP.Comm
                     break;
                 }
 
-                Debug?.Invoke(this,  $"READ [cycle start]");
+                //Debug?.Invoke(this,  $"READ [cycle start]");
 
                 Error error = Read(out Response? response);
-                if (error != Error.Success)
+                if (error == Error.NotReady)
                 {
-                    Debug?.Invoke(this, $"READ [error '{error}']");
-                    continue;
+                    return;
+                }
+                else if (error != Error.Success)
+                {
+                    Debug?.Invoke(this, $"ERR '{error}'");
                 }
 
                 lock (_requests)
                 {
-                    TimedRequest? req = null;
-                    while (_requests.Count > 0 && !(req = _requests.Peek()).IsValid)
+                    TimedRequest? request = null;
+                    while (_requests.Count > 0 && !(request = _requests.Peek()).IsValid)
                     {
                         _requests.Dequeue();
-                        Debug?.Invoke(this, $"REQ !CLEANED after {req.Duration} ms: {req.Type}");
-                        req = null;
+                        Debug?.Invoke(this, $"REQ !CLEANED after {request.Duration} ms: {request.Type}");
+                        request = null;
                     }
 
                     if (response != null)
                     {
-                        if (req?.Type == response.Type)
+                        if (request?.Type == response.Type)
                         {
                             _requests.Dequeue();
-
-                            Debug?.Invoke(this, $"RCV [{req.Duration}ms] {response}");
-                            req.SetResponse(response);
+                            Debug?.Invoke(this, $"RCV [{request.Duration}ms] {response.Type} ({response.ByteString})");
+                            
+                            if (error == Error.Success)
+                            {
+                                request.SetResponse(response);
+                            }
                         }
                         else if (response.Type == Packets.Type.Data)
                         {
-                            Debug?.Invoke(this, $"RCV [pop] {response}");
+                            Debug?.Invoke(this, $"RCV [pop] {response.Type} ({response.ByteString})");
                             Data?.Invoke(this, (Data)response);
                         }
                         else
                         {
-                            Debug?.Invoke(this, $"RCV [pop] !UNEXPECTED {response}");
+                            Debug?.Invoke(this, $"RCV !UNEXPECTED {response.Type} ({response.ByteString})");
                         }
                     }
                     else
@@ -503,7 +512,7 @@ namespace SMOP.Comm
                     }
                 }
 
-                Debug?.Invoke(this, $"READ [cycle ends]");
+                //Debug?.Invoke(this, $"READ [cycle ends]");
             }
         }
     }

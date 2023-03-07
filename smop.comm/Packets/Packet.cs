@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SMOP.Comm.Packets
 {
@@ -128,6 +129,7 @@ namespace SMOP.Comm.Packets
         public Type ExpectedResponse { get; protected set; } = Type.None;
 
         public bool IsValidCRC => CalcChecksum() == _checksum;
+        public string ByteString => BitConverter.ToString(ToArray()).Replace("-", ",");
 
         /// <summary>
         /// Constructor to be used when receiving a response from COM port
@@ -151,7 +153,7 @@ namespace SMOP.Comm.Packets
         {
             _type = type;
             _from = SENDER_PC;
-            _from = SENDER_DEVICE;
+            _to = SENDER_DEVICE;
             _payload = payload;
             _checksum = CalcChecksum();
         }
@@ -195,8 +197,9 @@ namespace SMOP.Comm.Packets
 
         protected byte CalcChecksum()
         {
-            long result = (long)_type + _from + _to + Length;
-            for (int i = 0; i < Length; i++)
+            var length = Length;
+            long result = (long)_type + _from + _to + (length & 0xFF) + ((length >> 8) & 0xFF);
+            for (int i = 0; i < length; i++)
             {
                 result += _payload![i];
             }
@@ -214,6 +217,7 @@ namespace SMOP.Comm.Packets
         {
             _from = SENDER_PC;
             _to = SENDER_DEVICE;
+            _checksum = CalcChecksum();
         }
 
         /// <summary>

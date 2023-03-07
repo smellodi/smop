@@ -14,7 +14,7 @@ namespace SMOP.Comm
         /// </summary>
         public Response? Response { get; private set; } = null;
 
-        public long Duration { get; private set; } = 0;
+        public long Duration => (System.Diagnostics.Stopwatch.GetTimestamp() - _timestamp) / 10000;
         public bool IsValid => Duration < WAIT_INTERVAL;
 
         public TimedRequest(Type type)
@@ -28,9 +28,7 @@ namespace SMOP.Comm
         /// <returns>False if the timeout reached</returns>
         public bool WaitUntilReceived()
         {
-            var timestamp = System.Diagnostics.Stopwatch.GetTimestamp();
             bool result = _mutex.WaitOne(WAIT_INTERVAL);
-            Duration = (System.Diagnostics.Stopwatch.GetTimestamp() - timestamp) / 10000;
             return result;
         }
 
@@ -49,5 +47,6 @@ namespace SMOP.Comm
         const int WAIT_INTERVAL = 500;
 
         readonly AutoResetEvent _mutex = new(false);
+        readonly long _timestamp = System.Diagnostics.Stopwatch.GetTimestamp();
     }
 }

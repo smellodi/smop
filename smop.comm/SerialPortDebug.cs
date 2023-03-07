@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using SMOP.Comm.Packets;
 
 namespace SMOP.Comm
@@ -14,12 +15,25 @@ namespace SMOP.Comm
 
         public SerialPortDebug()
         {
-            _dataTimer.Elapsed += (s, e) => { lock (_responses) { _responses.Enqueue(GenerateData().ToArray()); } };
+            _dataTimer.Elapsed += (s, e) =>
+            {
+                if (_timerAutoStop)
+                {
+                    _timerAutoStop = false;
+                    _dataTimer.Stop();
+                }
+
+                lock (_responses) { _responses.Enqueue(GenerateData().ToArray()); }
+            };
         }
 
         public void Open() { _isOpen = true; }
 
-        public void Close() { _isOpen = false; }
+        public void Close()
+        {
+            _isOpen = false;
+            Thread.Sleep(10);
+        }
 
         public int Read(byte[] buffer, int offset, int count)
         {
@@ -70,6 +84,7 @@ namespace SMOP.Comm
         // Internal
 
         bool _isOpen = false;
+        bool _timerAutoStop = false;
         Queue<Request> _requests = new();
         Queue<byte[]> _responses = new();
 
@@ -101,26 +116,41 @@ namespace SMOP.Comm
                     var isBase = queryCaps!.Device == Device.ID.Base;
                     _responses.Enqueue(new Capabilities(new Dictionary<Device.Capability, bool> {
                         { Device.Capability.PID, isBase },
-                        { Device.Capability.BeadThermistor, isBase },
-                        { Device.Capability.ChassisThermometer, false },
-                        { Device.Capability.OdorSourceThermometer, false },
-                        { Device.Capability.GeneralPurposeThermometer, false },
+                        { Device.Capability.BeadThermistor, false },
+                        { Device.Capability.ChassisThermometer, isBase },
+                        { Device.Capability.OdorSourceThermometer, isBase },
+                        { Device.Capability.GeneralPurposeThermometer, isBase },
                         { Device.Capability.InputAirHumiditySensor, isBase },
-                        { Device.Capability.OutputAirHumiditySensor, false },
+                        { Device.Capability.OutputAirHumiditySensor, isBase },
                         { Device.Capability.PressureSensor, isBase },
                         { Device.Capability.OdorantFlowSensor, true },
-                        { Device.Capability.DilutionAirFlowSensor, false },
+                        { Device.Capability.DilutionAirFlowSensor, isBase },
                         { Device.Capability.OdorantValveSensor, true },
-                        { Device.Capability.OutputValveSensor, false },
+                        { Device.Capability.OutputValveSensor, isBase },
                         { Device.Capability.OdorantFlowController, true },
-                        { Device.Capability.DilutionAirFlowController, false },
-                        { Device.Capability.ChassisTemperatureController, false },
+                        { Device.Capability.DilutionAirFlowController, isBase },
+                        { Device.Capability.ChassisTemperatureController, isBase },
                         { Device.Capability.OdorantValveController, true },
-                        { Device.Capability.OutputValveController, false },
+                        { Device.Capability.OutputValveController, isBase },
                     }).ToArray());
                 }
                 else if (req.Type == Type.SetActuators)
                 {
+                    var sa = req as SetActuators;
+                    foreach (var actuator in sa.Actuators)
+                    {
+                        var maxFlowRate = actuator.DeviceID == Device.ID.Base ? Device.MAX_BASE_AIR_FLOW_RATE : Device.MAX_ODORED_AIR_FLOW_RATE;
+                        foreach (var cap in actuator.Capabilities)
+                        {
+                            if ((cap.Key == Device.Controller.OdorantFlow || cap.Key == Device.Controller.DilutionAirFlow) &&
+                                (cap.Value < 0 || cap.Value > maxFlowRate))
+                                result = Packets.Result.InvalidValue;
+                            else if (cap.Key == Device.Controller.ChassisTemperature && (cap.Value < 0 || cap.Value > 50f))
+                                result = Packets.Result.InvalidValue;
+                            else if ((cap.Key == Device.Controller.OutputValve || cap.Key == Device.Controller.OdorantValve) && (cap.Value < -1f || cap.Value > 3600_000f))
+                                result = Packets.Result.InvalidValue;
+                        }
+                    }
                 }
                 else if (req.Type == Type.SetSystem)
                 {
@@ -138,7 +168,8 @@ namespace SMOP.Comm
                     }
                     else
                     {
-                        _responses.Enqueue(GenerateData().ToArray());
+                        _timerAutoStop = true;
+                        _dataTimer.Start();
                     }
                 }
                 else if (req.Type == Type.Reset)
@@ -160,25 +191,32 @@ namespace SMOP.Comm
                     {
                         new Measurement(Device.ID.Base, new SensorValue[]
                         {
-                            new PIDValue(25.0f),
-                            new BeadThermistorValue(520f, 3.5f),
-                            new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f),
-                            new HumidityValue(Device.Sensor.InputAirHumiditySensor, 60f, 27.1f),
-                            new PressureValue(1200f, 27.2f),
-                            new GasValue(Device.Sensor.OdorantFlowSensor, 5.0f, 27.5f, 1001.0f),
+                            new PIDValue(2.5f + Random.Range(0.1f)),
+                            new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
+                            new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
+                            new HumidityValue(Device.Sensor.InputAirHumiditySensor, 60f + Random.Range(0.2f), 27.1f + Random.Range(0.1f)),
+                            new PressureValue(1200f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
+                            new GasValue(Device.Sensor.OdorantFlowSensor, 5.0f + Random.Range(0.05f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
                             new ValveValue(Device.Sensor.OdorantValveSensor, true),
                         }),
                         new Measurement(Device.ID.Odor1, new SensorValue[]
                         {
-                            new GasValue(Device.Sensor.OdorantFlowSensor, 0.1f, 27.4f, 1002.0f),
+                            new GasValue(Device.Sensor.OdorantFlowSensor, 0.1f + Random.Range(0.005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
                             new ValveValue(Device.Sensor.OdorantValveSensor, true),
                         }),
                         new Measurement(Device.ID.Odor2, new SensorValue[]
                         {
-                            new GasValue(Device.Sensor.OdorantFlowSensor, 0.05f, 27.3f, 1003.0f),
+                            new GasValue(Device.Sensor.OdorantFlowSensor, 0.05f + Random.Range(0.0005f), 27.3f + Random.Range(0.1f), 1003.0f + Random.Range(0.5f)),
                             new ValveValue(Device.Sensor.OdorantValveSensor, true),
                         }),
                     });
+        }
+
+        private static class Random
+        {
+            public static float Range(float pm) => (float)((_random.NextDouble() - 0.5) * 2 * pm);
+
+            static System.Random _random = new();
         }
     }
 }

@@ -74,6 +74,8 @@ namespace SMOP.Comm
             Float = value;
         }
 
+        public FourBytes(int value) : this((uint)value) { }
+
         public FourBytes(uint value)
         {
             Byte0 = 0;
@@ -104,7 +106,8 @@ namespace SMOP.Comm
         public static byte[] ToArray(int value) => new FourBytes((uint)value).ToArray();
         public static byte[] ToArray(uint value) => new FourBytes(value).ToArray();
         public static float ToFloat(byte[] array) => new FourBytes(array).Float;
-        public static uint ToInt(byte[] array) => new FourBytes(array).Int;
+        public static int ToInt(byte[] array) => (int)new FourBytes(array).Int;
+        public static uint ToUInt(byte[] array) => new FourBytes(array).Int;
     }
 
     internal static class BoolExt

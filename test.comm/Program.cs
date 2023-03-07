@@ -12,12 +12,13 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "devs", ("retrieves attached modules", new QueryDevices()) },
     { "capsb", ("retrieves Base module capabilities", new QueryCapabilities(Device.ID.Base)) },
     { "caps1", ("retrieves Odor1 module capabilities", new QueryCapabilities(Device.ID.Odor1)) },
-    { "seta", ("sets odorant flow for Base to 5 l/min, and for Odor1 to 0.1 l/min; opens Base output valve", new SetActuators(new Actuator[]
+    { "seta", ("sets Base odorant flow = 5 l/min, chassis T = 25C, output valve ON, Odor1 flow = 0.1 l/min", new SetActuators(new Actuator[]
         {
             new Actuator(Device.ID.Base, new Dictionary<Device.Controller, float>()
             {
-                {Device.Controller.OutputValve, 1 },
-                {Device.Controller.OdorantFlow, 5.0f }
+                {Device.Controller.OutputValve, -1 },
+                {Device.Controller.OdorantFlow, 5.0f },
+                {Device.Controller.ChassisTemperature, 25f },
             }),
             new Actuator(Device.ID.Odor1, new Dictionary<Device.Controller, float>()
             {
@@ -27,6 +28,7 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "sets", ("start the fan, disabled PID", new SetSystem(true, false)) },
     { "setm", ("start measurements; press ENTRER to stop it", new SetMeasurements(SetMeasurements.Command.Start)) },
     { "setmo", ("retrieves a measurement once", new SetMeasurements(SetMeasurements.Command.Once)) },
+    { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },
     { "", ("", new SetMeasurements(SetMeasurements.Command.Stop)) },
 };
@@ -61,17 +63,12 @@ if (smopCOMPort != null)
 
 // Open a COM port or start a simulator
 
-//Console.Write("Available ports: ");
-//var ports = string.Join(", ", SerialPort.GetPortNames());
-//Console.WriteLine(string.IsNullOrEmpty(ports) ? "none" : ports);
-//Console.WriteLine("");
-
 CommPort _port = new CommPort();
 _port.Opened += (s, e) => Console.WriteLine("[PORT] opened");
 _port.Closed += (s, e) => Console.WriteLine("[PORT] closed");
 _port.Data += async (s, e) => await Task.Run(() => HandleData(e));
 _port.COMError += (s, e) => Console.WriteLine($"[PORT] {e}");
-//_port.Debug += async (s, e) => await Task.Run(() => Console.WriteLine($"[PORT] debug: {e}"));
+_port.Debug += async (s, e) => await Task.Run(() => Console.WriteLine($"[PORT] debug: {e}"));
 
 do
 {
@@ -79,6 +76,9 @@ do
     Console.Write("  COM");
 
     var com = Console.ReadLine() ?? "";
+    if (!string.IsNullOrEmpty(com))
+        com = "COM" + com;
+
     var openResult = _port.Open(com);
 
     Console.WriteLine($"Result: {openResult}\n");
@@ -89,20 +89,9 @@ do
 } while (true);
 
 
-// Print a list of commands
-
-Console.WriteLine("Available commands:");
-foreach (var cmd in commands)
-{
-    if (!string.IsNullOrEmpty(cmd.Key))
-    {
-        Console.WriteLine($"    {cmd.Key,-8} - {cmd.Value.Item1}");
-    }
-}
-Console.WriteLine("Type a command:");
-
-
 // Execute commands
+
+PrintHelp();
 
 while (true)
 {
@@ -116,7 +105,17 @@ while (true)
 
     var request = requestDesc.Item2;
     if (request == null)
-        break;
+    {
+        if (cmd == "help")
+        {
+            PrintHelp();
+            continue;
+        }
+        else
+        {
+            break;
+        }
+    }
 
     var result = _port.Request(request, out Ack? ack, out Response? resonse);
 
@@ -142,10 +141,22 @@ void HandleData(Data e)
 {
     if (Console.CursorLeft > 0)
         Console.WriteLine("\n");
-    var line = Console.CursorTop;
-    if (linesToScrollUp > 0)
-        Console.CursorTop -= linesToScrollUp;
+    //var line = Console.CursorTop;
+    //if (linesToScrollUp > 0)
+    //    Console.CursorTop -= linesToScrollUp;
     Console.WriteLine("  " + e);
-    if (linesToScrollUp == 0)
-        linesToScrollUp = Console.CursorTop - line;
+    //if (linesToScrollUp == 0)
+    //    linesToScrollUp = Console.CursorTop - line;
+}
+
+void PrintHelp()
+{
+    Console.WriteLine("Available commands:");
+    foreach (var cmd in commands)
+    {
+        if (!string.IsNullOrEmpty(cmd.Key))
+        {
+            Console.WriteLine($"    {cmd.Key,-8} - {cmd.Value.Item1}");
+        }
+    }
 }

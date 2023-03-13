@@ -53,14 +53,14 @@ if (ports.Length == 0)
 }
 else foreach (var port in ports)
 {
-    Console.WriteLine($"  {port.Name} ({port.Description}, by {port.Manufacturer})");
+    Console.WriteLine($"  {port.Name} ({port.Description}; {port.Manufacturer})");
 }
 Console.WriteLine("");
 
-var smopCOMPort = COMUtils.SMOPPort;
+COMUtils.Port? smopCOMPort = COMUtils.SMOPPort;
 if (smopCOMPort != null)
 {
-    Console.WriteLine($"Looks like {smopCOMPort.Name} is the one you should use");
+    Console.WriteLine($"Looks like {smopCOMPort.Name} is the port you should use\n");
 }
 
 

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
+using FTD2XX_NET;
 
 namespace SMOP.Comm
 {
@@ -40,12 +41,12 @@ namespace SMOP.Comm
         /// <summary>
         /// List of all COM ports in the system
         /// </summary>
-        public static Port[] Ports => _cachedPorts ??= GetAvailableCOMPorts();
+        public static Port[] Ports => _cachedPorts ??= GetAvailableFDTIPorts() ?? GetAvailableCOMPorts();
 
         /// <summary>
         /// Most likely SMOP port, i.e. the one that has a known description
         /// </summary>
-        public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Description?.Contains("Smellodi Odor Printer") ?? false);
+        public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Description?.Contains("Smellodi") ?? false);
 
         public COMUtils()
         {
@@ -100,6 +101,64 @@ namespace SMOP.Comm
             watcher.Start();
         }
 
+        private static Port[]? GetAvailableFDTIPorts()
+        {
+            try
+            {
+                var ftdi = new FTDI();
+
+                uint deviceCount = 0;
+                ftdi.GetNumberOfDevices(ref deviceCount);
+
+                var devices = new FTDI.FT_DEVICE_INFO_NODE[deviceCount];
+                var ftdi_res = ftdi.GetDeviceList(devices);
+
+                return devices.Select(dev =>
+                {
+                    Port? result = null;
+
+                    try
+                    {
+                        ftdi_res = ftdi.OpenBySerialNumber(dev.SerialNumber);
+                        if (ftdi_res != FTDI.FT_STATUS.FT_OK)
+                            return null;
+
+                        ftdi_res = ftdi.GetCOMPort(out string comName);
+                        if (ftdi_res != FTDI.FT_STATUS.FT_OK)
+                            return null;
+
+                        FTDI.FT_EEPROM_DATA data;
+                        ftdi_res = dev.Type switch
+                        {
+                            FTDI.FT_DEVICE.FT_DEVICE_232R => ftdi.ReadFT232REEPROM((FTDI.FT232R_EEPROM_STRUCTURE)(data = new FTDI.FT232R_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_232H => ftdi.ReadFT232HEEPROM((FTDI.FT232H_EEPROM_STRUCTURE)(data = new FTDI.FT232H_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_2232 => ftdi.ReadFT2232EEPROM((FTDI.FT2232_EEPROM_STRUCTURE)(data = new FTDI.FT2232_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_2232H => ftdi.ReadFT2232HEEPROM((FTDI.FT2232H_EEPROM_STRUCTURE)(data = new FTDI.FT2232H_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_4232H => ftdi.ReadFT4232HEEPROM((FTDI.FT4232H_EEPROM_STRUCTURE)(data = new FTDI.FT4232H_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_X_SERIES => ftdi.ReadXSeriesEEPROM((FTDI.FT_XSERIES_EEPROM_STRUCTURE)(data = new FTDI.FT_XSERIES_EEPROM_STRUCTURE())),
+                            _ => ftdi.ReadFT232BEEPROM((FTDI.FT232B_EEPROM_STRUCTURE)(data = new FTDI.FT232B_EEPROM_STRUCTURE())),
+                        };
+                        if (ftdi_res != FTDI.FT_STATUS.FT_OK)
+                            return null;
+
+                        result = new Port(comName, dev.Description, data.Manufacturer ?? dev.SerialNumber);
+                    }
+                    finally
+                    {
+                        if (ftdi.IsOpen)
+                        {
+                            ftdi.Close();
+                        }
+                    }
+                    return result;
+                }).Where(port => port != null).Select(port => port!).ToArray();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private static Port[] GetAvailableCOMPorts()
         {
             var portNames = SerialPort.GetPortNames();
@@ -110,8 +169,6 @@ namespace SMOP.Comm
             {
                 using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' OR Caption LIKE '%Smellodi%'");
                 ManagementBaseObject[]? records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
-                //foreach (var rec in records)
-                //    PrintProperties(rec.Properties);
                 ports = records.Select(rec =>
                     {
                         var name = 
@@ -162,18 +219,16 @@ namespace SMOP.Comm
         static HashSet<string> PropsToPrint = new() { "Caption", "Description", "Manufacturer", "Name", "Service"};
         static HashSet<string> ManufacturersToPrint = new() { "microsoft" };
         static HashSet<string> ManufacturersNotToPrint = new() { "microsoft", "standard", "(standard", "intel", "acer", "rivet", "nvidia", "realtek", "generic" };
-
         /*
         static COMUtils()
         {
             Console.WriteLine("==== PnP devices ===");
-            using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity");
+            using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' OR Caption LIKE '%Smellodi%'");
             var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
             foreach (var rec in records)
                 PrintProperties(rec.Properties);
             Console.WriteLine("====================");
-        }
-        */
+        }*/
 
         static void PrintProperties(PropertyDataCollection props)
         {

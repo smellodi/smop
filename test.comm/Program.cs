@@ -6,7 +6,7 @@ using System.Windows.Threading;
 const bool SHOW_PORT_DEBUG = true;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
-Console.WriteLine("Testing Smellody Odor Printer (SMOP)...\n");
+Console.WriteLine("Testing Multichannel Odor Display communicaiton module (SMOP.Comm)...\n");
 
 int linesToScrollUp = 0;
 var commands = new Dictionary<string, (string, Request?)>()

@@ -4,7 +4,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <RootNamespace>SMOP</RootNamespace>
+    <RootNamespace>Smop.Comm</RootNamespace>
     <Authors>Oleg Spakov</Authors>
     <Company>Tampere University</Company>
     <Description>Smellodi Odor Printer [Comm module]</Description>

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>Smop.IonVision</RootNamespace>
+    <Authors>Oleg Spakov</Authors>
+    <Company>Tampere University</Company>
+    <Description>Smellodi Odor Printer [IonVision module]</Description>
+    <Copyright>(c) 2023</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="110.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="IonVision.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

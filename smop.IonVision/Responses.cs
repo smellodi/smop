@@ -1,11 +1,12 @@
 ﻿#pragma warning disable CS8618
 
-using System.Windows;
-
 namespace Smop.IonVision
 {
+    public record class Error(string Message);
+    
     public record class User(string Name);
-    public record class ParameterAsName(string Parameter);
+    
+    public record class ParameterAsId(string Parameter);
     public record class Parameter(string Id, string Name);
     public record class ParameterMetadata(
         string Id,
@@ -19,6 +20,8 @@ namespace Smop.IonVision
         string Name,
         Parameter[] Parameters
     );
+
+    public record class ScanProgress(int Progress, object Information);
 
     public record class GasFilter(string LastChanged, int CurrentUses, int MaxUses);
     public record class SystemStorage(long Used, long Total);
@@ -40,6 +43,7 @@ namespace Smop.IonVision
         SearchResultMeta Meta,
         ScanResult[] Results
     );
+
     public record class ListOfIDs(
         string[] Ids
     );
@@ -47,7 +51,4 @@ namespace Smop.IonVision
     public record class Calibration(
         string LastConducted
     );
-
-    internal record class ScanProgress(int Progress, object Information);
-    internal record class Error(string Message);
 }

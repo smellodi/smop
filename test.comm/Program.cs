@@ -6,7 +6,7 @@ using System.Windows.Threading;
 const bool SHOW_PORT_DEBUG = true;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
-Console.WriteLine("Testing Multichannel Odor Display communicaiton module (SMOP.Comm)...\n");
+Console.WriteLine("Testing Multichannel Odor Display communication module (SMOP.Comm)...\n");
 
 int linesToScrollUp = 0;
 var commands = new Dictionary<string, (string, Request?)>()
@@ -123,14 +123,14 @@ while (true)
         }
     }
 
-    var result = _port.Request(request, out Ack? ack, out Response? resonse);
+    var result = _port.Request(request, out Ack? ack, out Response? response);
 
     Console.WriteLine($"Sent:     {request}");
     Console.WriteLine($"Result:   {result}");
     if (ack != null)
         Console.WriteLine($"Received: {ack}");
-    if (result.Error == Error.Success && resonse != null)
-        Console.WriteLine("  " + resonse);
+    if (result.Error == Error.Success && response != null)
+        Console.WriteLine("  " + response);
 
     linesToScrollUp = 0;
 }

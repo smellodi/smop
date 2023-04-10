@@ -1,182 +1,102 @@
 using System.Threading.Tasks;
-using System.Text.Json;
-using RestSharp;
 
 namespace Smop.IonVision
 {
     public class Communicator
     {
-        public Communicator()
+        public const int PROJECT_LOADING_DURATION = 2000;
+
+        public Communicator(bool isSimulator = false)
         {
-            var host = $"http://{_settings.IP}/api";
-            _client = new RestClient("https://jsonplaceholder.typicode.com/");
-            _client.AddDefaultHeader("Content-Type", "application/json");
+            _api = isSimulator ? new Simulator() : new API(_settings.IP);
         }
 
         /// <summary>
         /// Retrieves system status
         /// </summary>
         /// <returns>System status</returns>
-        public async Task<SystemStatus> GetSystemStatus()
-        {
-            var request = new RestRequest("/system/status");
-            var response = await _client.ExecuteGetAsync(request);
-            return response.To<SystemStatus>();
-        }
+        public async Task<API.Response<SystemStatus>> GetSystemStatus() => await _api.GetSystemStatus();
 
         /// <summary>
         /// Retrieves user
         /// </summary>
         /// <returns>User name</returns>
-        public async Task<User> GetUser()
-        {
-            var request = new RestRequest("currentUser");
-            var response = await _client.ExecuteGetAsync(request);
-            return response.To<User>();
-        }
+        public async Task<API.Response<User>> GetUser() => await _api.GetUser();
 
         /// <summary>
         /// Sets user
         /// </summary>
         /// <returns>Error message, if any</returns>
-        public async Task<string?> SetUser()
-        {
-            var request = new RestRequest("currentUser");
-            request.AddBody($"{{\"name\": \"${_settings.User}\"}}");
-            var response = await _client.ExecutePutAsync(request);
-            return response.IsSuccessStatusCode ? null : response.To<Error>().Message;
-        }
+        public async Task<API.Response<Error>> SetUser() => await _api.SetUser(new User(_settings.User));
 
         /// <summary>
         /// Retrieves a list of projects
         /// </summary>
         /// <returns>Project names</returns>
-        public async Task<string[]?> ListProjects()
-        {
-            var request = new RestRequest("project");
-            var response = await _client.ExecuteGetAsync(request);
-            return !response.IsSuccessStatusCode ? null : response.To<string[]>();
-        }
+        public async Task<API.Response<string[]>> GetProjects() => await _api.GetProjects();
 
         /// <summary>
         /// Retrieves a list of parameters
         /// </summary>
         /// <returns>Parameters</returns>
-        public async Task<Parameter[]?> ListParameters()
-        {
-            var request = new RestRequest("parameter");
-            var response = await _client.ExecuteGetAsync(request);
-            return !response.IsSuccessStatusCode ? null : response.To<Parameter[]>();
-        }
+        public async Task<API.Response<Parameter[]>> GetParameters() => await _api.GetParameters();
 
         /// <summary>
         /// Sets the SMOP project as active
         /// </summary>
         /// <returns>Error message if the project was not set as active</returns>
-        public async Task<string?> LoadProject()
+        public async Task<API.Response<Error>> SetProject()
         {
-            var request = new RestRequest("currentProject");
-            request.AddBody($"{{\"project\": \"${_settings.Project}\"}}");
-
-            var response = await _client.ExecutePutAsync(request);
-            bool isSuccess = response.IsSuccessStatusCode;
-
-            if (isSuccess)
+            var response = await _api.SetProject(new ProjectAsName(_settings.Project));
+            if (response.Success)
             {
-                await Task.Delay(1500);
+                await Task.Delay(PROJECT_LOADING_DURATION);
             }
-
-            return isSuccess ? null : response.To<Error>().Message;
+            return response;
         }
 
         /// <summary>
         /// Sets the SMOP project parameter, and also preloads it immediately
         /// </summary>
         /// <returns>Error message if the project parameter was not set</returns>
-        public async Task<string?> SetParameter()
+        public async Task<API.Response<Error>> SetParameter()
         {
-            var request = new RestRequest("currentParameter");
-            request.AddBody($"{{\"parameter\": \"${_settings.Parameter}\"}}");
-
-            var response = await _client.ExecutePutAsync(request);
-            bool isSuccess = response.IsSuccessStatusCode;
-
-            if (isSuccess)
+            var response = await _api.SetParameter(new ParameterAsId(_settings.Parameter));
+            if (response.Success)
             {
-                request = new RestRequest("currentParameter/preload");
-                await _client.ExecutePostAsync(request);
+                await _api.PreloadParameter();
             }
-
-            return isSuccess ? null : response.To<Error>().Message;
+            return response;
         }
 
         /// <summary>
         /// Starts a new scan
         /// </summary>
         /// <returns>Error message if the scan was not started</returns>
-        public async Task<string?> StartScan()
-        {
-            var request = new RestRequest("currentScan");
-            var response = await _client.ExecutePostAsync(request);
-            return response.IsSuccessStatusCode ? null : response.To<Error>().Message;
-        }
+        public async Task<API.Response<Error>> StartScan() => await _api.StartScan();
 
         /// <summary>
         /// Retrieves scan progress
         /// </summary>
         /// <returns>Scan progress</returns>
-        public async Task<int?> GetScanProgress()
-        {
-            var request = new RestRequest("currentScan");
-            var response = await _client.ExecuteGetAsync(request);
-            return !response.IsSuccessStatusCode ? null : response.To<ScanProgress>().Progress;
-        }
+        public async Task<API.Response<ScanProgress>> GetScanProgress() => await _api.GetScanProgress();
 
         /// <summary>
         /// Retrieves the latest scanning result
         /// </summary>
         /// <returns>Scanning result, if any</returns>
-        internal async Task<ScanResult?> GetScanResult()
-        {
-            var request = new RestRequest("results/latest");
-            var response = await _client.ExecuteGetAsync(request);
-            return !response.IsSuccessStatusCode ? null : response.To<ScanResult>();
-        }
+        public async Task<API.Response<ScanResult>> GetScanResult() => await _api.GetLatestResult();
 
         /// <summary>
         /// Retrieves all project scanning result
         /// </summary>
         /// <returns>Scanning results, if any</returns>
-        internal async Task<string[]> GetProjectResults()
-        {
-            var request = new RestRequest($"project/{_settings.Project}/results");
-            var response = await _client.ExecuteGetAsync(request);
-            return !response.IsSuccessStatusCode ? new string[] { } : response.To<string[]>();
-        }
+        public async Task<API.Response<string[]>> GetProjectResults() => await _api.GetProjectResults(new ProjectAsName(_settings.Project));
 
-        //  DEBUG
-
-        public record class Post(int UserId, int Id, string Title, string Body);
-        public async Task<Post[]> ListPosts()
-        {
-            var request = new RestRequest("posts");
-            var response = await _client.ExecuteGetAsync(request);
-            return response.To<Post[]>();
-        }
 
         // Internal
 
-        Settings _settings = Settings.Instance;
-        RestClient _client;
-    }
-
-    internal static class RestResponseExt
-    {
-        public static T To<T>(this RestResponse response)
-        {
-            return JsonSerializer.Deserialize<T>(response.Content!, _serializerOptions)!;
-        }
-
-        static JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
+        readonly Settings _settings = Settings.Instance;
+        readonly IMinimalAPI _api;
     }
 }

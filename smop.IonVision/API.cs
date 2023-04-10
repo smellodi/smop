@@ -5,7 +5,7 @@ using RestSharp;
 
 namespace Smop.IonVision
 {
-    internal class API
+    public class API : IMinimalAPI
     {
         public class Response<T>
         {
@@ -109,7 +109,7 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="parameter">Parameter</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> SetParameter(ParameterAsName parameter)
+        public async Task<Response<Error>> SetParameter(ParameterAsId parameter)
         {
             var request = new RestRequest("currentParameter");
             request.AddBody(JsonSerializer.Serialize(parameter, _serializationOptions));
@@ -132,7 +132,7 @@ namespace Smop.IonVision
         /// Retrieves a list of parameters
         /// </summary>
         /// <returns>Parameters</returns>
-        public async Task<Response<Parameter[]>> Parameters()
+        public async Task<Response<Parameter[]>> GetParameters()
         {
             var request = new RestRequest("parameter");
             var response = await _client.GetAsync(request);
@@ -144,12 +144,12 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="parameter">New parameter definition</param>
         /// <returns>Parameter as name</returns>
-        public async Task<Response<ParameterAsName>> CreateParameter(ParameterDefinition parameter)
+        public async Task<Response<ParameterAsId>> CreateParameter(ParameterDefinition parameter)
         {
             var request = new RestRequest("parameter");
             request.AddBody(JsonSerializer.Serialize(parameter));
             var response = await _client.PostAsync(request);
-            return response.As<ParameterAsName>();
+            return response.As<ParameterAsId>();
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="project">Project name</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> LoadProject(ProjectAsName project)
+        public async Task<Response<Error>> SetProject(ProjectAsName project)
         {
             var request = new RestRequest("currentProject");
             request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));

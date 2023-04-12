@@ -1,5 +1,5 @@
-﻿using SMOP.OdorDisplay;
-using SMOP.OdorDisplay.Packets;
+﻿using Smop.OdorDisplay;
+using Smop.OdorDisplay.Packets;
 using System.Diagnostics;
 using System.Windows.Threading;
 

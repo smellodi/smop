@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// Convenient byte-level manipulation of 16b integers,

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Management;
 using FTD2XX_NET;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// COM port utils: list of available ports, and firing events when this list changes.

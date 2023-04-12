@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace SMOP.Comm.Packets
+namespace SMOP.OdorDisplay.Packets
 {
     public class Devices : Response
     {

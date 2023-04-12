@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using SMOP.Comm;
+using SMOP.OdorDisplay;
 
 namespace SMOP
 {

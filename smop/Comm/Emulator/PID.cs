@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SMOP.Comm.Emulator
+namespace SMOP.OdorDisplay.Emulator
 {
     internal class PID
     {
@@ -95,8 +95,8 @@ namespace SMOP.Comm.Emulator
             var aux0 = new BtoD(0f);
             var aux1 = new BtoD(0f);
             var aux2 = new BtoD(0f);
-            byte odorValve = (byte)(_mfcEmul.OdorDirection.HasFlag(Comm.MFC.OdorFlowsTo.System) ? 1 : 0);
-            byte userValve = (byte)(_mfcEmul.OdorDirection.HasFlag(Comm.MFC.OdorFlowsTo.User) ? 1 : 0);
+            byte odorValve = (byte)(_mfcEmul.OdorDirection.HasFlag(OdorDisplay.MFC.OdorFlowsTo.System) ? 1 : 0);
+            byte userValve = (byte)(_mfcEmul.OdorDirection.HasFlag(OdorDisplay.MFC.OdorFlowsTo.User) ? 1 : 0);
             byte pumpRelay = (byte)(_mfcEmul.IsPumpOn ? 1 : 0);
 
             return MessageSample.From(new Packet(new byte[52] {

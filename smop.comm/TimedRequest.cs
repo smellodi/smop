@@ -1,7 +1,7 @@
-﻿using SMOP.Comm.Packets;
+﻿using SMOP.OdorDisplay.Packets;
 using System.Threading;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// The request used internally in <see cref="CommPort"/> to match responses with the corresponding requests

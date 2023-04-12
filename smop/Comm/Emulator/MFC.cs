@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SMOP.Comm.Emulator
+namespace SMOP.OdorDisplay.Emulator
 {
     internal class MFC
     {
@@ -13,12 +13,12 @@ namespace SMOP.Comm.Emulator
         public double FreshAirFlowRate { get; private set; } = 1.0;
         public double OdorFlowRate { get; private set; } = 0.02;
 
-        public Comm.MFC.OdorFlowsTo OdorDirection => (_deviceOutputs[DeviceOutputID.OdorValve].State, _deviceOutputs[DeviceOutputID.UserValve].State) switch
+        public OdorDisplay.MFC.OdorFlowsTo OdorDirection => (_deviceOutputs[DeviceOutputID.OdorValve].State, _deviceOutputs[DeviceOutputID.UserValve].State) switch
         {
-            (DeviceState.On, DeviceState.Off) => Comm.MFC.OdorFlowsTo.SystemAndWaste,
-            (DeviceState.Off, DeviceState.On) => Comm.MFC.OdorFlowsTo.WasteAndUser,
-            (DeviceState.On, DeviceState.On) => Comm.MFC.OdorFlowsTo.SystemAndUser,
-            _ => Comm.MFC.OdorFlowsTo.Waste
+            (DeviceState.On, DeviceState.Off) => OdorDisplay.MFC.OdorFlowsTo.SystemAndWaste,
+            (DeviceState.Off, DeviceState.On) => OdorDisplay.MFC.OdorFlowsTo.WasteAndUser,
+            (DeviceState.On, DeviceState.On) => OdorDisplay.MFC.OdorFlowsTo.SystemAndUser,
+            _ => OdorDisplay.MFC.OdorFlowsTo.Waste
         };
 
         public bool IsPumpOn => _deviceOutputs[DeviceOutputID.PumpRelay].State == DeviceState.On;
@@ -124,7 +124,7 @@ namespace SMOP.Comm.Emulator
                 throw new Exception("Simulating writing fault");
             }*/
 
-            string[] cmds = input.Split(Comm.MFC.DATA_END);
+            string[] cmds = input.Split(OdorDisplay.MFC.DATA_END);
             foreach (string cmd in cmds)
             {
                 if (cmd.Length > 4)
@@ -153,17 +153,17 @@ namespace SMOP.Comm.Emulator
 
         private void ExecuteCommand(string cmd)
         {
-            var channel = (Comm.MFC.Channel)Enum.Parse(typeof(Comm.MFC.Channel), cmd[0].ToString(), true);
+            var channel = (OdorDisplay.MFC.Channel)Enum.Parse(typeof(OdorDisplay.MFC.Channel), cmd[0].ToString(), true);
             string cmdID = cmd[1].ToString();
-            if (cmdID == Comm.MFC.CMD_SET)
+            if (cmdID == OdorDisplay.MFC.CMD_SET)
             {
                 var value = double.Parse(cmd[2..]);
                 switch (channel)
                 {
-                    case Comm.MFC.Channel.A:
+                    case OdorDisplay.MFC.Channel.A:
                         FreshAirFlowRate = value;
                         break;
-                    case Comm.MFC.Channel.B:
+                    case OdorDisplay.MFC.Channel.B:
                         OdorFlowRate = value;
                         break;
                     default: break;

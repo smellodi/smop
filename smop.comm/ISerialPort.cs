@@ -1,4 +1,4 @@
-﻿namespace SMOP.Comm
+﻿namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// The interface lists the minimum fuctionality required from <see cref="System.IO.Ports.SerialPort"/>.

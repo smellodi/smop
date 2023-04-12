@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SMOP.Comm.Packets
+namespace SMOP.OdorDisplay.Packets
 {
     /// <summary>
     /// Packet type

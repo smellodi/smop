@@ -14,12 +14,12 @@ namespace SMOP.Controls
         public static readonly Brush BRUSH_WARNING = Brushes.Red;
         public static readonly Brush BRUSH_OK = Brushes.Green;
 
-        public static Brush OdorColor(Comm.MFC.OdorFlowsTo odorDirection)
+        public static Brush OdorColor(OdorDisplay.MFC.OdorFlowsTo odorDirection)
         {
             return odorDirection switch
             {
-                Comm.MFC.OdorFlowsTo.SystemAndUser => BRUSH_OK,
-                Comm.MFC.OdorFlowsTo.SystemAndWaste => BRUSH_NEUTRAL,
+                OdorDisplay.MFC.OdorFlowsTo.SystemAndUser => BRUSH_OK,
+                OdorDisplay.MFC.OdorFlowsTo.SystemAndWaste => BRUSH_NEUTRAL,
                 _ => BRUSH_WARNING
             };
         }

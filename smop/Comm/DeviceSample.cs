@@ -1,4 +1,4 @@
-﻿namespace SMOP.Comm
+﻿namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// Sample record/vector; all the measured values for one second

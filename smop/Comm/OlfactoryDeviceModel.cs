@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     public class OlfactoryDeviceModel : IDisposable
     {
@@ -343,7 +343,7 @@ namespace SMOP.Comm
 
         readonly CommPort _com = CommPort.Instance;
         readonly MFC _mfc = MFC.Instance;
-        readonly PID _pid = Comm.PID.Instance;
+        readonly PID _pid = OdorDisplay.PID.Instance;
 
         readonly System.Timers.Timer _timer = new();
         readonly System.Timers.Timer _flTimer = new();

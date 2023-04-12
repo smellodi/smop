@@ -5,13 +5,13 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop", "smop\Smop.csproj", "{C77C68AC-A3DA-468F-B409-BA48794E52E9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.Comm", "smop.comm\Smop.Comm.csproj", "{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.OdorDisplay", "smop.comm\Smop.OdorDisplay.csproj", "{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.comm", "test.comm\test.comm.csproj", "{30F2E734-5037-47E0-A42F-1D0012008FFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.odor-display", "test.comm\test.odor-display.csproj", "{30F2E734-5037-47E0-A42F-1D0012008FFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.IonVision", "Smop.IonVision\Smop.IonVision.csproj", "{B3739CBF-80EF-468F-A318-B50669F88E06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.ion-vision", "test.ion-vision\test.ion-vision.csproj", "{78AE13BF-AE7D-49B4-8EC9-1797381CF01D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.ion-vision", "test.ion-vision\test.ion-vision.csproj", "{78AE13BF-AE7D-49B4-8EC9-1797381CF01D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

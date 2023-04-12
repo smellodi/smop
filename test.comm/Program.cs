@@ -1,5 +1,5 @@
-﻿using SMOP.Comm;
-using SMOP.Comm.Packets;
+﻿using SMOP.OdorDisplay;
+using SMOP.OdorDisplay.Packets;
 using System.Diagnostics;
 using System.Windows.Threading;
 
@@ -64,9 +64,9 @@ if (smopCOMPort != null)
 }
 
 
-// Open a COM port or start a simulator
+// Open a COM port or start a simulator`
 
-CommPort _port = new CommPort();
+var _port = new CommPort();
 _port.Opened += (s, e) => Console.WriteLine("[PORT] opened");
 _port.Closed += (s, e) => Console.WriteLine("[PORT] closed");
 _port.Data += async (s, e) => await Task.Run(() => PrintData(e));

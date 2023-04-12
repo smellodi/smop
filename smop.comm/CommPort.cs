@@ -3,9 +3,9 @@ using System.Runtime.InteropServices;
 using System.IO.Ports;
 using System.Threading;
 using System.Collections.Generic;
-using SMOP.Comm.Packets;
+using SMOP.OdorDisplay.Packets;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// Communication over COM port with the odor printer

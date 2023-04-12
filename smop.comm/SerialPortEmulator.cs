@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using SMOP.Comm.Packets;
+using SMOP.OdorDisplay.Packets;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// This class is used to emulate communication with the device via <see cref="CommPort"/>

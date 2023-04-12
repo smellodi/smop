@@ -1,12 +1,12 @@
 ﻿using System.IO.Ports;
 using System.Threading;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     /// <summary>
     /// This class only translates all method calls to an instance of <see cref="SerialPort"/>
     /// This class is needed only because using <see cref="ISerialPort"/> interface allows 
-    /// testing the <see cref="SMOP.Comm"/> module without opening a real serial port
+    /// testing the <see cref="SMOP.OdorDisplay"/> module without opening a real serial port
     /// (we use <see cref="SerialPortEmulator"/> for this purpose).
     /// </summary>
     public class SerialPortCOM : ISerialPort

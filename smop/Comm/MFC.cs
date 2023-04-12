@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     public struct MFCChannel
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SMOP.Comm
+namespace SMOP.OdorDisplay
 {
     public static class DeviceTubes
     {

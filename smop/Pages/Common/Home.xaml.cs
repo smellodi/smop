@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using SMOP.Comm;
+using SMOP.OdorDisplay;
 using IndicatorDataSource = SMOP.Controls.ChannelIndicator.DataSource;
 
 namespace SMOP.Pages

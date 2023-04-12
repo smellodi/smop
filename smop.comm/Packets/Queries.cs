@@ -1,4 +1,4 @@
-﻿namespace SMOP.Comm.Packets
+﻿namespace SMOP.OdorDisplay.Packets
 {
     public class QueryVersion : Request
     {

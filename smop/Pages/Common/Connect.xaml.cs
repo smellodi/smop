@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using SMOP.Comm;
+using SMOP.OdorDisplay;
 using WPFLocalizeExtension.Engine;
 
 namespace SMOP.Pages
@@ -93,9 +93,9 @@ namespace SMOP.Pages
                 {
                     if (_storage.IsDebugging)
                     {
-                        Comm.Emulator.MFC.Instance.Debug += Comm_DebugAsync;
-                        Comm.Emulator.PID.Instance.Debug += Comm_DebugAsync;
-                        Comm.Emulator.Source.Instance.Debug += Comm_DebugAsync;
+                        OdorDisplay.Emulator.MFC.Instance.Debug += Comm_DebugAsync;
+                        OdorDisplay.Emulator.PID.Instance.Debug += Comm_DebugAsync;
+                        OdorDisplay.Emulator.Source.Instance.Debug += Comm_DebugAsync;
                     }
                     else
                     {
@@ -200,11 +200,11 @@ namespace SMOP.Pages
             // TODO remove from the release
             else if (e.Key >= Key.D0 && e.Key <= Key.D9 && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
-                Comm.Emulator.PID.Instance.Model._PulseInput(e.Key - Key.D0);
+                OdorDisplay.Emulator.PID.Instance.Model._PulseInput(e.Key - Key.D0);
             }
             else if (e.Key >= Key.NumPad0 && e.Key <= Key.NumPad9 && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
-                Comm.Emulator.PID.Instance.Model._PulseOutput(e.Key - Key.NumPad0);
+                OdorDisplay.Emulator.PID.Instance.Model._PulseOutput(e.Key - Key.NumPad0);
             }
         }
 

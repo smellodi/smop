@@ -1,4 +1,4 @@
-﻿namespace SMOP.Comm.Packets
+﻿namespace SMOP.OdorDisplay.Packets
 {
     /// <summary>
     /// Request result present in <see cref="Type.Ack"/> packet

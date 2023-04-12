@@ -61,7 +61,7 @@ namespace SMOP
             (var result, _) = PromptToSave(ref filename, canCancel);
             if (result == SavingResult.Save)
             {
-                var header = string.Join('\t', Comm.DeviceSample.Header);
+                var header = string.Join('\t', OdorDisplay.DeviceSample.Header);
                 var data = _records
                     .Where(record => record.Source == LogSource.PID && (string.IsNullOrEmpty(type) || record.Type == type))
                     .Select(record => string.Join('\t', record.Data));

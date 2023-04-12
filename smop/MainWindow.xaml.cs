@@ -264,11 +264,11 @@ namespace SMOP
             }
             else if (e.Key == Key.F5)
             {
-                Comm.MFC.Instance.Pump = Comm.DeviceState.On;
+                OdorDisplay.MFC.Instance.Pump = OdorDisplay.DeviceState.On;
             }
             else if (e.Key == Key.F6)
             {
-                Comm.MFC.Instance.Pump = Comm.DeviceState.Off;
+                OdorDisplay.MFC.Instance.Pump = OdorDisplay.DeviceState.Off;
             }
             else if (e.Key == Key.F7)
             {
@@ -305,7 +305,7 @@ namespace SMOP
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            Comm.PID.Instance.Stop();
+            OdorDisplay.PID.Instance.Stop();
 
             if (_testNavigator != null)
             {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using RestSharp;
@@ -41,22 +42,29 @@ namespace Smop.IonVision
         /// Starts a new scan
         /// </summary>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> StartScan()
+        public async Task<Response<Confirm>> StartScan()
         {
             var request = new RestRequest("currentScan");
-            var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            try
+            {
+                var response = await _client.PostAsync(request);
+                return response.As<Confirm>();
+            }
+            catch (Exception ex)
+            {
+                return new Response<Confirm>(null, ex.Message);
+            }
         }
 
         /// <summary>
         /// Stops the ongoing scan
         /// </summary>
         /// <returns>Confirmations message</returns>
-        public async Task<Response<Error>> StopScan()
+        public async Task<Response<Confirm>> StopScan()
         {
             var request = new RestRequest("currentScan");
             var response = await _client.DeleteAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         // Skipped:
@@ -85,23 +93,23 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="user">User name</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> SetUser(User user)
+        public async Task<Response<Confirm>> SetUser(User user)
         {
             var request = new RestRequest("currentUser");
             request.AddBody(JsonSerializer.Serialize(user, _serializationOptions));
             var response = await _client.PutAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
         /// Retrieves current parameter
         /// </summary>
         /// <returns>Parameter</returns>
-        public async Task<Response<Parameter>> GetParameter()
+        public async Task<Response<ParameterAsNameAndId>> GetParameter()
         {
             var request = new RestRequest("currentParameter");
             var response = await _client.GetAsync(request);
-            return response.As<Parameter>();
+            return response.As<ParameterAsNameAndId>();
         }
 
         /// <summary>
@@ -109,23 +117,23 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="parameter">Parameter</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> SetParameter(ParameterAsId parameter)
+        public async Task<Response<Confirm>> SetParameter(ParameterAsId parameter)
         {
             var request = new RestRequest("currentParameter");
             request.AddBody(JsonSerializer.Serialize(parameter, _serializationOptions));
             var response = await _client.PutAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
         /// Proloads current parameter
         /// </summary>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> PreloadParameter()
+        public async Task<Response<Confirm>> PreloadParameter()
         {
             var request = new RestRequest("currentParameter/preload");
             var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -170,12 +178,12 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="parameter">Parameter definition</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> UpdateParameterDefinition(ParameterDefinition parameter)
+        public async Task<Response<Confirm>> UpdateParameterDefinition(ParameterDefinition parameter)
         {
             var request = new RestRequest($"parameter/{parameter.Id}");
             request.AddBody(JsonSerializer.Serialize(parameter));
             var response = await _client.PutAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -183,11 +191,11 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="parameter">Parameter</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> DeleteParameter(Parameter parameter)
+        public async Task<Response<Confirm>> DeleteParameter(Parameter parameter)
         {
             var request = new RestRequest($"parameter/{parameter.Id}");
             var response = await _client.DeleteAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -247,12 +255,12 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="project">Project name</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> SetProject(ProjectAsName project)
+        public async Task<Response<Confirm>> SetProject(ProjectAsName project)
         {
             var request = new RestRequest("currentProject");
             request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
             var response = await _client.PutAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -271,11 +279,11 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="project">Project</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> CreateProject(Project project)
+        public async Task<Response<Confirm>> CreateProject(Project project)
         {
             var request = new RestRequest("project");
             var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -295,12 +303,12 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="project">Project</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> UpdateProjecParameters(ProjectAsName project)
+        public async Task<Response<Confirm>> UpdateProjecParameters(ProjectAsName project)
         {
             var request = new RestRequest($"project/{project.Project}");
             request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
             var response = await _client.PutAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -308,11 +316,11 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="project">Project</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> DeleteProject(ProjectAsName project)
+        public async Task<Response<Confirm>> DeleteProject(ProjectAsName project)
         {
             var request = new RestRequest($"project/{project.Project}");
             var response = await _client.DeleteAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -379,12 +387,12 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="list">List of scan IDs</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> DeleteResults(ListOfIDs list)
+        public async Task<Response<Confirm>> DeleteResults(ListOfIDs list)
         {
             var request = new RestRequest($"results");
             request.AddBody(JsonSerializer.Serialize(list, _serializationOptions));
             var response = await _client.DeleteAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -426,11 +434,11 @@ namespace Smop.IonVision
         /// </summary>
         /// <param name="id">Scan id</param>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> DeleteResult(string id)
+        public async Task<Response<Confirm>> DeleteResult(string id)
         {
             var request = new RestRequest($"results/id/{id}");
             var response = await _client.DeleteAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         // Skipped:
@@ -465,11 +473,11 @@ namespace Smop.IonVision
         /// Resets the gas filter usage counter.
         /// </summary>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> ResetGasFilter()
+        public async Task<Response<Confirm>> ResetGasFilter()
         {
             var request = new RestRequest("system/status/resetGasFilter");
             var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
@@ -487,11 +495,11 @@ namespace Smop.IonVision
         /// Starts new calibration
         /// </summary>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> StartCalibration()
+        public async Task<Response<Confirm>> StartCalibration()
         {
             var request = new RestRequest("system/calibration");
             var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         // Skipped:
@@ -519,18 +527,18 @@ namespace Smop.IonVision
         /// Reboots the system
         /// </summary>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> Reboot()
+        public async Task<Response<Confirm>> Reboot()
         {
             var request = new RestRequest("reboot");
             var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         /// <summary>
         /// Shutdowns the system
         /// </summary>
         /// <returns>Confirmation message</returns>
-        public async Task<Response<Error>> Shutdown(bool? force = null)
+        public async Task<Response<Confirm>> Shutdown(bool? force = null)
         {
             var query = new List<string>();
             if (force != null) query.Add($"force={force}");
@@ -539,7 +547,7 @@ namespace Smop.IonVision
 
             var request = new RestRequest($"shutdown{queryStr}");
             var response = await _client.PostAsync(request);
-            return response.As<Error>();
+            return response.As<Confirm>();
         }
 
         // Skipping:
@@ -561,6 +569,15 @@ namespace Smop.IonVision
             T? value = default;
             string? error = null;
 
+            int maxDataLengthToPrint = 80;
+            string data = response.Content!;
+            if (data.Length > maxDataLengthToPrint)
+            {
+                data = data[..maxDataLengthToPrint] + "...";
+            }
+            
+            Console.WriteLine($"[API] {(int)response.StatusCode} ({response.StatusDescription}), {data} ({response.ContentLength} bytes)");
+
             if (response.IsSuccessful)
             {
                 var serializerOptions = preserveCase ? new JsonSerializerOptions() : _serializerOptions;
@@ -568,7 +585,19 @@ namespace Smop.IonVision
             }
             else
             {
-                error = JsonSerializer.Deserialize<Error>(response.Content!, _serializerOptions)!.Message;
+                var err = JsonSerializer.Deserialize<Err>(response.Content!, _serializerOptions)!;
+                if (err.Errors != null)
+                {
+                    error = string.Join('\n', err.Errors);
+                }
+                else if (err.Message != null)
+                {
+                    error = err.Message;
+                }
+                else
+                {
+                    error = $"Unrecognized error structure: {response.Content}";
+                }
             }
             return new API.Response<T>(value, error);
         }

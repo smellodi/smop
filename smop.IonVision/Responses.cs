@@ -2,12 +2,14 @@
 
 namespace Smop.IonVision
 {
-    public record class Error(string Message);
-    
+    public record class Err(string? Message, string[]? Errors);
+    public record class Confirm(string Message = "OK");
+
     public record class User(string Name);
     
     public record class ParameterAsId(string Parameter);
     public record class Parameter(string Id, string Name);
+    public record class ParameterAsNameAndId(Parameter parameter);
     public record class ParameterMetadata(
         string Id,
         string Name,

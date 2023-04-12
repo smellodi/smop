@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using static Smop.IonVision.API;
 
 namespace Smop.IonVision
 {
     internal interface IMinimalAPI
     {
-        public Task<API.Response<SystemStatus>> GetSystemStatus();
-        public Task<API.Response<User>> GetUser();
-        public Task<API.Response<Error>> SetUser(User user);
-        public Task<API.Response<string[]>> GetProjects();
-        public Task<API.Response<Parameter[]>> GetParameters();
-        public Task<API.Response<Error>> SetProject(ProjectAsName project);
-        public Task<API.Response<Error>> SetParameter(ParameterAsId parameter);
-        public Task<API.Response<Error>> PreloadParameter();
-        public Task<API.Response<Error>> StartScan();
-        public Task<API.Response<ScanProgress>> GetScanProgress();
-        public Task<API.Response<ScanResult>> GetLatestResult();
-        public Task<API.Response<string[]>> GetProjectResults(ProjectAsName project);
+        Task<Response<SystemStatus>> GetSystemStatus();
+        Task<Response<User>> GetUser();
+        Task<Response<Confirm>> SetUser(User user);
+        Task<Response<string[]>> GetProjects();
+        Task<Response<Parameter[]>> GetParameters();
+        Task<Response<ProjectAsName>> GetProject();
+        Task<Response<Confirm>> SetProject(ProjectAsName project);
+        Task<Response<ParameterDefinition>> GetParameterDefinition(Parameter parameter);
+        Task<Response<ParameterAsNameAndId>> GetParameter();
+        Task<Response<Confirm>> SetParameter(ParameterAsId parameter);
+        Task<Response<Confirm>> PreloadParameter();
+        Task<Response<Confirm>> StartScan();
+        Task<Response<ScanProgress>> GetScanProgress();
+        Task<Response<ScanResult>> GetLatestResult();
+        Task<Response<string[]>> GetProjectResults(ProjectAsName project);
     }
 }

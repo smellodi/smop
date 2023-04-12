@@ -6,9 +6,26 @@ namespace Smop.IonVision
     {
         public const int PROJECT_LOADING_DURATION = 2000;
 
+        public bool IsOnline { get; private set; } = false;
+
         public Communicator(bool isSimulator = false)
         {
             _api = isSimulator ? new Simulator() : new API(_settings.IP);
+        }
+
+        public async Task<bool> CheckConnection()
+        {
+            try
+            {
+                await _api.GetSystemStatus();
+                IsOnline = true;
+            }
+            catch (System.Net.Http.HttpRequestException)
+            {
+                System.Diagnostics.Debug.WriteLine("The device is offline");
+            }
+
+            return IsOnline;
         }
 
         /// <summary>
@@ -27,7 +44,7 @@ namespace Smop.IonVision
         /// Sets user
         /// </summary>
         /// <returns>Error message, if any</returns>
-        public async Task<API.Response<Error>> SetUser() => await _api.SetUser(new User(_settings.User));
+        public async Task<API.Response<Confirm>> SetUser() => await _api.SetUser(new User(_settings.User));
 
         /// <summary>
         /// Retrieves a list of projects
@@ -42,10 +59,16 @@ namespace Smop.IonVision
         public async Task<API.Response<Parameter[]>> GetParameters() => await _api.GetParameters();
 
         /// <summary>
+        /// Retrieves the current project
+        /// </summary>
+        /// <returns>Project</returns>
+        public async Task<API.Response<ProjectAsName>> GetProject() => await _api.GetProject();
+
+        /// <summary>
         /// Sets the SMOP project as active
         /// </summary>
         /// <returns>Error message if the project was not set as active</returns>
-        public async Task<API.Response<Error>> SetProject()
+        public async Task<API.Response<Confirm>> SetProject()
         {
             var response = await _api.SetProject(new ProjectAsName(_settings.Project));
             if (response.Success)
@@ -56,14 +79,29 @@ namespace Smop.IonVision
         }
 
         /// <summary>
+        /// Retrieves the current parameter definition
+        /// </summary>
+        /// <returns>Parameter definition</returns>
+        public async Task<API.Response<ParameterDefinition>> GetParameterDefinition() => 
+            await _api.GetParameterDefinition(new Parameter(_settings.ParameterId, _settings.ParameterName));
+
+
+        /// <summary>
+        /// Retrieves the current parameter
+        /// </summary>
+        /// <returns>Parameter</returns>
+        public async Task<API.Response<ParameterAsNameAndId>> GetParameter() => await _api.GetParameter();
+
+        /// <summary>
         /// Sets the SMOP project parameter, and also preloads it immediately
         /// </summary>
         /// <returns>Error message if the project parameter was not set</returns>
-        public async Task<API.Response<Error>> SetParameter()
+        public async Task<API.Response<Confirm>> SetParameter()
         {
-            var response = await _api.SetParameter(new ParameterAsId(_settings.Parameter));
+            var response = await _api.SetParameter(new ParameterAsId(_settings.ParameterId));
             if (response.Success)
             {
+                await Task.Delay(300);
                 await _api.PreloadParameter();
             }
             return response;
@@ -73,7 +111,7 @@ namespace Smop.IonVision
         /// Starts a new scan
         /// </summary>
         /// <returns>Error message if the scan was not started</returns>
-        public async Task<API.Response<Error>> StartScan() => await _api.StartScan();
+        public async Task<API.Response<Confirm>> StartScan() => await _api.StartScan();
 
         /// <summary>
         /// Retrieves scan progress

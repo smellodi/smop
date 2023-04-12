@@ -1,27 +1,54 @@
 ﻿using Smop.IonVision;
 using System.Text.Json;
 
-const bool IS_DEBUGGING = true;
-
-var ionVision = new Communicator(IS_DEBUGGING);
-
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
-var commands = new Dictionary<string, (string, Action?)> ()
+bool isSimulating = true;
+
+Console.Write("Should the app enter the simulation mode (y/n)?   ");
+
+do
+{
+    var resp = Console.ReadKey();
+    if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N)
+    {
+        isSimulating = resp.Key == ConsoleKey.Y;
+        break;
+    }
+
+    Console.CursorLeft--;
+} while (true);
+
+Console.WriteLine();
+
+var ionVision = new Communicator(isSimulating);
+
+var isConnected = await ionVision.CheckConnection();
+if (!isConnected)
+{
+    Console.WriteLine("The device is offline");
+    return;
+}
+
+var commands = new Dictionary<string, (string, Func<Task>?)>()
 {
     { "sys", ("retrieves system params", async () => Print(await ionVision.GetSystemStatus())) },
     { "user", ("retrieves user", async () => Print(await ionVision.GetUser())) },
     { "projs", ("retrieves projects", async () => Print(await ionVision.GetProjects())) },
     { "params", ("retrieves parameters", async () => Print(await ionVision.GetParameters())) },
-    { "cproj", ("set the current project", async () => Print(await ionVision.SetProject())) },
-    { "cparam", ("sets the current parameter", async () => Print(await ionVision.SetParameter())) },
+    { "gcpj", ("retrieves the current project", async () => Print(await ionVision.GetProject())) },
+    { "scpj", ("sets the current project", async () => Print(await ionVision.SetProject())) },
+    { "gcpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
+    { "gcpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
+    { "scpm", ("sets the current parameter", async () => Print(await ionVision.SetParameter())) },
     { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
     { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
     { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
     { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },
 };
+
 
 PrintHelp();
 
@@ -49,14 +76,14 @@ while (true)
         }
     }
 
-    requestDesc.Item2!();
+    await requestDesc.Item2!();
 }
 
 Console.WriteLine("\nTesting finished.");
 
 void PrintHelp()
 {
-    Console.WriteLine("Available commands:");
+    Console.WriteLine("\nAvailable commands:");
     foreach (var cmd in commands)
     {
         if (!string.IsNullOrEmpty(cmd.Key))
@@ -66,40 +93,25 @@ void PrintHelp()
     }
 }
 
+const int MAX_CHARS_TO_PRINT = 700;
+
 void Print<T>(API.Response<T> response)
 {
     if (response.Success)
     {
-        Console.WriteLine(JsonSerializer.Serialize(response.Value!, new JsonSerializerOptions()
+        var text = JsonSerializer.Serialize(response.Value!, new JsonSerializerOptions()
         {
             WriteIndented = true,
-        }));
+        });
+        Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}... and {text.Length - MAX_CHARS_TO_PRINT} chars more.");
+
+        if (response.Value is ScanResult result)
+        {
+            Console.WriteLine($"{result.MeasurementData.DataPoints} data points");
+        }
     }
     else
     {
         Console.WriteLine(response.Error);
     }
 }
-
-/*
-var projects = await ionVision.GetProjects();
-
-Console.WriteLine("Projects:");
-if (projects.Success)
-{
-    int i = 1;
-    foreach (var project in projects.Value!)
-    {
-        Console.WriteLine($"{i++}:\n" + project);
-    }
-}
-else
-{
-    Console.WriteLine(projects.Error);
-}
-
-string AsDict(object obj)
-{
-    return string.Join("\n", obj.GetType().GetProperties().Select(p => $"  {p.Name} = {p.GetValue(obj)}"));
-}
-*/

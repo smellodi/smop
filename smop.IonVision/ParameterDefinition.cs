@@ -62,10 +62,10 @@ namespace Smop.IonVision
     public record class PointConfiguration(
         float[] Usv,
         float[] Ucv,
-        int[] Vb,
-        int[] PP,
-        int[] PW,
-        int[] NForSampleAverages
+        float[] Vb,
+        float[] PP,
+        float[] PW,
+        short[] NForSampleAverages
     );
     public record class MeasurementParameters(
         float VbSwitchingTime,

@@ -1,9 +1,5 @@
-# SMELLODI odor display (SMOD): Multichannel Odor Display communication module
-
-Oleg Spakov, Tampere University (c) 2023
-https://github.com/lexasss/smod
-MIT license
+# SMELLODI odor printer (SMOP): Multichannel Odor Display communication module
 
 ## Testing
 
-Use `test.comm` console app to test the module
+Use `test.odor-display` console app to test the module

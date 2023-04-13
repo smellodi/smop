@@ -81,8 +81,6 @@ void PrintHelp()
     }
 }
 
-const int MAX_CHARS_TO_PRINT = 700;
-
 void Print<T>(T response)
 {
     if (response is bool boolValue)
@@ -95,7 +93,7 @@ void Print<T>(T response)
         {
             WriteIndented = true,
         });
-        Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}... and {text.Length - MAX_CHARS_TO_PRINT} chars more.");
+        Console.WriteLine(text.Max(700));
     }
     else
     {

@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Smop.IonVision\Smop.IonVision.csproj" />
+    <ProjectReference Include="..\smop.ion-vision\Smop.IonVision.csproj" />
   </ItemGroup>
 
 </Project>

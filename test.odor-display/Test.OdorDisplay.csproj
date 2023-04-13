@@ -3,13 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>test.ion_vision</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Smop.IonVision\Smop.IonVision.csproj" />
+    <ProjectReference Include="..\smop.odor-display\Smop.OdorDisplay.csproj" />
   </ItemGroup>
 
 </Project>

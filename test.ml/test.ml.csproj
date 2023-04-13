@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Smop.ML\Smop.ML.csproj" />
+    <ProjectReference Include="..\smop.ml\Smop.ML.csproj" />
   </ItemGroup>
 
 </Project>

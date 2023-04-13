@@ -5,17 +5,17 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop", "smop\Smop.csproj", "{C77C68AC-A3DA-468F-B409-BA48794E52E9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.OdorDisplay", "smop.comm\Smop.OdorDisplay.csproj", "{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.OdorDisplay", "smop.odor-display\Smop.OdorDisplay.csproj", "{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.odor-display", "test.comm\test.odor-display.csproj", "{30F2E734-5037-47E0-A42F-1D0012008FFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.odor-display", "test.odor-display\Test.OdorDisplay.csproj", "{30F2E734-5037-47E0-A42F-1D0012008FFA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.IonVision", "Smop.IonVision\Smop.IonVision.csproj", "{B3739CBF-80EF-468F-A318-B50669F88E06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.IonVision", "smop.ion-vision\Smop.IonVision.csproj", "{B3739CBF-80EF-468F-A318-B50669F88E06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.ion-vision", "test.ion-vision\test.ion-vision.csproj", "{78AE13BF-AE7D-49B4-8EC9-1797381CF01D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.ion-vision", "test.ion-vision\Test.IonVision.csproj", "{78AE13BF-AE7D-49B4-8EC9-1797381CF01D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.ML", "Smop.ML\Smop.ML.csproj", "{9ACFBD6D-5E31-4E57-8700-66E52E40B104}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.ML", "smop.ml\Smop.ML.csproj", "{9ACFBD6D-5E31-4E57-8700-66E52E40B104}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.ml", "test.ml\test.ml.csproj", "{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.ml", "test.ml\Test.ML.csproj", "{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

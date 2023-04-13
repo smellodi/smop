@@ -6,12 +6,12 @@ Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
 bool isSimulating = true;
 
-Console.Write("Should the app enter the simulation mode (y/n)?   ");
+Console.Write("Should the app enter the simulation mode (y/N)?   ");
 
 do
 {
     var resp = Console.ReadKey();
-    if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N)
+    if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N || resp.Key == ConsoleKey.Enter)
     {
         isSimulating = resp.Key == ConsoleKey.Y;
         break;

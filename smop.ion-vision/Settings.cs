@@ -4,29 +4,25 @@ using System.Text.Json;
 
 namespace Smop.IonVision;
 
-internal class Settings
+public class Settings
 {
-    public static Settings Instance => _instance ??= new Settings();
-
+    public static string DefaultFilename = "IonVision.json";
     public string IP => _properties?.IP ?? "localhost";
     public string Project => _properties?.Project ?? "Smellodi";
-    public string ParameterId => _properties?.ParameterId ?? "UUID";
+    public string ParameterId => _properties?.ParameterId ?? "GUID";
     public string ParameterName => _properties?.ParameterName ?? "Default";
     public string User => _properties?.User ?? "TUNI";
 
-    // Internal
 
-    record class Properties(string IP, string Project, string ParameterId, string ParameterName, string User);
-
-    static Settings? _instance = null;
-
-    readonly Properties? _properties = null;
-
-    private Settings()
+    public Settings(string? filename = null)
     {
+        filename = filename ?? DefaultFilename;
+
         try
         {
-            System.IO.StreamReader reader = new("IonVision.json");
+            Debug.WriteLine($"[IonVis] settings from: {filename}");
+
+            System.IO.StreamReader reader = new(filename);
             string jsonString = reader.ReadToEnd();
 
             JsonSerializerOptions serializerOptions = new()
@@ -44,7 +40,12 @@ internal class Settings
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
-            throw new Exception(ex.Message);
         }
     }
+
+    // Internal
+
+    record class Properties(string IP, string Project, string ParameterId, string ParameterName, string User);
+
+    readonly Properties? _properties = null;
 }

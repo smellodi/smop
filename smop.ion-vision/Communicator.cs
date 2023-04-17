@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace Smop.IonVision;
@@ -8,8 +9,9 @@ public class Communicator
 
     public bool IsOnline { get; private set; } = false;
 
-    public Communicator(bool isSimulator = false)
+    public Communicator(string? settingsFilename = null, bool isSimulator = false)
     {
+        _settings = settingsFilename == null ? new() : new(settingsFilename);
         _api = isSimulator ? new Simulator() : new API(_settings.IP);
     }
 
@@ -120,6 +122,13 @@ public class Communicator
     public async Task<API.Response<ScanProgress>> GetScanProgress() => await _api.GetScanProgress();
 
     /// <summary>
+    /// Sets a marker for the latest scan result
+    /// </summary>
+    /// <param name="comment">Comment to set</param>
+    /// <returns>Error message, if any</returns>
+    public async Task<API.Response<Confirm>> SetScanResultComment(Comment comment) => await _api.SetScanComments(comment);
+
+    /// <summary>
     /// Retrieves the latest scanning result
     /// </summary>
     /// <returns>Scanning result, if any</returns>
@@ -128,12 +137,27 @@ public class Communicator
     /// <summary>
     /// Retrieves all project scanning result
     /// </summary>
-    /// <returns>Scanning results, if any</returns>
+    /// <returns>Array of scanning results</returns>
     public async Task<API.Response<string[]>> GetProjectResults() => await _api.GetProjectResults(new ProjectAsName(_settings.Project));
 
+    /// <summary>
+    /// Retrieves the system clock
+    /// </summary>
+    /// <returns>Clock</returns>
+    public async Task<API.Response<Clock>> GetSettingsClock() => await _api.GetSettingsClock();
+
+    /// <summary>
+    /// Sets the system clock
+    /// </summary>
+    /// <returns>Clock</returns>
+    public async Task<API.Response<Confirm>> SetSettingsClock() => await _api.SetSettingsClock(new Clock(
+            DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+            "Europe/Helsinki",
+            false
+        ));
 
     // Internal
 
-    readonly Settings _settings = Settings.Instance;
+    readonly Settings _settings;
     readonly IMinimalAPI _api;
 }

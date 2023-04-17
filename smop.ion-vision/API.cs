@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using RestSharp;
 
 namespace Smop.IonVision;
@@ -67,9 +69,31 @@ public class API : IMinimalAPI
         return response.As<Confirm>();
     }
 
+    /// <summary>
+    /// Retrieves latest scan comments
+    /// </summary>
+    /// <returns>Comments</returns>
+    public async Task<Response<string>> GetScanComments()
+    {
+        var request = new RestRequest("currentScan/comments");
+        var response = await _client.GetAsync(request);
+        return response.As<string>();
+    }
+
+    /// <summary>
+    /// Sets latest scan comments
+    /// </summary>
+    /// <param name="comment">Comment</param>
+    /// <returns>Conrimation</returns>
+    public async Task<Response<Confirm>> SetScanComments(Comment comment)
+    {
+        var request = new RestRequest("currentScan/comments");
+        request.AddBody(JsonSerializer.Serialize(comment, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
     // Skipped:
-    // GET /currentScan/comments
-    // PUT /currentScan/comments
     // GET /scope
     // POST /scope
     // DELETE /scope
@@ -514,8 +538,39 @@ public class API : IMinimalAPI
     // POST /system/reset
     // GET /system/licenses
 
+    /// <summary>
+    /// Retrieves the system clock
+    /// </summary>
+    /// <returns>Clock</returns>
+    public async Task<Response<Clock>> GetSettingsClock()
+    {
+        var request = new RestRequest("/settings/clock");
+        var response = await _client.GetAsync(request);
+        return response.As<Clock>();
+    }
+
+    /// <summary>
+    /// Sets the system clock
+    /// </summary>
+    /// <param name="clock">clock</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSettingsClock(Clock clock)
+    {
+        var request = new RestRequest("/settings/clock");
+        request.AddBody(JsonSerializer.Serialize(clock, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
     // Skipping:
-    // GET /settings/*
+    // OPTIONS /settings​/clock
+    // GET /settings​/keyboard
+    // PUT /settings​/keyboard
+    // GET /settings​/keyboard​/layout
+    // GET /settings​/keyboard​/layout​/{ layout}
+    // GET /settings​/dataSaveLocations
+    // PUT /settings​/dataSaveLocations
+    // OPTIONS /settings​/dataSaveLocations
 
     // Skipping:
     // GET /graphColour/*

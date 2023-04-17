@@ -2,6 +2,10 @@
 using System.Timers;
 using System.Threading.Tasks;
 using static Smop.IonVision.API;
+using System.Xml.Linq;
+using RestSharp;
+using System.Text.Json;
+using System;
 
 namespace Smop.IonVision;
 
@@ -122,6 +126,17 @@ internal class Simulator : IMinimalAPI
         return await Task.FromResult(new Response<ScanProgress>(new ScanProgress(progress, new()), null));
     }
 
+    public async Task<Response<Confirm>> SetScanComments(Comment comment)
+    {
+        if (_latestResult == null)
+        {
+            return await Task.FromResult(new Response<Confirm>(null, "Scan was not yet performed"));
+        }
+
+        _comments = comment;
+        return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
+    }
+
     public async Task<Response<ScanResult>> GetLatestResult()
     {
         if (_latestResult == null)
@@ -129,7 +144,7 @@ internal class Simulator : IMinimalAPI
             return await Task.FromResult(new Response<ScanResult>(null, "Scan was not yet performed"));
         }
 
-        return await Task.FromResult(new Response<ScanResult>(_latestResult, null));
+        return await Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new object()}, null));
     }
 
     public async Task<Response<string[]>> GetProjectResults(ProjectAsName project)
@@ -146,6 +161,23 @@ internal class Simulator : IMinimalAPI
         return await Task.FromResult(new Response<string[]>(new string[] { _latestResult.Id }, null));
     }
 
+    public async Task<Response<Clock>> GetSettingsClock()
+    {
+        return await Task.FromResult(new Response<Clock>(new Clock(
+            DateTime.UtcNow.ToString(),
+            new Timezone(
+                TimeZoneInfo.Local.BaseUtcOffset.Hours,
+                TimeZoneInfo.Local.StandardName
+            ),
+            false
+        ), null));
+    }
+
+    public async Task<Response<Confirm>> SetSettingsClock(Clock clock)
+    {
+        return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
+    }
+
     // Internal
 
     const double SCAN_DURATION = 10000;
@@ -156,4 +188,5 @@ internal class Simulator : IMinimalAPI
     Project? _currentProject = null;
     Parameter? _currentParameter = null;
     ScanResult? _latestResult = null;
+    Comment? _comments = null;
 }

@@ -9,7 +9,7 @@ public static class SimulatedData
     const int DATA_PW = 200;
     const short DATA_SAMPLE_COUNT = 64;
 
-    static readonly Settings _setting = Settings.Instance;
+    static readonly Settings _setting = new();
 
     public static User User = new(_setting.User);
     public static readonly Parameter Parameter = new(_setting.ParameterId, _setting.ParameterName);

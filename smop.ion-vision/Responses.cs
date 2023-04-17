@@ -1,5 +1,7 @@
 ﻿#pragma warning disable CS8618
 
+using System;
+
 namespace Smop.IonVision;
 
 public record class Err(string? Message, string[]? Errors);
@@ -52,4 +54,20 @@ public record class ListOfIDs(
 
 public record class Calibration(
     string LastConducted
+);
+
+public record class Comment(
+    string Text
+);
+
+
+public record class Timezone(
+    float Offset,
+    string timezone
+);
+
+public record class Clock(
+  string UtcTime,
+  object Timezone,
+  bool UpdateFromInternet
 );

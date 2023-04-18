@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using RestSharp;
 using System.Text.Json;
 using System;
+using System.Windows;
 
 namespace Smop.IonVision;
 
@@ -40,16 +41,43 @@ internal class Simulator : IMinimalAPI
     }
 
     public async Task<Response<string[]>> GetProjects() => 
-        await Task.FromResult(new Response<string[]>(new string[] { SimulatedData.Project.Name }, null));
+        await Task.FromResult(new Response<string[]>(new string[] {
+            SimulatedData.Project.Name,
+            SimulatedData.Project2.Name
+        }, null));
 
     public async Task<Response<Parameter[]>> GetParameters() =>
-        await Task.FromResult(new Response<Parameter[]>(new Parameter[] { SimulatedData.Parameter }, null));
+        await Task.FromResult(new Response<Parameter[]>(new Parameter[] {
+            SimulatedData.Parameter,
+            SimulatedData.Parameter2,
+        }, null));
 
     public async Task<Response<ProjectAsName>> GetProject() =>
         await Task.FromResult(new Response<ProjectAsName>(
             _currentProject == null ? null : new ProjectAsName(_currentProject.Name),
             _currentProject != null ? null : "No project is set as current"
         ));
+
+    public async Task<Response<Project>> GetProjectDefinition(ProjectAsName project)
+    {
+        Project? result = null;
+        string? error = null;
+
+        if (project.Project == SimulatedData.Project.Name)
+        {
+            result = SimulatedData.Project;
+        }
+        else if (project.Project == SimulatedData.Project2.Name)
+        {
+            result = SimulatedData.Project2;
+        }
+        else
+        {
+            error = $"No such project '{project.Project}'";
+        }
+
+        return await Task.FromResult(new Response<Project>(result, error));
+    }
 
     public async Task<Response<Confirm>> SetProject(ProjectAsName project)
     {

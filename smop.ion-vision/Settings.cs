@@ -7,22 +7,42 @@ namespace Smop.IonVision;
 public class Settings
 {
     public static string DefaultFilename = "IonVision.json";
-    public string IP => _properties?.IP ?? "localhost";
-    public string Project => _properties?.Project ?? "Smellodi";
-    public string ParameterId => _properties?.ParameterId ?? "GUID";
-    public string ParameterName => _properties?.ParameterName ?? "Default";
-    public string User => _properties?.User ?? "TUNI";
+    public string IP
+    {
+        get => _properties.IP;
+        set { _properties = _properties with { IP = value }; }
+    }
+    public string Project
+    {
+        get => _properties.Project;
+        set { _properties = _properties with { Project = value }; }
+    }
+    public string ParameterId
+    {
+        get => _properties.ParameterId;
+        set { _properties = _properties with { ParameterId = value }; }
+    }
+    public string ParameterName
+    {
+        get => _properties.ParameterName;
+        set { _properties = _properties with { ParameterName = value }; }
+    }
+    public string User
+    {
+        get => _properties.User;
+        set { _properties = _properties with { User = value }; }
+    }
 
 
     public Settings(string? filename = null)
     {
-        filename = filename ?? DefaultFilename;
+        _filename = filename ?? DefaultFilename;
 
         try
         {
-            Debug.WriteLine($"[IonVis] settings from: {filename}");
+            Debug.WriteLine($"[IonVis] settings from: {_filename}");
 
-            System.IO.StreamReader reader = new(filename);
+            using System.IO.StreamReader reader = new(_filename);
             string jsonString = reader.ReadToEnd();
 
             JsonSerializerOptions serializerOptions = new()
@@ -43,9 +63,24 @@ public class Settings
         }
     }
 
+    public void Save()
+    {
+        JsonSerializerOptions serializerOptions = new()
+        {
+            PropertyNameCaseInsensitive = true,
+            WriteIndented = true,
+        };
+
+        string jsonString = JsonSerializer.Serialize(_properties, serializerOptions)!;
+
+        using System.IO.StreamWriter writer = new(_filename);
+        writer.Write(jsonString);
+    }
+
     // Internal
 
     record class Properties(string IP, string Project, string ParameterId, string ParameterName, string User);
 
-    readonly Properties? _properties = null;
+    Properties _properties = new Properties("localhost", "Smellodi", "GUID", "Default", "TUNI");
+    readonly string _filename;
 }

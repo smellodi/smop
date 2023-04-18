@@ -12,8 +12,10 @@ public static class SimulatedData
     static readonly Settings _setting = new();
 
     public static User User = new(_setting.User);
-    public static readonly Parameter Parameter = new(_setting.ParameterId, _setting.ParameterName);
-    public static readonly Project Project = new(_setting.Project, new Parameter[] { Parameter });
+    public static readonly Parameter Parameter = new("daa1c397-ebd0-4920-b405-5c6029d45fdd", "Default scan");
+    public static readonly Parameter Parameter2 = new("8036cca5-0677-475c-aa7f-1c9202d94b85", "Slow scan");
+    public static readonly Project Project = new("Oleg fast scan", new Parameter[] { Parameter, Parameter2 });
+    public static readonly Project Project2 = new("Fake project", new Parameter[] { Parameter2 });
     public static readonly ParameterDefinition ParameterDefinition = new(
         Parameter.Id,
         Parameter.Name,
@@ -68,6 +70,13 @@ public static class SimulatedData
         ),
         6
     );
+
+    public static readonly ParameterDefinition ParameterDefinition2 = ParameterDefinition with
+    {
+        Id = Parameter2.Id,
+        Name = Parameter2.Name,
+        Description = "Another fake param"
+    };
 
     public static readonly ScanResult ScanResult = new(
         "07d26c66-33e9-48fa-9877-4f64156d6b75",

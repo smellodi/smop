@@ -9,6 +9,8 @@ public class Communicator
 
     public bool IsOnline { get; private set; } = false;
 
+    public Settings Settings => _settings;
+
     public Communicator(string? settingsFilename = null, bool isSimulator = false)
     {
         _settings = settingsFilename == null ? new() : new(settingsFilename);
@@ -49,10 +51,17 @@ public class Communicator
     public async Task<API.Response<Confirm>> SetUser() => await _api.SetUser(new User(_settings.User));
 
     /// <summary>
-    /// Retrieves a list of projects
+    /// Retrieves a list of project names
     /// </summary>
     /// <returns>Project names</returns>
     public async Task<API.Response<string[]>> GetProjects() => await _api.GetProjects();
+
+    /// <summary>
+    /// Retrieves a list of projects
+    /// </summary>
+    /// <param name="project">Project name</param>
+    /// <returns>Project definitions</returns>
+    public async Task<API.Response<Project>> GetProjectDefinition(ProjectAsName project) => await _api.GetProjectDefinition(project);
 
     /// <summary>
     /// Retrieves a list of parameters

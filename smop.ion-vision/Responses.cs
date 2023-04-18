@@ -62,7 +62,7 @@ public record class Comment(
 
 
 public record class Timezone(
-    float Offset,
+    int Offset,
     string timezone
 );
 

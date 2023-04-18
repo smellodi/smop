@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Security.Policy;
+using System.Threading.Tasks;
 using static Smop.IonVision.API;
 
 namespace Smop.IonVision;
@@ -11,6 +12,7 @@ internal interface IMinimalAPI
     Task<Response<string[]>> GetProjects();
     Task<Response<Parameter[]>> GetParameters();
     Task<Response<ProjectAsName>> GetProject();
+    Task<Response<Project>> GetProjectDefinition(ProjectAsName project);
     Task<Response<Confirm>> SetProject(ProjectAsName project);
     Task<Response<ParameterDefinition>> GetParameterDefinition(Parameter parameter);
     Task<Response<ParameterAsNameAndId>> GetParameter();

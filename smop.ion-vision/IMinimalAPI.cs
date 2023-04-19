@@ -12,7 +12,7 @@ internal interface IMinimalAPI
     Task<Response<string[]>> GetProjects();
     Task<Response<Parameter[]>> GetParameters();
     Task<Response<ProjectAsName>> GetProject();
-    Task<Response<Project>> GetProjectDefinition(ProjectAsName project);
+    Task<Response<Project>> GetProjectDefinition(string project);
     Task<Response<Confirm>> SetProject(ProjectAsName project);
     Task<Response<ParameterDefinition>> GetParameterDefinition(Parameter parameter);
     Task<Response<ParameterAsNameAndId>> GetParameter();
@@ -20,9 +20,9 @@ internal interface IMinimalAPI
     Task<Response<Confirm>> PreloadParameter();
     Task<Response<Confirm>> StartScan();
     Task<Response<ScanProgress>> GetScanProgress();
-    Task<Response<Confirm>> SetScanComments(Comment comment);
+    Task<Response<Confirm>> SetScanComments(Comments comment);
     Task<Response<ScanResult>> GetLatestResult();
-    Task<Response<string[]>> GetProjectResults(ProjectAsName project);
-    Task<Response<Clock>> GetSettingsClock();
-    Task<Response<Confirm>> SetSettingsClock(Clock clock);
+    Task<Response<string[]>> GetProjectResults(string project);
+    Task<Response<Clock>> GetClock();
+    Task<Response<Confirm>> SetClock(Clock clock);
 }

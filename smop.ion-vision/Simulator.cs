@@ -1,12 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Timers;
 using System.Threading.Tasks;
-using static Smop.IonVision.API;
-using System.Xml.Linq;
-using RestSharp;
-using System.Text.Json;
 using System;
-using System.Windows;
+using System.Linq;
+using static Smop.IonVision.API;
 
 namespace Smop.IonVision;
 
@@ -31,7 +28,7 @@ internal class Simulator : IMinimalAPI
             new SystemStorage(1_000_000_000, 2_000_000_000)
         ), null));
     }
-    public async Task<Response<User>> GetUser() => 
+    public async Task<Response<User>> GetUser() =>
         await Task.FromResult(new Response<User>(SimulatedData.User, null));
 
     public async Task<Response<Confirm>> SetUser(User user)
@@ -40,17 +37,11 @@ internal class Simulator : IMinimalAPI
         return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
-    public async Task<Response<string[]>> GetProjects() => 
-        await Task.FromResult(new Response<string[]>(new string[] {
-            SimulatedData.Project.Name,
-            SimulatedData.Project2.Name
-        }, null));
+    public async Task<Response<string[]>> GetProjects() =>
+        await Task.FromResult(new Response<string[]>(_projects.Select(p => p.Name).ToArray(), null));
 
     public async Task<Response<Parameter[]>> GetParameters() =>
-        await Task.FromResult(new Response<Parameter[]>(new Parameter[] {
-            SimulatedData.Parameter,
-            SimulatedData.Parameter2,
-        }, null));
+        await Task.FromResult(new Response<Parameter[]>(_parameters, null));
 
     public async Task<Response<ProjectAsName>> GetProject() =>
         await Task.FromResult(new Response<ProjectAsName>(
@@ -58,22 +49,14 @@ internal class Simulator : IMinimalAPI
             _currentProject != null ? null : "No project is set as current"
         ));
 
-    public async Task<Response<Project>> GetProjectDefinition(ProjectAsName project)
+    public async Task<Response<Project>> GetProjectDefinition(string name)
     {
-        Project? result = null;
         string? error = null;
 
-        if (project.Project == SimulatedData.Project.Name)
+        var result = _projects.FirstOrDefault(p => p.Name == name);
+        if (result == null)
         {
-            result = SimulatedData.Project;
-        }
-        else if (project.Project == SimulatedData.Project2.Name)
-        {
-            result = SimulatedData.Project2;
-        }
-        else
-        {
-            error = $"No such project '{project.Project}'";
+            error = $"No such project '{name}'";
         }
 
         return await Task.FromResult(new Response<Project>(result, error));
@@ -81,12 +64,13 @@ internal class Simulator : IMinimalAPI
 
     public async Task<Response<Confirm>> SetProject(ProjectAsName project)
     {
-        if (project.Project != SimulatedData.Project.Name)
+        var result = _projects.FirstOrDefault(p => p.Name == project.Project);
+        if (result == null)
         {
             return await Task.FromResult(new Response<Confirm>(null, $"Project '{project.Project}' doesn't exist"));
         }
 
-        _currentProject = SimulatedData.Project;
+        _currentProject = result;
         return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -103,12 +87,13 @@ internal class Simulator : IMinimalAPI
 
     public async Task<Response<Confirm>> SetParameter(ParameterAsId parameter)
     {
-        if (parameter.Parameter != SimulatedData.Parameter.Id)
+        var result = _parameters.FirstOrDefault(p => p.Id == parameter.Parameter);
+        if (result == null)
         {
             return await Task.FromResult(new Response<Confirm>(null, $"Parameter '{parameter.Parameter}' doesn't exist"));
         }
 
-        _currentParameter = SimulatedData.Parameter;
+        _currentParameter = result;
         return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -118,6 +103,7 @@ internal class Simulator : IMinimalAPI
         {
             return await Task.FromResult(new Response<Confirm>(null, "No parameter is set as current"));
         }
+
         return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -154,7 +140,7 @@ internal class Simulator : IMinimalAPI
         return await Task.FromResult(new Response<ScanProgress>(new ScanProgress(progress, new()), null));
     }
 
-    public async Task<Response<Confirm>> SetScanComments(Comment comment)
+    public async Task<Response<Confirm>> SetScanComments(Comments comment)
     {
         if (_latestResult == null)
         {
@@ -172,24 +158,25 @@ internal class Simulator : IMinimalAPI
             return await Task.FromResult(new Response<ScanResult>(null, "Scan was not yet performed"));
         }
 
-        return await Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new object()}, null));
+        return await Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new Comments() }, null));
     }
 
-    public async Task<Response<string[]>> GetProjectResults(ProjectAsName project)
+    public async Task<Response<string[]>> GetProjectResults(string name)
     {
-        if (project.Project != SimulatedData.Project.Name)
+        var project = _projects.FirstOrDefault(p => p.Name == name);
+        if (project == null)
         {
-            return await Task.FromResult(new Response<string[]>(null, $"Project '{project.Project}' doesn;t exist"));
+            return await Task.FromResult(new Response<string[]>(null, $"Project '{name}' doesn't exist"));
         }
         if (_latestResult == null)
         {
-            return await Task.FromResult(new Response<string[]>(null, "The project has no scan yet"));
+            return await Task.FromResult(new Response<string[]>(null, "The project has no scans yet"));
         }
 
         return await Task.FromResult(new Response<string[]>(new string[] { _latestResult.Id }, null));
     }
 
-    public async Task<Response<Clock>> GetSettingsClock()
+    public async Task<Response<Clock>> GetClock()
     {
         return await Task.FromResult(new Response<Clock>(new Clock(
             DateTime.UtcNow.ToString(),
@@ -201,7 +188,7 @@ internal class Simulator : IMinimalAPI
         ), null));
     }
 
-    public async Task<Response<Confirm>> SetSettingsClock(Clock clock)
+    public async Task<Response<Confirm>> SetClock(Clock clock)
     {
         return await Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
@@ -213,8 +200,17 @@ internal class Simulator : IMinimalAPI
     readonly Stopwatch _stopwatch = new();
     readonly Timer _timer = new();
 
+    readonly Project[] _projects = new Project[] {
+            SimulatedData.Project,
+            SimulatedData.Project2
+        };
+    readonly Parameter[] _parameters = new Parameter[] {
+            SimulatedData.Parameter,
+            SimulatedData.Parameter2,
+        };
+
     Project? _currentProject = null;
     Parameter? _currentParameter = null;
     ScanResult? _latestResult = null;
-    Comment? _comments = null;
+    Comments? _comments = null;
 }

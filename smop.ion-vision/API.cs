@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Documents;
+using System.Windows.Input;
 using RestSharp;
 
 namespace Smop.IonVision;
@@ -71,11 +73,11 @@ public class API : IMinimalAPI
     /// Retrieves latest scan comments
     /// </summary>
     /// <returns>Comments</returns>
-    public async Task<Response<string>> GetScanComments()
+    public async Task<Response<Comments>> GetScanComments()
     {
         var request = new RestRequest("currentScan/comments");
         var response = await _client.GetAsync(request);
-        return response.As<string>();
+        return response.As<Comments>();
     }
 
     /// <summary>
@@ -83,7 +85,7 @@ public class API : IMinimalAPI
     /// </summary>
     /// <param name="comment">Comment</param>
     /// <returns>Conrimation</returns>
-    public async Task<Response<Confirm>> SetScanComments(Comment comment)
+    public async Task<Response<Confirm>> SetScanComments(Comments comment)
     {
         var request = new RestRequest("currentScan/comments");
         request.AddBody(JsonSerializer.Serialize(comment, _serializationOptions));
@@ -256,10 +258,46 @@ public class API : IMinimalAPI
         return response.As<Dictionary<string, List<string>>>();
     }
 
-    // Skipped:
-    // GET /parameterTemplate
-    // GET /parameterTemplate/{unique_name}
-    // GET /parameterTemplate/{unique_name}/metadata
+    /// <summary>
+    /// Retrieves available parameter templates
+    /// </summary>
+    /// <param name="name">the name to search for</param>
+    /// <param name="gasDetection">whether to search for templates with or without built-in gas detection</param>
+    /// <returns>List of templates</returns>
+    public async Task<Response<ParameterTemplate[]>> GetParameterTemplates(string? name = null, bool? gasDetection = null)
+    {
+        var request = new RestRequest($"parameterTemplate");
+        if (name != null)
+            request.AddQueryParameter("search", name);
+        if (gasDetection != null)
+            request.AddQueryParameter("gas_detection", gasDetection.ToString());
+        var response = await _client.GetAsync(request);
+        return response.As<ParameterTemplate[]>();
+    }
+
+    /// <summary>
+    /// Retrieves the parameter template
+    /// </summary>
+    /// <param name="name">template name</param>
+    /// <returns>Template as the parameter definition</returns>
+    public async Task<Response<ParameterDefinition>> GetParameterTemplate(string name)
+    {
+        var request = new RestRequest($"parameterTemplate/{name}");
+        var response = await _client.GetAsync(request);
+        return response.As<ParameterDefinition>();
+    }
+
+    /// <summary>
+    /// Retrieves the parameter template metadata
+    /// </summary>
+    /// <param name="name">template name</param>
+    /// <returns>Template metadata</returns>
+    public async Task<Response<ParameterTemplate>> GetParameterTemplateMetadata(string name)
+    {
+        var request = new RestRequest($"parameterTemplate/{name}/metadata");
+        var response = await _client.GetAsync(request);
+        return response.As<ParameterTemplate>();
+    }
 
     /// <summary>
     /// Retrieves the project in use
@@ -304,6 +342,7 @@ public class API : IMinimalAPI
     public async Task<Response<Confirm>> CreateProject(Project project)
     {
         var request = new RestRequest("project");
+        request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
         var response = await _client.PostAsync(request);
         return response.As<Confirm>();
     }
@@ -311,23 +350,24 @@ public class API : IMinimalAPI
     /// <summary>
     /// Gets the project definition
     /// </summary>
-    /// <param name="project">Project</param>
+    /// <param name="name">Project</param>
     /// <returns>Project definition</returns>
-    public async Task<Response<Project>> GetProjectDefinition(ProjectAsName project)
+    public async Task<Response<Project>> GetProjectDefinition(string name)
     {
-        var request = new RestRequest($"project/{project.Project}");
+        var request = new RestRequest($"project/{name}");
         var response = await _client.GetAsync(request);
         return response.As<Project>();
     }
 
     /// <summary>
-    /// Updates the list of project's parameters
+    /// Updates the project
     /// </summary>
-    /// <param name="project">Project</param>
+    /// <param name="name">Project name</param>
+    /// <param name="project">New project</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> UpdateProjecParameters(ProjectAsName project)
+    public async Task<Response<Confirm>> UpdateProject(string name, Project project)
     {
-        var request = new RestRequest($"project/{project.Project}");
+        var request = new RestRequest($"project/{name}");
         request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
         var response = await _client.PutAsync(request);
         return response.As<Confirm>();
@@ -336,11 +376,11 @@ public class API : IMinimalAPI
     /// <summary>
     /// Deleted the project
     /// </summary>
-    /// <param name="project">Project</param>
+    /// <param name="name">Project name</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> DeleteProject(ProjectAsName project)
+    public async Task<Response<Confirm>> DeleteProject(string name)
     {
-        var request = new RestRequest($"project/{project.Project}");
+        var request = new RestRequest($"project/{name}");
         var response = await _client.DeleteAsync(request);
         return response.As<Confirm>();
     }
@@ -348,18 +388,40 @@ public class API : IMinimalAPI
     /// <summary>
     /// Gets the list of project scans
     /// </summary>
-    /// <param name="project">Project</param>
+    /// <param name="name">Project name</param>
     /// <returns>List of scan IDs</returns>
-    public async Task<Response<string[]>> GetProjectResults(ProjectAsName project)
+    public async Task<Response<string[]>> GetProjectResults(string name)
     {
-        var request = new RestRequest($"project/{project.Project}/results");
+        var request = new RestRequest($"project/{name}/results");
         var response = await _client.GetAsync(request);
         return response.As<string[]>();
     }
 
-    // Skipped:
-    // GET /project/{name}/sequence
-    // PUT /project/{name}/sequence
+    /// <summary>
+    /// Get the sequence of parameter presets that is used when a measurement is done with the project.
+    /// </summary>
+    /// <param name="name">Project name</param>
+    /// <returns>List of project parameters</returns>
+    public async Task<Response<Parameter[]>> GetProjectSequence(string name)
+    {
+        var request = new RestRequest($"project/{name}/sequence");
+        var response = await _client.GetAsync(request);
+        return response.As<Parameter[]>();
+    }
+
+    /// <summary>
+    /// Updates the list of project's parameters
+    /// </summary>
+    /// <param name="name">Project name</param>
+    /// <param name="parameters">List of parameters</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> UpdateProjectParameters(string name, Parameter[] parameters)
+    {
+        var request = new RestRequest($"project/{name}/sequence");
+        request.AddBody(JsonSerializer.Serialize(parameters, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
 
     // Skipped:
     // * /controller/*
@@ -386,20 +448,16 @@ public class API : IMinimalAPI
         bool? onlyMetadata = null,
         string[]? ids = null)
     {
-        var query = new List<string>();
-        if (maxResults != null) query.Add($"max_results={maxResults}");
-        if (page != null) query.Add($"page={page}");
-        if (search != null) query.Add($"search={search}");
-        if (startDate != null) query.Add($"start_date={startDate}");
-        if (date != null) query.Add($"date={date}");
-        if (sortBy != null) query.Add($"sort_by={sortBy}");
-        if (onlyMetadata != null) query.Add($"only_metadata={onlyMetadata}");
-        if (ids != null) query.Add($"ids={string.Join(',', ids)}");
+        var request = new RestRequest("results");
+        if (maxResults != null) request.AddParameter("max_results", maxResults.ToString());
+        if (page != null) request.AddParameter("page", page.ToString());
+        if (search != null) request.AddParameter("search", search.ToString());
+        if (startDate != null) request.AddParameter("start_date", startDate.ToString());
+        if (date != null) request.AddParameter("date", date.ToString());
+        if (sortBy != null) request.AddParameter("sort_by", sortBy.ToString());
+        if (onlyMetadata != null) request.AddParameter("only_metadata", onlyMetadata.ToString());
+        if (ids != null) request.AddParameter("ids", string.Join(',', ids));
 
-        string queryStr = query.Count > 0 ? "?" + string.Join('&', query) : "";
-
-
-        var request = new RestRequest($"results{queryStr}");
         var response = await _client.GetAsync(request);
         return response.As<SearchResult>();
     }
@@ -444,7 +502,7 @@ public class API : IMinimalAPI
     /// </summary>
     /// <param name="id">Scan id</param>
     /// <returns>Scan data</returns>
-    public async Task<Response<ScanResult>> GetLatestResult(string id)
+    public async Task<Response<ScanResult>> GetResult(string id)
     {
         var request = new RestRequest($"results/id/{id}");
         var response = await _client.GetAsync(request);
@@ -463,10 +521,45 @@ public class API : IMinimalAPI
         return response.As<Confirm>();
     }
 
-    // Skipped:
-    // GET /results/id/{id}/copy
-    // GET /results/id/{id}/comments
-    // PUT /results/id/{id}/comments
+    /// <summary>
+    /// Copies the scan
+    /// </summary>
+    /// <param name="id">Scan id</param>
+    /// <param name="props">Copying properties</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> CopyResult(string id, CopyResultProperties props)
+    {
+        var request = new RestRequest($"results/id/{id}/copy");
+        request.AddBody(JsonSerializer.Serialize(props, _serializationOptions));
+        var response = await _client.PostAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Retrieves the scan comments
+    /// </summary>
+    /// <param name="id">Scan id</param>
+    /// <returns>Comments</returns>
+    public async Task<Response<Comments>> GetResultComments(string id)
+    {
+        var request = new RestRequest($"results/id/{id}/comments");
+        var response = await _client.GetAsync(request);
+        return response.As<Comments>();
+    }
+
+    /// <summary>
+    /// Sets the scan comments
+    /// </summary>
+    /// <param name="id">Scan id</param>
+    /// <param name="comments">Comments</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> GetResultComments(string id, Comments comments)
+    {
+        var request = new RestRequest($"results/id/{id}/comments");
+        request.AddBody(JsonSerializer.Serialize(comments, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
 
     /// <summary>
     /// Retrieves the scan gases
@@ -524,8 +617,18 @@ public class API : IMinimalAPI
         return response.As<Confirm>();
     }
 
+    /// <summary>
+    /// Retrieves the storage devices
+    /// </summary>
+    /// <returns>List of devices</returns>
+    public async Task<Response<Device[]>> GetDevices()
+    {
+        var request = new RestRequest("system/devices");
+        var response = await _client.GetAsync(request);
+        return response.As<Device[]>();
+    }
+
     // Skipped:
-    // GET /system/devices
     // GET /system/update
     // POST /system/update
     // GET /system/debug
@@ -540,9 +643,9 @@ public class API : IMinimalAPI
     /// Retrieves the system clock
     /// </summary>
     /// <returns>Clock</returns>
-    public async Task<Response<Clock>> GetSettingsClock()
+    public async Task<Response<Clock>> GetClock()
     {
-        var request = new RestRequest("/settings/clock");
+        var request = new RestRequest("settings/clock");
         var response = await _client.GetAsync(request);
         return response.As<Clock>();
     }
@@ -552,23 +655,105 @@ public class API : IMinimalAPI
     /// </summary>
     /// <param name="clock">clock</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSettingsClock(Clock clock)
+    public async Task<Response<Confirm>> SetClock(Clock clock)
     {
-        var request = new RestRequest("/settings/clock");
+        var request = new RestRequest("settings/clock");
         request.AddBody(JsonSerializer.Serialize(clock, _serializationOptions));
         var response = await _client.PutAsync(request);
         return response.As<Confirm>();
     }
 
-    // Skipping:
-    // OPTIONS /settings​/clock
-    // GET /settings​/keyboard
-    // PUT /settings​/keyboard
-    // GET /settings​/keyboard​/layout
-    // GET /settings​/keyboard​/layout​/{ layout}
-    // GET /settings​/dataSaveLocations
-    // PUT /settings​/dataSaveLocations
-    // OPTIONS /settings​/dataSaveLocations
+    /// <summary>
+    /// Get a list of timezones
+    /// </summary>
+    /// <returns>List of timezones</returns>
+    public async Task<Response<Timezone[]>> GetClockTimezones()
+    {
+        var request = new RestRequest("settings/clock");
+        var response = await _client.OptionsAsync(request);
+        return response.As<Timezone[]>();
+    }
+
+    /// <summary>
+    /// Get the keyboard
+    /// </summary>
+    /// <returns>Keyboard</returns>
+    public async Task<Response<Keyboard>> GetKeyboard()
+    {
+        var request = new RestRequest("settings/keyboard");
+        var response = await _client.GetAsync(request);
+        return response.As<Keyboard>();
+    }
+
+    /// <summary>
+    /// Sets a keyboard
+    /// </summary>
+    /// <param name="keyboard">keyboard</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetKeyboard(Keyboard keyboard)
+    {
+        var request = new RestRequest("settings/keyboard");
+        request.AddBody(JsonSerializer.Serialize(keyboard, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Get the available keyboard layouts
+    /// </summary>
+    /// <returns>Layouts</returns>
+    public async Task<Response<string[]>> GetAvailableKeyboardLayouts()
+    {
+        var request = new RestRequest("settings/keyboard/layout");
+        var response = await _client.GetAsync(request);
+        return response.As<string[]>();
+    }
+
+    /// <summary>
+    /// Get the available keyboard layout variants
+    /// </summary>
+    /// <returns>Layouts</returns>
+    public async Task<Response<KeyboardLayout>> GetAvailableKeyboardLayouts(string layout)
+    {
+        var request = new RestRequest($"settings/keyboard/layout/{layout}");
+        var response = await _client.GetAsync(request);
+        return response.As<KeyboardLayout>();
+    }
+
+    /// <summary>
+    /// Get a list of external locations data is currently saved to
+    /// </summary>
+    /// <returns>List of locations</returns>
+    public async Task<Response<string[]>> GetDataSaveLocations()
+    {
+        var request = new RestRequest("settings/dataSaveLocations");
+        var response = await _client.GetAsync(request);
+        return response.As<string[]>();
+    }
+
+    /// <summary>
+    /// Set a list of external locations data will be saved to
+    /// </summary>
+    /// <param name="locations">List of locations</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<string[]>> GetDataSaveLocations(string[] locations)
+    {
+        var request = new RestRequest("settings/dataSaveLocations");
+        request.AddBody(JsonSerializer.Serialize(locations, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<string[]>();
+    }
+
+    /// <summary>
+    /// Get a list of available external locations to save data to
+    /// </summary>
+    /// <returns>List of available locations</returns>
+    public async Task<Response<string[]>> GetAvailableDataSaveLocations()
+    {
+        var request = new RestRequest("settings/dataSaveLocations");
+        var response = await _client.OptionsAsync(request);
+        return response.As<string[]>();
+    }
 
     // Skipping:
     // GET /graphColour/*

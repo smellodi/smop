@@ -38,8 +38,8 @@ if (!isConnected)
 var commands = new Dictionary<string, (string, Func<Task>?)>()
 {
 { "sys", ("retrieves system params", async () => Print(await ionVision.GetSystemStatus())) },
-{ "gclock", ("retrieves clock", async () => Print(await ionVision.GetSettingsClock())) },
-{ "sclock", ("sets clock", async () => Print(await ionVision.SetSettingsClock())) },
+{ "gclock", ("retrieves clock", async () => Print(await ionVision.GetClock())) },
+{ "sclock", ("sets clock", async () => Print(await ionVision.SetClock())) },
 { "user", ("retrieves user", async () => Print(await ionVision.GetUser())) },
 { "projs", ("retrieves projects", async () => Print(await ionVision.GetProjects())) },
 { "params", ("retrieves parameters", async () => Print(await ionVision.GetParameters())) },
@@ -48,7 +48,7 @@ var commands = new Dictionary<string, (string, Func<Task>?)>()
 { "gcpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
 { "gcpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
 { "scpm", ("sets the current parameter", async () => Print(await ionVision.SetParameter())) },
-{ "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new Comment("my comment")))) },
+{ "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new Comments() { Text = "my comment" }))) },
 { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
 { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
 { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
@@ -109,6 +109,7 @@ void Print<T>(API.Response<T> response)
         var text = JsonSerializer.Serialize(response.Value!, new JsonSerializerOptions()
         {
             WriteIndented = true,
+            
         });
         Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}... and {text.Length - MAX_CHARS_TO_PRINT} chars more.");
 

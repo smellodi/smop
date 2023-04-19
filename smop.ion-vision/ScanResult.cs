@@ -69,7 +69,7 @@ public record class ScanResult(
     string FinishTime,
     string Parameters,
     string Project,
-    object Comments,
+    Comments Comments,
     int FormatVersion,
     SystemData SystemData,
     MeasurementData MeasurementData

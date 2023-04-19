@@ -1,6 +1,5 @@
 ﻿#pragma warning disable CS8618
-
-using System;
+using System.Text.Json.Serialization;
 
 namespace Smop.IonVision;
 
@@ -11,7 +10,7 @@ public record class User(string Name);
 
 public record class ParameterAsId(string Parameter);
 public record class Parameter(string Id, string Name);
-public record class ParameterAsNameAndId(Parameter parameter);
+public record class ParameterAsNameAndId(Parameter Parameter);
 public record class ParameterMetadata(
     string Id,
     string Name,
@@ -56,9 +55,10 @@ public record class Calibration(
     string LastConducted
 );
 
-public record class Comment(
-    string Text
-);
+public record class Comments() {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? Text { get; set; }
+}
 
 
 public record class Timezone(
@@ -70,4 +70,34 @@ public record class Clock(
   string UtcTime,
   object Timezone,
   bool UpdateFromInternet
+);
+
+public record class ParameterTemplate(
+    string Id,
+    string Name,
+    string Description,
+    string[] Keywords,
+    bool GasDetection
+);
+
+public record class CopyResultProperties(
+    string DestinationType,
+    string Destination,
+    bool CopyParameter
+);
+
+public record class Device(
+    string Location,
+    string Type,
+    string Name
+);
+
+public record class Keyboard(
+    string Layout,
+    string Variant,
+    string Model
+);
+
+public record class KeyboardLayout(
+    string Variants
 );

@@ -59,9 +59,9 @@ public class Communicator
     /// <summary>
     /// Retrieves a list of projects
     /// </summary>
-    /// <param name="project">Project name</param>
+    /// <param name="name">Project name</param>
     /// <returns>Project definitions</returns>
-    public async Task<API.Response<Project>> GetProjectDefinition(ProjectAsName project) => await _api.GetProjectDefinition(project);
+    public async Task<API.Response<Project>> GetProjectDefinition(string name) => await _api.GetProjectDefinition(name);
 
     /// <summary>
     /// Retrieves a list of parameters
@@ -135,7 +135,7 @@ public class Communicator
     /// </summary>
     /// <param name="comment">Comment to set</param>
     /// <returns>Error message, if any</returns>
-    public async Task<API.Response<Confirm>> SetScanResultComment(Comment comment) => await _api.SetScanComments(comment);
+    public async Task<API.Response<Confirm>> SetScanResultComment(Comments comment) => await _api.SetScanComments(comment);
 
     /// <summary>
     /// Retrieves the latest scanning result
@@ -147,19 +147,19 @@ public class Communicator
     /// Retrieves all project scanning result
     /// </summary>
     /// <returns>Array of scanning results</returns>
-    public async Task<API.Response<string[]>> GetProjectResults() => await _api.GetProjectResults(new ProjectAsName(_settings.Project));
+    public async Task<API.Response<string[]>> GetProjectResults() => await _api.GetProjectResults(_settings.Project);
 
     /// <summary>
     /// Retrieves the system clock
     /// </summary>
     /// <returns>Clock</returns>
-    public async Task<API.Response<Clock>> GetSettingsClock() => await _api.GetSettingsClock();
+    public async Task<API.Response<Clock>> GetClock() => await _api.GetClock();
 
     /// <summary>
     /// Sets the system clock
     /// </summary>
     /// <returns>Clock</returns>
-    public async Task<API.Response<Confirm>> SetSettingsClock() => await _api.SetSettingsClock(new Clock(
+    public async Task<API.Response<Confirm>> SetClock() => await _api.SetClock(new Clock(
             DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
             "Europe/Helsinki",
             false

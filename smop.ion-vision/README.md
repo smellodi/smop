@@ -3,3 +3,8 @@
 ## Testing
 
 Use `test.ion-vision` console app to test the module
+
+## Dependencies
+
+NuGet packages:
+- RestSharp

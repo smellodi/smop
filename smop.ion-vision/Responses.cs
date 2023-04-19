@@ -101,3 +101,34 @@ public record class Keyboard(
 public record class KeyboardLayout(
     string Variants
 );
+
+public record class ScopeStatus(float Progress);
+public record class ScopeResult(
+    int Usv,
+    float[] Ucv,
+    float[] IntensityTop,
+    float[] IntensityBottom
+);
+public record class ScopeParameters(
+    float UcvStart,
+    float UcvStop,
+    float Usv,
+    float Vb,
+    float Pp,
+    float Pw,
+    int SampleAverages,
+    int SampleFlowControl,
+    int SensorFlowControl,
+    float SampleHeaterTemperatureControl,
+    float SensorHeaterTemperatureControl
+);
+
+public record class Flow(
+    float Min,
+    float Max,
+    float CurrentValue
+);
+public record class PumpDirectControl(
+    bool Enabled,
+    int DutyCycle
+);

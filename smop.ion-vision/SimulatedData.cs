@@ -12,7 +12,7 @@ public static class SimulatedData
     static readonly Settings _setting = new();
 
     public static User User = new(_setting.User);
-    public static readonly Parameter Parameter = new("daa1c397-ebd0-4920-b405-5c6029d45fdd", "Default scan");
+    public static readonly Parameter Parameter = new("daa1c397-ebd0-4920-b405-5c6029d45fdd", "Fast scan");
     public static readonly Parameter Parameter2 = new("8036cca5-0677-475c-aa7f-1c9202d94b85", "Slow scan");
     public static readonly Project Project = new("Oleg fast scan", new Parameter[] { Parameter, Parameter2 });
     public static readonly Project Project2 = new("Fake project", new Parameter[] { Parameter2 });

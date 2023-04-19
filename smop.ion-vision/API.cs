@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Windows.Documents;
-using System.Windows.Input;
 using RestSharp;
 
 namespace Smop.IonVision;
@@ -93,13 +91,73 @@ public class API : IMinimalAPI
         return response.As<Confirm>();
     }
 
-    // Skipped:
-    // GET /scope
-    // POST /scope
-    // DELETE /scope
-    // GET /scope/latestResult
-    // GET /scope/parameters
-    // PUT /scope/parameters
+    /// <summary>
+    /// Check if the device is in scope mode
+    /// </summary>
+    /// <returns>Scope status</returns>
+    public async Task<Response<ScopeStatus>> CheckScopeMode()
+    {
+        var request = new RestRequest("scope");
+        var response = await _client.GetAsync(request);
+        return response.As<ScopeStatus>();
+    }
+
+    /// <summary>
+    /// Set the device to the scope mode
+    /// </summary>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> EnableScopeMode()
+    {
+        var request = new RestRequest("scope");
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Move the device back to idle.
+    /// </summary>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> DisableScopeMode()
+    {
+        var request = new RestRequest("scope");
+        var response = await _client.DeleteAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Retrieves the latest scope result
+    /// </summary>
+    /// <returns>Scope result</returns>
+    public async Task<Response<ScopeResult>> GetScopeResult()
+    {
+        var request = new RestRequest("scope/latestResult");
+        var response = await _client.GetAsync(request);
+        return response.As<ScopeResult>();
+    }
+
+    /// <summary>
+    /// Retrieves the scope parameters
+    /// </summary>
+    /// <returns>Scope parameters</returns>
+    public async Task<Response<ScopeParameters>> GetScopeParameters()
+    {
+        var request = new RestRequest("scope/parameters");
+        var response = await _client.GetAsync(request);
+        return response.As<ScopeParameters>();
+    }
+
+    /// <summary>
+    /// Sets the scope parameters
+    /// </summary>
+    /// <param name="parameters">Scope parameters</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters)
+    {
+        var request = new RestRequest("scope/parameters");
+        request.AddBody(JsonSerializer.Serialize(parameters, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
 
     /// <summary>
     /// Retrieves user
@@ -423,8 +481,234 @@ public class API : IMinimalAPI
         return response.As<Confirm>();
     }
 
+
+    /// <summary>
+    /// Gets current sample flow adjustment values
+    /// </summary>
+    /// <returns>Flow adjustment values</returns>
+    public async Task<Response<Flow>> GetSampleFlow()
+    {
+        var request = new RestRequest("controller/sample/flow");
+        var response = await _client.GetAsync(request);
+        return response.As<Flow>();
+    }
+
+    /// <summary>
+    /// Sets current sample flow adjustment values
+    /// </summary>
+    /// <param name="values">Flow adjustment values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSampleFlow(Range values)
+    {
+        var request = new RestRequest("controller/sample/flow");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets current sample flow pid controller values.
+    /// </summary>
+    /// <returns>Flow pid controller values</returns>
+    public async Task<Response<PID>> GetSampleFlowPID()
+    {
+        var request = new RestRequest("controller/sample/flow/pid");
+        var response = await _client.GetAsync(request);
+        return response.As<PID>();
+    }
+
+    /// <summary>
+    /// Sets current sample flow pid controller values.
+    /// </summary>
+    /// <param name="values">Flow pid controller values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSampleFlowPID(PID values)
+    {
+        var request = new RestRequest("controller/sample/flow/pid");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets whether the sample flow pump is directly adjusted.
+    /// </summary>
+    /// <returns>Flow direct control values</returns>
+    public async Task<Response<PumpDirectControl>> GetSampleFlowPumpControl()
+    {
+        var request = new RestRequest("controller/sample/flow/directControl");
+        var response = await _client.GetAsync(request);
+        return response.As<PumpDirectControl>();
+    }
+
+    /// <summary>
+    /// Sets whether the sample flow pump is directly adjusted.
+    /// </summary>
+    /// <param name="values">Flow pid controller values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSampleFlowPumpControl(PumpDirectControl values)
+    {
+        var request = new RestRequest("controller/sample/flow/directControl");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets current sensor flow adjustment values
+    /// </summary>
+    /// <returns>Flow adjustment values</returns>
+    public async Task<Response<Flow>> GetSensorFlow()
+    {
+        var request = new RestRequest("controller/sensor/flow");
+        var response = await _client.GetAsync(request);
+        return response.As<Flow>();
+    }
+
+    /// <summary>
+    /// Sets current sensor flow adjustment values
+    /// </summary>
+    /// <param name="values">Flow adjustment values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSensorFlow(Range values)
+    {
+        var request = new RestRequest("controller/sensor/flow");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets current sensor flow pid controller values.
+    /// </summary>
+    /// <returns>Flow pid controller values</returns>
+    public async Task<Response<PID>> GetSensorFlowPID()
+    {
+        var request = new RestRequest("controller/sensor/flow/pid");
+        var response = await _client.GetAsync(request);
+        return response.As<PID>();
+    }
+
+    /// <summary>
+    /// Sets current sensor flow pid controller values.
+    /// </summary>
+    /// <param name="values">Flow pid controller values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSensorFlowPID(PID values)
+    {
+        var request = new RestRequest("controller/sensor/flow/pid");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets whether the sensor flow pump is directly adjusted.
+    /// </summary>
+    /// <returns>Flow direct control values</returns>
+    public async Task<Response<PumpDirectControl>> GetSensorFlowPumpControl()
+    {
+        var request = new RestRequest("controller/sensor/flow/directControl");
+        var response = await _client.GetAsync(request);
+        return response.As<PumpDirectControl>();
+    }
+
+    /// <summary>
+    /// Sets whether the sensor flow pump is directly adjusted.
+    /// </summary>
+    /// <param name="values">Flow pid controller values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSensorFlowPumpControl(PumpDirectControl values)
+    {
+        var request = new RestRequest("controller/sensor/flow/directControl");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets current sample gas heater temperature adjustment values.
+    /// </summary>
+    /// <returns>Gas heater temperature adjustment values</returns>
+    public async Task<Response<Flow>> GetSampleHeaterTemp()
+    {
+        var request = new RestRequest("controller/sample/heaterTemperature");
+        var response = await _client.GetAsync(request);
+        return response.As<Flow>();
+    }
+
+    /// <summary>
+    /// Sets current sample gas heater temperature adjustment values.
+    /// </summary>
+    /// <param name="values">Gas heater temperature adjustment values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSampleHeaterTemp(Range values)
+    {
+        var request = new RestRequest("controller/sample/heaterTemperature");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets current sample gas heater temperature pid controller values.
+    /// </summary>
+    /// <returns>Gas heater temperature pid controller values</returns>
+    public async Task<Response<PID>> GetSampleHeaterTempPID()
+    {
+        var request = new RestRequest("controller/sample/heaterTemperature/pid");
+        var response = await _client.GetAsync(request);
+        return response.As<PID>();
+    }
+
+    /// <summary>
+    /// Sets current sample gas heater temperature pid controller values.
+    /// </summary>
+    /// <param name="values">Gas heater temperature  pid controller values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSampleHeaterTempPID(PID values)
+    {
+        var request = new RestRequest("controller/sample/heaterTemperature/pid");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
+    /// <summary>
+    /// Gets whether the sample gas heater temperature  pump is directly adjusted.
+    /// </summary>
+    /// <returns>Gas heater temperature direct control values</returns>
+    public async Task<Response<PumpDirectControl>> GetSampleHeaterTempPumpControl()
+    {
+        var request = new RestRequest("controller/sample/heaterTemperature/directControl");
+        var response = await _client.GetAsync(request);
+        return response.As<PumpDirectControl>();
+    }
+
+    /// <summary>
+    /// Sets whether the sample gas heater temperature  pump is directly adjusted.
+    /// </summary>
+    /// <param name="values">Gas heater temperature controller values</param>
+    /// <returns>Confirmation message</returns>
+    public async Task<Response<Confirm>> SetSampleHeaterTempPumpControl(PumpDirectControl values)
+    {
+        var request = new RestRequest("controller/sample/heaterTemperature/directControl");
+        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
+        var response = await _client.PutAsync(request);
+        return response.As<Confirm>();
+    }
+
     // Skipped:
-    // * /controller/*
+    // * /controller/sample/temperature
+    // * /controller/sensor/temperature
+    // * /controller/ambient/temperature
+    // * /controller/sample/pressure
+    // * /controller/sensor/pressure
+    // * /controller/ambient/pressure
+    // * /controller/sample/humidity
+    // * /controller/sensor/humidity
+    // * /controller/ambient/humidity
+    // * /controller/miscellaneous/fetTemperature
 
 
     /// <summary>

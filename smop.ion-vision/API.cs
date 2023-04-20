@@ -23,7 +23,11 @@ public class API : IMinimalAPI
     public API(string ip)
     {
         var host = $"http://{ip}/api";
-        _client = new RestClient(host);
+        _client = new RestClient(host, config =>
+        {
+            config.MaxTimeout = 2000;
+            config.ThrowOnAnyError = false;
+        });
         _client.AddDefaultHeader("Content-Type", "application/json");
     }
 
@@ -592,11 +596,18 @@ public class API : IMinimalAPI
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private async Task<Response<T>> Get<T>(string path, bool preserveCase = false)
+    private async Task<Response<T>> Get<T>(string path, bool preserveCase = false) where T : class
     {
         var request = new RestRequest(path);
-        var response = await _client.GetAsync(request);
-        return response.As<T>(preserveCase);
+        try
+        {
+            var response = await _client.GetAsync(request);
+            return response.As<T>(preserveCase);
+        }
+        catch (Exception ex)
+        {
+            return new Response<T>(null, ex.Message);
+        }
     }
     private async Task<Response<Confirm>> Set(string path)
     {

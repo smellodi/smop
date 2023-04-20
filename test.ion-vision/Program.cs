@@ -1,51 +1,24 @@
 ﻿using Smop.IonVision;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
-Console.Write("Should the app enter the simulation mode (y/N)?   ");
-
-bool isSimulating = true;
-
-do
-{
-    var resp = Console.ReadKey();
-    if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N || resp.Key == ConsoleKey.Enter)
-    {
-        isSimulating = resp.Key == ConsoleKey.Y;
-        break;
-    }
-
-    Console.CursorLeft--;
-} while (true);
-
-Console.WriteLine();
+bool isSimulating = GetMode();
+bool isRunning = true;
 
 var ionVision = new Communicator(null, isSimulating);
 
-var version = await ionVision.GetSystemInfo();
-
-if (!version.Success)
-{
-    Console.WriteLine("The device is offline");
+if (!await Connect(ionVision))
     return;
-}
-else if (version.Value!.CurrentVersion != "1.5")
-{
-    Console.WriteLine();
-    Console.WriteLine("=================== WARNING! ===================");
-    Console.WriteLine(" This module works with IonVision API v1.5");
-    Console.WriteLine(" The device API version that is connected now is");
-    Console.WriteLine($"                    v{version.Value!.CurrentVersion}");
-    Console.WriteLine(" Be prepared to experience errors and exceptions");
-    Console.WriteLine("================================================");
-}
 
-var commands = new Dictionary<string, (string, Func<Task>?)>()
+(string, string)[] listOfCommands = Array.Empty<(string, string)>();
+var commands = new Dictionary<string, (string, Func<Task>)>()
 {
 { "sys", ("retrieves system params", async () => Print(await ionVision.GetSystemStatus())) },
 { "info", ("retrieves system info", async () => Print(await ionVision.GetSystemInfo())) },
@@ -63,14 +36,15 @@ var commands = new Dictionary<string, (string, Func<Task>?)>()
 { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
 { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
 { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
-{ "help", ("displays available commands", null) },
-{ "exit", ("exists the app", null) },
+{ "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
+{ "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
 };
 
+listOfCommands = commands.Select(c => (c.Key, c.Value.Item1)).ToArray();
+PrintHelp(listOfCommands);
+Console.WriteLine();
 
-PrintHelp();
-
-while (true)
+while (isRunning)
 {
     Console.Write("Command: ");
     var cmd = Console.ReadLine();
@@ -82,44 +56,70 @@ while (true)
         continue;
     }
 
-    var request = requestDesc.Item2;
-    if (request == null)
-    {
-        if (cmd == "help")
-        {
-            PrintHelp();
-            continue;
-        }
-        else if (cmd == "exit")
-        {
-            break;
-        }
-        else throw new Exception($"Unimplemented response to the command '{cmd}'");
-    }
-
-    await request();
+    await requestDesc.Item2();
 
     Console.WriteLine();
 }
 
-Console.WriteLine("\nTesting finished.");
+Console.WriteLine("Testing finished.");
 
-void PrintHelp()
+
+// Routines
+
+static bool GetMode()
+{
+    Console.Write("Should the app enter the simulation mode (y/N)?  ");
+
+    do
+    {
+        var resp = Console.ReadKey();
+        if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N || resp.Key == ConsoleKey.Enter)
+        {
+            Console.WriteLine();
+            return resp.Key == ConsoleKey.Y;
+        }
+
+        Console.CursorLeft--;
+    } while (true);
+}
+
+static async Task<bool> Connect(Communicator ionVision)
+{
+    var version = await ionVision.GetSystemInfo();
+    if (!version.Success)
+    {
+        Console.WriteLine("The device is offline");
+        return false;
+    }
+    else if (version.Value!.CurrentVersion != "1.5")
+    {
+        Console.WriteLine();
+        Console.WriteLine("=================== WARNING! ===================");
+        Console.WriteLine(" This module works with IonVision API v1.5");
+        Console.WriteLine(" The device API version that is connected now is");
+        Console.WriteLine($"                    v{version.Value!.CurrentVersion}");
+        Console.WriteLine(" Be prepared to experience errors and exceptions");
+        Console.WriteLine("================================================");
+    }
+
+    return true;
+}
+
+static void PrintHelp((string, string)[] help)
 {
     Console.WriteLine("\nAvailable commands:");
-    foreach (var cmd in commands)
+    foreach (var cmd in help)
     {
-        if (!string.IsNullOrEmpty(cmd.Key))
+        if (!string.IsNullOrEmpty(cmd.Item1))
         {
-            Console.WriteLine($"    {cmd.Key,-8} - {cmd.Value.Item1}");
+            Console.WriteLine($"    {cmd.Item1,-8} - {cmd.Item2}");
         }
     }
-    Console.WriteLine();
 }
 
 const int MAX_CHARS_TO_PRINT = 700;
 
-void Print<T>(API.Response<T> response)
+static void Print<T>(API.Response<T> response)
 {
     if (response.Success)
     {

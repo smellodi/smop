@@ -7,8 +7,6 @@ public class Communicator
 {
     public const int PROJECT_LOADING_DURATION = 2000;
 
-    public bool IsOnline { get; private set; } = false;
-
     public Settings Settings => _settings;
 
     public Communicator(string? settingsFilename = null, bool isSimulator = false)
@@ -17,97 +15,64 @@ public class Communicator
         _api = isSimulator ? new Simulator() : new API(_settings.IP);
     }
 
-    public async Task<bool> CheckConnection()
-    {
-        try
-        {
-            await _api.GetSystemStatus();
-            IsOnline = true;
-        }
-        catch (System.Net.Http.HttpRequestException)
-        {
-            System.Diagnostics.Debug.WriteLine("The device is offline");
-        }
-
-        return IsOnline;
-    }
-
-    /// <summary>
-    /// Retrieves system status
-    /// </summary>
+    /// <summary>Retrieves system status</summary>
     /// <returns>System status</returns>
-    public async Task<API.Response<SystemStatus>> GetSystemStatus() => await _api.GetSystemStatus();
+    public Task<API.Response<SystemStatus>> GetSystemStatus() => _api.GetSystemStatus();
 
-    /// <summary>
-    /// Retrieves user
-    /// </summary>
+    /// <summary>Retrieves system info</summary>
+    /// <returns>System info</returns>
+    public Task<API.Response<SystemInfo>> GetSystemInfo() => _api.GetSystemInfo();
+
+    /// <summary>Retrieves user</summary>
     /// <returns>User name</returns>
-    public async Task<API.Response<User>> GetUser() => await _api.GetUser();
+    public Task<API.Response<User>> GetUser() => _api.GetUser();
 
-    /// <summary>
-    /// Sets user
-    /// </summary>
+    /// <summary>Sets user</summary>
     /// <returns>Error message, if any</returns>
-    public async Task<API.Response<Confirm>> SetUser() => await _api.SetUser(new User(_settings.User));
+    public Task<API.Response<Confirm>> SetUser() => _api.SetUser(new User(_settings.User));
 
-    /// <summary>
-    /// Retrieves a list of project names
-    /// </summary>
+    /// <summary>Retrieves a list of project names</summary>
     /// <returns>Project names</returns>
-    public async Task<API.Response<string[]>> GetProjects() => await _api.GetProjects();
+    public Task<API.Response<string[]>> GetProjects() => _api.GetProjects();
 
-    /// <summary>
-    /// Retrieves a list of projects
-    /// </summary>
+    /// <summary>Retrieves a list of projects</summary>
     /// <param name="name">Project name</param>
     /// <returns>Project definitions</returns>
-    public async Task<API.Response<Project>> GetProjectDefinition(string name) => await _api.GetProjectDefinition(name);
+    public Task<API.Response<Project>> GetProjectDefinition(string name) => _api.GetProjectDefinition(name);
 
-    /// <summary>
-    /// Retrieves a list of parameters
-    /// </summary>
+    /// <summary>Retrieves a list of parameters</summary>
     /// <returns>Parameters</returns>
-    public async Task<API.Response<Parameter[]>> GetParameters() => await _api.GetParameters();
+    public Task<API.Response<Parameter[]>> GetParameters() => _api.GetParameters();
 
-    /// <summary>
-    /// Retrieves the current project
-    /// </summary>
+    /// <summary>Retrieves the current project</summary>
     /// <returns>Project</returns>
-    public async Task<API.Response<ProjectAsName>> GetProject() => await _api.GetProject();
+    public Task<API.Response<ProjectAsName>> GetProject() => _api.GetProject();
 
-    /// <summary>
-    /// Sets the SMOP project as active
-    /// </summary>
+    /// <summary>Sets the SMOP project as active and waiting until it is loaded</summary>
     /// <returns>Error message if the project was not set as active</returns>
-    public async Task<API.Response<Confirm>> SetProject()
+    public async Task<API.Response<Confirm>> SetProjectAndWait(int ms = PROJECT_LOADING_DURATION)
     {
         var response = await _api.SetProject(new ProjectAsName(_settings.Project));
         if (response.Success)
         {
-            await Task.Delay(PROJECT_LOADING_DURATION);
+            await Task.Delay(ms);
         }
         return response;
     }
 
-    /// <summary>
-    /// Retrieves the current parameter definition
-    /// </summary>
+    /// <summary>Retrieves the current parameter definition</summary>
     /// <returns>Parameter definition</returns>
-    public async Task<API.Response<ParameterDefinition>> GetParameterDefinition() => 
-        await _api.GetParameterDefinition(new Parameter(_settings.ParameterId, _settings.ParameterName));
+    public Task<API.Response<ParameterDefinition>> GetParameterDefinition() => 
+        _api.GetParameterDefinition(new Parameter(_settings.ParameterId, _settings.ParameterName));
 
 
-    /// <summary>
-    /// Retrieves the current parameter
-    /// </summary>
+    /// <summary>Retrieves the current parameter</summary>
     /// <returns>Parameter</returns>
-    public async Task<API.Response<ParameterAsNameAndId>> GetParameter() => await _api.GetParameter();
+    public Task<API.Response<ParameterAsNameAndId>> GetParameter() => _api.GetParameter();
 
-    /// <summary>
-    /// Sets the SMOP project parameter, and also preloads it immediately
-    /// </summary>
+    /// <summary>Sets the SMOP project parameter and preloads it immediately</summary>
     /// <returns>Error message if the project parameter was not set</returns>
-    public async Task<API.Response<Confirm>> SetParameter()
+    public async Task<API.Response<Confirm>> SetParameterAndPreload()
     {
         var response = await _api.SetParameter(new ParameterAsId(_settings.ParameterId));
         if (response.Success)
@@ -118,48 +83,34 @@ public class Communicator
         return response;
     }
 
-    /// <summary>
-    /// Starts a new scan
-    /// </summary>
+    /// <summary>Starts a new scan</summary>
     /// <returns>Error message if the scan was not started</returns>
-    public async Task<API.Response<Confirm>> StartScan() => await _api.StartScan();
+    public Task<API.Response<Confirm>> StartScan() => _api.StartScan();
 
-    /// <summary>
-    /// Retrieves scan progress
-    /// </summary>
+    /// <summary>Retrieves scan progress</summary>
     /// <returns>Scan progress</returns>
-    public async Task<API.Response<ScanProgress>> GetScanProgress() => await _api.GetScanProgress();
+    public Task<API.Response<ScanProgress>> GetScanProgress() => _api.GetScanProgress();
 
-    /// <summary>
-    /// Sets a marker for the latest scan result
-    /// </summary>
+    /// <summary>Sets a marker for the latest scan result</summary>
     /// <param name="comment">Comment to set</param>
     /// <returns>Error message, if any</returns>
-    public async Task<API.Response<Confirm>> SetScanResultComment(Comments comment) => await _api.SetScanComments(comment);
+    public Task<API.Response<Confirm>> SetScanResultComment(Comments comment) => _api.SetScanComments(comment);
 
-    /// <summary>
-    /// Retrieves the latest scanning result
-    /// </summary>
+    /// <summary>Retrieves the latest scanning result</summary>
     /// <returns>Scanning result, if any</returns>
-    public async Task<API.Response<ScanResult>> GetScanResult() => await _api.GetLatestResult();
+    public Task<API.Response<ScanResult>> GetScanResult() => _api.GetLatestResult();
 
-    /// <summary>
-    /// Retrieves all project scanning result
-    /// </summary>
+    /// <summary>Retrieves all project scanning result</summary>
     /// <returns>Array of scanning results</returns>
-    public async Task<API.Response<string[]>> GetProjectResults() => await _api.GetProjectResults(_settings.Project);
+    public Task<API.Response<string[]>> GetProjectResults() => _api.GetProjectResults(_settings.Project);
 
-    /// <summary>
-    /// Retrieves the system clock
-    /// </summary>
+    /// <summary>Retrieves the system clock</summary>
     /// <returns>Clock</returns>
-    public async Task<API.Response<Clock>> GetClock() => await _api.GetClock();
+    public Task<API.Response<Clock>> GetClock() => _api.GetClock();
 
-    /// <summary>
-    /// Sets the system clock
-    /// </summary>
+    /// <summary>Sets the system clock</summary>
     /// <returns>Clock</returns>
-    public async Task<API.Response<Confirm>> SetClock() => await _api.SetClock(new Clock(
+    public Task<API.Response<Confirm>> SetClock() => _api.SetClock(new ClockToSet(
             DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
             "Europe/Helsinki",
             false

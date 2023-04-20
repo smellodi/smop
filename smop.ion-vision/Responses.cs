@@ -3,14 +3,28 @@ using System.Text.Json.Serialization;
 
 namespace Smop.IonVision;
 
-public record class Err(string? Message, string[]? Errors);
-public record class Confirm(string Message = "OK");
+public record class Err(
+    string? Message,
+    string[]? Errors
+);
+public record class Confirm(
+    string Message = "OK"
+);
 
-public record class User(string Name);
+public record class User(
+    string Name
+);
 
-public record class ParameterAsId(string Parameter);
-public record class Parameter(string Id, string Name);
-public record class ParameterAsNameAndId(Parameter Parameter);
+public record class ParameterAsId(
+    string Parameter
+);
+public record class Parameter(
+    string Id,
+    string Name
+);
+public record class ParameterAsNameAndId(
+    Parameter Parameter
+);
 public record class ParameterMetadata(
     string Id,
     string Name,
@@ -18,23 +32,46 @@ public record class ParameterMetadata(
     string Description
 );
 
-public record class ProjectAsName(string Project);
+public record class ProjectAsName(
+    string Project
+);
 public record class Project(
     string Name,
     Parameter[] Parameters
 );
 
-public record class ScanProgress(int Progress, object Information);
+public record class ScanProgress(
+    int Progress,
+    object Information
+);
 
-public record class GasFilter(string LastChanged, int CurrentUses, int MaxUses);
-public record class SystemStorage(long Used, long Total);
+public record class GasFilter(
+    string LastChanged,
+    int CurrentUses,
+    int MaxUses
+);
+public record class SystemStorage(
+    long Used,
+    long Total
+);
 public record class SystemStatus(
-    GasFilter GasFilter,
     string Address,
     int ConnectedUsers,
     int DeviceType,
     bool FailsafeMode,
-    SystemStorage SystemStorage
+    SystemStorage SystemStorage,
+    GasFilter GasFilter
+);
+public record class SystemVersion(
+    string Id,
+    string Version,
+    string Source,
+    string Changelog
+);
+public record class SystemInfo(
+    string CurrentVersion,
+    string? CrrentRtmVersion,
+    SystemVersion[] AvailableVersions
 );
 
 public record class SearchResultMeta(
@@ -62,13 +99,19 @@ public record class Comments() {
 
 
 public record class Timezone(
-    int Offset,
+    float Offset,
     string timezone
 );
 
 public record class Clock(
   string UtcTime,
-  object Timezone,
+  Timezone Timezone,
+  bool UpdateFromInternet
+);
+
+public record class ClockToSet(
+  string UtcTime,
+  string Timezone,
   bool UpdateFromInternet
 );
 
@@ -89,20 +132,27 @@ public record class CopyResultProperties(
 public record class Device(
     string Location,
     string Type,
-    string Name
+    string? Name = null
 );
 
 public record class Keyboard(
     string Layout,
+    string Variant
+);
+
+public record class KeyboardAndModel(
+    string Layout,
     string Variant,
     string Model
-);
+) : Keyboard(Layout, Variant);
 
 public record class KeyboardLayout(
     string Variants
 );
 
-public record class ScopeStatus(float Progress);
+public record class ScopeStatus(
+    float Progress
+);
 public record class ScopeResult(
     int Usv,
     float[] Ucv,
@@ -123,11 +173,16 @@ public record class ScopeParameters(
     float SensorHeaterTemperatureControl
 );
 
-public record class Flow(
+public record class Range(
+    float Min,
+    float Max
+);
+public record class RangeValue(
     float Min,
     float Max,
     float CurrentValue
-);
+) : Range(Min, Max);
+
 public record class PumpDirectControl(
     bool Enabled,
     int DutyCycle

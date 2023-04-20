@@ -11,15 +11,18 @@ public record class PID(
     float Hysteresis,
     float Setpoint
 );
-public record class Range(float Min, float Max);
-public record class RangeWithPID(float Min, float Max, PID PID) : Range(Min, Max);
+public record class RangePID(
+    float Min,
+    float Max,
+    PID PID
+) : Range(Min, Max);
 public record class SampleSensor(
     float FlowOverride,
-    RangeWithPID Flow,
+    RangePID Flow,
     Range Temperature,
     Range Pressure,
     Range Humidity,
-    RangeWithPID HeaterTemperature,
+    RangePID HeaterTemperature,
     float HeaterTemperatureOverride
 );
 public record class Ambient(
@@ -45,15 +48,15 @@ public record class Delays(
     long VbToADC,
     long ColdStartDelay
 );
-public record class StepRange(
-    int Min,
-    int Max,
-    int Steps 
-);
+public record class RangeStep(
+    float Min,
+    float Max,
+    float Steps 
+) : Range(Min, Max);
 public record class SteppingControl(
-    StepRange Usv,
-    StepRange Ucv,
-    StepRange Vb,
+    RangeStep Usv,
+    RangeStep Ucv,
+    RangeStep Vb,
     int PP,
     int PW,
     int NForSampleAverages,

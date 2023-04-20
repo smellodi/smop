@@ -25,22 +25,22 @@ public static class SimulatedData
             500000000,
             new SampleSensor(
                 90,
-                new RangeWithPID(0.2f, 2, new PID(0.7f, 1, 0.5f, 200, -200, 0.02f, 0.5f)),
+                new RangePID(0.2f, 2, new PID(0.7f, 1, 0.5f, 200, -200, 0.02f, 0.5f)),
                 new Range(10, 45),
                 new Range(900, 1200),
                 new Range(0, 40),
-                new RangeWithPID(0, 90, new PID(1, 0.1f, 0.1f, 2, -2, 0.1f, 35)),
+                new RangePID(0, 90, new PID(1, 0.1f, 0.1f, 2, -2, 0.1f, 35)),
                 0
             ),
             new Ambient(new Range(0, 30), new Range(900, 1300), new Range(0, 40)),
             new Miscellaneous(new Range(0, 80)),
             new SampleSensor(
                 90,
-                new RangeWithPID(2, 6, new PID(1, 2, 1, 200, -200, 0.03f, 4.5f)),
+                new RangePID(2, 6, new PID(1, 2, 1, 200, -200, 0.03f, 4.5f)),
                 new Range(10, 45),
                 new Range(800, 1200),
                 new Range(0, 40),
-                new RangeWithPID(0, 80, new PID(1, 0.1f, 0.1f, 2, -2, 0.1f, 35)),
+                new RangePID(0, 80, new PID(1, 0.1f, 0.1f, 2, -2, 0.1f, 35)),
                 0
             )
         ),
@@ -50,9 +50,9 @@ public static class SimulatedData
             true,
             new Delays(100000000, 300, 10000000, 3000000, 5000000000, 200000000),
             new SteppingControl(
-                new StepRange(200, 800, DATA_COLS),
-                new StepRange(-3, 13, DATA_ROWS),
-                new StepRange(-6, -6, 1),
+                new RangeStep(200, 800, DATA_COLS),
+                new RangeStep(-3, 13, DATA_ROWS),
+                new RangeStep(-6, -6, 1),
                 DATA_PP,
                 DATA_PW,
                 DATA_SAMPLE_COUNT,

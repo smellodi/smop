@@ -1,5 +1,4 @@
-﻿using System.Security.Policy;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using static Smop.IonVision.API;
 
 namespace Smop.IonVision;
@@ -7,6 +6,7 @@ namespace Smop.IonVision;
 internal interface IMinimalAPI
 {
     Task<Response<SystemStatus>> GetSystemStatus();
+    Task<Response<SystemInfo>> GetSystemInfo();
     Task<Response<User>> GetUser();
     Task<Response<Confirm>> SetUser(User user);
     Task<Response<string[]>> GetProjects();
@@ -24,5 +24,5 @@ internal interface IMinimalAPI
     Task<Response<ScanResult>> GetLatestResult();
     Task<Response<string[]>> GetProjectResults(string project);
     Task<Response<Clock>> GetClock();
-    Task<Response<Confirm>> SetClock(Clock clock);
+    Task<Response<Confirm>> SetClock(ClockToSet clock);
 }

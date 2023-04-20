@@ -81,6 +81,6 @@ public class Settings
 
     record class Properties(string IP, string Project, string ParameterId, string ParameterName, string User);
 
-    Properties _properties = new Properties("localhost", "Smellodi", "GUID", "Default", "TUNI");
+    Properties _properties = new("localhost", "Smellodi", "GUID", "Default", "TUNI");
     readonly string _filename;
 }

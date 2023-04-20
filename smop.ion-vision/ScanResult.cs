@@ -30,22 +30,26 @@ public record class ErrorRegister(
     bool sensorHeaterTemperatureR1Under,
     bool sensorHeaterTemperatureR1Over
 );
-public record class RangeProps(double Avg, double Min, double Max);
+public record class RangeAvg(
+    double Avg,
+    double Min,
+    double Max
+);
 public record class Detector(
-    RangeProps Temperature,
-    RangeProps Pressure,
-    RangeProps Humidity
+    RangeAvg Temperature,
+    RangeAvg Pressure,
+    RangeAvg Humidity
 );
 public record class FlowDetector(
-    RangeProps Flow,
-    RangeProps Temperature,
-    RangeProps Pressure,
-    RangeProps Humidity,
-    RangeProps PumpPWM
+    RangeAvg Flow,
+    RangeAvg Temperature,
+    RangeAvg Pressure,
+    RangeAvg Humidity,
+    RangeAvg PumpPWM
 ) : Detector(Temperature, Pressure, Humidity);
 public record class SystemData(
     ErrorRegister ErrorRegister,
-    RangeProps FetTemperature,
+    RangeAvg FetTemperature,
     FlowDetector Sample,
     FlowDetector Sensor,
     Detector Ambient

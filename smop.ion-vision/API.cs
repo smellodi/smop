@@ -27,890 +27,481 @@ public class API : IMinimalAPI
         _client.AddDefaultHeader("Content-Type", "application/json");
     }
 
-    /// <summary>
-    /// Retrieves scan progress
-    /// </summary>
+    #region SCAN
+
+    /// <summary>Retrieves scan progress</summary>
     /// <returns>Scan progress</returns>
-    public async Task<Response<ScanProgress>> GetScanProgress()
-    {
-        var request = new RestRequest("currentScan");
-        var response = await _client.GetAsync(request);
-        return response.As<ScanProgress>();
-    }
+    public Task<Response<ScanProgress>> GetScanProgress() => Get<ScanProgress>("currentScan");
 
-    /// <summary>
-    /// Starts a new scan
-    /// </summary>
+    /// <summary>Starts a new scan</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> StartScan()
-    {
-        var request = new RestRequest("currentScan");
-        try
-        {
-            var response = await _client.PostAsync(request);
-            return response.As<Confirm>();
-        }
-        catch (Exception ex)
-        {
-            return new Response<Confirm>(null, ex.Message);
-        }
-    }
+    public Task<Response<Confirm>> StartScan() => Create("currentScan");
 
-    /// <summary>
-    /// Stops the ongoing scan
-    /// </summary>
+    /// <summary>Stops the ongoing scan</summary>
     /// <returns>Confirmations message</returns>
-    public async Task<Response<Confirm>> StopScan()
-    {
-        var request = new RestRequest("currentScan");
-        var response = await _client.DeleteAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> StopScan() => Remove("currentScan");
 
-    /// <summary>
-    /// Retrieves latest scan comments
-    /// </summary>
+    /// <summary>Retrieves latest scan comments</summary>
     /// <returns>Comments</returns>
-    public async Task<Response<Comments>> GetScanComments()
-    {
-        var request = new RestRequest("currentScan/comments");
-        var response = await _client.GetAsync(request);
-        return response.As<Comments>();
-    }
+    public Task<Response<Comments>> GetScanComments() => Get<Comments>("currentScan/comments");
 
-    /// <summary>
-    /// Sets latest scan comments
-    /// </summary>
+    /// <summary>Sets latest scan comments</summary>
     /// <param name="comment">Comment</param>
     /// <returns>Conrimation</returns>
-    public async Task<Response<Confirm>> SetScanComments(Comments comment)
-    {
-        var request = new RestRequest("currentScan/comments");
-        request.AddBody(JsonSerializer.Serialize(comment, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetScanComments(Comments comment) => Set("currentScan/comments", comment);
 
-    /// <summary>
-    /// Check if the device is in scope mode
-    /// </summary>
+    #endregion
+
+    #region SCOPE
+
+    /// <summary>Check if the device is in scope mode</summary>
     /// <returns>Scope status</returns>
-    public async Task<Response<ScopeStatus>> CheckScopeMode()
-    {
-        var request = new RestRequest("scope");
-        var response = await _client.GetAsync(request);
-        return response.As<ScopeStatus>();
-    }
+    public Task<Response<ScopeStatus>> CheckScopeMode() => Get<ScopeStatus>("scope");
 
-    /// <summary>
-    /// Set the device to the scope mode
-    /// </summary>
+    /// <summary>Set the device to the scope mode</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> EnableScopeMode()
-    {
-        var request = new RestRequest("scope");
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> EnableScopeMode() => Set("scope");
 
-    /// <summary>
-    /// Move the device back to idle.
-    /// </summary>
+    /// <summary>Move the device back to idle</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> DisableScopeMode()
-    {
-        var request = new RestRequest("scope");
-        var response = await _client.DeleteAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> DisableScopeMode() => Remove("scope");
 
-    /// <summary>
-    /// Retrieves the latest scope result
-    /// </summary>
+    /// <summary>Retrieves the latest scope result</summary>
     /// <returns>Scope result</returns>
-    public async Task<Response<ScopeResult>> GetScopeResult()
-    {
-        var request = new RestRequest("scope/latestResult");
-        var response = await _client.GetAsync(request);
-        return response.As<ScopeResult>();
-    }
+    public Task<Response<ScopeResult>> GetScopeResult() => Get<ScopeResult>("scope/latestResult");
 
-    /// <summary>
-    /// Retrieves the scope parameters
-    /// </summary>
+    /// <summary>Retrieves the scope parameters</summary>
     /// <returns>Scope parameters</returns>
-    public async Task<Response<ScopeParameters>> GetScopeParameters()
-    {
-        var request = new RestRequest("scope/parameters");
-        var response = await _client.GetAsync(request);
-        return response.As<ScopeParameters>();
-    }
+    public Task<Response<ScopeParameters>> GetScopeParameters() => Get<ScopeParameters>("scope/parameters");
 
-    /// <summary>
-    /// Sets the scope parameters
-    /// </summary>
+    /// <summary>Sets the scope parameters</summary>
     /// <param name="parameters">Scope parameters</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters)
-    {
-        var request = new RestRequest("scope/parameters");
-        request.AddBody(JsonSerializer.Serialize(parameters, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters) => Set("scope/parameters", parameters);
 
-    /// <summary>
-    /// Retrieves user
-    /// </summary>
+    #endregion
+
+    #region USER
+
+    /// <summary>Retrieves the user</summary>
     /// <returns>User name</returns>
-    public async Task<Response<User>> GetUser()
-    {
-        var request = new RestRequest("currentUser");
-        var response = await _client.GetAsync(request);
-        return response.As<User>();
-    }
+    public Task<Response<User>> GetUser() => Get<User>("currentUser");
 
-    /// <summary>
-    /// Sets user
-    /// </summary>
+    /// <summary>Sets a user</summary>
     /// <param name="user">User name</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetUser(User user)
-    {
-        var request = new RestRequest("currentUser");
-        request.AddBody(JsonSerializer.Serialize(user, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetUser(User user) => Set("currentUser", user);
 
-    /// <summary>
-    /// Retrieves current parameter
-    /// </summary>
+    #endregion
+
+    #region PARAMETER
+
+    /// <summary>Retrieves current parameter</summary>
     /// <returns>Parameter</returns>
-    public async Task<Response<ParameterAsNameAndId>> GetParameter()
-    {
-        var request = new RestRequest("currentParameter");
-        var response = await _client.GetAsync(request);
-        return response.As<ParameterAsNameAndId>();
-    }
+    public Task<Response<ParameterAsNameAndId>> GetParameter() => Get<ParameterAsNameAndId>("currentParameter");
 
-    /// <summary>
-    /// Sets current parameter
-    /// </summary>
+    /// <summary>Sets current parameter</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetParameter(ParameterAsId parameter)
-    {
-        var request = new RestRequest("currentParameter");
-        request.AddBody(JsonSerializer.Serialize(parameter, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetParameter(ParameterAsId parameter) => Set("currentParameter", parameter);
 
-    /// <summary>
-    /// Proloads current parameter
-    /// </summary>
+    /// <summary>Proloads current parameter</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> PreloadParameter()
-    {
-        var request = new RestRequest("currentParameter/preload");
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> PreloadParameter() => Create("currentParameter/preload");
 
-    /// <summary>
-    /// Retrieves a list of parameters
-    /// </summary>
+    /// <summary>Retrieves a list of parameters</summary>
     /// <returns>Parameters</returns>
-    public async Task<Response<Parameter[]>> GetParameters()
-    {
-        var request = new RestRequest("parameter");
-        var response = await _client.GetAsync(request);
-        return response.As<Parameter[]>();
-    }
+    public Task<Response<Parameter[]>> GetParameters() => Get<Parameter[]>("parameter");
 
-    /// <summary>
-    /// Creates a new parameter
-    /// </summary>
+    /// <summary>Creates a new parameter</summary>
     /// <param name="parameter">New parameter definition</param>
     /// <returns>Parameter as name</returns>
-    public async Task<Response<ParameterAsId>> CreateParameter(ParameterDefinition parameter)
-    {
-        var request = new RestRequest("parameter");
-        request.AddBody(JsonSerializer.Serialize(parameter));
-        var response = await _client.PostAsync(request);
-        return response.As<ParameterAsId>();
-    }
+    public Task<Response<ParameterAsId>> CreateParameter(ParameterDefinition parameter) => Create<ParameterDefinition,ParameterAsId>("parameter", parameter, true);
 
-    /// <summary>
-    /// Retrieves the parameter definition
-    /// </summary>
+    /// <summary>Retrieves the parameter definition</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Parameter definition</returns>
-    public async Task<Response<ParameterDefinition>> GetParameterDefinition(Parameter parameter)
-    {
-        var request = new RestRequest($"parameter/{parameter.Id}");
-        var response = await _client.GetAsync(request);
-        return response.As<ParameterDefinition>(true);
-    }
+    public Task<Response<ParameterDefinition>> GetParameterDefinition(Parameter parameter) => Get<ParameterDefinition>($"parameter/{parameter.Id}", true);
 
-    /// <summary>
-    /// Creates a new parameter
-    /// Valid only if no scan was performed with this parameter
-    /// </summary>
+    /// <summary>Creates a new parameter (valid only if no scan was performed with this parameter)</summary>
     /// <param name="parameter">Parameter definition</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> UpdateParameterDefinition(ParameterDefinition parameter)
-    {
-        var request = new RestRequest($"parameter/{parameter.Id}");
-        request.AddBody(JsonSerializer.Serialize(parameter));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> UpdateParameterDefinition(ParameterDefinition parameter) => Set($"parameter/{parameter.Id}", parameter, true);
 
-    /// <summary>
-    /// Deletes the parameter
-    /// </summary>
+    /// <summary>Deletes the parameter</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> DeleteParameter(Parameter parameter)
-    {
-        var request = new RestRequest($"parameter/{parameter.Id}");
-        var response = await _client.DeleteAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> DeleteParameter(Parameter parameter) => Remove($"parameter/{parameter.Id}");
 
-    /// <summary>
-    /// Retrieves the parameter metadata
-    /// </summary>
+    /// <summary>Retrieves the parameter metadata</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Metadata</returns>
-    public async Task<Response<ParameterMetadata>> GetParameterMedatada(Parameter parameter)
-    {
-        var request = new RestRequest($"parameter/{parameter.Id}/metadata");
-        var response = await _client.GetAsync(request);
-        return response.As<ParameterMetadata>(true);
-    }
+    public Task<Response<ParameterMetadata>> GetParameterMedatada(Parameter parameter) => Get<ParameterMetadata>($"parameter/{parameter.Id}/metadata", true);
 
-    /// <summary>
-    /// Retrieves the parameter scan IDs
-    /// </summary>
+    /// <summary>Retrieves the parameter scan IDs</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>List of scan IDs</returns>
-    public async Task<Response<string[]>> GetParameterResults(Parameter parameter)
-    {
-        var request = new RestRequest($"parameter/{parameter.Id}/results");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetParameterResults(Parameter parameter) => Get<string[]>($"parameter/{parameter.Id}/results");
 
-    /// <summary>
-    /// Retrieves gases that can be detected with this parameter
-    /// </summary>
+    /// <summary>Retrieves gases that can be detected with this parameter</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>List of gases</returns>
-    public async Task<Response<Dictionary<string,List<string>>>> GetParameterGases(Parameter parameter)
-    {
-        var request = new RestRequest($"parameter/{parameter.Id}/gasDetection");
-        var response = await _client.GetAsync(request);
-        return response.As<Dictionary<string, List<string>>>();
-    }
+    public Task<Response<Dictionary<string, string[]>>> GetParameterGases(Parameter parameter) => Get<Dictionary<string, string[]>>($"parameter/{parameter.Id}/gasDetection");
 
-    /// <summary>
-    /// Retrieves available parameter templates
-    /// </summary>
+    /// <summary>Retrieves available parameter templates</summary>
     /// <param name="name">the name to search for</param>
     /// <param name="gasDetection">whether to search for templates with or without built-in gas detection</param>
     /// <returns>List of templates</returns>
-    public async Task<Response<ParameterTemplate[]>> GetParameterTemplates(string? name = null, bool? gasDetection = null)
-    {
-        var request = new RestRequest($"parameterTemplate");
-        if (name != null)
-            request.AddQueryParameter("search", name);
-        if (gasDetection != null)
-            request.AddQueryParameter("gas_detection", gasDetection.ToString());
-        var response = await _client.GetAsync(request);
-        return response.As<ParameterTemplate[]>();
-    }
+    public Task<Response<ParameterTemplate[]>> GetParameterTemplates(string? name = null, bool? gasDetection = null) =>
+        Get<ParameterTemplate[]>("parameterTemplate" + ToParams(
+            ("search", name),
+            ("gas_detection", gasDetection)
+        ));
 
-    /// <summary>
-    /// Retrieves the parameter template
-    /// </summary>
+    /// <summary>Retrieves the parameter template</summary>
     /// <param name="name">template name</param>
     /// <returns>Template as the parameter definition</returns>
-    public async Task<Response<ParameterDefinition>> GetParameterTemplate(string name)
-    {
-        var request = new RestRequest($"parameterTemplate/{name}");
-        var response = await _client.GetAsync(request);
-        return response.As<ParameterDefinition>();
-    }
+    public Task<Response<ParameterDefinition>> GetParameterTemplate(string name) => Get<ParameterDefinition>($"parameterTemplate/{name}");
 
-    /// <summary>
-    /// Retrieves the parameter template metadata
-    /// </summary>
+    /// <summary>Retrieves the parameter template metadata</summary>
     /// <param name="name">template name</param>
     /// <returns>Template metadata</returns>
-    public async Task<Response<ParameterTemplate>> GetParameterTemplateMetadata(string name)
-    {
-        var request = new RestRequest($"parameterTemplate/{name}/metadata");
-        var response = await _client.GetAsync(request);
-        return response.As<ParameterTemplate>();
-    }
+    public Task<Response<ParameterTemplate>> GetParameterTemplateMetadata(string name) => Get<ParameterTemplate>($"parameterTemplate/{name}/metadata");
 
-    /// <summary>
-    /// Retrieves the project in use
-    /// </summary>
+    #endregion
+
+    #region PROJECT
+
+    /// <summary>Retrieves the project in use</summary>
     /// <returns>Project name</returns>
-    public async Task<Response<ProjectAsName>> GetProject()
-    {
-        var request = new RestRequest("currentProject");
-        var response = await _client.GetAsync(request);
-        return response.As<ProjectAsName>();
-    }
+    public Task<Response<ProjectAsName>> GetProject() => Get<ProjectAsName>("currentProject");
 
-    /// <summary>
-    /// Loads a project
-    /// </summary>
+    /// <summary>Loads a project</summary>
     /// <param name="project">Project name</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetProject(ProjectAsName project)
-    {
-        var request = new RestRequest("currentProject");
-        request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetProject(ProjectAsName project) => Set("currentProject", project);
 
-    /// <summary>
-    /// Retrieves the list of projects
-    /// </summary>
+    /// <summary>Retrieves the list of projects</summary>
     /// <returns>List of projects</returns>
-    public async Task<Response<string[]>> GetProjects()
-    {
-        var request = new RestRequest("project");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetProjects() => Get<string[]>("project");
 
-    /// <summary>
-    /// Creates a new project
-    /// </summary>
+    /// <summary>Creates a new project</summary>
     /// <param name="project">Project</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> CreateProject(Project project)
-    {
-        var request = new RestRequest("project");
-        request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> CreateProject(Project project) => Create("project", project);
 
-    /// <summary>
-    /// Gets the project definition
-    /// </summary>
+    /// <summary>Gets the project definition</summary>
     /// <param name="name">Project</param>
     /// <returns>Project definition</returns>
-    public async Task<Response<Project>> GetProjectDefinition(string name)
-    {
-        var request = new RestRequest($"project/{name}");
-        var response = await _client.GetAsync(request);
-        return response.As<Project>();
-    }
+    public Task<Response<Project>> GetProjectDefinition(string name) => Get<Project>($"project/{name}");
 
-    /// <summary>
-    /// Updates the project
-    /// </summary>
+    /// <summary>Updates the project</summary>
     /// <param name="name">Project name</param>
     /// <param name="project">New project</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> UpdateProject(string name, Project project)
-    {
-        var request = new RestRequest($"project/{name}");
-        request.AddBody(JsonSerializer.Serialize(project, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> UpdateProject(string name, Project project) => Set($"project/{name}", project);
 
-    /// <summary>
-    /// Deleted the project
-    /// </summary>
+    /// <summary>Deletes the project</summary>
     /// <param name="name">Project name</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> DeleteProject(string name)
-    {
-        var request = new RestRequest($"project/{name}");
-        var response = await _client.DeleteAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> DeleteProject(string name) => Remove($"project/{name}");
 
-    /// <summary>
-    /// Gets the list of project scans
-    /// </summary>
+    /// <summary>Gets the list of project scans</summary>
     /// <param name="name">Project name</param>
     /// <returns>List of scan IDs</returns>
-    public async Task<Response<string[]>> GetProjectResults(string name)
-    {
-        var request = new RestRequest($"project/{name}/results");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetProjectResults(string name) => Get<string[]>($"project/{name}/results");
 
-    /// <summary>
-    /// Get the sequence of parameter presets that is used when a measurement is done with the project.
-    /// </summary>
+    /// <summary>Get the list of project parameters</summary>
     /// <param name="name">Project name</param>
     /// <returns>List of project parameters</returns>
-    public async Task<Response<Parameter[]>> GetProjectSequence(string name)
-    {
-        var request = new RestRequest($"project/{name}/sequence");
-        var response = await _client.GetAsync(request);
-        return response.As<Parameter[]>();
-    }
+    public Task<Response<Parameter[]>> GetProjectSequence(string name) => Get<Parameter[]>($"project/{name}/sequence");
 
-    /// <summary>
-    /// Updates the list of project's parameters
-    /// </summary>
+    /// <summary>Sets the project list of parameters</summary>
     /// <param name="name">Project name</param>
     /// <param name="parameters">List of parameters</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> UpdateProjectParameters(string name, Parameter[] parameters)
-    {
-        var request = new RestRequest($"project/{name}/sequence");
-        request.AddBody(JsonSerializer.Serialize(parameters, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetProjectParameters(string name, Parameter[] parameters) => Set($"project/{name}/sequence", parameters);
 
+    #endregion
 
-    /// <summary>
-    /// Gets current sample flow adjustment values
-    /// </summary>
+    #region CONTROLLER
+
+    /// <summary>Gets current sample flow adjustment values</summary>
     /// <returns>Flow adjustment values</returns>
-    public async Task<Response<Flow>> GetSampleFlow()
-    {
-        var request = new RestRequest("controller/sample/flow");
-        var response = await _client.GetAsync(request);
-        return response.As<Flow>();
-    }
+    public Task<Response<RangeValue>> GetSampleFlow() => Get<RangeValue>("controller/sample/flow");
 
-    /// <summary>
-    /// Sets current sample flow adjustment values
-    /// </summary>
+    /// <summary>Sets current sample flow adjustment values</summary>
     /// <param name="values">Flow adjustment values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSampleFlow(Range values)
-    {
-        var request = new RestRequest("controller/sample/flow");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSampleFlow(Range values) => Set("controller/sample/flow", values);
 
-    /// <summary>
-    /// Gets current sample flow pid controller values.
-    /// </summary>
+    /// <summary>Gets current sample flow pid controller values</summary>
     /// <returns>Flow pid controller values</returns>
-    public async Task<Response<PID>> GetSampleFlowPID()
-    {
-        var request = new RestRequest("controller/sample/flow/pid");
-        var response = await _client.GetAsync(request);
-        return response.As<PID>();
-    }
+    public Task<Response<PID>> GetSampleFlowPID() => Get<PID>("controller/sample/flow/pid");
 
-    /// <summary>
-    /// Sets current sample flow pid controller values.
-    /// </summary>
+    /// <summary>Sets current sample flow pid controller values</summary>
     /// <param name="values">Flow pid controller values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSampleFlowPID(PID values)
-    {
-        var request = new RestRequest("controller/sample/flow/pid");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSampleFlowPID(PID values) => Set("controller/sample/flow/pid", values);
 
-    /// <summary>
-    /// Gets whether the sample flow pump is directly adjusted.
-    /// </summary>
+    /// <summary>Gets whether the sample flow pump is directly adjusted</summary>
     /// <returns>Flow direct control values</returns>
-    public async Task<Response<PumpDirectControl>> GetSampleFlowPumpControl()
-    {
-        var request = new RestRequest("controller/sample/flow/directControl");
-        var response = await _client.GetAsync(request);
-        return response.As<PumpDirectControl>();
-    }
+    public Task<Response<PumpDirectControl>> GetSampleFlowPumpControl() => Get<PumpDirectControl>("controller/sample/flow/directControl");
 
-    /// <summary>
-    /// Sets whether the sample flow pump is directly adjusted.
-    /// </summary>
+    /// <summary>Sets whether the sample flow pump is directly adjusted</summary>
     /// <param name="values">Flow pid controller values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSampleFlowPumpControl(PumpDirectControl values)
-    {
-        var request = new RestRequest("controller/sample/flow/directControl");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSampleFlowPumpControl(PumpDirectControl values) => Set("controller/sample/flow/directControl", values);
 
-    /// <summary>
-    /// Gets current sensor flow adjustment values
-    /// </summary>
+    /// <summary>Gets current sensor flow adjustment values</summary>
     /// <returns>Flow adjustment values</returns>
-    public async Task<Response<Flow>> GetSensorFlow()
-    {
-        var request = new RestRequest("controller/sensor/flow");
-        var response = await _client.GetAsync(request);
-        return response.As<Flow>();
-    }
+    public Task<Response<RangeValue>> GetSensorFlow() => Get<RangeValue>("controller/sensor/flow");
 
-    /// <summary>
-    /// Sets current sensor flow adjustment values
-    /// </summary>
+    /// <summary>Sets current sensor flow adjustment values</summary>
     /// <param name="values">Flow adjustment values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSensorFlow(Range values)
-    {
-        var request = new RestRequest("controller/sensor/flow");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSensorFlow(Range values) => Set("controller/sensor/flow", values);
 
-    /// <summary>
-    /// Gets current sensor flow pid controller values.
-    /// </summary>
+    /// <summary>Gets current sensor flow pid controller values</summary>
     /// <returns>Flow pid controller values</returns>
-    public async Task<Response<PID>> GetSensorFlowPID()
-    {
-        var request = new RestRequest("controller/sensor/flow/pid");
-        var response = await _client.GetAsync(request);
-        return response.As<PID>();
-    }
+    public Task<Response<PID>> GetSensorFlowPID() => Get<PID>("controller/sensor/flow/pid");
 
-    /// <summary>
-    /// Sets current sensor flow pid controller values.
-    /// </summary>
+    /// <summary>Sets current sensor flow pid controller values</summary>
     /// <param name="values">Flow pid controller values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSensorFlowPID(PID values)
-    {
-        var request = new RestRequest("controller/sensor/flow/pid");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSensorFlowPID(PID values) => Set("controller/sensor/flow/pid", values);
 
-    /// <summary>
-    /// Gets whether the sensor flow pump is directly adjusted.
-    /// </summary>
+    /// <summary>Gets whether the sensor flow pump is directly adjusted</summary>
     /// <returns>Flow direct control values</returns>
-    public async Task<Response<PumpDirectControl>> GetSensorFlowPumpControl()
-    {
-        var request = new RestRequest("controller/sensor/flow/directControl");
-        var response = await _client.GetAsync(request);
-        return response.As<PumpDirectControl>();
-    }
+    public Task<Response<PumpDirectControl>> GetSensorFlowPumpControl() => Get<PumpDirectControl>("controller/sensor/flow/directControl");
 
-    /// <summary>
-    /// Sets whether the sensor flow pump is directly adjusted.
-    /// </summary>
+    /// <summary>Sets whether the sensor flow pump is directly adjusted</summary>
     /// <param name="values">Flow pid controller values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSensorFlowPumpControl(PumpDirectControl values)
-    {
-        var request = new RestRequest("controller/sensor/flow/directControl");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSensorFlowPumpControl(PumpDirectControl values) => Set("controller/sensor/flow/directControl", values);
 
-    /// <summary>
-    /// Gets current sample gas heater temperature adjustment values.
-    /// </summary>
+    /// <summary>Gets current sample gas heater temperature adjustment values</summary>
     /// <returns>Gas heater temperature adjustment values</returns>
-    public async Task<Response<Flow>> GetSampleHeaterTemp()
-    {
-        var request = new RestRequest("controller/sample/heaterTemperature");
-        var response = await _client.GetAsync(request);
-        return response.As<Flow>();
-    }
+    public Task<Response<RangeValue>> GetSampleHeaterTemp() => Get<RangeValue>("controller/sample/heaterTemperature");
 
-    /// <summary>
-    /// Sets current sample gas heater temperature adjustment values.
-    /// </summary>
+    /// <summary>Sets current sample gas heater temperature adjustment values</summary>
     /// <param name="values">Gas heater temperature adjustment values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSampleHeaterTemp(Range values)
-    {
-        var request = new RestRequest("controller/sample/heaterTemperature");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSampleHeaterTemp(Range values) => Set("controller/sample/heaterTemperature", values);
 
-    /// <summary>
-    /// Gets current sample gas heater temperature pid controller values.
-    /// </summary>
+    /// <summary>Gets current sample gas heater temperature pid controller values</summary>
     /// <returns>Gas heater temperature pid controller values</returns>
-    public async Task<Response<PID>> GetSampleHeaterTempPID()
-    {
-        var request = new RestRequest("controller/sample/heaterTemperature/pid");
-        var response = await _client.GetAsync(request);
-        return response.As<PID>();
-    }
+    public Task<Response<PID>> GetSampleHeaterTempPID() => Get<PID>("controller/sample/heaterTemperature/pid");
 
-    /// <summary>
-    /// Sets current sample gas heater temperature pid controller values.
-    /// </summary>
+    /// <summary>Sets current sample gas heater temperature pid controller values</summary>
     /// <param name="values">Gas heater temperature  pid controller values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSampleHeaterTempPID(PID values)
-    {
-        var request = new RestRequest("controller/sample/heaterTemperature/pid");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSampleHeaterTempPID(PID values) => Set("controller/sample/heaterTemperature/pid", values);
 
-    /// <summary>
-    /// Gets whether the sample gas heater temperature  pump is directly adjusted.
-    /// </summary>
+    /// <summary>Gets whether the sample gas heater temperature  pump is directly adjusted</summary>
     /// <returns>Gas heater temperature direct control values</returns>
-    public async Task<Response<PumpDirectControl>> GetSampleHeaterTempPumpControl()
-    {
-        var request = new RestRequest("controller/sample/heaterTemperature/directControl");
-        var response = await _client.GetAsync(request);
-        return response.As<PumpDirectControl>();
-    }
+    public Task<Response<PumpDirectControl>> GetSampleHeaterTempPumpControl() => Get<PumpDirectControl>("controller/sample/heaterTemperature/directControl");
 
-    /// <summary>
-    /// Sets whether the sample gas heater temperature  pump is directly adjusted.
-    /// </summary>
+    /// <summary>Sets whether the sample gas heater temperature  pump is directly adjusted</summary>
     /// <param name="values">Gas heater temperature controller values</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetSampleHeaterTempPumpControl(PumpDirectControl values)
-    {
-        var request = new RestRequest("controller/sample/heaterTemperature/directControl");
-        request.AddBody(JsonSerializer.Serialize(values, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetSampleHeaterTempPumpControl(PumpDirectControl values) => Set("controller/sample/heaterTemperature/directControl", values);
 
-    // Skipped:
-    // * /controller/sample/temperature
-    // * /controller/sensor/temperature
-    // * /controller/ambient/temperature
-    // * /controller/sample/pressure
-    // * /controller/sensor/pressure
-    // * /controller/ambient/pressure
-    // * /controller/sample/humidity
-    // * /controller/sensor/humidity
-    // * /controller/ambient/humidity
-    // * /controller/miscellaneous/fetTemperature
+    /// <summary>Gets the sample temperature</summary>
+    /// <returns>Temperature</returns>
+    public Task<Response<RangeValue>> GetSampleTemperature() => Get<RangeValue>("controller/sample/temperature");
 
+    /// <summary>Sets the sample temperature</summary>
+    /// <param name="values">Temperature</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetSampleTemperature(Range values) => Set("controller/sample/temperature", values);
 
-    /// <summary>
-    /// Gets the list of project scans
-    /// </summary>
-    /// <param name="max_results">How many results to fetch at a time.May be limited if the results are too large.</param>
+    /// <summary>Gets the sensor temperature</summary>
+    /// <returns>Temperature</returns>
+    public Task<Response<RangeValue>> GetSensorTemperature() => Get<RangeValue>("controller/sensor/temperature");
+
+    /// <summary>Sets the sensor temperature</summary>
+    /// <param name="values">Temperature</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetSensorTemperature(Range values) => Set("controller/sensor/temperature", values);
+
+    /// <summary>Gets the ambient temperature</summary>
+    /// <returns>Temperature</returns>
+    public Task<Response<RangeValue>> GetAmbientTemperature() => Get<RangeValue>("controller/ambient/temperature");
+
+    /// <summary>Sets the ambient temperature</summary>
+    /// <param name="values">Temperature</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetAmbientTemperature(Range values) => Set("controller/senambientsor/temperature", values);
+
+    /// <summary>Gets the sample pressure</summary>
+    /// <returns>Pressure</returns>
+    public Task<Response<RangeValue>> GetSamplePressure() => Get<RangeValue>("controller/sample/pressure");
+
+    /// <summary>Sets the sample pressure</summary>
+    /// <param name="values">Pressure</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetSamplePressure(Range values) => Set("controller/sample/pressure", values);
+
+    /// <summary>Gets the sensor pressure</summary>
+    /// <returns>Pressure</returns>
+    public Task<Response<RangeValue>> GetSensorPressure() => Get<RangeValue>("controller/sensor/pressure");
+
+    /// <summary>Sets the sensor pressure</summary>
+    /// <param name="values">Pressure</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetSensorPressure(Range values) => Set("controller/sensor/pressure", values);
+
+    /// <summary>Gets the ambient pressure</summary>
+    /// <returns>Pressure</returns>
+    public Task<Response<RangeValue>> GetAmbientPressure() => Get<RangeValue>("controller/ambient/pressure");
+
+    /// <summary>Sets the ambient pressure</summary>
+    /// <param name="values">Pressure</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetAmbientPressure(Range values) => Set("controller/senambientsor/pressure", values);
+
+    /// <summary>Gets the sample humidity</summary>
+    /// <returns>Humidity</returns>
+    public Task<Response<RangeValue>> GetSampleHumidity() => Get<RangeValue>("controller/sample/humidity");
+
+    /// <summary>Sets the sample humidity</summary>
+    /// <param name="values">Humidity</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetSampleHumidity(Range values) => Set("controller/sample/humidity", values);
+
+    /// <summary>Gets the sensor humidity</summary>
+    /// <returns>Humidity</returns>
+    public Task<Response<RangeValue>> GetSensorHumidity() => Get<RangeValue>("controller/sensor/humidity");
+
+    /// <summary>Sets the sensor humidity</summary>
+    /// <param name="values">Humidity</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetSensorHumidity(Range values) => Set("controller/sensor/humidity", values);
+
+    /// <summary>Gets the ambient humidity</summary>
+    /// <returns>Humidity</returns>
+    public Task<Response<RangeValue>> GetAmbientHumidity() => Get<RangeValue>("controller/ambient/humidity");
+
+    /// <summary>Sets the ambient humidity</summary>
+    /// <param name="values">Humidity</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetAmbientHumidity(Range values) => Set("controller/senambientsor/humidity", values);
+
+    /// <summary>Gets FET temperature</summary>
+    /// <returns>FET temperature</returns>
+    public Task<Response<RangeValue>> GetFETTemperature() => Get<RangeValue>("controller/miscellaneous/fetTemperature");
+
+    /// <summary>Sets FET temperature</summary>
+    /// <param name="values">FET temperature</param>
+    /// <returns>Confirmation message</returns>
+    public Task<Response<Confirm>> SetFETTemperature(Range values) => Set("controller/miscellaneous/fetTemperature", values);
+
+    #endregion
+
+    #region RESULTS
+
+    /// <summary>Gets the list of project scans</summary>
+    /// <param name="maxResults">How many results to fetch at a time.May be limited if the results are too large.</param>
     /// <param name="page">If there are more results than maxResults, the results are divided into maxResults length pages. List results from this page.</param>
     /// <param name="search">Filter the results using this free form text search. It searches from the comments object, the name of the used parameter preset, the name of the user who performed the scan and the project used for the scan.</param>
-    /// <param name="start_date">The earliest date from which the data is searched from.</param>
+    /// <param name="startDate">The earliest date from which the data is searched from.</param>
     /// <param name="date">The latest date to which the data is searched to.</param>
-    /// <param name="sort_by">Sort the results by: date_asc or date_dsc</param>
-    /// <param name="only_metadata">Get only limited metadata of the results instead of full result objects.</param>
+    /// <param name="sortBy">Sort the results by: date_asc or date_dsc</param>
+    /// <param name="onlyMetadata">Get only limited metadata of the results instead of full result objects.</param>
+    /// <param name="ids">List of result IDs to query</param>
     /// <returns>List of scan IDs</returns>
-    public async Task<Response<SearchResult>> GetResults(
+    public Task<Response<SearchResult>> GetResults(
         int? maxResults = null,
         int? page = null,
         string? search = null,
         string? startDate = null,
-	        string? date = null,
+        string? date = null,
         string? sortBy = null,
         bool? onlyMetadata = null,
-        string[]? ids = null)
-    {
-        var request = new RestRequest("results");
-        if (maxResults != null) request.AddParameter("max_results", maxResults.ToString());
-        if (page != null) request.AddParameter("page", page.ToString());
-        if (search != null) request.AddParameter("search", search.ToString());
-        if (startDate != null) request.AddParameter("start_date", startDate.ToString());
-        if (date != null) request.AddParameter("date", date.ToString());
-        if (sortBy != null) request.AddParameter("sort_by", sortBy.ToString());
-        if (onlyMetadata != null) request.AddParameter("only_metadata", onlyMetadata.ToString());
-        if (ids != null) request.AddParameter("ids", string.Join(',', ids));
+        string[]? ids = null) => Get<SearchResult>("result" + ToParams(
+            ("max_results", maxResults),
+            ("page", page),
+            ("search", search),
+            ("start_date", startDate),
+            ("date", date),
+            ("sortBy", sortBy),
+            ("onlyMetadata", onlyMetadata),
+            ("ids", ids)
+        ));
 
-        var response = await _client.GetAsync(request);
-        return response.As<SearchResult>();
-    }
-
-    /// <summary>
-    /// Deletes scans
-    /// </summary>
+    /// <summary>Deletes scans</summary>
     /// <param name="list">List of scan IDs</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> DeleteResults(ListOfIDs list)
-    {
-        var request = new RestRequest($"results");
-        request.AddBody(JsonSerializer.Serialize(list, _serializationOptions));
-        var response = await _client.DeleteAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> DeleteResults(ListOfIDs list) => Remove($"results", list);
 
-    /// <summary>
-    /// Retrieves the latest scan
-    /// </summary>
+    /// <summary>Retrieves the latest scan</summary>
     /// <returns>Scan data</returns>
-    public async Task<Response<ScanResult>> GetLatestResult()
-    {
-        var request = new RestRequest("results/latest");
-        var response = await _client.GetAsync(request);
-        return response.As<ScanResult>();
-    }
+    public Task<Response<ScanResult>> GetLatestResult() => Get<ScanResult>("results/latest");
 
-    /// <summary>
-    /// Retrieves gases of the latest scan
-    /// </summary>
+    /// <summary>Retrieves gases of the latest scan</summary>
     /// <returns>Gases</returns>
-    public async Task<Response<string[]>> GetLatestResultGases()
-    {
-        var request = new RestRequest("results/latest/gasDetection");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetLatestResultGases() => Get<string[]>("results/latest/gasDetection");
 
-    /// <summary>
-    /// Retrieves the scan
-    /// </summary>
+    /// <summary>Retrieves the scan</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Scan data</returns>
-    public async Task<Response<ScanResult>> GetResult(string id)
-    {
-        var request = new RestRequest($"results/id/{id}");
-        var response = await _client.GetAsync(request);
-        return response.As<ScanResult>();
-    }
+    public Task<Response<ScanResult>> GetResult(string id) => Get<ScanResult>($"results/id/{id}");
 
-    /// <summary>
-    /// Deletes the scan
-    /// </summary>
+    /// <summary>Deletes the scan</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> DeleteResult(string id)
-    {
-        var request = new RestRequest($"results/id/{id}");
-        var response = await _client.DeleteAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> DeleteResult(string id) => Remove($"results/id/{id}");
 
-    /// <summary>
-    /// Copies the scan
-    /// </summary>
+    /// <summary>Copies the scan</summary>
     /// <param name="id">Scan id</param>
     /// <param name="props">Copying properties</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> CopyResult(string id, CopyResultProperties props)
-    {
-        var request = new RestRequest($"results/id/{id}/copy");
-        request.AddBody(JsonSerializer.Serialize(props, _serializationOptions));
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> CopyResult(string id, CopyResultProperties props) => Create($"results/id/{id}/copy", props);
 
-    /// <summary>
-    /// Retrieves the scan comments
-    /// </summary>
+    /// <summary>Retrieves the scan comments</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Comments</returns>
-    public async Task<Response<Comments>> GetResultComments(string id)
-    {
-        var request = new RestRequest($"results/id/{id}/comments");
-        var response = await _client.GetAsync(request);
-        return response.As<Comments>();
-    }
+    public Task<Response<Comments>> GetResultComments(string id) => Get<Comments>($"results/id/{id}/comments");
 
-    /// <summary>
-    /// Sets the scan comments
-    /// </summary>
+    /// <summary>Sets the scan comments</summary>
     /// <param name="id">Scan id</param>
     /// <param name="comments">Comments</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> GetResultComments(string id, Comments comments)
-    {
-        var request = new RestRequest($"results/id/{id}/comments");
-        request.AddBody(JsonSerializer.Serialize(comments, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetResultComments(string id, Comments comments) => Set($"results/id/{id}/comments", comments);
 
-    /// <summary>
-    /// Retrieves the scan gases
-    /// </summary>
+    /// <summary>Retrieves the scan gases</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Gases</returns>
-    public async Task<Response<string[]>> GetResultGases(string id)
-    {
-        var request = new RestRequest($"results/id/{id}/gasDetection");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetResultGases(string id) => Get<string[]>($"results/id/{id}/gasDetection");
 
-    /// <summary>
-    /// Retrieves the system status
-    /// </summary>
+    #endregion
+
+    #region SYSTEM
+
+    /// <summary> Retrieves the system status</summary>
     /// <returns>System status</returns>
-    public async Task<Response<SystemStatus>> GetSystemStatus()
-    {
-        var request = new RestRequest("system/status");
-        var response = await _client.GetAsync(request);
-        return response.As<SystemStatus>();
-    }
+    public Task<Response<SystemStatus>> GetSystemStatus() => Get<SystemStatus>("system/status");
 
-    /// <summary>
-    /// Resets the gas filter usage counter.
-    /// </summary>
+    /// <summary>Resets the gas filter usage counter</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> ResetGasFilter()
-    {
-        var request = new RestRequest("system/status/resetGasFilter");
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> ResetGasFilter() => Create("system/status/resetGasFilter");
 
-    /// <summary>
-    /// Retrieves the calibration
-    /// </summary>
+    /// <summary>Retrieves the calibration</summary>
     /// <returns>Calibration</returns>
-    public async Task<Response<Calibration>> GetCalibration()
-    {
-        var request = new RestRequest("system/calibration");
-        var response = await _client.GetAsync(request);
-        return response.As<Calibration>();
-    }
+    public Task<Response<Calibration>> GetCalibration() => Get<Calibration>("system/calibration");
 
-    /// <summary>
-    /// Starts new calibration
-    /// </summary>
+    /// <summary>Starts new calibration</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> StartCalibration()
-    {
-        var request = new RestRequest("system/calibration");
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> StartCalibration() => Create("system/calibration");
 
-    /// <summary>
-    /// Retrieves the storage devices
-    /// </summary>
+    /// <summary>Retrieves the storage devices</summary>
     /// <returns>List of devices</returns>
-    public async Task<Response<Device[]>> GetDevices()
-    {
-        var request = new RestRequest("system/devices");
-        var response = await _client.GetAsync(request);
-        return response.As<Device[]>();
-    }
+    public Task<Response<Device[]>> GetDevices() => Get<Device[]>("system/devices");
+
+    /// <summary>Retrieves the storage devices</summary>
+    /// <returns>List of devices</returns>
+    public Task<Response<SystemInfo>> GetSystemInfo() => Get<SystemInfo>("system/update/info");
 
     // Skipped:
     // GET /system/update
@@ -923,154 +514,72 @@ public class API : IMinimalAPI
     // POST /system/reset
     // GET /system/licenses
 
-    /// <summary>
-    /// Retrieves the system clock
-    /// </summary>
-    /// <returns>Clock</returns>
-    public async Task<Response<Clock>> GetClock()
-    {
-        var request = new RestRequest("settings/clock");
-        var response = await _client.GetAsync(request);
-        return response.As<Clock>();
-    }
+    #endregion
 
-    /// <summary>
-    /// Sets the system clock
-    /// </summary>
+    #region SETTINGS
+
+    /// <summary>Retrieves the system clock</summary>
+    /// <returns>Clock</returns>
+    public Task<Response<Clock>> GetClock() => Get<Clock>("settings/clock");
+
+    /// <summary>Sets the system clock</summary>
     /// <param name="clock">clock</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetClock(Clock clock)
-    {
-        var request = new RestRequest("settings/clock");
-        request.AddBody(JsonSerializer.Serialize(clock, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetClock(ClockToSet clock) => Set("settings/clock", clock);
 
-    /// <summary>
-    /// Get a list of timezones
-    /// </summary>
+    /// <summary>Get a list of timezones</summary>
     /// <returns>List of timezones</returns>
-    public async Task<Response<Timezone[]>> GetClockTimezones()
-    {
-        var request = new RestRequest("settings/clock");
-        var response = await _client.OptionsAsync(request);
-        return response.As<Timezone[]>();
-    }
+    public Task<Response<Timezone[]>> GetClockTimezones() => GetOptions<Timezone[]>("settings/clock");
 
-    /// <summary>
-    /// Get the keyboard
-    /// </summary>
+    /// <summary>Get the keyboard</summary>
     /// <returns>Keyboard</returns>
-    public async Task<Response<Keyboard>> GetKeyboard()
-    {
-        var request = new RestRequest("settings/keyboard");
-        var response = await _client.GetAsync(request);
-        return response.As<Keyboard>();
-    }
+    public Task<Response<KeyboardAndModel>> GetKeyboard() => Get<KeyboardAndModel>("settings/keyboard");
 
-    /// <summary>
-    /// Sets a keyboard
-    /// </summary>
+    /// <summary>Sets a keyboard</summary>
     /// <param name="keyboard">keyboard</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> SetKeyboard(Keyboard keyboard)
-    {
-        var request = new RestRequest("settings/keyboard");
-        request.AddBody(JsonSerializer.Serialize(keyboard, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> SetKeyboard(Keyboard keyboard) => Set("settings/keyboard", keyboard);
 
-    /// <summary>
-    /// Get the available keyboard layouts
-    /// </summary>
+    /// <summary>Get the available keyboard layouts</summary>
     /// <returns>Layouts</returns>
-    public async Task<Response<string[]>> GetAvailableKeyboardLayouts()
-    {
-        var request = new RestRequest("settings/keyboard/layout");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetAvailableKeyboardLayouts() => Get<string[]>("settings/keyboard/layout");
 
-    /// <summary>
-    /// Get the available keyboard layout variants
-    /// </summary>
+    /// <summary>Get the available keyboard layout variants</summary>
     /// <returns>Layouts</returns>
-    public async Task<Response<KeyboardLayout>> GetAvailableKeyboardLayouts(string layout)
-    {
-        var request = new RestRequest($"settings/keyboard/layout/{layout}");
-        var response = await _client.GetAsync(request);
-        return response.As<KeyboardLayout>();
-    }
+    public Task<Response<KeyboardLayout>> GetAvailableKeyboardLayouts(string layout) => Get<KeyboardLayout>($"settings/keyboard/layout/{layout}");
 
-    /// <summary>
-    /// Get a list of external locations data is currently saved to
-    /// </summary>
+    /// <summary>Get a list of external locations data is currently saved to</summary>
     /// <returns>List of locations</returns>
-    public async Task<Response<string[]>> GetDataSaveLocations()
-    {
-        var request = new RestRequest("settings/dataSaveLocations");
-        var response = await _client.GetAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetDataSaveLocations() => Get<string[]>("settings/dataSaveLocations");
 
-    /// <summary>
-    /// Set a list of external locations data will be saved to
-    /// </summary>
+    /// <summary>Set a list of external locations data will be saved to</summary>
     /// <param name="locations">List of locations</param>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<string[]>> GetDataSaveLocations(string[] locations)
-    {
-        var request = new RestRequest("settings/dataSaveLocations");
-        request.AddBody(JsonSerializer.Serialize(locations, _serializationOptions));
-        var response = await _client.PutAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<Confirm>> SetDataSaveLocations(string[] locations) => Set("settings/dataSaveLocations", locations);
 
-    /// <summary>
-    /// Get a list of available external locations to save data to
-    /// </summary>
+    /// <summary>Get a list of available external locations to save data to</summary>
     /// <returns>List of available locations</returns>
-    public async Task<Response<string[]>> GetAvailableDataSaveLocations()
-    {
-        var request = new RestRequest("settings/dataSaveLocations");
-        var response = await _client.OptionsAsync(request);
-        return response.As<string[]>();
-    }
+    public Task<Response<string[]>> GetAvailableDataSaveLocations() => GetOptions<string[]>("settings/dataSaveLocations");
+
+    #endregion
 
     // Skipping:
-    // GET /graphColour/*
+    // * /graphColour/*
 
     // Skipping:
-    // GET /backups/*
+    // * /backups/*
 
-    /// <summary>
-    /// Reboots the system
-    /// </summary>
+    #region OTHER
+
+    /// <summary>Reboots the system</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> Reboot()
-    {
-        var request = new RestRequest("reboot");
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    public Task<Response<Confirm>> Reboot() => Create("reboot");
 
-    /// <summary>
-    /// Shutdowns the system
-    /// </summary>
+    /// <summary>Shutdowns the system</summary>
     /// <returns>Confirmation message</returns>
-    public async Task<Response<Confirm>> Shutdown(bool? force = null)
-    {
-        var query = new List<string>();
-        if (force != null) query.Add($"force={force}");
+    public Task<Response<Confirm>> Shutdown(bool? force = null) => Create("shutdown" + ToParams(("force", force)));
 
-        string queryStr = query.Count > 0 ? "?" + string.Join('&', query) : "";
-
-        var request = new RestRequest($"shutdown{queryStr}");
-        var response = await _client.PostAsync(request);
-        return response.As<Confirm>();
-    }
+    #endregion
 
     // Skipping:
     // GET /olfactomics/*
@@ -1082,6 +591,141 @@ public class API : IMinimalAPI
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+
+    private async Task<Response<T>> Get<T>(string path, bool preserveCase = false)
+    {
+        var request = new RestRequest(path);
+        var response = await _client.GetAsync(request);
+        return response.As<T>(preserveCase);
+    }
+    private async Task<Response<Confirm>> Set(string path)
+    {
+        var request = new RestRequest(path);
+        try
+        {
+            var response = await _client.PutAsync(request);
+            return response.As<Confirm>();
+        }
+        catch (Exception ex)
+        {
+            return new Response<Confirm>(null, ex.Message);
+        }
+    }
+    private async Task<Response<Confirm>> Set<T>(string path, T param, bool preserveCase = false)
+    {
+        var request = new RestRequest(path);
+        request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
+        try
+        { 
+            var response = await _client.PutAsync(request);
+            return response.As<Confirm>();
+        }
+        catch (Exception ex)
+        {
+            return new Response<Confirm>(null, ex.Message);
+        }
+    }
+    private async Task<Response<Confirm>> Create(string path)
+    {
+        var request = new RestRequest(path);
+        try
+        {
+            var response = await _client.PostAsync(request);
+            return response.As<Confirm>();
+        }
+        catch (Exception ex)
+        {
+            return new Response<Confirm>(null, ex.Message);
+        }
+    }
+    private async Task<Response<Confirm>> Create<T>(string path, T param, bool preserveCase = false)
+    {
+        var request = new RestRequest(path);
+        request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
+        try
+        {
+            var response = await _client.PostAsync(request);
+            return response.As<Confirm>();
+        }
+        catch (Exception ex)
+        {
+            return new Response<Confirm>(null, ex.Message);
+        }
+    }
+    private async Task<Response<U>> Create<T,U>(string path, T param, bool preserveParamCase = false, bool preserveResponseCase = false) where U : class
+    {
+        var request = new RestRequest(path);
+        request.AddBody(JsonSerializer.Serialize(param, preserveParamCase ? null : _serializationOptions));
+        try
+        { 
+            var response = await _client.PostAsync(request);
+            return response.As<U>(preserveResponseCase);
+        }
+        catch (Exception ex)
+        {
+            return new Response<U>(null, ex.Message);
+        }
+    }
+    private async Task<Response<Confirm>> Remove(string path)
+    {
+        var request = new RestRequest(path);
+        try
+        {
+            var response = await _client.DeleteAsync(request);
+            return response.As<Confirm>();
+        }
+        catch (Exception ex)
+        {
+            return new Response<Confirm>(null, ex.Message);
+        }
+    }
+    private async Task<Response<Confirm>> Remove<T>(string path, T param, bool preserveCase = false)
+    {
+        var request = new RestRequest(path);
+        request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
+        try
+        {
+            var response = await _client.DeleteAsync(request);
+            return response.As<Confirm>();
+        }
+        catch (Exception ex)
+        {
+            return new Response<Confirm>(null, ex.Message);
+        }
+    }
+    private async Task<Response<T>> GetOptions<T>(string path, bool preserveCase = false) where T : class
+    {
+        var request = new RestRequest(path);
+        try
+        {
+            var response = await _client.GetAsync(request);
+            return response.As<T>(preserveCase);
+        }
+        catch (Exception ex)
+        {
+            return new Response<T>(null, ex.Message);
+        }
+    }
+
+    private static string ToParams(params (string, object?)[] list)
+    {
+        List<string> result = new();
+        foreach (var item in list)
+        {
+            if (item.Item2 != null)
+            {
+                if (item.Item2 is Array array)
+                {
+                    result.Add($"{item.Item1}={string.Join(',', array)}");
+                }
+                else
+                {
+                    result.Add($"{item.Item1}={item.Item2}");
+                }
+            }
+        }
+        return (result.Count > 0 ? "?" : "") + string.Join("&", result);
+    }
 }
 
 internal static class RestResponseExtension

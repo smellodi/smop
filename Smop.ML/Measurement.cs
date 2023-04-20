@@ -3,14 +3,14 @@
 namespace Smop.ML;
 
 internal record class ScanSetup(
-    StepRange Usv,
-    StepRange Ucv
+    RangeStep Usv,
+    RangeStep Ucv
 );
 internal record class ScanConditions(
-    RangeProps Flow,
-    RangeProps Temperature,
-    RangeProps Pressure,
-    RangeProps Humidity
+    RangeAvg Flow,
+    RangeAvg Temperature,
+    RangeAvg Pressure,
+    RangeAvg Humidity
 );
 internal record class ScanData(
     float[] Positive,

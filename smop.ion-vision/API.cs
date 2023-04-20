@@ -512,8 +512,16 @@ public class API : IMinimalAPI
     // POST /system/update
     // GET /system/debug
     // GET /system/debug/logs
-    // GET /system/errors
-    // GET /system/errors/valueLimits
+
+    /// <summary>Retrieves a list last errors</summary>
+    /// <returns>List of errors</returns>
+    public Task<Response<string[]>> GetErrors() => Get<string[]>("system/errors");
+
+    /// <summary>Retrieves a list of limit errors</summary>
+    /// <returns>List of limit errors</returns>
+    public Task<Response<ErrorRegister>> GetLimitErrors() => Get<ErrorRegister>("system/errors/valueLimits");
+
+    // Skipped:
     // GET /system/reset
     // POST /system/reset
     // GET /system/licenses
@@ -590,6 +598,8 @@ public class API : IMinimalAPI
 
     // Internal
 
+    const object? Empty = null;
+
     readonly RestClient _client;
     readonly JsonSerializerOptions _serializationOptions = new()
     {
@@ -609,23 +619,14 @@ public class API : IMinimalAPI
             return new Response<T>(null, ex.Message);
         }
     }
-    private async Task<Response<Confirm>> Set(string path)
+
+    private async Task<Response<Confirm>> Set<T>(string path, T? param = null, bool preserveCase = false) where T : class
     {
         var request = new RestRequest(path);
-        try
+        if (param != null)
         {
-            var response = await _client.PutAsync(request);
-            return response.As<Confirm>();
+            request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
         }
-        catch (Exception ex)
-        {
-            return new Response<Confirm>(null, ex.Message);
-        }
-    }
-    private async Task<Response<Confirm>> Set<T>(string path, T param, bool preserveCase = false)
-    {
-        var request = new RestRequest(path);
-        request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
         try
         { 
             var response = await _client.PutAsync(request);
@@ -636,34 +637,11 @@ public class API : IMinimalAPI
             return new Response<Confirm>(null, ex.Message);
         }
     }
-    private async Task<Response<Confirm>> Create(string path)
-    {
-        var request = new RestRequest(path);
-        try
-        {
-            var response = await _client.PostAsync(request);
-            return response.As<Confirm>();
-        }
-        catch (Exception ex)
-        {
-            return new Response<Confirm>(null, ex.Message);
-        }
-    }
-    private async Task<Response<Confirm>> Create<T>(string path, T param, bool preserveCase = false)
-    {
-        var request = new RestRequest(path);
-        request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
-        try
-        {
-            var response = await _client.PostAsync(request);
-            return response.As<Confirm>();
-        }
-        catch (Exception ex)
-        {
-            return new Response<Confirm>(null, ex.Message);
-        }
-    }
-    private async Task<Response<U>> Create<T,U>(string path, T param, bool preserveParamCase = false, bool preserveResponseCase = false) where U : class
+    private Task<Response<Confirm>> Set(string path) => Set<object>(path);
+
+    private async Task<Response<U>> Create<T,U>(string path, T? param, bool preserveParamCase = false, bool preserveResponseCase = false)
+        where T : class
+        where U : class
     {
         var request = new RestRequest(path);
         request.AddBody(JsonSerializer.Serialize(param, preserveParamCase ? null : _serializationOptions));
@@ -677,20 +655,11 @@ public class API : IMinimalAPI
             return new Response<U>(null, ex.Message);
         }
     }
-    private async Task<Response<Confirm>> Remove(string path)
-    {
-        var request = new RestRequest(path);
-        try
-        {
-            var response = await _client.DeleteAsync(request);
-            return response.As<Confirm>();
-        }
-        catch (Exception ex)
-        {
-            return new Response<Confirm>(null, ex.Message);
-        }
-    }
-    private async Task<Response<Confirm>> Remove<T>(string path, T param, bool preserveCase = false)
+    private Task<Response<Confirm>> Create<T>(string path, T? param = null, bool preserveCase = false) where T : class =>
+        Create<T, Confirm>(path, param, preserveCase, false);
+    private Task<Response<Confirm>> Create(string path) => Create<object>(path);
+
+    private async Task<Response<Confirm>> Remove<T>(string path, T? param = null, bool preserveCase = false) where T : class
     {
         var request = new RestRequest(path);
         request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
@@ -704,6 +673,8 @@ public class API : IMinimalAPI
             return new Response<Confirm>(null, ex.Message);
         }
     }
+    private Task<Response<Confirm>> Remove(string path) => Remove<object>(path);
+
     private async Task<Response<T>> GetOptions<T>(string path, bool preserveCase = false) where T : class
     {
         var request = new RestRequest(path);

@@ -20,6 +20,8 @@ public class API : IMinimalAPI
         }
     }
 
+    public string Version => "1.5";
+
     public API(string ip)
     {
         var host = $"http://{ip}/api";

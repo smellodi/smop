@@ -5,6 +5,7 @@ namespace Smop.IonVision;
 
 internal interface IMinimalAPI
 {
+    string Version { get; }
     Task<Response<SystemStatus>> GetSystemStatus();
     Task<Response<SystemInfo>> GetSystemInfo();
     Task<Response<User>> GetUser();

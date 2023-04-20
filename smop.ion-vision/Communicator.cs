@@ -7,6 +7,8 @@ public class Communicator
 {
     public const int PROJECT_LOADING_DURATION = 2000;
 
+    public string SupportedVersion => _api.Version;
+
     public Settings Settings => _settings;
 
     public Communicator(string? settingsFilename = null, bool isSimulator = false)

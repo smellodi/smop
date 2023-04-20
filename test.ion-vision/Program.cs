@@ -91,11 +91,11 @@ static async Task<bool> Connect(Communicator ionVision)
         Console.WriteLine("The device is offline");
         return false;
     }
-    else if (version.Value!.CurrentVersion != "1.5")
+    else if (version.Value!.CurrentVersion != ionVision.SupportedVersion)
     {
         Console.WriteLine();
         Console.WriteLine("=================== WARNING! ===================");
-        Console.WriteLine(" This module works with IonVision API v1.5");
+        Console.WriteLine($" This module works with IonVision API v{ionVision.SupportedVersion}");
         Console.WriteLine(" The device API version that is connected now is");
         Console.WriteLine($"                    v{version.Value!.CurrentVersion}");
         Console.WriteLine(" Be prepared to experience errors and exceptions");

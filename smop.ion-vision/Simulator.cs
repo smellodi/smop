@@ -9,6 +9,8 @@ namespace Smop.IonVision;
 
 internal class Simulator : IMinimalAPI
 {
+    public string Version => "1.5";
+
     public Simulator()
     {
         _timer.AutoReset = false;

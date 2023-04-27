@@ -1,8 +1,11 @@
 ﻿namespace Smop.ML;
 
-public enum RequestType
+public static class RequestType
 {
-    Recipe
+    public static string Recipe => "recipe";
 }
 
-public record class Request(RequestType Type, object Content);
+public record class Request(string Type, object Content);
+
+public record class Channel(int Slot, float Flow, float Duration, float Temperature);
+public record class Recipe(string Name, Channel[]? Channels, float? dilution = null);

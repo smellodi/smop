@@ -32,11 +32,11 @@ internal class Server : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task SendAsync(Measurement packet)
+    public async Task SendAsync<T>(T packet)
     {
         if (_client != Guid.Empty)
         {
-            var data = JsonSerializer.Serialize(packet);
+            var data = JsonSerializer.Serialize(packet, _serializerOptions);
             Console.WriteLine("[SERVER] sent: " + data.Max(700));
             await _server.SendAsync(_client, data);
         }
@@ -47,6 +47,12 @@ internal class Server : IDisposable
     readonly WatsonTcpServer _server;
     
     Guid _client = Guid.Empty;
+
+    JsonSerializerOptions _serializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
 
     private void ClientConnected(object? sender, ConnectionEventArgs args)
     {
@@ -67,11 +73,10 @@ internal class Server : IDisposable
 
         try
         {
-            var request = JsonSerializer.Deserialize<Request>(json);
+            var request = JsonSerializer.Deserialize<Request>(json, _serializerOptions);
             if (request?.Type == RequestType.Recipe)
             {
-                var recipe = request.Content as Recipe;
-                if (recipe != null)
+                if (request.Content is Recipe recipe)
                 {
                     RecipeReceived?.Invoke(this, recipe);
                 }

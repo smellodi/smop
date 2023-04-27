@@ -9,6 +9,8 @@ public class Communicator
 
     public event EventHandler<Recipe>? RecipeReceived;
 
+    public bool IsConnected => _server.IsClientConnected;
+
 
     public Communicator(bool isSimulating)
     {
@@ -20,7 +22,10 @@ public class Communicator
         _server.RecipeReceived += Server_RecipeReceived;
     }
 
-    public bool IsConnected => _server.IsClientConnected;
+    public async void Config(ChannelProps[] channels)
+    {
+        await _server.SendAsync(new Config("config", channels));
+    }
 
     public async void Publish(ScanResult scan)
     {

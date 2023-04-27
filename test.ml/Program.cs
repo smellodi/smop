@@ -28,6 +28,14 @@ var ml = new Communicator(isSimulating);
 ml.Parameter = Smop.IonVision.SimulatedData.ParameterDefinition;
 ml.RecipeReceived += (s, e) => Print(e);
 
+await Task.Delay(300);
+ml.Config(new ChannelProps[]
+{
+    new ChannelProps(0, "nButanol"),
+    new ChannelProps(1, "IPA"),
+});
+await Task.Delay(300);
+
 var commands = new Dictionary<string, (string, Action?)>()
 {
     { "check", ("checks the connection status", () => Print(ml.IsConnected)) },

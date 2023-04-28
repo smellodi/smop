@@ -25,8 +25,7 @@ internal record class Measurement(
 )
 {
     public static Measurement From(ScanResult scan, ParameterDefinition paramDefinition) =>
-        new Measurement(
-            "measurement",
+        new("measurement",
             new ScanSetup(
                 paramDefinition.MeasurementParameters.SteppingControl.Usv,
                 paramDefinition.MeasurementParameters.SteppingControl.Ucv

@@ -39,17 +39,17 @@ public class Cout : TextWriter, IDisposable
         }
     }
 
+
     // Internal
 
     readonly TextWriter _stdOutWriter;
 
     static string? _lastLine = null;
 
-    static Cout _instance;
 
     static Cout()
     {
-        _instance = new Cout();
+        _ = new Cout();
     }
 
     private Cout()

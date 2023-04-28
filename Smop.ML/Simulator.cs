@@ -8,7 +8,7 @@ using WatsonTcp;
 
 namespace Smop.ML;
 
-internal class Simulator
+internal class Simulator : IDisposable
 {
     public Simulator()
     {
@@ -20,23 +20,22 @@ internal class Simulator
         _client.Connect();
     }
 
-    // Internal
-
-    record class Packet(string Type);
-    static class PacketType
+    public void Dispose()
     {
-        public static string Measurement => "measurement";
-        public static string Config => "config";
+        _client.Dispose();
     }
 
-    WatsonTcpClient _client;
-    int[] _channelIDs = new int[1] { 0 };
 
-    JsonSerializerOptions _serializerOptions = new()
+    // Internal
+
+    readonly WatsonTcpClient _client;
+    readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
+
+    int[] _channelIDs = new int[1] { 0 };
 
 
     private async void MessageReceived(object? sender, MessageReceivedEventArgs args)
@@ -62,7 +61,7 @@ internal class Simulator
                 await Task.Delay(2000);
 
                 var recipe = new Recipe("Recipe for you!", _channelIDs.Select(c => new Channel(c, 10, 25, 0)).ToArray());
-                json = JsonSerializer.Serialize(new Request(RequestType.Recipe, recipe));
+                json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 Console.WriteLine("[CLIENT] recipe sent");
                 await _client.SendAsync(json);
             }

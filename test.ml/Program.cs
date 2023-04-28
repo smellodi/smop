@@ -75,6 +75,7 @@ while (true)
     Console.Write("\n");
 }
 
+ml.Dispose();
 Console.WriteLine("\nTesting finished.");
 
 void PrintHelp()
@@ -95,16 +96,12 @@ void Print<T>(T response)
     {
         Console.WriteLine(boolValue);
     }
-    else if (response is Request request)
+    else if (response is Recipe recipe)
     {
-        var text = JsonSerializer.Serialize(request.Content, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-        });
-        Console.WriteLine(text.Max(700));
+        Console.WriteLine($"Got {recipe}");
     }
     else
     {
-        Console.WriteLine(response);
+        Console.WriteLine($"Unhandled response: {response}");
     }
 }

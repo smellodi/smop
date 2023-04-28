@@ -3,7 +3,7 @@ using System;
 
 namespace Smop.ML;
 
-public class Communicator
+public class Communicator : IDisposable
 {
     public ParameterDefinition? Parameter { get; set; } = null;
 
@@ -36,6 +36,12 @@ public class Communicator
 
         var packet = Measurement.From(scan, Parameter);
         await _server.SendAsync(packet);
+    }
+
+    public void Dispose()
+    {
+        _simulator?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     // Internal

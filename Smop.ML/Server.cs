@@ -42,17 +42,17 @@ internal class Server : IDisposable
         }
     }
 
+
     // Internal
 
     readonly WatsonTcpServer _server;
-    
-    Guid _client = Guid.Empty;
-
-    JsonSerializerOptions _serializerOptions = new()
+    readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
+
+    Guid _client = Guid.Empty;
 
     private void ClientConnected(object? sender, ConnectionEventArgs args)
     {
@@ -73,20 +73,22 @@ internal class Server : IDisposable
 
         try
         {
-            var request = JsonSerializer.Deserialize<Request>(json, _serializerOptions);
-            if (request?.Type == RequestType.Recipe)
+            var packet = JsonSerializer.Deserialize<Packet>(json, _serializerOptions);
+            if (packet?.Type == PacketType.Recipe)
             {
-                if (request.Content is Recipe recipe)
-                {
-                    RecipeReceived?.Invoke(this, recipe);
-                }
+                json = JsonSerializer.Serialize(packet.Content);
+                var recipe = JsonSerializer.Deserialize<Recipe>(json, _serializerOptions)!;
+                RecipeReceived?.Invoke(this, recipe);
+            }
+            else
+            {
+                throw new Exception($"[SERVER] unknown packet type: {packet?.Type}");
             }
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
         }
-
     }
 
     private SyncResponse SyncRequestReceived(SyncRequest req)

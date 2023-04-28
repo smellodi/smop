@@ -53,6 +53,7 @@ internal class Simulator : IDisposable
 
             if (packet.Type == PacketType.Config)
             {
+                json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
                 var config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
                 _channelIDs = config.Channels.Select(c => c.Slot).ToArray();
             }
@@ -60,7 +61,7 @@ internal class Simulator : IDisposable
             {
                 await Task.Delay(2000);
 
-                var recipe = new Recipe("Recipe for you!", _channelIDs.Select(c => new Channel(c, 10, 25, 0)).ToArray());
+                var recipe = new Recipe("Recipe for you!", _channelIDs.Select(c => new ChannelRecipe(c, 10, 25, 0)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 Console.WriteLine("[CLIENT] recipe sent");
                 await _client.SendAsync(json);

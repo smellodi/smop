@@ -24,7 +24,7 @@ public class Communicator : IDisposable
 
     public async void Config(ChannelProps[] channels)
     {
-        await _server.SendAsync(new Config("config", channels));
+        await _server.SendAsync(new Packet(PacketType.Config, new Config(channels)));
     }
 
     public async void Publish(ScanResult scan)
@@ -34,7 +34,7 @@ public class Communicator : IDisposable
             throw new Exception("Parameter is not set");
         }
 
-        var packet = Measurement.From(scan, Parameter);
+        var packet = new Packet(PacketType.Measurement, Measurement.From(scan, Parameter));
         await _server.SendAsync(packet);
     }
 

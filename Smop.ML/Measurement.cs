@@ -18,14 +18,13 @@ internal record class ScanData(
 );
 
 internal record class Measurement(
-    string Type,
     ScanSetup Setup,
     ScanConditions Conditions,
     ScanData Data
 )
 {
     public static Measurement From(ScanResult scan, ParameterDefinition paramDefinition) =>
-        new("measurement",
+        new(
             new ScanSetup(
                 paramDefinition.MeasurementParameters.SteppingControl.Usv,
                 paramDefinition.MeasurementParameters.SteppingControl.Ucv

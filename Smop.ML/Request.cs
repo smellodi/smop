@@ -9,8 +9,12 @@ public static class PacketType
 
 public record class Packet(string Type, object Content);
 
-public record class ChannelProps(int Slot, string Gas);
-public record class Config(string Type, ChannelProps[] Channels);
+// Here come definitions of the packet's Content
 
-public record class Channel(int Slot, float Flow, float Duration, float Temperature);
-public record class Recipe(string Name, Channel[]? Channels, float? Dilution = null);
+public record class ChannelProps(int Slot, string Gas);
+public record class Config(ChannelProps[] Channels);
+
+public record class ChannelRecipe(int Slot, float Flow, float Duration, float Temperature);
+public record class Recipe(string Name, ChannelRecipe[]? Channels, float? Dilution = null);
+
+// Measurement is define in Measurement.cs

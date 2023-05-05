@@ -5,7 +5,7 @@ namespace Smop.OdorDisplay.Packets;
 
 public class Devices : Response
 {
-    public static int MaxOdorModuleCount { get; } = 9;
+    public static int MaxOdorModuleCount => 9;
 
     public bool HasBaseModule => _payload![0] != 0;
     public bool HasDilutionModule => _payload![10] != 0;

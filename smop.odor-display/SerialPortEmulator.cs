@@ -138,7 +138,7 @@ public class SerialPortEmulator : ISerialPort
                 var sa = req as SetActuators;
                 foreach (var actuator in sa!.Actuators)
                 {
-                    var maxFlowRate = actuator.DeviceID == Device.ID.Base ? Device.MAX_BASE_AIR_FLOW_RATE : Device.MAX_ODORED_AIR_FLOW_RATE;
+                    var maxFlowRate = actuator.DeviceID == Device.ID.Base ? Device.MaxBaseAirFlowRate : Device.MaxOdoredAirFlowRate;
                     foreach (var cap in actuator.Capabilities)
                     {
                         if ((cap.Key == Device.Controller.OdorantFlow || cap.Key == Device.Controller.DilutionAirFlow) &&

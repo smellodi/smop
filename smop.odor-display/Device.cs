@@ -122,10 +122,10 @@ public class Device
     /// <summary>
     /// L/min
     /// </summary>
-    public static float MAX_BASE_AIR_FLOW_RATE = 10f;
+    public static float MaxBaseAirFlowRate => 10f;
 
     /// <summary>
     /// L/min
     /// </summary>
-    public static float MAX_ODORED_AIR_FLOW_RATE = 1.5f;
+    public static float MaxOdoredAirFlowRate => 1.5f;
 }

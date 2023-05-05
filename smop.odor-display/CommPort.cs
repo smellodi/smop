@@ -337,7 +337,9 @@ public class CommPort
 
         var bytes = packet.ToArray();
 
-        Debug?.Invoke(this, $"SND {packet} ({packet.ByteString})");
+        var packetStr = packet.ToString();
+        var separator = packetStr.Contains('\n') ? "\n    " : " ";
+        Debug?.Invoke(this, $"SND {packetStr}{separator}({packet.ByteString})");
 
         //await _port.BaseStream.WriteAsync(bytes);
         _port?.Write(bytes, 0, bytes.Length);

@@ -15,17 +15,16 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "devs", ("retrieves attached modules", new QueryDevices()) },
     { "capsb", ("retrieves Base module capabilities", new QueryCapabilities(Device.ID.Base)) },
     { "caps1", ("retrieves Odor1 module capabilities", new QueryCapabilities(Device.ID.Odor1)) },
-    { "seta", ("sets Base odorant flow = 5 l/min, chassis T = 25C, output valve ON, Odor1 flow = 0.1 l/min", new SetActuators(new Actuator[]
+    { "seta", ("sets Base odorant flow = 5 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Base, new Dictionary<Device.Controller, float>()
+            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+                ActuatorCapabilities.OutputValveOpenPermanently,
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 5.0f)
+            )),
+            new Actuator(Device.ID.Odor1, new ActuatorCapabilities()
             {
-                {Device.Controller.OutputValve, -1 },
-                {Device.Controller.OdorantFlow, 5.0f },
-                {Device.Controller.ChassisTemperature, 25f },
-            }),
-            new Actuator(Device.ID.Odor1, new Dictionary<Device.Controller, float>()
-            {
-                {Device.Controller.OdorantFlow, 0.1f }
+                { Device.Controller.OdorantFlow, 0.1f },
+                { Device.Controller.ChassisTemperature, 25f },
             })
         })) },
     { "sets", ("start the fan, disabled PID", new SetSystem(true, false)) },

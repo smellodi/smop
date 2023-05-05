@@ -51,7 +51,7 @@ public enum Error
     OpenFailed = 0x6E,
 
     /// <summary>
-    /// WAIT_TIMEOUT, either the request packet was not sent or its response not received within <see cref="TimedRequest.WAIT_INTERVAL"/> ms
+    /// WAIT_TIMEOUT, either the request packet was not sent or its response not received within <see cref="TimedRequest.WaitInterval"/> ms
     /// </summary>
     Timeout = 0x102,
 }

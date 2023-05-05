@@ -50,14 +50,38 @@ public class Reset : Request
 }
 
 /// <summary>
+/// Type definition of actuator capabilities
+/// </summary>
+public class ActuatorCapabilities : Dictionary<Device.Controller, float>
+{
+    public static float ValveOnPermanently => -1;
+    public static float ValveOff => 0;
+
+    public static KeyValuePair<Device.Controller, float> OutputValveOpenPermanently => KeyValuePair.Create(Device.Controller.OutputValve, ValveOnPermanently);
+    public static KeyValuePair<Device.Controller, float> OutputValveClose => KeyValuePair.Create(Device.Controller.OutputValve, ValveOff);
+
+    public ActuatorCapabilities() : base() { }
+    public ActuatorCapabilities(params KeyValuePair<Device.Controller, float>[] caps) : base()
+    {
+        foreach (var cap in caps)
+        {
+            Add(cap.Key, cap.Value);
+        }
+    }
+}
+
+/// <summary>
 /// Helping class for <see cref="SetActuators"/>
 /// </summary>
 public class Actuator
 {
     public byte[] Query { get; }
     public Device.ID DeviceID { get; }
-    public Dictionary<Device.Controller, float> Capabilities { get; }
-    public Actuator(Device.ID id, Dictionary<Device.Controller, float> caps)
+    public ActuatorCapabilities Capabilities { get; }
+
+    public override string ToString() => $"{DeviceID}: {string.Join(", ", Capabilities.Select(c => $"{c.Key}={c.Value}"))}";
+
+    public Actuator(Device.ID id, ActuatorCapabilities caps)
     {
         if (caps.Count == 0)
         {
@@ -68,7 +92,7 @@ public class Actuator
         Capabilities = caps;
 
         var address = (byte)((byte)id | Packet.DEVICE_MASK);
-        var maxFlowRate = id == Device.ID.Base ? Device.MAX_BASE_AIR_FLOW_RATE : Device.MAX_ODORED_AIR_FLOW_RATE;
+        var maxFlowRate = id == Device.ID.Base ? Device.MaxBaseAirFlowRate : Device.MaxOdoredAirFlowRate;
 
         var query = new List<byte> { address };
         foreach (var (ctrl, value) in caps)
@@ -99,13 +123,13 @@ public class Actuator
 
         Query = query.ToArray();
     }
-    public override string ToString() => $"{DeviceID}: {string.Join(", ", Capabilities.Select(c => $"{c.Key}={c.Value}"))}";
+
     internal static bool TryFrom(byte[] payload, ref int index, out Actuator? actuator)
     {
         actuator = null;
 
         Device.ID? device = null;
-        var caps = new Dictionary<Device.Controller, float>();
+        var caps = new ActuatorCapabilities();
 
         while ((index + 4) < payload.Length)    // at least 5 bytes must be ahead to continue the loop
         {
@@ -137,7 +161,7 @@ public class Actuator
                 var value = FourBytes.ToFloat(payload[index..(index += 4)]);
                 if (ctrl == Device.Controller.OdorantFlow || ctrl == Device.Controller.DilutionAirFlow)
                 {
-                    var maxFlowRate = device == Device.ID.Base ? Device.MAX_BASE_AIR_FLOW_RATE : Device.MAX_ODORED_AIR_FLOW_RATE;
+                    var maxFlowRate = device == Device.ID.Base ? Device.MaxBaseAirFlowRate : Device.MaxOdoredAirFlowRate;
                     value *= maxFlowRate;
                 }
                 caps.Add(ctrl, value);

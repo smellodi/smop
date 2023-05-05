@@ -8,7 +8,7 @@ namespace Smop.OdorDisplay;
 /// </summary>
 internal class TimedRequest
 {
-    public static int WAIT_INTERVAL = 500;
+    public static int WaitInterval => 500;
 
     public Type Type { get; }
 
@@ -18,7 +18,7 @@ internal class TimedRequest
     public Response? Response { get; private set; } = null;
 
     public long Duration => (System.Diagnostics.Stopwatch.GetTimestamp() - _timestamp) / 10000;
-    public bool IsValid => Duration < WAIT_INTERVAL;
+    public bool IsValid => Duration < WaitInterval;
 
     public TimedRequest(Type type)
     {
@@ -31,7 +31,7 @@ internal class TimedRequest
     /// <returns>False if the timeout reached</returns>
     public bool WaitUntilReceived()
     {
-        bool result = _mutex.WaitOne(WAIT_INTERVAL);
+        bool result = _mutex.WaitOne(WaitInterval);
         return result;
     }
 

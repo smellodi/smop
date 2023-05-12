@@ -113,7 +113,7 @@ public class COMUtils
             var devices = new FTDI.FT_DEVICE_INFO_NODE[deviceCount];
             var ftdi_res = ftdi.GetDeviceList(devices);
 
-            return devices.Select(dev =>
+            var result = devices.Select(dev =>
             {
                 Port? result = null;
 
@@ -152,6 +152,7 @@ public class COMUtils
                 }
                 return result;
             }).Where(port => port != null).Select(port => port!).ToArray();
+            return result.Length > 0 ? result : null;
         }
         catch
         {

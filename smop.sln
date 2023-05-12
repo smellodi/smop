@@ -7,15 +7,19 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop", "smop\Smop.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.OdorDisplay", "smop.odor-display\Smop.OdorDisplay.csproj", "{C7B2B4BB-C8DB-44DA-8BED-B1CCF5B02291}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.odor-display", "test.odor-display\Test.OdorDisplay.csproj", "{30F2E734-5037-47E0-A42F-1D0012008FFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.OdorDisplay", "test.odor-display\Test.OdorDisplay.csproj", "{30F2E734-5037-47E0-A42F-1D0012008FFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.IonVision", "smop.ion-vision\Smop.IonVision.csproj", "{B3739CBF-80EF-468F-A318-B50669F88E06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test.ion-vision", "test.ion-vision\Test.IonVision.csproj", "{78AE13BF-AE7D-49B4-8EC9-1797381CF01D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.IonVision", "test.ion-vision\Test.IonVision.csproj", "{78AE13BF-AE7D-49B4-8EC9-1797381CF01D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.ML", "smop.ml\Smop.ML.csproj", "{9ACFBD6D-5E31-4E57-8700-66E52E40B104}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.ml", "test.ml\Test.ML.csproj", "{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.ML", "test.ml\Test.ML.csproj", "{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smop.SmellInsp", "smop.smellinsp\Smop.SmellInsp.csproj", "{F2FBC27C-BC62-4490-BE4A-D67F89257755}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.SmellInsp", "test.smellinsp\Test.SmellInsp.csproj", "{5C58AF44-B605-4B77-B354-78CEF28D9180}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2FBC27C-BC62-4490-BE4A-D67F89257755}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2FBC27C-BC62-4490-BE4A-D67F89257755}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2FBC27C-BC62-4490-BE4A-D67F89257755}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2FBC27C-BC62-4490-BE4A-D67F89257755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C58AF44-B605-4B77-B354-78CEF28D9180}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C58AF44-B605-4B77-B354-78CEF28D9180}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C58AF44-B605-4B77-B354-78CEF28D9180}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C58AF44-B605-4B77-B354-78CEF28D9180}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

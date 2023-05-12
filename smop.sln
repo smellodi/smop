@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.ML", "smop.ml\Smop.ML.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.ML", "test.ml\Test.ML.csproj", "{4529431A-1375-4A6D-BE47-5B8FE2CDE2A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smop.SmellInsp", "smop.smellinsp\Smop.SmellInsp.csproj", "{F2FBC27C-BC62-4490-BE4A-D67F89257755}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smop.SmellInsp", "smop.smell-insp\Smop.SmellInsp.csproj", "{F2FBC27C-BC62-4490-BE4A-D67F89257755}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.SmellInsp", "test.smellinsp\Test.SmellInsp.csproj", "{5C58AF44-B605-4B77-B354-78CEF28D9180}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.SmellInsp", "test.smell-insp\Test.SmellInsp.csproj", "{5C58AF44-B605-4B77-B354-78CEF28D9180}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

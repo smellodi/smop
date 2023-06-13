@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\smop.smellinsp\Smop.SmellInsp.csproj" />
+    <ProjectReference Include="..\smop.smell-insp\Smop.SmellInsp.csproj" />
   </ItemGroup>
 
 </Project>

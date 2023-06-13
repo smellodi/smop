@@ -177,7 +177,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\smop.comm\Smop.OdorDisplay.csproj" />
+    <ProjectReference Include="..\smop.odor-display\Smop.OdorDisplay.csproj" />
   </ItemGroup>
 
 </Project>

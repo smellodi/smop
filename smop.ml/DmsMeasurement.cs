@@ -17,14 +17,16 @@ internal record class ScanData(
     float[] Negative
 );
 
-internal record class Measurement(
+internal record class DmsMeasurement(
+    string Source,
     ScanSetup Setup,
     ScanConditions Conditions,
     ScanData Data
 )
 {
-    public static Measurement From(ScanResult scan, ParameterDefinition paramDefinition) =>
+    public static DmsMeasurement From(ScanResult scan, ParameterDefinition paramDefinition) =>
         new(
+            ML.Source.DMS,
             new ScanSetup(
                 paramDefinition.MeasurementParameters.SteppingControl.Usv,
                 paramDefinition.MeasurementParameters.SteppingControl.Ucv

@@ -1,5 +1,4 @@
 ﻿using Smop.ML;
-using System.Text.Json;
 
 Cout.Init();
 
@@ -29,7 +28,7 @@ ml.Parameter = Smop.IonVision.SimulatedData.ParameterDefinition;
 ml.RecipeReceived += (s, e) => Print(e);
 
 await Task.Delay(300);
-ml.Config(new ChannelProps[]
+ml.Config(Source.DMS, new ChannelProps[]
 {
     new ChannelProps(0, "nButanol"),
     new ChannelProps(1, "IPA"),

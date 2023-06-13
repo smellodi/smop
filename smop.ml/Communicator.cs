@@ -22,9 +22,9 @@ public class Communicator : IDisposable
         _server.RecipeReceived += Server_RecipeReceived;
     }
 
-    public async void Config(ChannelProps[] channels)
+    public async void Config(string source, ChannelProps[] channels)
     {
-        await _server.SendAsync(new Packet(PacketType.Config, new Config(channels)));
+        await _server.SendAsync(new Packet(PacketType.Config, new Config(source, new Printer(channels))));
     }
 
     public async void Publish(ScanResult scan)
@@ -34,7 +34,7 @@ public class Communicator : IDisposable
             throw new Exception("Parameter is not set");
         }
 
-        var packet = new Packet(PacketType.Measurement, Measurement.From(scan, Parameter));
+        var packet = new Packet(PacketType.Measurement, DmsMeasurement.From(scan, Parameter));
         await _server.SendAsync(packet);
     }
 

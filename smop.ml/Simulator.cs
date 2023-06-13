@@ -55,7 +55,7 @@ internal class Simulator : IDisposable
             {
                 json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
                 var config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
-                _channelIDs = config.Channels.Select(c => c.Slot).ToArray();
+                _channelIDs = config.Printer.Channels.Select(c => c.Slot).ToArray();
             }
             else if (packet.Type == PacketType.Measurement)
             {

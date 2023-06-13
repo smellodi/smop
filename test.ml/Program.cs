@@ -5,6 +5,8 @@ Cout.Init();
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing Machine Learning module (Smop.ML)...\n");
 
+// Get debug type
+
 bool isSimulating = true;
 
 Console.Write("Should the app enter the simulation mode (y/N)?   ");
@@ -21,9 +23,29 @@ do
     Console.CursorLeft--;
 } while (true);
 
+// Get server type
+
+Communicator.Type commType = Communicator.Type.Tcp;
+
+Console.Write("\n");
+Console.Write("Should the app use File server rahter than TCP server (Y/n)?   ");
+
+do
+{
+    var resp = Console.ReadKey();
+    if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N || resp.Key == ConsoleKey.Enter)
+    {
+        commType = resp.Key == ConsoleKey.N ? Communicator.Type.Tcp : Communicator.Type.File;
+        break;
+    }
+
+    Console.CursorLeft--;
+} while (true);
+
+
 Console.Write("\n");
 
-var ml = new Communicator(isSimulating);
+var ml = new Communicator(commType, isSimulating);
 ml.Parameter = Smop.IonVision.SimulatedData.ParameterDefinition;
 ml.RecipeReceived += (s, e) => Print(e);
 
@@ -97,7 +119,7 @@ void Print<T>(T response)
     }
     else if (response is Recipe recipe)
     {
-        Console.WriteLine($"Got {recipe}");
+        Console.WriteLine($"Got {recipe.Name}");
     }
     else
     {

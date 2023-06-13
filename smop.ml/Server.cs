@@ -1,74 +1,40 @@
 using System;
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using WatsonTcp;
 
 namespace Smop.ML;
 
-internal class Server : IDisposable
+internal abstract class Server : IDisposable
 {
-    public static int Port => 2339;
-
     public event EventHandler<Recipe>? RecipeReceived;
 
-    public bool IsClientConnected => _client != Guid.Empty;
+    public virtual bool IsClientConnected { get; }
 
-    public Server()
-    {
-        _server = new WatsonTcpServer("127.0.0.1", Port);
-        _server.Events.ClientConnected += ClientConnected;
-        _server.Events.ClientDisconnected += ClientDisconnected;
-        _server.Events.MessageReceived += MessageReceived;
-        _server.Callbacks.SyncRequestReceived = SyncRequestReceived;
-        _server.Start();
-    }
-
-    public void Dispose()
-    {
-        _server.Stop();
-        _server.Dispose();
-        GC.SuppressFinalize(this);
-    }
+    public abstract void Dispose();
 
     public async Task SendAsync<T>(T packet)
     {
-        if (_client != Guid.Empty)
+        if (IsClientConnected)
         {
             var data = JsonSerializer.Serialize(packet, _serializerOptions);
             Console.WriteLine("[SERVER] sent: " + data.Max(700));
-            await _server.SendAsync(_client, data);
+            await SendTextAsync(data);
         }
     }
 
-
     // Internal
 
-    readonly WatsonTcpServer _server;
-    readonly JsonSerializerOptions _serializerOptions = new()
+    protected abstract Task SendTextAsync(string data);
+
+    protected readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    Guid _client = Guid.Empty;
-
-    private void ClientConnected(object? sender, ConnectionEventArgs args)
+    protected void ParseJson(string json)
     {
-        _client = args.Client.Guid;
-        Console.WriteLine("[SERVER] connected: " + args.Client.ToString());
-    }
-
-    private void ClientDisconnected(object? sender, DisconnectionEventArgs args)
-    {
-        _client = Guid.Empty;
-        Console.WriteLine("[SERVER] disconnected: " + args.Client.ToString() + ": " + args.Reason.ToString());
-    }
-
-    private void MessageReceived(object? sender, MessageReceivedEventArgs args)
-    {
-        var json = Encoding.UTF8.GetString(args.Data);
         Console.WriteLine("[SERVER] received: " + json.Max(700));
 
         try
@@ -89,10 +55,5 @@ internal class Server : IDisposable
         {
             Debug.WriteLine(ex);
         }
-    }
-
-    private SyncResponse SyncRequestReceived(SyncRequest req)
-    {
-        return new SyncResponse(req, "Ack Sync");
     }
 }

@@ -1,35 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using WatsonTcp;
 
 namespace Smop.ML;
 
-internal class Simulator : IDisposable
+internal abstract class Simulator : IDisposable
 {
-    public Simulator()
-    {
-        _client = new WatsonTcpClient("127.0.0.1", Server.Port);
-        _client.Events.ServerConnected += ServerConnected;
-        _client.Events.ServerDisconnected += ServerDisconnected;
-        _client.Events.MessageReceived += MessageReceived;
-        _client.Callbacks.SyncRequestReceived = SyncRequestReceived;
-        _client.Connect();
-    }
-
-    public void Dispose()
-    {
-        _client.Dispose();
-    }
+    public abstract void Dispose();
 
 
     // Internal
 
-    readonly WatsonTcpClient _client;
-    readonly JsonSerializerOptions _serializerOptions = new()
+    protected readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -37,10 +21,10 @@ internal class Simulator : IDisposable
 
     int[] _channelIDs = new int[1] { 0 };
 
+    protected abstract Task SendData(string data);
 
-    private async void MessageReceived(object? sender, MessageReceivedEventArgs args)
+    protected async void ParseJson(string json)
     {
-        string json = Encoding.UTF8.GetString(args.Data);
         Console.WriteLine("[CLIENT] received: " + json.Max(700));
 
         try
@@ -64,7 +48,7 @@ internal class Simulator : IDisposable
                 var recipe = new Recipe("Recipe for you!", _channelIDs.Select(c => new ChannelRecipe(c, 10, 25, 0)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 Console.WriteLine("[CLIENT] recipe sent");
-                await _client.SendAsync(json);
+                await SendData(json);
             }
             else
             {
@@ -75,20 +59,5 @@ internal class Simulator : IDisposable
         {
             Debug.WriteLine(ex);
         }
-    }
-
-    private void ServerConnected(object? sender, ConnectionEventArgs args)
-    {
-        Console.WriteLine("[CLIENT] connected");
-    }
-
-    private void ServerDisconnected(object? sender, DisconnectionEventArgs args)
-    {
-        Console.WriteLine("[CLIENT] disconnected");
-    }
-
-    private SyncResponse SyncRequestReceived(SyncRequest req)
-    {
-        return new SyncResponse(req, "Ack Sync");
     }
 }

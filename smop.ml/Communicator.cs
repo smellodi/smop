@@ -5,6 +5,12 @@ namespace Smop.ML;
 
 public class Communicator : IDisposable
 {
+    public enum Type
+    {
+        Tcp,
+        File
+    }
+
     public ParameterDefinition? Parameter { get; set; } = null;
 
     public event EventHandler<Recipe>? RecipeReceived;
@@ -12,14 +18,15 @@ public class Communicator : IDisposable
     public bool IsConnected => _server.IsClientConnected;
 
 
-    public Communicator(bool isSimulating)
+    public Communicator(Type type, bool isSimulating)
     {
+        _server = type == Type.Tcp ? new TcpServer() : new FileServer();
+        _server.RecipeReceived += Server_RecipeReceived;
+
         if (isSimulating)
         {
-            _simulator = new Simulator();
+            _simulator = type == Type.Tcp ? new TcpSimulator() : new FileSimulator();
         }
-
-        _server.RecipeReceived += Server_RecipeReceived;
     }
 
     public async void Config(string source, ChannelProps[] channels)
@@ -47,7 +54,7 @@ public class Communicator : IDisposable
     // Internal
 
     readonly Simulator? _simulator = null;
-    readonly Server _server = new();
+    readonly Server _server;
 
     private void Server_RecipeReceived(object? sender, Recipe e)
     {

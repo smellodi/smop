@@ -96,7 +96,7 @@ public class Communicator
     /// <summary>Sets a marker for the latest scan result</summary>
     /// <param name="comment">Comment to set</param>
     /// <returns>Error message, if any</returns>
-    public Task<API.Response<Confirm>> SetScanResultComment(Comments comment) => _api.SetScanComments(comment);
+    public Task<API.Response<Confirm>> SetScanResultComment(object comment) => _api.SetScanComments(comment);
 
     /// <summary>Retrieves the latest scanning result</summary>
     /// <returns>Scanning result, if any</returns>

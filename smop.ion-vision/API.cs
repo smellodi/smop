@@ -49,12 +49,12 @@ public class API : IMinimalAPI
 
     /// <summary>Retrieves latest scan comments</summary>
     /// <returns>Comments</returns>
-    public Task<Response<Comments>> GetScanComments() => Get<Comments>("currentScan/comments");
+    public Task<Response<object>> GetScanComments() => Get<object>("currentScan/comments");
 
     /// <summary>Sets latest scan comments</summary>
     /// <param name="comment">Comment</param>
     /// <returns>Conrimation</returns>
-    public Task<Response<Confirm>> SetScanComments(Comments comment) => Set("currentScan/comments", comment);
+    public Task<Response<Confirm>> SetScanComments(object comment) => Set("currentScan/comments", comment);
 
     #endregion
 
@@ -468,13 +468,13 @@ public class API : IMinimalAPI
     /// <summary>Retrieves the scan comments</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Comments</returns>
-    public Task<Response<Comments>> GetResultComments(string id) => Get<Comments>($"results/id/{id}/comments");
+    public Task<Response<object>> GetResultComments(string id) => Get<object>($"results/id/{id}/comments");
 
     /// <summary>Sets the scan comments</summary>
     /// <param name="id">Scan id</param>
     /// <param name="comments">Comments</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetResultComments(string id, Comments comments) => Set($"results/id/{id}/comments", comments);
+    public Task<Response<Confirm>> SetResultComments(string id, object comments) => Set($"results/id/{id}/comments", comments);
 
     /// <summary>Retrieves the scan gases</summary>
     /// <param name="id">Scan id</param>

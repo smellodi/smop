@@ -21,7 +21,7 @@ internal interface IMinimalAPI
     Task<Response<Confirm>> PreloadParameter();
     Task<Response<Confirm>> StartScan();
     Task<Response<ScanProgress>> GetScanProgress();
-    Task<Response<Confirm>> SetScanComments(Comments comment);
+    Task<Response<Confirm>> SetScanComments(object comment);
     Task<Response<ScanResult>> GetLatestResult();
     Task<Response<string[]>> GetProjectResults(string project);
     Task<Response<Clock>> GetClock();

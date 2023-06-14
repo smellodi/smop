@@ -144,13 +144,13 @@ internal class Simulator : IMinimalAPI
         return Task.FromResult(new Response<ScanProgress>(new ScanProgress(progress, new()), null));
     }
 
-    public Task<Response<Confirm>> SetScanComments(Comments comment)
+    public Task<Response<Confirm>> SetScanComments(object comment)
     {
-        if (_latestResult == null)
+        /*if (_latestResult == null)
         {
             return Task.FromResult(new Response<Confirm>(null, "Scan was not yet performed"));
         }
-
+        */
         _comments = comment;
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
@@ -162,7 +162,7 @@ internal class Simulator : IMinimalAPI
             return Task.FromResult(new Response<ScanResult>(null, "Scan was not yet performed"));
         }
 
-        return Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new Comments() }, null));
+        return Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new SimpleComment() }, null));
     }
 
     public Task<Response<string[]>> GetProjectResults(string name)
@@ -216,5 +216,5 @@ internal class Simulator : IMinimalAPI
     Project? _currentProject = null;
     Parameter? _currentParameter = null;
     ScanResult? _latestResult = null;
-    Comments? _comments = null;
+    object? _comments = null;
 }

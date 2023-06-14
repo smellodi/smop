@@ -32,7 +32,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
 { "gcpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
 { "gcpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
 { "scpm", ("sets the current parameter", async () => Print(await ionVision.SetParameterAndPreload())) },
-{ "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new Comments() { Text = "my comment" }))) },
+{ "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new { _quickcomment = new string[] { "my comment" } } ))) },
 { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
 { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
 { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },

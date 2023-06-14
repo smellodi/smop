@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using SMOP.OdorDisplay;
+using Smop.OdorDisplay;
 
-namespace SMOP.Pages
+namespace Smop.Pages
 {
     public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
     {

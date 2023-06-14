@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     /// <summary>
     /// Makes scroll-viewers scrollable by click-and-drag with mouse (or finger on a touchscreen)

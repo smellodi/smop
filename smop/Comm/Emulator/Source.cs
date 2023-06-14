@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace SMOP.OdorDisplay.Emulator
+namespace Smop.OdorDisplay.Emulator
 {
     public class RequestSampleArgs : EventArgs
     {

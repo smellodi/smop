@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 
-namespace SMOP.OdorDisplay
+namespace Smop.OdorDisplay
 {
     public class OlfactoryDeviceModel : IDisposable
     {

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows.Controls;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     public class Validation
     {

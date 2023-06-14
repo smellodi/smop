@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace SMOP.OdorDisplay
+namespace Smop.OdorDisplay
 {
     public class MFCScheduler
     {

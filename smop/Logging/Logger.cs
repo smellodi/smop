@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using SMOP.Utils;
+using Smop.Utils;
 
-namespace SMOP
+namespace Smop
 {
     [Flags]
     public enum LogSource

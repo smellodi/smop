@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
-using SMOP.OdorDisplay;
+using Smop.OdorDisplay;
 
-namespace SMOP
+namespace Smop
 {
     public class SyncLogger : Logger<SyncLogger.Record>
     {

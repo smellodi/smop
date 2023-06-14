@@ -1,4 +1,4 @@
-﻿namespace SMOP.Tests
+﻿namespace Smop.Tests
 {
     public enum EmulationCommand
     {

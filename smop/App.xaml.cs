@@ -2,13 +2,13 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SMOP
+namespace Smop
 {
     public partial class App : Application
     {
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            var settings = SMOP.Properties.Settings.Default;
+            var settings = Smop.Properties.Settings.Default;
             if (settings.CallUpgrade)
             {
                 settings.Upgrade();

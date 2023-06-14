@@ -1,4 +1,4 @@
-﻿namespace SMOP.OdorDisplay
+﻿namespace Smop.OdorDisplay
 {
     public interface ISample
     {

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     /// <summary>
     /// Plays an MP3 resource file

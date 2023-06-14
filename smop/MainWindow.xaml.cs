@@ -1,10 +1,10 @@
-﻿using SMOP.Utils;
+﻿using Smop.Utils;
 using System;
 using System.Windows;
 using System.Windows.Input;
 using WPFLocalizeExtension.Engine;
 
-namespace SMOP
+namespace Smop
 {
     public partial class MainWindow : Window
     {

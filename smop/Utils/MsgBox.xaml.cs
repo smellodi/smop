@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     public partial class MsgBox : Window
     {

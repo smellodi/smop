@@ -1,0 +1,74 @@
+﻿<UserControl x:Class="Smop.PulseGen.Controls.ChannelIndicator"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:utils="clr-namespace:Smop.PulseGen.Utils"
+             mc:Ignorable="d" 
+             Name="channelIndicator"
+             d:DesignHeight="80" d:DesignWidth="120">
+
+    <UserControl.Resources>
+        <utils:BoolToVisibilityConverter x:Key="bool2vis"/>
+        
+        <Style x:Key="Channel" TargetType="{x:Type Label}">
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+            <Setter Property="Background" Value="{StaticResource BrushPanelLightest}"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="MinWidth" Value="120"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BrushPanelLight}"/>
+                </Trigger>
+                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BrushPanel}"/>
+                    <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource BrushBorderFocused}"/>
+                </DataTrigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="{StaticResource BrushPanelDisabled}"/>
+                    <Setter Property="Foreground" Value="{StaticResource BrushFontDisabled}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDisabled}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ChannelIndicator" TargetType="{x:Type TextBlock}">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="Value" TargetType="{x:Type Run}">
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Image x:Name="imgWarning" Grid.Row="0"
+               Width="16"
+               Height="16"
+               Margin="2"
+               DataContext="{Binding ElementName=channelIndicator}"
+               Visibility="{Binding IsWarningVisible, Mode=OneWay, Converter={StaticResource bool2vis}}"
+               Source="/Assets/images/exclamation.png"/>
+        <Label Grid.Row="1"
+               Style="{StaticResource Channel}"
+               DataContext="{Binding ElementName=channelIndicator}">
+            <TextBlock Style="{StaticResource ChannelIndicator}">
+            <Run Text="{Binding Title, Mode=OneWay}"/>
+            <LineBreak/>
+            <Run x:Name="runValue"
+                 Style="{StaticResource Value}"
+                 Text="{Binding ValueStr, Mode=OneWay}"/>
+            <Run Text="{Binding Units, Mode=OneWay}"/>
+            </TextBlock>
+        </Label>
+    </Grid>
+</UserControl>

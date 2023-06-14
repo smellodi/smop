@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 
-namespace SMOP.Tests
+namespace Smop.Tests
 {
     public enum Test
     {

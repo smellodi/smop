@@ -1,6 +1,6 @@
 ﻿using WPFLocalizeExtension.Engine;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     public static class L10n
     {

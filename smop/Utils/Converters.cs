@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     public class BoolToVisibilityConverter : IValueConverter
     {

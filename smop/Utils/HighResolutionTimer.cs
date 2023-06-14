@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     /// <summary>
     /// Hight precision non overlapping timer

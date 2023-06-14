@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SMOP.Pages
+namespace Smop.Pages
 {
     interface IQuestionnaire
     {

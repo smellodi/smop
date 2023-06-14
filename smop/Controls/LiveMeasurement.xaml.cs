@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 // check the manual on https://lvcharts.net/
 
-namespace SMOP.Controls
+namespace Smop.Controls
 {
     public partial class LiveMeasurement : UserControl
     {

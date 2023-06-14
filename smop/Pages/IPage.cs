@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SMOP.Pages
+namespace Smop.Pages
 {
     internal interface IPage<T>
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SMOP.OdorDisplay.Emulator
+namespace Smop.OdorDisplay.Emulator
 {
     internal class PID
     {

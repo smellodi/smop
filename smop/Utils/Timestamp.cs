@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     /// <summary>
     /// Current timestamp to be used everywhere to get syncronized records

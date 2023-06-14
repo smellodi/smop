@@ -3,10 +3,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using SMOP.OdorDisplay;
-using IndicatorDataSource = SMOP.Controls.ChannelIndicator.DataSource;
+using Smop.OdorDisplay;
+using IndicatorDataSource = Smop.Controls.ChannelIndicator.DataSource;
 
-namespace SMOP.Pages
+namespace Smop.Pages
 {
     public partial class Home : Page, IPage<Tests.Test>
     {

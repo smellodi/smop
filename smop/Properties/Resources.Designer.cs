@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SMOP.Properties {
+namespace Smop.Properties {
     using System;
     
     

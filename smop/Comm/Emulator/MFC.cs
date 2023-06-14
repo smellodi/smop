@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SMOP.OdorDisplay.Emulator
+namespace Smop.OdorDisplay.Emulator
 {
     internal class MFC
     {

@@ -1,10 +1,10 @@
-﻿using SMOP.Utils;
+﻿using Smop.Utils;
 using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace SMOP.Controls
+namespace Smop.Controls
 {
     public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, IDisposable
     {

@@ -7,10 +7,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using SMOP.OdorDisplay;
+using Smop.OdorDisplay;
 using WPFLocalizeExtension.Engine;
 
-namespace SMOP.Pages
+namespace Smop.Pages
 {
     public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
     {

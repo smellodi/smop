@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     public class Debuggable : IDisposable
     {

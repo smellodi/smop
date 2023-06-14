@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     public static class MathExt
     {

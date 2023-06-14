@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using SMOP.Utils;
+using Smop.Utils;
 
-namespace SMOP
+namespace Smop
 {
     public class FlowLogger : Logger<FlowLogger.Record>
     {

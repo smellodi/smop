@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Controls;
 
-namespace SMOP.Controls
+namespace Smop.Controls
 {
     public partial class LiveData : UserControl
     {

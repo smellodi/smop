@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 //using System.Windows.Threading;
 
-namespace SMOP.Utils
+namespace Smop.Utils
 {
     /*
     public class DispatchOnceUI : DispatcherTimer

@@ -39,6 +39,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\images\button-green.png" />
+    <None Remove="Assets\images\button-red.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="LiveCharts.Wpf.Core" Version="0.9.8" />
     <PackageReference Include="NAudio" Version="2.0.1" />
     <PackageReference Include="ScottPlot.WPF" Version="4.1.16" />
@@ -49,6 +54,8 @@
 
   <ItemGroup>
     <Resource Include="Assets\icons\main.png" />
+    <Resource Include="Assets\images\button-green.png" />
+    <Resource Include="Assets\images\button-red.png" />
     <Resource Include="Assets\images\error.png" />
     <Resource Include="Assets\images\exclamation.png" />
     <Resource Include="Assets\images\information.png" />
@@ -103,6 +110,9 @@
     <None Update="Assets\icons\main.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
+    </None>
+    <None Update="Properties\IonVision.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

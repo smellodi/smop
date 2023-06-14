@@ -1,11 +1,11 @@
-﻿<Page x:Class="Smop.PulseGen.Pages.Connect"
+﻿<Page
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:Smop.PulseGen.Controls"
       xmlns:utils="clr-namespace:Smop.PulseGen.Utils"
       xmlns:lex="http://wpflocalizeextension.codeplex.com"
+      x:Class="Smop.PulseGen.Pages.Connect"
       lex:LocalizeDictionary.DesignCulture="en"
       lex:ResxLocalizationProvider.DefaultAssembly="Smop.PulseGen"
       lex:ResxLocalizationProvider.DefaultDictionary="Resources"
@@ -20,7 +20,7 @@
     <Page.Resources>
         <utils:ObjectToBoolConverter x:Key="obj2bool"/>
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Margin" Value="0,12,0,0" />
+            <Setter Property="Margin" Value="8,0,0,0" />
             <Setter Property="MinHeight" Value="25" />
         </Style>
     </Page.Resources>
@@ -42,41 +42,69 @@
                    Style="{StaticResource PageTitle}"
                    Text="{lex:Loc ConnectTo}"/>
 
-        <StackPanel Grid.Row="1"
-                    Width="200"
-                    VerticalAlignment="Center">
-            <StackPanel>
-                <Label Content="{lex:Loc OdorDisplay}"/>
-                <ComboBox x:Name="cmbOdorDisplayCommPort"
-                      VerticalContentAlignment="Center"
-                      HorizontalContentAlignment="Center"
-                      SelectionChanged="OdorDisplayPort_SelectionChanged"/>
-                <Button x:Name="btnConnectToOdorDisplay"
-                    IsEnabled="{Binding ElementName=cmbOdorDisplayCommPort, Path=SelectedItem, Converter={StaticResource obj2bool}}"
-                    Content="{lex:Loc Connect}"
-                    Click="ConnectToOdorDisplay_Click"/>
-            </StackPanel>
-            <Separator Margin="12" Width="0"/>
-            <StackPanel>
-                <Label Content="{lex:Loc SmellInspector}"/>
-                <ComboBox x:Name="cmbSmellInspCommPort"
-                      VerticalContentAlignment="Center"
-                      HorizontalContentAlignment="Center"
-                      SelectionChanged="SmellInspPort_SelectionChanged"/>
-                <Button x:Name="btnConnectToSmellInsp"
-                    IsEnabled="{Binding ElementName=cmbSmellInspCommPort, Path=SelectedItem, Converter={StaticResource obj2bool}}"
-                    Content="{lex:Loc Connect}"
-                    Click="ConnectToSmellInsp_Click"/>
-            </StackPanel>
-            <Separator Margin="12" Width="0"/>
-            <StackPanel>
-                <Label Content="{lex:Loc IonVision}"/>
-                <TextBox x:Name="txbIonVisionIP" Text="127.0.0.1"/>
-                <Button x:Name="btnConnectToIonVision"
-                    Content="{lex:Loc Connect}"
-                    Click="ConnectToIonVision_Click"/>
-            </StackPanel>
-        </StackPanel>
+        <Grid Grid.Row="1"
+            Width="400"
+            VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition MaxHeight="32"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition MaxHeight="32"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition MaxHeight="32"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Content="{lex:Loc OdorDisplay}"/>
+            <ComboBox Grid.Row="0" Grid.Column="1" x:Name="cmbOdorDisplayCommPort"
+                VerticalContentAlignment="Center"
+                HorizontalContentAlignment="Center"
+                SelectionChanged="OdorDisplayPort_SelectionChanged"/>
+            <Button Grid.Row="0" Grid.Column="2" x:Name="btnConnectToOdorDisplay"
+                IsEnabled="{Binding SelectedItem, Converter={StaticResource obj2bool}, ElementName=cmbOdorDisplayCommPort}"
+                Click="ConnectToOdorDisplay_Click">
+                <Image Source="/Assets/images/button-red.png"/>
+            </Button>
+
+            <Label Grid.Row="2" Grid.Column="0"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Content="{lex:Loc SmellInspector}"/>
+            <ComboBox Grid.Row="2" Grid.Column="1" x:Name="cmbSmellInspCommPort"
+                VerticalContentAlignment="Center"
+                HorizontalContentAlignment="Center"
+                SelectionChanged="SmellInspPort_SelectionChanged"/>
+            <Button Grid.Row="2" Grid.Column="2" x:Name="btnConnectToSmellInsp"
+                IsEnabled="{Binding SelectedItem, Converter={StaticResource obj2bool}, ElementName=cmbSmellInspCommPort}"
+                Click="ConnectToSmellInsp_Click">
+                <Image Source="/Assets/images/button-red.png"/>
+            </Button>
+
+            <Label Grid.Row="4" Grid.Column="0" 
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                Content="{lex:Loc IonVision}"/>
+            <TextBox Grid.Row="4" Grid.Column="1" x:Name="txbIonVisionIP"
+                IsEnabled="False"/>
+            <Button Grid.Row="4" Grid.Column="2" x:Name="btnConnectToIonVision"
+                Click="ConnectToIonVision_Click">
+                <Image Source="/Assets/images/button-red.png"/>
+            </Button>
+
+            <Button Grid.Row="5" Grid.Column="1" x:Name="btnConnect"
+                Margin="0,12,0,0"
+                IsEnabled="{Binding HasNecessaryConnections, Mode=OneWay}"
+                Content="{lex:Loc Connect}"
+                Click="Connect_Click"/>
+
+        </Grid>
 
         <StackPanel Grid.Row="2"
                     Width="200"
@@ -86,8 +114,8 @@
                        Content="{lex:Loc Language}"/>
                 <ComboBox HorizontalAlignment="Center"
                           Width="200"
-                          ItemsSource="{Binding Source={x:Static lex:LocalizeDictionary.Instance}, Path=MergedAvailableCultures}"
-                          SelectedItem="{Binding Source={x:Static lex:LocalizeDictionary.Instance}, Path=Culture}"
+                          ItemsSource="{Binding MergedAvailableCultures, Source={x:Static lex:LocalizeDictionary.Instance}}"
+                          SelectedItem="{Binding Culture, Source={x:Static lex:LocalizeDictionary.Instance}}"
                           DisplayMemberPath="NativeName"
                           SelectionChanged="Language_SelectionChanged"/>
             </StackPanel>

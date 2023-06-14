@@ -141,7 +141,7 @@ public partial class MsgBox : Window
 			_ => throw new NotImplementedException("Unknown icon")
 		};
 
-		var uriSource = new Uri($@"/SMOP;component/Assets/images/{iconFilename}.png", UriKind.Relative);
+		var uriSource = new Uri($@"/smop.pulse-gen;component/Assets/images/{iconFilename}.png", UriKind.Relative);
 		imgIcon.Source = new BitmapImage(uriSource);
 
 		if (customButtons != null)

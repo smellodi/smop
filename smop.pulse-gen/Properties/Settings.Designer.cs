@@ -166,17 +166,5 @@ namespace Smop.PulseGen.Properties {
                 this["SmellInspPort"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("127.0.0.1")]
-        public string IonVisionIP {
-            get {
-                return ((string)(this["IonVisionIP"]));
-            }
-            set {
-                this["IonVisionIP"] = value;
-            }
-        }
     }
 }

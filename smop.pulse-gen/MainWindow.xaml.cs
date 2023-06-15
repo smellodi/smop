@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using Smop.PulseGen.Utils;
 using Smop.PulseGen.Logging;
+using Smop.PulseGen.Test;
 
 namespace Smop.PulseGen;
 
@@ -15,8 +16,9 @@ public partial class MainWindow : Window
 		var settings = Properties.Settings.Default;
 
 		_connectPage.Next += ConnectPage_Next;
-		_homePage.Next += SetupPage_Next;
-		_finishedPage.Next += FinishedPage_Next;
+		_setupPage.Next += SetupPage_Next;
+        _pulsePage.Next += PulsePage_Next;
+        _finishedPage.Next += FinishedPage_Next;
 		_finishedPage.RequestSaving += FinishedPage_RequestSaving;
 
 		if (settings.MainWindow_IsMaximized)
@@ -38,10 +40,9 @@ public partial class MainWindow : Window
 	// Internal
 
 	private readonly Pages.Connect _connectPage = new();
-	private readonly Pages.Home _homePage = new();
-	private readonly Pages.Finished _finishedPage = new();
-
-	private Tests.ITestNavigator? _testNavigator = null;
+	private readonly Pages.Setup _setupPage = new();
+    private readonly Pages.Pulse _pulsePage = new();
+    private readonly Pages.Finished _finishedPage = new();
 
 	private readonly Storage _storage = Storage.Instance;
 
@@ -126,23 +127,39 @@ public partial class MainWindow : Window
 
 	private void ConnectPage_Next(object? sender, EventArgs e)
 	{
-		Content = _homePage;
+		Content = _setupPage;
 	}
 
-	private void SetupPage_Next(object? sender, Tests.Test test)
+	private void SetupPage_Next(object? sender, EventArgs e)
 	{
-		_testNavigator = test switch
+        Content = _pulsePage;
+        (_pulsePage as ITest)?.Start();
+    }
+
+    private void PulsePage_Next(object? sender, bool e)
+    {
+        if (IsInFullScreen)
+        {
+            ToggleFullScreen();
+        }
+
+        if (e)
 		{
-			//Tests.Test.Threshold => new Tests.ThresholdTest.Navigator(),
-			_ => throw new NotImplementedException($"The test '{test}' logic is not implemented yet"),
-		};
+            Content = _finishedPage;
+            DispatchOnce.Do(0.1, () => Dispatcher.Invoke(SaveLoggingData, true));  // let the page to change, then try to save data
+        }
+        else
+        {
+            SyncLogger.Instance.Clear();
+            FlowLogger.Instance.Clear();
 
-		_testNavigator.PageDone += Test_PageDone;
+            Content = _setupPage;
+        }
 
-		Content = _testNavigator.Start();
-	}
+        (_pulsePage as ITest)?.Dispose();
+    }
 
-	private void FinishedPage_Next(object? sender, bool exit)
+    private void FinishedPage_Next(object? sender, bool exit)
 	{
 		if (exit)
 		{
@@ -150,7 +167,7 @@ public partial class MainWindow : Window
 		}
 		else
 		{
-			Content = _homePage;
+			Content = _setupPage;
 
 			FlowLogger.Instance.Clear();
 			SyncLogger.Instance.Clear();
@@ -168,56 +185,6 @@ public partial class MainWindow : Window
 			MsgBox.Warn(Title, "No data to save", MsgBox.Button.OK);
 		}
 	}
-
-	private void Test_PageDone(object? sender, Tests.PageDoneEventArgs e)
-	{
-		bool finilizeTest = false;
-
-		if (!e.CanContinue)
-		{
-			Content = _homePage;
-
-			_testNavigator?.Interrupt();
-			finilizeTest = true;
-
-			SyncLogger.Instance.Finilize();
-			SyncLogger.Instance.Clear();
-			FlowLogger.Instance.Clear();
-		}
-		else
-		{
-			var page = _testNavigator?.NextPage(e.Data);
-			if (page == null)
-			{
-				_finishedPage.TestName = _testNavigator?.Name ?? "";
-
-				Content = _finishedPage;
-
-				finilizeTest = true;
-
-				DispatchOnce.Do(0.1, () => Dispatcher.Invoke(SaveLoggingData, true));  // let the page to change, then try to save data
-			}
-			else
-			{
-				Content = page;
-			}
-		}
-
-		if (finilizeTest)
-		{
-			_testNavigator!.PageDone -= Test_PageDone;
-			_testNavigator.Dispose();
-			_testNavigator = null;
-
-			if (IsInFullScreen)
-			{
-				ToggleFullScreen();
-			}
-
-			GC.Collect();
-		}
-	}
-
 
 	// UI events
 
@@ -245,10 +212,6 @@ public partial class MainWindow : Window
 				"F9 - zooms out\n" +
 				"F10 - zooms in\n" +
 				"F11 - toggles full screen\n");
-		}
-		else if (e.Key == Key.F2)
-		{
-			_testNavigator?.Emulate(Tests.EmulationCommand.ForceToFinishWithResult);
 		}
 		else if (e.Key == Key.OemMinus)
 		{
@@ -281,20 +244,9 @@ public partial class MainWindow : Window
 
 	private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 	{
-		// Close the port instead
-		// OdorDisplay.PID.Instance.Stop();
+        (_pulsePage as ITest)?.Dispose();
 
-		if (_testNavigator != null)
-		{
-			_testNavigator.Interrupt();
-
-			if (_testNavigator.HasStarted)
-			{
-				SaveLoggingData(false);
-			}
-		}
-
-		var settings = Properties.Settings.Default;
+        var settings = Properties.Settings.Default;
 		settings.MainWindow_X = Left;
 		settings.MainWindow_Y = Top;
 		settings.MainWindow_Width = Width;

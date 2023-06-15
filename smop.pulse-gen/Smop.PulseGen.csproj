@@ -70,10 +70,10 @@
     <Compile Update="Pages\OdorProduction\Setup.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Pages\Common\Connect.xaml.cs">
+    <Compile Update="Pages\Connect.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Update="Pages\Common\Home.xaml.cs">
+    <Compile Update="Pages\Setup.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Pages\ThresholdTest\SetupLight.xaml.cs">
@@ -131,11 +131,11 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Pages\Common\Connect.xaml">
+    <Page Update="Pages\Connect.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>
-    <Page Update="Pages\Common\Home.xaml">
+    <Page Update="Pages\Setup.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

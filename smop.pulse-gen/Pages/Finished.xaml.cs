@@ -17,8 +17,12 @@ public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
 		}
 	}
 
-	public event EventHandler<bool>? Next;       // true: exit, false: return to the fornt page
+    /// <summary>
+    /// true: exit, false: return to the front page
+    /// </summary>
+    public event EventHandler<bool>? Next; 
 	public event EventHandler<RequestSavingArgs>? RequestSaving;
+
 	public event PropertyChangedEventHandler? PropertyChanged;
 
 	public string TestName

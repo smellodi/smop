@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32;
 using Smop.OdorDisplay.Packets;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,11 +9,11 @@ using System.Windows.Input;
 
 namespace Smop.PulseGen.Pages;
 
-public partial class Home : Page, IPage<Tests.Test>
+public partial class Setup : Page, IPage<EventArgs>
 {
-	public event EventHandler<Tests.Test>? Next;
+	public event EventHandler<EventArgs>? Next;
 
-	public Home()
+	public Setup()
 	{
 		InitializeComponent();
 
@@ -29,13 +28,11 @@ public partial class Home : Page, IPage<Tests.Test>
 	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-	readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
-
+	bool _isInitilized = false;
 	string? _pulseSetupFileName = null;
 
     Controls.ChannelIndicator? _currentIndicator = null;
 
-	/*
 	private void ClearIndicators()
 	{
 		foreach (Controls.ChannelIndicator chi in stpIndicators.Children)
@@ -49,7 +46,7 @@ public partial class Home : Page, IPage<Tests.Test>
 			_currentIndicator = null;
 			lmsGraph.Empty();
 		}
-	}*/
+	}
 
 	private void ResetGraph(string? dataSource = null, double baseValue = .0)
 	{
@@ -160,7 +157,6 @@ public partial class Home : Page, IPage<Tests.Test>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpIndicators.Children.Add(indicator);
-            _indicators.Add(indicator.Source, indicator);
         }));
     }
 
@@ -173,7 +169,19 @@ public partial class Home : Page, IPage<Tests.Test>
         _odorDisplay.Data += OdorDisplay_Data;
         _smellInsp.Data += SmellInsp_Data;
 
-		InitilizeSetup();
+		ClearIndicators();
+
+        if (Focusable)
+        {
+            Focus();
+        }
+
+        if (_isInitilized)
+		{
+			return;
+        }
+
+        InitilizeSetup();
 
 		await CreateIndicators();
 
@@ -184,10 +192,7 @@ public partial class Home : Page, IPage<Tests.Test>
 			Utils.MsgBox.Error(Title, $"Cannot start measurements in Odor Display:\n{queryResult.Reason}");
         }
 
-        if (Focusable)
-        {
-            Focus();
-        }
+        _isInitilized = true;
 
         /*
 		if (_com.IsOpen && _pid.ArePIDsOn)
@@ -206,8 +211,6 @@ public partial class Home : Page, IPage<Tests.Test>
 			}
 
 			ResetIndicators(_lastSample);
-
-			HandleError(_pid.EnableSampling(PID_UPDATE_INTERVAL));
 		}*/
     }
 
@@ -219,16 +222,13 @@ public partial class Home : Page, IPage<Tests.Test>
 		_storage
             .UnbindScaleToZoomLevel(sctScale)
 			.UnbindVisibilityToDebug(lblDebug);
-        /*
-		HandleError(_pid.EnableSampling(0));
-		*/
 	}
 
 	private void Page_KeyDown(object? sender, KeyEventArgs e)
 	{
 		if (e.Key == Key.F4)
 		{
-			Next?.Invoke(this, Tests.Test.OdorProduction);
+			Next?.Invoke(this, new EventArgs());
 		}
 	}
 

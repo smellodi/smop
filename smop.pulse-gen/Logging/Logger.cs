@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows;
+using System.Windows.Markup;
 using Smop.PulseGen.Utils;
 
 namespace Smop.PulseGen.Logging;
@@ -174,6 +176,11 @@ public abstract class Logger<T> where T : class
 	protected abstract string Header { get; }
 
 
+    readonly string SaveInto = "Save data into";
+    readonly string PressChange = "Press 'Change' to set another destination file";
+    readonly string PressDiscard = "Press 'Discard' to discard data";
+    readonly string PressCancel = "Press 'Cancel' to cancel the action";
+	    
 	protected Logger() { }
 
 	protected (SavingResult, bool) PromptToSave(ref string filename, bool canCancel, string greeting = "")
@@ -183,20 +190,15 @@ public abstract class Logger<T> where T : class
 			greeting += "\n";
 		}
 
-		var saveInto = L10n.T("SaveDataInto");
-		var pressChange = L10n.T("PressChange");
-		var pressDicard = L10n.T("PressDiscard");
-		var pressCancel = L10n.T("PressCancel");
-
-		var title = L10n.T("OlfactoryTestTool") + " - " + L10n.T("Logger");
-		var message = $"{greeting}{saveInto}\n'{File.Folder}\\{filename}'?\n\n{pressChange}\n{pressDicard}";
+		var title = $"{Application.Current.MainWindow.Title} - Logger";
+		var message = $"{greeting}{SaveInto}\n'{File.Folder}\\{filename}'?\n\n{PressChange}\n{PressDiscard}";
 		MsgBox.Result answer;
 
-		var msgBoxOptionText = L10n.T("EnableAutoSaving");
+		var msgBoxOptionText = "Enable auto-saving";
 
 		if (canCancel)
 		{
-			message += $"\n{pressCancel}";
+			message += $"\n{PressCancel}";
 			answer = MsgBox.Custom(title, message, MsgBox.MsgIcon.Question, msgBoxOptionText, null, 
 				MsgBox.Button.Save, MsgBox.Button.Change, MsgBox.Button.Discard, MsgBox.Button.Cancel);
 		}
@@ -208,7 +210,7 @@ public abstract class Logger<T> where T : class
 
 		if (answer.Button == MsgBox.Button.Discard)
 		{
-			if (MsgBox.Warn(title, L10n.T("ConfirmDiscard"), MsgBox.Button.Yes, MsgBox.Button.No) == MsgBox.Button.Yes)
+			if (MsgBox.Warn(title, "The data will be lost. Continue?", MsgBox.Button.Yes, MsgBox.Button.No) == MsgBox.Button.Yes)
 			{
 				return (SavingResult.Discard, false);
 			}
@@ -272,10 +274,9 @@ public abstract class Logger<T> where T : class
 
 				if (!suppressConfirmation)
 				{
-					var dataSavedInto = L10n.T("DataSavedInto");
 					MsgBox.Notify(
-						L10n.T("OlfactoryTestTool") + " - " + L10n.T("Logger"),
-						$"{dataSavedInto}\n'{filename}'",
+						$"{Application.Current.MainWindow.Title} - Logger",
+						$"Data saved into\n'{filename}'",
 						MsgBox.Button.OK);
 				}
 
@@ -283,11 +284,9 @@ public abstract class Logger<T> where T : class
 			}
 			catch (Exception ex)
 			{
-				var failedToSave = L10n.T("FailedToSave");
-				var retry = L10n.T("Retry");
 				var answer = MsgBox.Ask(
-					L10n.T("OlfactoryTestTool") + " - " + L10n.T("Logger"),
-					$"{failedToSave}\n'{filename}':\n\n{ex.Message}\n\n{retry}",
+                    $"{Application.Current.MainWindow.Title} - Logger",
+                    $"Failed to save the file\n'{filename}':\n\n{ex.Message}\n\nRetry",
 					MsgBox.Button.Yes, MsgBox.Button.No);
 				if (answer == MsgBox.Button.Yes)
 				{

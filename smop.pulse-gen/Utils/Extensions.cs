@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Smop.PulseGen.Utils;
 
-internal static class RandomExtensions
+/*internal static class RandomExtensions
 {
 	public static Random Shuffle<T>(this Random rng, T[] array)
 	{
@@ -52,7 +52,7 @@ internal static class RandomExtensions
 
 		return rng;
 	}
-}
+}*/
 
 internal static class StringExtensions
 {
@@ -63,14 +63,14 @@ internal static class StringExtensions
 		return string.Join(replacement, temp);
 	}
 
-	public static string SeparateWords(this string s)
+	/*public static string SeparateWords(this string s)
 	{
 		var r = new Regex(@"[A-Z][a-z]*");
 		var words = r.Matches(s).Select(m => m.Value.ToLower());
 		return string.Join(' ', words);
-	}
+	}*/
 }
-
+/*
 internal enum RangeRelation
 {
 	Less,
@@ -87,3 +87,4 @@ internal static class NumberExtensions
 		return RangeRelation.Inside;
 	}
 }
+*/

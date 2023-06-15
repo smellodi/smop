@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using static Smop.IonVision.API;
 
 namespace Smop.IonVision;
 
-internal interface IMinimalAPI
+internal interface IMinimalAPI : IDisposable
 {
     string Version { get; }
     Task<Response<SystemStatus>> GetSystemStatus();

@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Smop.OdorDisplay.Packets;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
-using IndicatorDataSource = Smop.PulseGen.Controls.ChannelIndicator.DataSource;
-
-using Smop.PulseGen.OdorDisplay;
-using Smop.OdorDisplay;
 
 namespace Smop.PulseGen.Pages;
 
@@ -19,53 +19,23 @@ public partial class Home : Page, IPage<Tests.Test>
 		InitializeComponent();
 
 		DataContext = this;
-
-		txbFreshAir.ToolTip = Utils.L10n.T("CleanAir") + " (" + Utils.L10n.T("NumNotNeg") + ")\n" + Utils.L10n.T("EnterToSet");
-
-		LoadSettings();
-
-		_com.Closed += COM_Closed;
-		_com.Opened += COM_Opened;
-
-		long startTs = Utils.Timestamp.Ms;
 	}
 
 
 	// Internal
 
-	private const double PID_UPDATE_INTERVAL = 0.2;     // seconds
-
 	readonly Storage _storage = Storage.Instance;
-	readonly CommPort _com = CommPort.Instance;
-	//readonly MFC _mfc = MFC.Instance;
-	//readonly PID _pid = PID.Instance;
 
-	Controls.ChannelIndicator? _currentIndicator = null;
-	DeviceSample? _lastSample = null;
+	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
+    readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-	private void LoadSettings()
-	{
-		var settings = Properties.Settings.Default;
-		//txbFreshAir.Text = settings.MFC_FreshAir.ToString();
-	}
+	readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
 
-	private void SaveSettings()
-	{
-		var settings = Properties.Settings.Default;
-		try
-		{
-			//settings.MFC_FreshAir = double.Parse(txbFreshAir.Text);
-		}
-		catch { }
-		settings.Save();
-	}
+	string? _pulseSetupFileName = null;
 
-	private void UpdateDeviceStateUI()
-	{
-		//txbFreshAir.Text = Math.Max(0, _mfc.FreshAirSpeed).ToString("F1");
-		//txbOdor.Text = Math.Max(0, _mfc.OdorSpeed).ToString("F1");
-	}
+    Controls.ChannelIndicator? _currentIndicator = null;
 
+	/*
 	private void ClearIndicators()
 	{
 		foreach (Controls.ChannelIndicator chi in stpIndicators.Children)
@@ -79,37 +49,56 @@ public partial class Home : Page, IPage<Tests.Test>
 			_currentIndicator = null;
 			lmsGraph.Empty();
 		}
-	}
+	}*/
 
-	private void UpdateGraph(IndicatorDataSource dataSource, double timestamp, double value)
+	private void ResetGraph(string? dataSource = null, double baseValue = .0)
 	{
-		if (_currentIndicator?.Source == dataSource)
+		if (_currentIndicator?.Source == dataSource || dataSource == null)
 		{
-			lmsGraph.Add(timestamp, value);
+			var interval = (double)(_storage.IsDebugging ? OdorDisplay.SerialPortEmulator.SamplingFrequency : OdorDisplay.Device.DataMeasurementInterval) / 1000;
+			lmsGraph.Reset(interval, baseValue);
 		}
 	}
 
-	private void ResetGraph(IndicatorDataSource dataSource, double baseValue)
+	private void UpdateIndicators(Data data)
 	{
-		if (_currentIndicator?.Source == dataSource)
+		if (_currentIndicator == null)
 		{
-			lmsGraph.Reset(PID_UPDATE_INTERVAL, baseValue);
+			return;
 		}
+
+		foreach (var m in data.Measurements)
+		{
+			foreach (var sv in m.SensorValues)
+			{
+				var source = $"{m.Device}\n{sv.Sensor}";
+				if (_currentIndicator.Source == source)
+				{
+					var value = sv switch
+					{
+						PIDValue pid => pid.Volts,
+                        ThermometerValue temp => temp.Celsius,
+                        BeadThermistorValue beadTemp => beadTemp.Ohms,	// beadTemp.Volts
+                        HumidityValue humidity => humidity.Percent,		// humidity.Celsius
+                        PressureValue pressure => pressure.Millibars,   // pressure.Celsius
+                        GasValue gas => gas.SLPM,                       // gas.Millibars, gas.Celsius
+                        ValveValue valve => valve.Opened ? 1 : 0,
+                        _ => 0
+					};
+
+					double timestamp = Utils.Timestamp.Sec;
+                    lmsGraph.Add(timestamp, value);
+
+					goto exit;
+				}
+			}
+		}
+
+	exit:
+		return;
 	}
 
-	private void UpdateIndicators(DeviceSample sample)
-	{
-		chiSourceTemperature.Value = sample.SystemTemperature;
-
-		double timestamp = Utils.Timestamp.Sec; //sample.Time;
-		UpdateGraph(IndicatorDataSource.MFC, timestamp, sample.SystemPID);
-	}
-
-	private void ResetIndicators(DeviceSample? sample)
-	{
-		ResetGraph(IndicatorDataSource.MFC, sample?.SystemPID ?? 0);
-	}
-
+    /*
 	private void HandleError(Result result)
 	{
 		if (result.Error == Error.Success)
@@ -123,69 +112,84 @@ public partial class Home : Page, IPage<Tests.Test>
 		else if (result.Error.HasFlag(Error.DeviceError))
 		{
 			//var deviceError = (OdorDisplay.Packets.Packet.Result)((int)result.Error & ~(int)Error.DeviceError);
-			Utils.MsgBox.Error(Title, Utils.L10n.T("DeviceError") + $"\n{result.Reason}");
+			Utils.MsgBox.Error(Title, $"Device error:\n{result.Reason}");
 			return; // hopefully, these are not critical errors, just continue
 		}
 
-		Utils.MsgBox.Error(Title, Utils.L10n.T("CriticalError") + $"\n{result}\n\n" + Utils.L10n.T("AppTerminated"));
+		Utils.MsgBox.Error(Title, $"Critical error:\n{result}\n\nApplication terminated.");
 		Application.Current.Shutdown();
-	}
+	}*/
 
 
-	// Event handlers
+    // Event handlers
 
-	private void PID_Sample(object? s, DeviceSample sample)
-	{
-		Dispatcher.Invoke(() =>
+    private async void OdorDisplay_Data(object? sender, Data e)
+    {
+		await Task.Run(() => Dispatcher.Invoke(() =>
 		{
-			_lastSample = sample;
-			UpdateIndicators(sample);
-		});
-	}
+			UpdateIndicators(e);
+		}));
+    }
 
-	private void MFC_ParamsChanged(object? s, EventArgs e) => Dispatcher.Invoke(() =>
+    private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
+    {
+        await Task.Run(() =>
+        {
+			// TODO
+        });
+    }
+
+    // UI events
+
+    private void InitilizeSetup()
 	{
-		UpdateDeviceStateUI();
-	});
+        var settings = Properties.Settings.Default;
+        _pulseSetupFileName = settings.PulseSetupFilename;
 
-	private void COM_Opened(object? s, EventArgs e) => Utils.DispatchOnce.Do(0.5, () => Dispatcher.Invoke(() =>
+        if (File.Exists(_pulseSetupFileName))
+        {
+            txbSetupFile.Text = _pulseSetupFileName;
+            btnStart.IsEnabled = true;
+        }
+    }
+
+    private async Task CreateIndicators()
 	{
-		/*
-		var result = _mfc.ReadState();
-		HandleError(result);
+        var indicatorGenerator = new IndicatorGenerator();
+        await indicatorGenerator.Run(indicator => Dispatcher.Invoke(() =>
+        {
+            indicator.MouseDown += ChannelIndicator_MouseDown;
+            stpIndicators.Children.Add(indicator);
+            _indicators.Add(indicator.Source, indicator);
+        }));
+    }
 
-		if (result.Error == Error.Success)
-		{
-			if (double.TryParse(txbFreshAir.Text, out double freshAirSpeed))
-			{
-				_mfc.FreshAirSpeed = freshAirSpeed;
-			}
-
-			UpdateDeviceStateUI();
-		}*/
-	}));
-
-	private void COM_Closed(object? s, EventArgs e) =>
-		ClearIndicators();
-
-
-	// UI events
-
-	private void Page_Loaded(object? sender, RoutedEventArgs e)
+    private async void Page_Loaded(object? sender, RoutedEventArgs e)
 	{
 		_storage
 			.BindScaleToZoomLevel(sctScale)
 			.BindVisibilityToDebug(lblDebug);
 
-		if (Focusable)
-		{
-			Focus();
-		}
+        _odorDisplay.Data += OdorDisplay_Data;
+        _smellInsp.Data += SmellInsp_Data;
 
-		/*
-		_pid.Sample += PID_Sample;
-		_mfc.ParamsChanged += MFC_ParamsChanged;
+		InitilizeSetup();
 
+		await CreateIndicators();
+
+        var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Start);
+        var queryResult = _odorDisplay.Request(queryMeasurements, out Ack? ack, out Response? response);
+        if (queryResult.Error != OdorDisplay.Error.Success)
+        {
+			Utils.MsgBox.Error(Title, $"Cannot start measurements in Odor Display:\n{queryResult.Reason}");
+        }
+
+        if (Focusable)
+        {
+            Focus();
+        }
+
+        /*
 		if (_com.IsOpen && _pid.ArePIDsOn)
 		{
 			UpdateDeviceStateUI();
@@ -205,31 +209,25 @@ public partial class Home : Page, IPage<Tests.Test>
 
 			HandleError(_pid.EnableSampling(PID_UPDATE_INTERVAL));
 		}*/
-	}
+    }
 
-	private void Page_Unloaded(object? sender, RoutedEventArgs e)
+    private void Page_Unloaded(object? sender, RoutedEventArgs e)
 	{
+        _odorDisplay.Data -= OdorDisplay_Data;
+        _smellInsp.Data -= SmellInsp_Data;
+        
 		_storage
-			.UnbindScaleToZoomLevel(sctScale)
+            .UnbindScaleToZoomLevel(sctScale)
 			.UnbindVisibilityToDebug(lblDebug);
         /*
-		_pid.Sample -= PID_Sample;
-		_mfc.ParamsChanged -= MFC_ParamsChanged;
-
 		HandleError(_pid.EnableSampling(0));
-
 		*/
-        SaveSettings();
-
-		_lastSample = null;
 	}
 
 	private void Page_KeyDown(object? sender, KeyEventArgs e)
 	{
 		if (e.Key == Key.F4)
 		{
-			//HandleError(_pid.EnableSampling(0));
-
 			Next?.Invoke(this, Tests.Test.OdorProduction);
 		}
 	}
@@ -267,7 +265,35 @@ public partial class Home : Page, IPage<Tests.Test>
 			_currentIndicator = chi;
 			_currentIndicator!.IsActive = true;
 
-			ResetIndicators(_lastSample);
-		}
+            ResetGraph();
+        }
 	}
+
+    private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+
+        var ofd = new OpenFileDialog
+        {
+            Filter = "Any file|*",
+			FileName = Path.GetFileName(settings.PulseSetupFilename),
+            InitialDirectory = Path.GetDirectoryName(settings.PulseSetupFilename) ?? AppDomain.CurrentDomain.BaseDirectory
+        };
+
+        if (ofd.ShowDialog() ?? false)
+        {
+            _pulseSetupFileName = ofd.FileName;
+
+            txbSetupFile.Text = _pulseSetupFileName;
+            btnStart.IsEnabled = true;
+
+            settings.PulseSetupFilename = _pulseSetupFileName;
+            settings.Save();
+        }
+    }
+
+    private void Start_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
 }

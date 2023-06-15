@@ -1,16 +1,16 @@
-﻿namespace Smop.PulseGen.OdorDisplay;
+﻿namespace Smop.PulseGen.Comm;
 
-public interface ISample
+public interface IOdorDisplaySample
 {
 	public long Time { get; }
 	public double MainValue { get; }
 }
 
-public class MessageSample : ISample
+public class OdorDisplayMessageSample : IOdorDisplaySample
 {
 	public long Time { get; }
 	public double MainValue { get; }
-	public MessageSample()
+	public OdorDisplayMessageSample()
 	{
 		Time = 0;
 		MainValue = 0;

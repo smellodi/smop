@@ -1,7 +1,12 @@
 ﻿namespace Smop.OdorDisplay;
 
-public class Device
+public static class Device
 {
+    /// <summary>
+    /// ms
+    /// </summary>
+    public static readonly int DataMeasurementInterval = 100;
+
     public enum ID
     {
         Base = 0,
@@ -14,7 +19,7 @@ public class Device
         Odor7 = 7,
         Odor8 = 8,
         Odor9 = 9,
-        DiluionAir = 10,
+        DilutionAir = 10,
     }
 
     public enum Capability

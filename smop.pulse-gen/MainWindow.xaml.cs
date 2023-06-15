@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
-using WPFLocalizeExtension.Engine;
 using Smop.PulseGen.Utils;
 using Smop.PulseGen.Logging;
 
@@ -14,11 +13,6 @@ public partial class MainWindow : Window
 		InitializeComponent();
 
 		var settings = Properties.Settings.Default;
-
-		LocalizeDictionary.Instance.MergedAvailableCultures.RemoveAt(0);
-		LocalizeDictionary.Instance.Culture = System.Globalization.CultureInfo.GetCultureInfo(settings.Language);
-		LocalizeDictionary.Instance.OutputMissingKeys = true;
-		LocalizeDictionary.Instance.MissingKeyEvent += (s, e) => e.MissingKeyResult = $"[MISSING] {e.Key}";
 
 		_connectPage.Next += ConnectPage_Next;
 		_homePage.Next += SetupPage_Next;
@@ -171,7 +165,7 @@ public partial class MainWindow : Window
 		if (savingResult == null)
 		{
 			_finishedPage.DisableSaving();
-			MsgBox.Warn(Title, L10n.T("NoDataToSave"), MsgBox.Button.OK);
+			MsgBox.Warn(Title, "No data to save", MsgBox.Button.OK);
 		}
 	}
 

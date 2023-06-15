@@ -2,9 +2,6 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Smop.PulseGen.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Language" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="MainWindow_IsMaximized" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -36,6 +33,12 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="SmellInspPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="IonVisionSetupFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Properties/IonVision.json</Value>
+    </Setting>
+    <Setting Name="PulseSetupFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

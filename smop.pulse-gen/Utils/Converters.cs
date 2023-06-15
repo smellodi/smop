@@ -21,7 +21,7 @@ public class BoolToVisibilityConverter : IValueConverter
 	}
 }
 
-public class NotBoolToVisibilityConverter : IValueConverter
+/*public class NotBoolToVisibilityConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
@@ -33,7 +33,7 @@ public class NotBoolToVisibilityConverter : IValueConverter
 		var visibility = (Visibility)value;
 		return visibility != Visibility.Visible;
 	}
-}
+}*/
 
 public class ObjectToBoolConverter : IValueConverter
 {
@@ -48,7 +48,7 @@ public class ObjectToBoolConverter : IValueConverter
 	}
 }
 
-public class AnyToBlankConverter : IValueConverter
+/*public class AnyToBlankConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
@@ -59,9 +59,9 @@ public class AnyToBlankConverter : IValueConverter
 	{
 		throw new NotImplementedException();
 	}
-}
+}*/
 
-public class ComboBoxItemToVisilityConverter : IValueConverter
+/*public class ComboBoxItemToVisilityConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
@@ -72,9 +72,9 @@ public class ComboBoxItemToVisilityConverter : IValueConverter
 	{
 		throw new NotImplementedException();
 	}
-}
+}*/
 
-[ValueConversion(typeof(bool), typeof(bool))]
+/*[ValueConversion(typeof(bool), typeof(bool))]
 public class InverseBooleanConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -86,4 +86,4 @@ public class InverseBooleanConverter : IValueConverter
 	{
 		return !(bool)value;
 	}
-}
+}*/

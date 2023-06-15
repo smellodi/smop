@@ -10,6 +10,11 @@ namespace Smop.OdorDisplay;
 /// </summary>
 public class SerialPortEmulator : ISerialPort
 {
+    /// <summary>
+    /// ms
+    /// </summary>
+    public static int SamplingFrequency { get; set; } = 100;
+
     public bool IsOpen => _isOpen;
 
     public SerialPortEmulator()
@@ -87,7 +92,7 @@ public class SerialPortEmulator : ISerialPort
     Queue<Request> _requests = new();
     Queue<byte[]> _responses = new();
 
-    System.Timers.Timer _dataTimer = new(2000);
+    System.Timers.Timer _dataTimer = new(SamplingFrequency);
     Stopwatch _stopwatch = Stopwatch.StartNew();
 
     private void MakeResponse(Request req)

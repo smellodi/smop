@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using Smop.OdorDisplay.Packets;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using WPFLocalizeExtension.Engine;
 
 namespace Smop.PulseGen.Pages;
 
@@ -16,54 +17,52 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 	public event EventHandler<EventArgs>? Next;
 	public event PropertyChangedEventHandler? PropertyChanged;
 
-	public bool HasNecessaryConnections => _odorDisplayCom.IsOpen && _ionVisionCom != null;
+	public bool HasNecessaryConnections => _odorDisplay.IsOpen && _ionVision != null;
 
 	public Connect()
 	{
 		InitializeComponent();
 
-		DataContext = this;
+        _greenButtonImage = new(Utils.Resources.GetUri("Assets/images/button-green.png"));
 
-		UpdatePortList(cmbOdorDisplayCommPort);
-		UpdatePortList(cmbSmellInspCommPort);
+        DataContext = this;
+
+        UpdatePortList(cmbOdorDisplayCommPort);
+        UpdatePortList(cmbSmellInspCommPort);
 
 		Application.Current.Exit += (s, e) => Close();
 
 		LoadSettings();
 
 		_usb.Inserted += (s, e) => Dispatcher.Invoke(() => {
-			UpdatePortList(cmbOdorDisplayCommPort);
-			UpdatePortList(cmbSmellInspCommPort);
+            UpdatePortList(cmbOdorDisplayCommPort, OdorDisplay.COMUtils.SMOPPort);
+            UpdatePortList(cmbSmellInspCommPort);
 		});
 		_usb.Removed += (s, e) => Dispatcher.Invoke(() => {
-			UpdatePortList(cmbOdorDisplayCommPort);
-			UpdatePortList(cmbSmellInspCommPort);
+            UpdatePortList(cmbOdorDisplayCommPort, OdorDisplay.COMUtils.SMOPPort);
+            UpdatePortList(cmbSmellInspCommPort);
 		});
 
 		UpdateUI();
 	}
 
 
-	// Internal
+    // Internal
 
-	readonly string IV_SETTINGS_FILENAME = "Properties/IonVision.json";
+    readonly System.Windows.Media.Imaging.BitmapImage _greenButtonImage;
 
-	readonly System.Windows.Media.Imaging.BitmapImage _greenButtonImage = new(new Uri($@"/smop.pulse-gen;component/Assets/images/button-green.png", UriKind.Relative));
-
-    readonly Smop.OdorDisplay.COMUtils _usb = new();
+    readonly OdorDisplay.COMUtils _usb = new();
 	readonly Storage _storage = Storage.Instance;
 
-	readonly Smop.OdorDisplay.CommPort _odorDisplayCom = Smop.OdorDisplay.CommPort.Instance;
-	readonly Smop.SmellInsp.CommPort _smellInspCom = Smop.SmellInsp.CommPort.Instance;
-    
-	Smop.IonVision.Communicator? _ionVisionCom = null;
+	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
+	readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-    //readonly MFC _mfc = MFC.Instance;
-    //readonly PID _pid = PID.Instance;
+    string IonVisionSetupFilename = "Properties/IonVision.json";
+    IonVision.Communicator? _ionVision = null;
 
-    private void UpdatePortList(ComboBox cmb)
+    private static void UpdatePortList(ComboBox cmb, OdorDisplay.COMUtils.Port? defaultPort = null)
 	{
-		var current = cmb.SelectedValue;
+        var current = cmb.SelectedValue ?? defaultPort?.Name;
 
 		cmb.Items.Clear();
 
@@ -89,34 +88,32 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
 	private void UpdateUI()
 	{
-		cmbOdorDisplayCommPort.IsEnabled = !_odorDisplayCom.IsOpen;
-        cmbSmellInspCommPort.IsEnabled = !_smellInspCom.IsOpen;
+		cmbOdorDisplayCommPort.IsEnabled = !_odorDisplay.IsOpen;
+        cmbSmellInspCommPort.IsEnabled = !_smellInsp.IsOpen;
     }
 
     private void ConnectToOdorDispay(string? address)
 	{
-		if (!_odorDisplayCom.IsOpen)
+		if (!_odorDisplay.IsOpen)
 		{
-            Smop.OdorDisplay.Result result = _odorDisplayCom.Open(address);
+            OdorDisplay.Result result = _odorDisplay.Open(address);
 
-			if (result.Error != Smop.OdorDisplay.Error.Success)
+			if (result.Error != OdorDisplay.Error.Success)
 			{
-				Utils.MsgBox.Error(Title, Utils.L10n.T("CannotOpenPort"));
+				Utils.MsgBox.Error(Title, "Cannot open the port");
 			}
 			else
 			{
 				btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
 
-                if (_storage.IsDebugging)
+				var queryVersion = new QueryVersion();
+                var queryResult = _odorDisplay.Request(queryVersion, out Ack? ack, out Response? response);
+                if (result.Error == OdorDisplay.Error.Success && response is OdorDisplay.Packets.Version version)
 				{
-					//OdorDisplay.Emulator.MFC.Instance.Debug += Comm_DebugAsync;
-					//OdorDisplay.Emulator.PID.Instance.Debug += Comm_DebugAsync;
-					//OdorDisplay.Emulator.Source.Instance.Debug += Comm_DebugAsync;
-				}
-				else
-				{
-					_odorDisplayCom.Debug += Comm_DebugAsync;
-				}
+					lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
+                }
+
+				_odorDisplay.Debug += Comm_DebugAsync;
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
             }
@@ -125,72 +122,82 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
     private void ConnectToSmellInsp(string? address)
     {
-        if (!_smellInspCom.IsOpen)
+        if (!_smellInsp.IsOpen)
         {
-            var result = _smellInspCom.Open(address);
+            var result = _smellInsp.Open(address);
 
             if (result.Error != Smop.OdorDisplay.Error.Success)
             {
-                Utils.MsgBox.Error(Title, Utils.L10n.T("CannotOpenPort"));
+                Utils.MsgBox.Error(Title, "Cannot open the port");
             }
             else
             {
-                btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage }; ;
+                btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
 
-                if (_storage.IsDebugging)
-                {
-                    //OdorDisplay.Emulator.MFC.Instance.Debug += Comm_DebugAsync;
-                    //OdorDisplay.Emulator.PID.Instance.Debug += Comm_DebugAsync;
-                    //OdorDisplay.Emulator.Source.Instance.Debug += Comm_DebugAsync;
-                }
-                else
-                {
-                    _smellInspCom.Debug += Comm_DebugAsync;
-                }
+                var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
+                lblSmellInspInfo.Content = $"Status: {queryResult.Reason}";
+
+                _smellInsp.Debug += Comm_DebugAsync;
 
 				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
             }
         }
     }
 
-    private async void ConnectToIonVision(string address)
+    private async Task ConnectToIonVisionAsync()
     {
-        if (_ionVisionCom == null)
+		if (_ionVision != null)
+		{
+			return;
+		}
+
+		_ionVision = new IonVision.Communicator(IonVisionSetupFilename, _storage.IsDebugging);
+
+		btnConnectToIonVision.IsEnabled = false;
+        var info = await _ionVision.GetSystemInfo();
+        btnConnectToIonVision.IsEnabled = true;
+
+        if (!info.Success)
         {
-			_ionVisionCom = new IonVision.Communicator(IV_SETTINGS_FILENAME, _storage.IsDebugging);
-
-			btnConnectToIonVision.IsEnabled = false;
-            var version = await _ionVisionCom.GetSystemInfo();
-            btnConnectToIonVision.IsEnabled = true;
-
-            if (!version.Success)
-            {
-                _ionVisionCom = null;
-                Utils.MsgBox.Error(Title, Utils.L10n.T("CannotConnectToHost"));
-                return;
-            }
-            else if (version.Value!.CurrentVersion != _ionVisionCom.SupportedVersion)
-            {
-                Utils.MsgBox.Warn(Title, string.Format(Utils.L10n.T("VersionMismatch"), _ionVisionCom.SupportedVersion, version.Value!.CurrentVersion));
-            }
-			else
-			{
-                btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
-            }
+            _ionVision = null;
+            Utils.MsgBox.Error(Title, "Cannot connect to the device");
+            return;
         }
+        else if (info.Value!.CurrentVersion != _ionVision.SupportedVersion)
+        {
+            Utils.MsgBox.Warn(Title,
+				string.Format("Version mismatch: this software targets the version {0}, but the device is operating the version {1}",
+					_ionVision.SupportedVersion,
+                    info.Value!.CurrentVersion));
+        }
+		else
+		{
+            btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
+        }
+
+		var status = await _ionVision.GetSystemStatus();
+		if (status.Success)
+		{
+            lblIonVisionInfo.Content = $"Device type: {status.Value!.DeviceType}";
+		}
+
+		App.IonVision = _ionVision;
     }
 
     private void Close()
 	{
-		if (_odorDisplayCom.IsOpen)
+		if (_odorDisplay.IsOpen)
 		{
-			//_pid.Stop();
-			//_mfc.Stop();
-			_odorDisplayCom.Close();
+			_odorDisplay.Close();
 		}
 
-		SaveSettings();
+		if (_smellInsp.IsOpen)
+		{
+			_smellInsp.Close();
+        }
+
+        _ionVision?.Dispose();
 	}
 
 	private void LoadSettings()
@@ -215,8 +222,9 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
             }
         }
 
+		IonVisionSetupFilename = settings.IonVisionSetupFilename;
 
-        IonVision.Settings ivSetings = new IonVision.Settings(IV_SETTINGS_FILENAME);
+        var ivSetings = new IonVision.Settings(IonVisionSetupFilename);
         txbIonVisionIP.Text = ivSetings.IP;
     }
 
@@ -225,7 +233,6 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 		var settings = Properties.Settings.Default;
 		try
 		{
-			settings.Language = LocalizeDictionary.Instance.Culture.Name;
 			settings.OdorDisplayPort = cmbOdorDisplayCommPort.SelectedItem?.ToString() ?? "";
             settings.SmellInspPort = cmbSmellInspCommPort.SelectedItem?.ToString() ?? "";
         }
@@ -274,9 +281,6 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
             txbIonVisionIP.Text = "simulator";
 
-            //_mfc.IsDebugging = true;
-            //_pid.IsDebugging = true;
-
             _storage.IsDebugging = true;
 			lblDebug.Visibility = Visibility.Visible;
 		}
@@ -289,48 +293,62 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 		}
 	}
 
-	private void OdorDisplayPort_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+	private void Port_SelectionChanged(object? sender, SelectionChangedEventArgs e)
 	{
 		UpdateUI();
 	}
 
-    private void SmellInspPort_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        UpdateUI();
-    }
-
     private void ConnectToOdorDisplay_Click(object? sender, RoutedEventArgs e)
 	{
 		ConnectToOdorDispay(_storage.IsDebugging ? null : (string)cmbOdorDisplayCommPort.SelectedItem);
-
 		UpdateUI();
 	}
 
     private void ConnectToSmellInsp_Click(object? sender, RoutedEventArgs e)
     {
         ConnectToSmellInsp(_storage.IsDebugging ? null : (string)cmbSmellInspCommPort.SelectedItem);
-
         UpdateUI();
     }
 
-    private void ConnectToIonVision_Click(object? sender, RoutedEventArgs e)
+    private async void ConnectToIonVision_Click(object? sender, RoutedEventArgs e)
     {
-        ConnectToIonVision(_storage.IsDebugging ? "" : txbIonVisionIP.Text);
+		btnConnectToIonVision.IsEnabled = false;
+		btnChooseIonVisionSetupFile.IsEnabled = false;
 
-        UpdateUI();
+        await ConnectToIonVisionAsync();
+
+        btnConnectToIonVision.IsEnabled = true;
+        btnChooseIonVisionSetupFile.IsEnabled = true;
+    }
+
+    private void ChooseIonVisionSetupFile_Click(object? sender, RoutedEventArgs e)
+    {
+		string appBaseDir = AppDomain.CurrentDomain.BaseDirectory;
+		string ionVisionSetupPath = Path.Combine(appBaseDir, IonVisionSetupFilename);
+
+        var ofd = new OpenFileDialog
+        {
+            Filter = "JSON files|*.json",
+            FileName = Path.GetFileName(ionVisionSetupPath),
+            InitialDirectory = Path.GetDirectoryName(ionVisionSetupPath)
+        };
+
+        if (ofd.ShowDialog() ?? false)
+		{
+            IonVisionSetupFilename = ofd.FileName;
+
+            var ivSetings = new IonVision.Settings(IonVisionSetupFilename);
+            txbIonVisionIP.Text = ivSetings.IP;
+
+            var settings = Properties.Settings.Default;
+            settings.IonVisionSetupFilename = IonVisionSetupFilename;
+            settings.Save();
+        }
     }
 
     private void Connect_Click(object? sender, RoutedEventArgs e)
     {
+        SaveSettings();
         Next?.Invoke(this, new EventArgs());
     }
-
-    private void Language_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-	{
-		var culture = CultureInfo.GetCultureInfo("en-US");
-		CultureInfo.DefaultThreadCurrentCulture = culture;
-		CultureInfo.DefaultThreadCurrentUICulture = culture;
-		System.Threading.Thread.CurrentThread.CurrentCulture = culture;
-		System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
-	}
 }

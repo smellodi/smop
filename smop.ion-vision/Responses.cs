@@ -70,7 +70,7 @@ public record class SystemVersion(
 );
 public record class SystemInfo(
     string CurrentVersion,
-    string? CrrentRtmVersion,
+    string? CurrentRtmVersion,
     SystemVersion[] AvailableVersions
 );
 

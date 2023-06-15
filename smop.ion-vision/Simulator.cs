@@ -22,6 +22,12 @@ internal class Simulator : IMinimalAPI
         };
     }
 
+    public void Dispose()
+    {
+        _timer.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     public Task<Response<SystemStatus>> GetSystemStatus()
     {
         return Task.FromResult(new Response<SystemStatus>(new SystemStatus(

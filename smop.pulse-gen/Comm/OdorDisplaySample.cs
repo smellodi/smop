@@ -1,10 +1,10 @@
-﻿namespace Smop.PulseGen.OdorDisplay
+﻿namespace Smop.PulseGen.Comm
 {
 
 	/// <summary>
 	/// Sample record/vector; all the measured values for one second
 	/// </summary>
-	public struct DeviceSample : ISample
+	public struct OdorDisplaySample : IOdorDisplaySample
 	{
 		/// <summary>
 		/// Sample time (milliseconds from start)
@@ -33,9 +33,9 @@
 
 		public double MainValue => SystemPID;
 
-		public MessageSample Raw { get; }
+		public OdorDisplayMessageSample Raw { get; }
 
-		public DeviceSample(MessageSample sample)
+		public OdorDisplaySample(OdorDisplayMessageSample sample)
 		{
 			Raw = sample;
 

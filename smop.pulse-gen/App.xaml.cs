@@ -6,9 +6,15 @@ namespace Smop.PulseGen;
 
 public partial class App : Application
 {
-	private void Application_Startup(object sender, StartupEventArgs e)
+	#region Global objects
+
+	public static IonVision.Communicator? IonVision = null;
+
+    #endregion
+
+    private void Application_Startup(object sender, StartupEventArgs e)
 	{
-		var settings = Smop.PulseGen.Properties.Settings.Default;
+		var settings = PulseGen.Properties.Settings.Default;
 		if (settings.CallUpgrade)
 		{
 			settings.Upgrade();

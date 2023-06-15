@@ -25,18 +25,6 @@ namespace Smop.PulseGen.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Language {
-            get {
-                return ((string)(this["Language"]));
-            }
-            set {
-                this["Language"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool MainWindow_IsMaximized {
             get {
@@ -164,6 +152,30 @@ namespace Smop.PulseGen.Properties {
             }
             set {
                 this["SmellInspPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Properties/IonVision.json")]
+        public string IonVisionSetupFilename {
+            get {
+                return ((string)(this["IonVisionSetupFilename"]));
+            }
+            set {
+                this["IonVisionSetupFilename"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PulseSetupFilename {
+            get {
+                return ((string)(this["PulseSetupFilename"]));
+            }
+            set {
+                this["PulseSetupFilename"] = value;
             }
         }
     }

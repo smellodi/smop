@@ -33,6 +33,12 @@ public class API : IMinimalAPI
         _client.AddDefaultHeader("Content-Type", "application/json");
     }
 
+    public void Dispose()
+    {
+        _client.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     #region SCAN
 
     /// <summary>Retrieves scan progress</summary>

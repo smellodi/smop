@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Smop.IonVision;
 
-public class Communicator
+public class Communicator: IDisposable
 {
     public const int PROJECT_LOADING_DURATION = 2000;
 
@@ -15,6 +15,12 @@ public class Communicator
     {
         _settings = settingsFilename == null ? new() : new(settingsFilename);
         _api = isSimulator ? new Simulator() : new API(_settings.IP);
+    }
+
+    public void Dispose()
+    {
+        _api.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>Retrieves system status</summary>

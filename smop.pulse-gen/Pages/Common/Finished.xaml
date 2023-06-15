@@ -3,14 +3,10 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:lex="http://wpflocalizeextension.codeplex.com"
       xmlns:local="clr-namespace:Smop.PulseGen.Controls"
-      lex:LocalizeDictionary.DesignCulture="en"
-      lex:ResxLocalizationProvider.DefaultAssembly="Smop.PulseGen"
-      lex:ResxLocalizationProvider.DefaultDictionary="Resources"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
-      Title="{lex:Loc Finished}"
+      Title="Finished"
       GotFocus="Page_GotFocus"
       Loaded="Page_Loaded"
       Unloaded="Page_Unloaded">
@@ -36,13 +32,13 @@
                Style="{StaticResource PageTitle}">
             <!--Run Text="{Binding TestName, Mode=OneWay}"/>
             <Run Text=" - "/-->
-            <Run Text="{lex:Loc Finished}"/>
+            <Run Text="Finished"/>
         </TextBlock>
 
         <StackPanel Grid.Row="1"
                     VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center"
-                       Text="{lex:Loc ThankYou}"
+                       Text="Thank you!"
                        FontSize="18"/>
         </StackPanel>
         <local:WaitingInstruction Grid.Row="1" x:Name="wtiInstruction"
@@ -51,22 +47,22 @@
                                   Height="50"
                                   VerticalAlignment="Bottom"
                                   Visibility="Hidden"
-                                  Text="{lex:Loc Wait}"/>
+                                  Text="Wait"/>
 
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
             <Button x:Name="btnSaveData"
                     Style="{StaticResource Next}"
-                    Content="{lex:Loc SaveData}"
+                    Content="Save data"
                     Click="SaveData_Click"/>
             <Button x:Name="btnStartOver"
                     Style="{StaticResource Next}"
-                    Content="{lex:Loc BackToHome}"
+                    Content="Restart"
                     Click="Return_Click"/>
             <Button
                     Style="{StaticResource Next}"
-                    Content="{lex:Loc Exit}"
+                    Content="Exit"
                     Click="Exit_Click"/>
         </StackPanel>
 

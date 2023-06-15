@@ -4,13 +4,9 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.PulseGen.Controls"
-      xmlns:lex="http://wpflocalizeextension.codeplex.com"
-      lex:LocalizeDictionary.DesignCulture="en"
-      lex:ResxLocalizationProvider.DefaultAssembly="Smop.PulseGen"
-      lex:ResxLocalizationProvider.DefaultDictionary="Resources"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="1000"
-      Title="{lex:Loc Setup}"
+      Title="Setup"
       Focusable="True"
       KeyDown="Page_KeyDown"
       Loaded="Page_Loaded"
@@ -19,9 +15,6 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="40"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="12"/>
             <RowDefinition />
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
@@ -31,75 +24,91 @@
 
         <TextBlock Grid.Row="0"
                    Style="{StaticResource PageTitle}"
-                   Text="{lex:Loc Setup}"/>
+                   Text="Setup"
+                   Margin="0,0,0,12"/>
 
-        <UserControl Grid.Row="2" Style="{StaticResource ValueWithUnit}" Tag="{lex:Loc LMin}"
-                     VerticalAlignment="Top"
-                     Width="100"
-                     Height="28"
-                     Margin="0">
-            <TextBox x:Name="txbFreshAir"
-                     VerticalContentAlignment="Center"
-                     Text="10"
-                     IsReadOnly="True"
-                     KeyUp="FreshAir_KeyUp"/>
-        </UserControl>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="4"
-              Margin="12,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
+            <Border Grid.Column="0"
+                BorderBrush="{StaticResource BrushBorder}"
+                BorderThickness="1"
+                Padding="4">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0">
+                        <Label Content="Setup file:"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="txbSetupFile" Grid.Column="0"
+                                Width="224"
+                                IsReadOnly="True"/>
+                            <Button Grid.Column="1"
+                                Content="..."
+                                Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
+                                Click="ChoosePulseSetupFile_Click"/>
+                        </Grid>
+                    </StackPanel>
 
-            <ScrollViewer x:Name="scvIndicatorScroller" Grid.Row="0"
-                        HorizontalScrollBarVisibility="Auto" 
-                        VerticalScrollBarVisibility="Disabled">
-                <StackPanel x:Name="stpIndicators"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Center">
-                    <local:ChannelIndicator x:Name="chiSourceTemperature"
-                                        Title="{lex:Loc SourceTemperature}"
-                                        Units="°C"
-                                        Precision="1"
-                                        Value="0.0"
-                                        Source="MFCDryAir"
-                                        WarningThreshold="35"
-                                        MouseDown="ChannelIndicator_MouseDown"/>
-                    <local:ChannelIndicator x:Name="chiChassisHeater"
-                                        Title="{lex:Loc ChassisHeater}"
-                                        Units="°C"
-                                        Precision="2"
-                                        Value="0.0"
-                                        Source="Pressure"
-                                        MouseDown="ChannelIndicator_MouseDown"/>
-                    <local:ChannelIndicator x:Name="chiPID"
-                                        Title="{lex:Loc PID}"
-                                        Units="{lex:Loc MV}"
-                                        Precision="1"
-                                        Value="0.0"
-                                        Source="PID"
-                                        MouseDown="ChannelIndicator_MouseDown"/>
-                    <local:ChannelIndicator x:Name="chiInputHumidity"
-                                        Title="{lex:Loc IncomingHumidity}"
-                                        Units="%"
-                                        Precision="1"
-                                        Value="0.0"
-                                        Source="InputHumidity"
-                                        MouseDown="ChannelIndicator_MouseDown"/>
-                </StackPanel>
-            </ScrollViewer>
+                    <UserControl Grid.Row="2" Style="{StaticResource FormRow}" Tag="Carrier gas">
+                        <UserControl Style="{StaticResource ValueWithUnit}"
+                            Tag="L/min"
+                            VerticalAlignment="Top"
+                            Width="100"
+                            Height="28"
+                            Margin="0">
+                            <TextBox x:Name="txbFreshAir"
+                                VerticalContentAlignment="Center"
+                                Text="10"
+                                IsReadOnly="True"
+                                KeyUp="FreshAir_KeyUp"
+                                ToolTip="Clean air (non-negative number).\nPress ENTER to set the value"/>
+                        </UserControl>
+                    </UserControl>
+                </Grid>
+            </Border>
 
-            <local:LiveData x:Name="lmsGraph" Grid.Row="1"
-                        Margin="0,12,0,0"/>
+            <Grid Grid.Column="1"
+                    Margin="12,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <ScrollViewer x:Name="scvIndicatorScroller" Grid.Row="0"
+                            HorizontalScrollBarVisibility="Auto" 
+                            VerticalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="stpIndicators"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center">
+                    </StackPanel>
+                </ScrollViewer>
+
+                <local:LiveData x:Name="lmsGraph" Grid.Row="1"
+                            Margin="0,12,0,0"/>
+            </Grid>
         </Grid>
-
-        <WrapPanel Grid.Row="5"
+        
+        <WrapPanel Grid.Row="2"
                    HorizontalAlignment="Center">
-            <Button x:Name="btn"
-                    IsEnabled="false"
-                    Style="{StaticResource Next}"/>
+            <Button x:Name="btnStart"
+                    Style="{StaticResource Next}"
+                    IsEnabled="False"
+                    Content="Start"
+                    Click="Start_Click"/>
         </WrapPanel>
 
         <Label x:Name="lblDebug" Style="{StaticResource DebugWarning}" Visibility="Collapsed"/>

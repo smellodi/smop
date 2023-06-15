@@ -7,7 +7,7 @@ namespace Smop.PulseGen.Controls;
 
 public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 {
-	public enum DataSource { MFC, Valve, SourceTemp, ChassisHeater, MFCDryAir, InputHumidity, OutputHumidity, Pressure, PID }
+	//public enum DataSource { MFC, Valve, SourceTemp, ChassisHeater, MFCDryAir, InputHumidity, OutputHumidity, Pressure, PID }
 
 	#region Title property
 
@@ -138,16 +138,16 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 
 	#region Source property
 
-	[Description("Data source"), Category("Common Properties")]
-	public DataSource Source
+	[Description("Data source ID"), Category("Common Properties")]
+	public string Source
 	{
-		get => (DataSource)GetValue(SourceProperty);
+		get => (string)GetValue(SourceProperty);
 		set => SetValue(SourceProperty, value);
 	}
 
 	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
 		nameof(Source),
-		typeof(DataSource),
+		typeof(string),
 		typeof(ChannelIndicator));
 
 	#endregion

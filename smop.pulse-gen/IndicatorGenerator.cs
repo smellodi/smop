@@ -82,8 +82,10 @@ namespace Smop.PulseGen
                 Capability.InputAirHumiditySensor => "Input humd.",
                 Capability.OutputAirHumiditySensor => "Output humd.",
                 Capability.PressureSensor => "Pressure",
-                Capability.OdorantFlowSensor or Capability.DilutionAirFlowSensor => "Flow",
-                Capability.OdorantValveSensor or Capability.OutputValveSensor => "Valve",
+                Capability.OdorantFlowSensor => "Flow",
+                Capability.DilutionAirFlowSensor => "Dil. flow",
+                Capability.OdorantValveSensor => "Valve",
+                Capability.OutputValveSensor => "Output valve",
                 _ => null
             };
             var units = cap switch
@@ -91,7 +93,7 @@ namespace Smop.PulseGen
                 Capability.PID => "mV",
                 Capability.BeadThermistor or Capability.ChassisThermometer or Capability.OdorSourceThermometer or Capability.GeneralPurposeThermometer => "°C",
                 Capability.InputAirHumiditySensor or Capability.OutputAirHumiditySensor => "%",
-                Capability.PressureSensor => "mB",
+                Capability.PressureSensor => "mBar",
                 Capability.OdorantFlowSensor or Capability.DilutionAirFlowSensor => "l/min",
                 Capability.OdorantValveSensor or Capability.OutputValveSensor => null,
                 _ => null
@@ -101,8 +103,8 @@ namespace Smop.PulseGen
             {
                 Capability.PID => 2,
                 Capability.BeadThermistor or Capability.ChassisThermometer or Capability.OdorSourceThermometer or Capability.GeneralPurposeThermometer => 1,
-                Capability.InputAirHumiditySensor or Capability.OutputAirHumiditySensor => 3,
-                Capability.PressureSensor => 2,
+                Capability.InputAirHumiditySensor or Capability.OutputAirHumiditySensor => 1,
+                Capability.PressureSensor => 1,
                 Capability.OdorantFlowSensor or Capability.DilutionAirFlowSensor => 2,
                 Capability.OdorantValveSensor or Capability.OutputValveSensor => 0,
                 _ => 0

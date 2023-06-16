@@ -1,11 +1,24 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Forms;
 
 namespace Smop.PulseGen.Utils;
+
+[ValueConversion(typeof(int), typeof(Visibility))]
+public class NumberToVisibilityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return (int)value != 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var visibility = (Visibility)value;
+        return visibility == Visibility.Visible ? 1.0 : 0.0;
+    }
+}
 
 public class BoolToVisibilityConverter : IValueConverter
 {

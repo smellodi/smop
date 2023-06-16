@@ -376,7 +376,7 @@
                         <ControlTemplate TargetType="{x:Type CheckBox}">
                             <BulletDecorator VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="0,2,0,0">
                                 <BulletDecorator.Bullet>
-                                    <Grid Height="16" Width="16">
+                                    <Grid MinHeight="{TemplateBinding FontSize}" MinWidth="{TemplateBinding FontSize}">
                                         <Border Name="CheckOuter"
                                                 Background="Transparent"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
@@ -543,7 +543,7 @@
                             <DockPanel>
                                 <TextBlock Style="{DynamicResource FormRowHeader}"
                                            Text="{TemplateBinding Tag}"/>
-                                <ContentPresenter Margin="0,0,8,8"/>
+                                <ContentPresenter Margin="0,0,8,0"/>
                             </DockPanel>
                         </ControlTemplate>
                     </Setter.Value>

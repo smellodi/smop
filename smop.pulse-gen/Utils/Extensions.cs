@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+//using System.Linq;
+//using System.Text.RegularExpressions;
 
 namespace Smop.PulseGen.Utils;
 
-/*internal static class RandomExtensions
+internal static class RandomExtensions
 {
 	public static Random Shuffle<T>(this Random rng, T[] array)
 	{
@@ -52,7 +52,7 @@ namespace Smop.PulseGen.Utils;
 
 		return rng;
 	}
-}*/
+}
 
 internal static class StringExtensions
 {

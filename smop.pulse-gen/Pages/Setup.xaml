@@ -42,9 +42,12 @@
                         <ColumnDefinition Width="auto"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
                         <RowDefinition/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
+                    
                     <StackPanel Grid.Row="0">
                         <Label Content="Setup file:"/>
                         <Grid>
@@ -62,7 +65,13 @@
                         </Grid>
                     </StackPanel>
 
-                    <UserControl Grid.Row="2" Style="{StaticResource FormRow}" Tag="Carrier gas">
+                    <UserControl x:Name="uscRandomize" Grid.Row="1" Style="{StaticResource FormRow}" Tag="Randomize">
+                        <CheckBox x:Name="chkRandomize"
+                            FontSize="16"
+                            VerticalAlignment="Center"/>
+                    </UserControl>
+
+                    <UserControl Grid.Row="10" Style="{StaticResource FormRow}" Tag="Carrier gas">
                         <UserControl Style="{StaticResource ValueWithUnit}"
                             Tag="L/min"
                             VerticalAlignment="Top"

@@ -4,5 +4,5 @@ namespace Smop.PulseGen.Test;
 
 public interface ITest : IDisposable
 {
-	void Start();
+	void Start(PulseSetup setup);
 }

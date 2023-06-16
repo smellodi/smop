@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Smop.PulseGen.Utils;
 using Smop.PulseGen.Logging;
 using Smop.PulseGen.Test;
+using System.Threading.Tasks;
 
 namespace Smop.PulseGen;
 
@@ -130,10 +131,10 @@ public partial class MainWindow : Window
 		Content = _setupPage;
 	}
 
-	private void SetupPage_Next(object? sender, EventArgs e)
+	private void SetupPage_Next(object? sender, PulseSetup e)
 	{
         Content = _pulsePage;
-        (_pulsePage as ITest)?.Start();
+        (_pulsePage as ITest)?.Start(e);
     }
 
     private void PulsePage_Next(object? sender, bool e)
@@ -242,10 +243,8 @@ public partial class MainWindow : Window
 		}
 	}
 
-	private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+	private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 	{
-        (_pulsePage as ITest)?.Dispose();
-
         var settings = Properties.Settings.Default;
 		settings.MainWindow_X = Left;
 		settings.MainWindow_Y = Top;
@@ -254,8 +253,12 @@ public partial class MainWindow : Window
 		settings.MainWindow_IsMaximized = WindowState == WindowState.Maximized;
 		settings.Save();
 
-		System.Threading.Thread.Sleep(100);
-
 		Application.Current.Shutdown();
-	}
+
+        await Task.Delay(100);
+
+        (_pulsePage as ITest)?.Dispose();
+
+        await Task.Delay(200);
+    }
 }

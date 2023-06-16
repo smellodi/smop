@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32;
 using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Test;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
@@ -9,16 +11,16 @@ using System.Windows.Input;
 
 namespace Smop.PulseGen.Pages;
 
-public partial class Setup : Page, IPage<EventArgs>
+public partial class Setup : Page, IPage<PulseSetup>
 {
-	public event EventHandler<EventArgs>? Next;
+	public event EventHandler<PulseSetup>? Next;
 
 	public Setup()
 	{
 		InitializeComponent();
 
 		DataContext = this;
-	}
+    }
 
 
 	// Internal
@@ -28,8 +30,11 @@ public partial class Setup : Page, IPage<EventArgs>
 	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
+	readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
+
 	bool _isInitilized = false;
-	string? _pulseSetupFileName = null;
+    string? _setupFileName = null;
+    Test.PulseSetup? _setup = null;
 
     Controls.ChannelIndicator? _currentIndicator = null;
 
@@ -57,43 +62,75 @@ public partial class Setup : Page, IPage<EventArgs>
 		}
 	}
 
-	private void UpdateIndicators(Data data)
-	{
-		if (_currentIndicator == null)
-		{
-			return;
-		}
+    private async Task CreateIndicators()
+    {
+        var indicatorGenerator = new IndicatorGenerator();
+        await indicatorGenerator.Run(indicator => Dispatcher.Invoke(() =>
+        {
+            indicator.MouseDown += ChannelIndicator_MouseDown;
+            stpIndicators.Children.Add(indicator);
+			_indicators.Add(indicator.Source, indicator);
+        }));
+    }
 
+    private void UpdateIndicators(Data data)
+	{
 		foreach (var m in data.Measurements)
 		{
 			foreach (var sv in m.SensorValues)
 			{
+                var value = sv switch
+                {
+                    PIDValue pid => pid.Volts,
+                    ThermometerValue temp => temp.Celsius,
+                    BeadThermistorValue beadTemp => beadTemp.Ohms,  // beadTemp.Volts
+                    HumidityValue humidity => humidity.Percent,     // humidity.Celsius
+                    PressureValue pressure => pressure.Millibars,   // pressure.Celsius
+                    GasValue gas => gas.SLPM,                       // gas.Millibars, gas.Celsius
+                    ValveValue valve => valve.Opened ? 1 : 0,
+                    _ => 0
+                };
+                
 				var source = $"{m.Device}\n{sv.Sensor}";
-				if (_currentIndicator.Source == source)
+
+				if (_indicators.ContainsKey(source))
 				{
-					var value = sv switch
+					var indicator = _indicators[source];
+					indicator.Value = value;
+
+					if (_currentIndicator == indicator)
 					{
-						PIDValue pid => pid.Volts,
-                        ThermometerValue temp => temp.Celsius,
-                        BeadThermistorValue beadTemp => beadTemp.Ohms,	// beadTemp.Volts
-                        HumidityValue humidity => humidity.Percent,		// humidity.Celsius
-                        PressureValue pressure => pressure.Millibars,   // pressure.Celsius
-                        GasValue gas => gas.SLPM,                       // gas.Millibars, gas.Celsius
-                        ValveValue valve => valve.Opened ? 1 : 0,
-                        _ => 0
-					};
 
-					double timestamp = Utils.Timestamp.Sec;
-                    lmsGraph.Add(timestamp, value);
-
-					goto exit;
+						double timestamp = Utils.Timestamp.Sec;
+						lmsGraph.Add(timestamp, value);
+					}
 				}
 			}
 		}
-
-	exit:
-		return;
 	}
+
+    private void LoadPulseSetup(string filename)
+    {
+        if (!File.Exists(filename))
+        {
+            return;
+        }
+
+        _setup = Test.PulseSetup.Load(filename);
+        if (_setup == null)
+        {
+            return;
+        }
+
+        _setupFileName = filename;
+
+        txbSetupFile.Text = _setupFileName;
+        btnStart.IsEnabled = true;
+
+        var settings = Properties.Settings.Default;
+        settings.PulseSetupFilename = _setupFileName;
+        settings.Save();
+    }
 
     /*
 	private void HandleError(Result result)
@@ -122,43 +159,26 @@ public partial class Setup : Page, IPage<EventArgs>
 
     private async void OdorDisplay_Data(object? sender, Data e)
     {
-		await Task.Run(() => Dispatcher.Invoke(() =>
+		try
 		{
-			UpdateIndicators(e);
-		}));
+			await Task.Run(() => Dispatcher.Invoke(() => UpdateIndicators(e)));
+		}
+		catch (TaskCanceledException) { }
     }
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
     {
-        await Task.Run(() =>
+        try
         {
-			// TODO
-        });
+            await Task.Run(() =>
+			{
+				// TODO
+			});
+        }
+        catch (TaskCanceledException) { }
     }
 
     // UI events
-
-    private void InitilizeSetup()
-	{
-        var settings = Properties.Settings.Default;
-        _pulseSetupFileName = settings.PulseSetupFilename;
-
-        if (File.Exists(_pulseSetupFileName))
-        {
-            txbSetupFile.Text = _pulseSetupFileName;
-            btnStart.IsEnabled = true;
-        }
-    }
-
-    private async Task CreateIndicators()
-	{
-        var indicatorGenerator = new IndicatorGenerator();
-        await indicatorGenerator.Run(indicator => Dispatcher.Invoke(() =>
-        {
-            indicator.MouseDown += ChannelIndicator_MouseDown;
-            stpIndicators.Children.Add(indicator);
-        }));
-    }
 
     private async void Page_Loaded(object? sender, RoutedEventArgs e)
 	{
@@ -181,7 +201,8 @@ public partial class Setup : Page, IPage<EventArgs>
 			return;
         }
 
-        InitilizeSetup();
+        var settings = Properties.Settings.Default;
+        LoadPulseSetup(settings.PulseSetupFilename);
 
 		await CreateIndicators();
 
@@ -197,19 +218,6 @@ public partial class Setup : Page, IPage<EventArgs>
         /*
 		if (_com.IsOpen && _pid.ArePIDsOn)
 		{
-			UpdateDeviceStateUI();
-
-			if (_lastSample == null)
-			{
-				var result = _pid.GetSample(out DeviceSample sample);
-				HandleError(result);
-
-				if (result.Error == Error.Success)
-				{
-					_lastSample = sample;
-				}
-			}
-
 			ResetIndicators(_lastSample);
 		}*/
     }
@@ -226,9 +234,9 @@ public partial class Setup : Page, IPage<EventArgs>
 
 	private void Page_KeyDown(object? sender, KeyEventArgs e)
 	{
-		if (e.Key == Key.F4)
+		if (e.Key == Key.F4 && _setup != null)
 		{
-			Next?.Invoke(this, new EventArgs());
+			Next?.Invoke(this, _setup);
 		}
 	}
 
@@ -282,18 +290,20 @@ public partial class Setup : Page, IPage<EventArgs>
 
         if (ofd.ShowDialog() ?? false)
         {
-            _pulseSetupFileName = ofd.FileName;
-
-            txbSetupFile.Text = _pulseSetupFileName;
-            btnStart.IsEnabled = true;
-
-            settings.PulseSetupFilename = _pulseSetupFileName;
-            settings.Save();
+			LoadPulseSetup(ofd.FileName);
         }
     }
 
     private void Start_Click(object sender, RoutedEventArgs e)
     {
+		if (_setup != null)
+		{
+			if (chkRandomize.IsChecked == true)
+			{
+                _setup.Randomize();
+            }
 
+			Next?.Invoke(this, _setup);
+        }
     }
 }

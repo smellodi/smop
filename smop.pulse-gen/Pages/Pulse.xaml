@@ -12,6 +12,10 @@
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
+        <Style x:Key="Status" TargetType="Label">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -28,14 +32,40 @@
             <Run Text="Pulse"/>
         </TextBlock>
 
-        <StackPanel Grid.Row="1" VerticalAlignment="Center">
-            <local:WaitingInstruction x:Name="wtiInstruction"
-                Margin="12"
-                Width="250"
-                Height="50"
-                VerticalAlignment="Bottom"
-                Visibility="Hidden"
-                Text="Wait"/>
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <WrapPanel Margin="0,12"
+                       HorizontalAlignment="Center">
+                <Label Content="Flow rate"
+                       Style="{StaticResource Status}"/>
+                <Label x:Name="lblOdorStatus"
+                       Style="{StaticResource Status}"
+                       Content="XX"/>
+                <Label Content="ml/min"
+                       Style="{StaticResource Status}"/>
+            </WrapPanel>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <local:StageDisplay x:Name="pdsInitialPause" Grid.Row="0"
+                                    Text="Initial pause"
+                                    IsCurrent="{Binding IsInitialPause}"/>
+                
+                <StackPanel x:Name="stpStageDisplays" Grid.Row="1" Orientation="Horizontal"/>
+
+                <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
+                                    Text="Final pause"
+                                    IsCurrent="{Binding IsFinalPause}"/>
+            </Grid>
+
+            <local:WaitingInstruction x:Name="wtiWaiting"/>
+
         </StackPanel>
 
         <StackPanel Grid.Row="2"

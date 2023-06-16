@@ -349,6 +349,6 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
     private void Connect_Click(object? sender, RoutedEventArgs e)
     {
         SaveSettings();
-        Next?.Invoke(this, new EventArgs());
+        Next?.Invoke(this, EventArgs.Empty);
     }
 }

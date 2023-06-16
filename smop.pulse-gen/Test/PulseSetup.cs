@@ -8,7 +8,7 @@ namespace Smop.PulseGen.Test;
 
 public record class PulseChannelProps(int Id, double Flow, bool Active);
 public record class PulseProps(PulseChannelProps[] Channels);
-public record class PulseIntervals(float Delay, float Duration, float DmsDelay, float FinalPause);
+public record class PulseIntervals(float InitialPause, float Pulse, float DmsDelay, float FinalPause);
 
 public class SessionProps
 {
@@ -25,6 +25,12 @@ public class SessionProps
     public void AddPulse(PulseProps pulse)
     {
         _pulses.Add(pulse);
+    }
+
+    public void RandomizePulses()
+    {
+        var r = new Random();
+        r.Shuffle(_pulses);
     }
 
     // Internal
@@ -93,10 +99,9 @@ public class PulseSetup
 
     public void Randomize()
     {
-        var r = new Random();
         foreach (var session in Sessions)
         {
-            r.Shuffle(session.Pulses);
+            session.RandomizePulses();
         }
     }
 
@@ -105,8 +110,8 @@ public class PulseSetup
     private static SessionProps CreateSessionProps(string[] p, SessionProps? lastSessionProps, int lineIndex)
     {
         float humidity = lastSessionProps?.Humidity ?? -1;
-        float delay = lastSessionProps?.Intervals.Delay ?? 0;
-        float duration = lastSessionProps?.Intervals.Duration ?? 1000;
+        float delay = lastSessionProps?.Intervals.InitialPause ?? 0;
+        float duration = lastSessionProps?.Intervals.Pulse ?? 1000;
         float dmsDelay = lastSessionProps?.Intervals.DmsDelay ?? 0;
         float finalPause = lastSessionProps?.Intervals.FinalPause ?? 0;
 

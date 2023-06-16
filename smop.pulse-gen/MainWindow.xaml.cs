@@ -253,12 +253,8 @@ public partial class MainWindow : Window
 		settings.MainWindow_IsMaximized = WindowState == WindowState.Maximized;
 		settings.Save();
 
-		Application.Current.Shutdown();
-
-        await Task.Delay(100);
-
         (_pulsePage as ITest)?.Dispose();
 
-        await Task.Delay(200);
+        await Task.Delay(100);
     }
 }

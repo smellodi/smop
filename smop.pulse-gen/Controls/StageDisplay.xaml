@@ -40,12 +40,10 @@
                 </TextBlock>
             </Label>
             <Label Padding="5, 0, 5, 5"
-                   Visibility="{Binding Path=Delay, Converter={StaticResource num2vis}}">
+                   Visibility="{Binding Path=Flow, Converter={StaticResource num2vis}}">
                 <TextBlock>
-                    <Run Text="["/>
-                    <Run Text="{Binding DelayValue, Mode=OneWay}"/>
-                    <Run Text="{Binding DelayUnits, Mode=OneWay}"/>
-                    <Run Text="]"/>
+                    <Run Text="{Binding FlowValue, Mode=OneWay}"/>
+                    <Run Text="{Binding FlowUnits, Mode=OneWay}"/>
                 </TextBlock>
             </Label>
         </StackPanel>

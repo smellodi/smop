@@ -20,12 +20,13 @@ public partial class Setup : Page, IPage<PulseSetup>
 		InitializeComponent();
 
 		DataContext = this;
+
+		Application.Current.Exit += (s, e) => Close();
     }
 
+    // Internal
 
-	// Internal
-
-	readonly Storage _storage = Storage.Instance;
+    readonly Storage _storage = Storage.Instance;
 
 	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
@@ -130,6 +131,12 @@ public partial class Setup : Page, IPage<PulseSetup>
         var settings = Properties.Settings.Default;
         settings.PulseSetupFilename = _setupFileName;
         settings.Save();
+    }
+
+    private void Close()
+    {
+        var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Stop);
+        _odorDisplay.Request(queryMeasurements, out _, out Response? _);
     }
 
     /*

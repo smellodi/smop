@@ -12,7 +12,7 @@
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
-        <Style x:Key="Status" TargetType="Label">
+        <Style x:Key="Status" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
@@ -37,13 +37,16 @@
                     HorizontalAlignment="Center">
             <WrapPanel Margin="0,12"
                        HorizontalAlignment="Center">
-                <Label Content="Flow rate"
-                       Style="{StaticResource Status}"/>
-                <Label x:Name="lblOdorStatus"
-                       Style="{StaticResource Status}"
-                       Content="XX"/>
-                <Label Content="ml/min"
-                       Style="{StaticResource Status}"/>
+                <TextBlock Style="{StaticResource Status}">
+                    <Run Text="Session "/>
+                    <Run x:Name="runSession"/>
+                    <Run Text="/"/>
+                    <Run x:Name="runSessionCount"/>
+                    <Run Text=", Pulse "/>
+                    <Run x:Name="runPulse"/>
+                    <Run Text="/"/>
+                    <Run x:Name="runPulseCount"/>
+                </TextBlock> 
             </WrapPanel>
 
             <Grid>
@@ -64,8 +67,18 @@
                                     IsCurrent="{Binding IsFinalPause}"/>
             </Grid>
 
-            <local:WaitingInstruction x:Name="wtiWaiting"/>
+            <StackPanel x:Name="stpDMS"
+                Visibility="Hidden">
+                <Label Content="Running DMS measurement..."
+                    HorizontalContentAlignment="Center"/>
+            </StackPanel>
 
+            <local:WaitingInstruction x:Name="wtiWaiting"
+                Margin="12"
+                Width="250"
+                Height="50"
+                VerticalAlignment="Bottom"
+                Text="Wait"/>
         </StackPanel>
 
         <StackPanel Grid.Row="2"

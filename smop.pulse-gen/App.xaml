@@ -8,7 +8,7 @@
             <!-- Theme colors -->
             
             <!-- Brown -->
-            <Color x:Key="ColorLight">#FFD1AA</Color>
+            <Color x:Key="ColorLight">#FFEBDA</Color>
             <Color x:Key="ColorLightDarker">#D49A6A</Color>
             <Color x:Key="ColorDarkLighter">#AA6C39</Color>
             <Color x:Key="ColorDark">#804515</Color>

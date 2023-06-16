@@ -50,7 +50,7 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
 
     #region Duration property
 
-    [Description("Duration, ms"), Category("Common Properties")]
+    [Description("Duration, s"), Category("Common Properties")]
     public int Duration
     {
         get => (int)GetValue(DurationProperty);
@@ -73,35 +73,35 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
 
     #endregion 
 
-    #region Delay property
+    #region Flow property
 
-    [Description("Start delay, ms"), Category("Common Properties")]
-    public int Delay
+    [Description("Flow, ccm"), Category("Common Properties")]
+    public double Flow
     {
-        get => (int)GetValue(DelayProperty);
+        get => (double)GetValue(FlowProperty);
         set
         {
-            SetValue(DelayProperty, value);
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DelayValue)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DelayUnits)));
+            SetValue(FlowProperty, value);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FlowValue)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FlowUnits)));
         }
     }
 
-    public static readonly DependencyProperty DelayProperty = DependencyProperty.Register(
-        nameof(Delay),
-        typeof(int),
+    public static readonly DependencyProperty FlowProperty = DependencyProperty.Register(
+        nameof(Flow),
+        typeof(double),
         typeof(StageDisplay),
         new FrameworkPropertyMetadata(new PropertyChangedCallback(
-            (s, e) => (s as StageDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Delay)))
+            (s, e) => (s as StageDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Flow)))
         ))
     );
 
     #endregion 
 
-    public string DurationValue => Duration > 0 ? IntervalToStr(Duration, out _durationUnitsAreMs) : "[ inactive ]";
-    public string DelayValue => IntervalToStr(Delay, out _delayUnitsAreMs);
+    public string DurationValue => Duration > 0 ? IntervalToStr(Duration, out _durationUnitsAreMs) : "";
+    public string FlowValue => FlowToStr(Flow, out _flowUnitsAreCcm);
     public string DurationUnits => Duration > 0 ? (_durationUnitsAreMs ? "ms" : "seconds") : "";
-    public string DelayUnits => _delayUnitsAreMs ? "ms" : "seconds";
+    public string FlowUnits => _flowUnitsAreCcm ? "ccm" : "l/min";
 
 
     public StageDisplay()
@@ -111,17 +111,23 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
         IsCurrent = false;
         Text = "";
         Duration = 0;
-        Delay = 0;
+        Flow = 0;
     }
 
     // Internal
 
     bool _durationUnitsAreMs = true;
-    bool _delayUnitsAreMs = true;
+    bool _flowUnitsAreCcm = true;
 
     private string IntervalToStr(int ms, out bool isShownAsMs)
     {
         isShownAsMs = ms < 1000;
         return isShownAsMs ? ms.ToString() : ((double)ms / 1000).ToString("0.##");
+    }
+
+    private string FlowToStr(double ccm, out bool isShownAsCcm)
+    {
+        isShownAsCcm = ccm < 1000;
+        return isShownAsCcm ? ccm.ToString() : ((double)ccm / 1000).ToString("0.##");
     }
 }

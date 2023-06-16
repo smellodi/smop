@@ -5,12 +5,19 @@ using System.Windows.Data;
 
 namespace Smop.PulseGen.Utils;
 
-[ValueConversion(typeof(int), typeof(Visibility))]
 public class NumberToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return (int)value != 0 ? Visibility.Visible : Visibility.Collapsed;
+		if (value.GetType() == typeof(int))
+		{
+			return (int)value != 0 ? Visibility.Visible : Visibility.Collapsed;
+		}
+		else if (value.GetType() == typeof(double))
+		{
+			return (double)value != 0 ? Visibility.Visible : Visibility.Collapsed;
+		}
+		else return Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

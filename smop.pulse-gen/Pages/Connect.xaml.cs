@@ -198,9 +198,9 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
         }
 
         _ionVision?.Dispose();
-	}
+    }
 
-	private void LoadSettings()
+    private void LoadSettings()
 	{
 		var settings = Properties.Settings.Default;
 

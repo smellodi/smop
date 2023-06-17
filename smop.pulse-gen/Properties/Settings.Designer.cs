@@ -134,48 +134,60 @@ namespace Smop.PulseGen.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string OdorDisplayPort {
+        public string Comm_OdorDisplayPort {
             get {
-                return ((string)(this["OdorDisplayPort"]));
+                return ((string)(this["Comm_OdorDisplayPort"]));
             }
             set {
-                this["OdorDisplayPort"] = value;
+                this["Comm_OdorDisplayPort"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string SmellInspPort {
+        public string Comm_SmellInspPort {
             get {
-                return ((string)(this["SmellInspPort"]));
+                return ((string)(this["Comm_SmellInspPort"]));
             }
             set {
-                this["SmellInspPort"] = value;
+                this["Comm_SmellInspPort"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Properties/IonVision.json")]
-        public string IonVisionSetupFilename {
+        public string Comm_IonVisionSetupFilename {
             get {
-                return ((string)(this["IonVisionSetupFilename"]));
+                return ((string)(this["Comm_IonVisionSetupFilename"]));
             }
             set {
-                this["IonVisionSetupFilename"] = value;
+                this["Comm_IonVisionSetupFilename"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string PulseSetupFilename {
+        public string Pulses_SetupFilename {
             get {
-                return ((string)(this["PulseSetupFilename"]));
+                return ((string)(this["Pulses_SetupFilename"]));
             }
             set {
-                this["PulseSetupFilename"] = value;
+                this["Pulses_SetupFilename"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Pulses_Randomize {
+            get {
+                return ((bool)(this["Pulses_Randomize"]));
+            }
+            set {
+                this["Pulses_Randomize"] = value;
             }
         }
     }

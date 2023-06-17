@@ -1,12 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using Smop.PulseGen.Logging;
 
 namespace Smop.PulseGen.Pages;
 
-public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
+public partial class Finished : Page, IPage<Navigation>
 {
 	public class RequestSavingArgs : EventArgs
 	{
@@ -20,20 +19,8 @@ public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
     /// <summary>
     /// true: exit, false: return to the front page
     /// </summary>
-    public event EventHandler<bool>? Next; 
+    public event EventHandler<Navigation>? Next; 
 	public event EventHandler<RequestSavingArgs>? RequestSaving;
-
-	public event PropertyChangedEventHandler? PropertyChanged;
-
-	public string TestName
-	{
-		get => _testName;
-		set
-		{
-			_testName = value;
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TestName)));
-		}
-	}
 
 	public Finished()
 	{
@@ -49,11 +36,9 @@ public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
 
 	// Internal
 
-	string _testName = "";
-
 	private bool HasDecisionAboutData()
 	{
-		if (!FlowLogger.Instance.HasAnyRecord)
+		if (!EventLogger.Instance.HasRecords)
 		{
 			return true;
 		}
@@ -95,7 +80,7 @@ public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
 	{
 		if (HasDecisionAboutData())
 		{
-			Next?.Invoke(this, false);
+			Next?.Invoke(this, Navigation.Setup);
 		}
 	}
 
@@ -103,7 +88,7 @@ public partial class Finished : Page, IPage<bool>, INotifyPropertyChanged
 	{
 		if (HasDecisionAboutData())
 		{
-			Next?.Invoke(this, true);
+			Next?.Invoke(this, Navigation.Exit);
 		}
 	}
 }

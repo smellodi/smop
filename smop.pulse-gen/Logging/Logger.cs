@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
-using System.Windows.Markup;
 using Smop.PulseGen.Utils;
 
 namespace Smop.PulseGen.Logging;
@@ -10,12 +9,6 @@ namespace Smop.PulseGen.Logging;
 [Flags]
 public enum LogSource
 {
-	COM = 1,
-	PID = 2,
-
-	__MIN_TEST_ID = 4,
-	ThTest = 4,
-	OdProd = 8,
 }
 
 public enum SavingResult
@@ -108,8 +101,12 @@ public class LoggerStorage
 
 public abstract class Logger<T> where T : class
 {
+    public bool HasRecords => _records.Count > 0;
+    
 	public LoggerStorage File { get; private set; } = new();
 
+    public bool IsEnabled { get; set; } = true;
+    
 	public SavingResult SaveTo(string subname, string timestamp, bool canCancel, LoggerStorage? reference)
 	{
 		var result = SavingResult.Save;
@@ -169,19 +166,20 @@ public abstract class Logger<T> where T : class
 
 	// Internal
 
-	protected const string NAME = "olfactory";
+	protected const string NAME = "smop";
 
 	protected readonly List<T> _records = new();
 
-	protected abstract string Header { get; }
+	protected string Header { get; set; }
 
 
     readonly string SaveInto = "Save data into";
     readonly string PressChange = "Press 'Change' to set another destination file";
     readonly string PressDiscard = "Press 'Discard' to discard data";
     readonly string PressCancel = "Press 'Cancel' to cancel the action";
-	    
-	protected Logger() { }
+    readonly string EnableAutoSaving = "Enable auto-saving";
+
+    protected Logger() { }
 
 	protected (SavingResult, bool) PromptToSave(ref string filename, bool canCancel, string greeting = "")
 	{
@@ -194,17 +192,15 @@ public abstract class Logger<T> where T : class
 		var message = $"{greeting}{SaveInto}\n'{File.Folder}\\{filename}'?\n\n{PressChange}\n{PressDiscard}";
 		MsgBox.Result answer;
 
-		var msgBoxOptionText = "Enable auto-saving";
-
 		if (canCancel)
 		{
 			message += $"\n{PressCancel}";
-			answer = MsgBox.Custom(title, message, MsgBox.MsgIcon.Question, msgBoxOptionText, null, 
+			answer = MsgBox.Custom(title, message, MsgBox.MsgIcon.Question, EnableAutoSaving, null, 
 				MsgBox.Button.Save, MsgBox.Button.Change, MsgBox.Button.Discard, MsgBox.Button.Cancel);
 		}
 		else
 		{
-			answer = MsgBox.Custom(title, message, MsgBox.MsgIcon.Question, msgBoxOptionText, null,
+			answer = MsgBox.Custom(title, message, MsgBox.MsgIcon.Question, EnableAutoSaving, null,
 				MsgBox.Button.Save, MsgBox.Button.Change, MsgBox.Button.Discard);
 		}
 

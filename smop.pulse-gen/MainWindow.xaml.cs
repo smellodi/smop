@@ -5,6 +5,7 @@ using Smop.PulseGen.Utils;
 using Smop.PulseGen.Logging;
 using Smop.PulseGen.Test;
 using System.Threading.Tasks;
+using Smop.PulseGen.Pages;
 
 namespace Smop.PulseGen;
 
@@ -18,8 +19,8 @@ public partial class MainWindow : Window
 
 		_connectPage.Next += ConnectPage_Next;
 		_setupPage.Next += SetupPage_Next;
-        _pulsePage.Next += PulsePage_Next;
-        _finishedPage.Next += FinishedPage_Next;
+        _pulsePage.Next += Page_Next;
+        _finishedPage.Next += Page_Next;
 		_finishedPage.RequestSaving += FinishedPage_RequestSaving;
 
 		if (settings.MainWindow_IsMaximized)
@@ -40,64 +41,48 @@ public partial class MainWindow : Window
 
 	// Internal
 
-	private readonly Pages.Connect _connectPage = new();
-	private readonly Pages.Setup _setupPage = new();
-    private readonly Pages.Pulse _pulsePage = new();
-    private readonly Pages.Finished _finishedPage = new();
+	private readonly Connect _connectPage = new();
+	private readonly Setup _setupPage = new();
+    private readonly Pulse _pulsePage = new();
+    private readonly Finished _finishedPage = new();
 
 	private readonly Storage _storage = Storage.Instance;
 
 	private bool IsInFullScreen => WindowStyle == WindowStyle.None;
 
-	private SavingResult? SaveLoggingData(bool canCancel)
+	private SavingResult SaveData(bool canCancel)
 	{
-		SavingResult? result = null;
+		SavingResult result = SavingResult.None;
 
-		FlowLogger flowLogger = FlowLogger.Instance;
-		SyncLogger syncLogger = SyncLogger.Instance;
-		syncLogger.Finilize();
+		EventLogger eventLogger = EventLogger.Instance;
+		OdorDisplayLogger odorDisplayLogger = OdorDisplayLogger.Instance;
 
-		var savingResult = SavingResult.None;
 		var timestamp = $"{DateTime.Now:u}";
 		LoggerStorage? reference = null;
 
-		bool noData = true;
-
-		if (flowLogger.HasTestRecords)
+		if (eventLogger.HasRecords)
 		{
-			noData = false;
-
-			savingResult = flowLogger.SaveTo("events", timestamp, canCancel, null);
-			if (savingResult != SavingResult.Cancel)
-			{
-				_finishedPage.DisableSaving();
-			}
-
-			reference = flowLogger.File;
-			result = savingResult;
+			result = eventLogger.SaveTo("events", timestamp, canCancel, null);
+			reference = eventLogger.File;
 		}
 
-		bool skipOtherLogfile = savingResult == SavingResult.Discard || savingResult == SavingResult.Cancel;
+		bool skipOtherLogfile = result == SavingResult.Discard || result == SavingResult.Cancel;
 
-		if (syncLogger.HasRecords && !skipOtherLogfile)
+		if (odorDisplayLogger.HasRecords && !skipOtherLogfile)
 		{
-			noData = false;
-
-			savingResult = syncLogger.SaveTo("data", timestamp, canCancel, reference);
-			if (savingResult != SavingResult.Cancel)
-			{
-				_finishedPage.DisableSaving();
-			}
-
-			result = savingResult;
+			result = odorDisplayLogger.SaveTo("data", timestamp, canCancel, reference);
 		}
 
-		if (noData)
-		{
-			result = SavingResult.None;
-		}
+        if (result == SavingResult.None)
+        {
+            MsgBox.Warn(Title, "No data to save", MsgBox.Button.OK);
+        }
+        if (result != SavingResult.Cancel)
+        {
+            _finishedPage.DisableSaving();
+        }
 
-		return result;
+        return result;
 	}
 
 	private void ToggleFullScreen()
@@ -131,66 +116,54 @@ public partial class MainWindow : Window
 		Content = _setupPage;
 	}
 
-	private void SetupPage_Next(object? sender, PulseSetup e)
+	private void SetupPage_Next(object? sender, PulseSetup setup)
 	{
         Content = _pulsePage;
-        (_pulsePage as ITest)?.Start(e);
+        (_pulsePage as ITest)?.Start(setup);
     }
 
-    private void PulsePage_Next(object? sender, bool e)
+    private void Page_Next(object? sender, Navigation next)
     {
         if (IsInFullScreen)
         {
             ToggleFullScreen();
         }
 
-        if (e)
+        if (next == Navigation.Exit)
+        {
+            Close();
+        }
+        else if (next == Navigation.Finished)
 		{
             Content = _finishedPage;
-            DispatchOnce.Do(0.1, () => Dispatcher.Invoke(SaveLoggingData, true));  // let the page to change, then try to save data
+
+            DispatchOnce.Do(0.1, () => Dispatcher.Invoke(SaveData, true));  // let the page to change, then try to save data
+        }
+        else if (next == Navigation.Setup)
+        {
+            OdorDisplayLogger.Instance.Clear();
+            EventLogger.Instance.Clear();
+
+            Content = _setupPage;
         }
         else
         {
-            SyncLogger.Instance.Clear();
-            FlowLogger.Instance.Clear();
-
-            Content = _setupPage;
+            System.Diagnostics.Debug.WriteLine($"[MW] Unrecognized navigation target '{next}'");
         }
 
         (_pulsePage as ITest)?.Dispose();
     }
 
-    private void FinishedPage_Next(object? sender, bool exit)
-	{
-		if (exit)
-		{
-			Close();
-		}
-		else
-		{
-			Content = _setupPage;
-
-			FlowLogger.Instance.Clear();
-			SyncLogger.Instance.Clear();
-		}
-	}
-
 	private void FinishedPage_RequestSaving(object? sender, Pages.Finished.RequestSavingArgs e)
 	{
-		var savingResult = SaveLoggingData(true);
-		e.Result = savingResult ?? e.Result;
+		var savingResult = SaveData(true);
+        e.Result = savingResult;
+    }
 
-		if (savingResult == null)
-		{
-			_finishedPage.DisableSaving();
-			MsgBox.Warn(Title, "No data to save", MsgBox.Button.OK);
-		}
-	}
-
-	// UI events
+    // UI events
 
 
-	private void Window_Loaded(object sender, RoutedEventArgs e)
+    private void Window_Loaded(object sender, RoutedEventArgs e)
 	{
 		Content = _connectPage;
 	}

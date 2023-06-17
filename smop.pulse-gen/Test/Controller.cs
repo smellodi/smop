@@ -14,6 +14,7 @@ namespace Smop.PulseGen.Test
         FinalPause = 0x08,
         NewPulse = 0x10,
         NewSession = 0x20,
+        Finished = 0x80,
     }
 
     internal class Controller : IDisposable
@@ -46,6 +47,16 @@ namespace Smop.PulseGen.Test
 
         public void Dispose()
         {
+            if (_delayedAction != null)
+            {
+                _delayedAction.Stop();
+                _delayedAction = null;
+            }
+            if (_delayedActionDms != null)
+            {
+                _delayedActionDms.Stop();
+                _delayedActionDms = null;
+            }
             GC.SuppressFinalize(this);
         }
 
@@ -54,12 +65,17 @@ namespace Smop.PulseGen.Test
             RunNextSession();
         }
 
-        public void Interrupt()
-        {
-        }
-
         public void ForceToFinish()
         {
+            if (_setup.Sessions.Length > 0)
+            {
+                _sessionIndex = _setup.Sessions.Length - 1;
+                var session = _setup.Sessions[_sessionIndex];
+                if (session.Pulses.Length > 0)
+                {
+                    _pulseIndex = session.Pulses.Length - 1;
+                }
+            }
         }
 
         // Internal
@@ -68,6 +84,9 @@ namespace Smop.PulseGen.Test
         int _sessionIndex = -1;
         int _pulseIndex = -1;
         Stage _extraStages = Stage.None;
+
+        DispatchOnce? _delayedAction = null;
+        DispatchOnce? _delayedActionDms = null;
 
         private void RunNextSession()
         {
@@ -78,11 +97,11 @@ namespace Smop.PulseGen.Test
                 _extraStages |= Stage.NewSession;
 
                 _pulseIndex = -1;
-                DispatchOnce.Do(0.1, RunNextPulse);
+                _delayedAction = DispatchOnce.Do(0.1, RunNextPulse);
             }
             else
             {
-                StageChanged?.Invoke(this, new StageChangedEventArgs(null, null, Stage.None));
+                StageChanged?.Invoke(this, new StageChangedEventArgs(null, null, Stage.Finished));
             }
         }
 
@@ -97,7 +116,7 @@ namespace Smop.PulseGen.Test
                 _extraStages |= Stage.NewPulse;
 
                 var pulse = session.Pulses[_pulseIndex];
-                DispatchOnce.Do(session.Intervals.InitialPause, StartPulse);
+                _delayedAction = DispatchOnce.Do(session.Intervals.InitialPause, StartPulse);
 
                 if (session.Intervals.InitialPause > 0)
                 {
@@ -106,7 +125,7 @@ namespace Smop.PulseGen.Test
             }
             else
             {
-                DispatchOnce.Do(0.1, RunNextSession);
+                _delayedAction = DispatchOnce.Do(0.1, RunNextSession);
             }
         }
 
@@ -116,7 +135,7 @@ namespace Smop.PulseGen.Test
 
             if (session.Intervals.DmsDelay >= 0)
             {
-                DispatchOnce.Do(session.Intervals.DmsDelay, StartDMS);
+                _delayedActionDms = DispatchOnce.Do(session.Intervals.DmsDelay, StartDMS);
             }
             
             if (session.Intervals.DmsDelay != 0)
@@ -124,7 +143,7 @@ namespace Smop.PulseGen.Test
                 PublishStage(Stage.Pulse);
             }
 
-            DispatchOnce.Do(session.Intervals.Pulse, FinishPulse);
+            _delayedAction = DispatchOnce.Do(session.Intervals.Pulse, FinishPulse);
         }
 
         private void StartDMS()
@@ -135,7 +154,7 @@ namespace Smop.PulseGen.Test
         private void FinishPulse()
         {
             var session = _setup.Sessions[_sessionIndex];
-            DispatchOnce.Do(session.Intervals.FinalPause, RunNextPulse);
+            _delayedAction = DispatchOnce.Do(session.Intervals.FinalPause, RunNextPulse);
 
             if (session.Intervals.FinalPause > 0)
             {

@@ -68,7 +68,9 @@
                     <UserControl x:Name="uscRandomize" Grid.Row="1" Style="{StaticResource FormRow}" Tag="Randomize">
                         <CheckBox x:Name="chkRandomize"
                             FontSize="16"
-                            VerticalAlignment="Center"/>
+                            VerticalAlignment="Center"
+                                  Checked="Randomize_CheckedChanged"
+                                  Unchecked="Randomize_CheckedChanged"/>
                     </UserControl>
 
                     <UserControl Grid.Row="10" Style="{StaticResource FormRow}" Tag="Carrier gas">

@@ -28,17 +28,14 @@
             <ScaleTransform x:Name="sctScale"/>
         </Grid.LayoutTransform>
 
-        <TextBlock Grid.Row="0"
-               Style="{StaticResource PageTitle}">
-            <!--Run Text="{Binding TestName, Mode=OneWay}"/>
-            <Run Text=" - "/-->
+        <TextBlock Grid.Row="0" Style="{StaticResource PageTitle}">
             <Run Text="Finished"/>
         </TextBlock>
 
         <StackPanel Grid.Row="1"
                     VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center"
-                       Text="Thank you!"
+                       Text="Finished!"
                        FontSize="18"/>
         </StackPanel>
         <local:WaitingInstruction Grid.Row="1" x:Name="wtiInstruction"

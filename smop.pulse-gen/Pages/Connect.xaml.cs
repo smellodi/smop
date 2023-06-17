@@ -206,7 +206,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
 		foreach (string item in cmbOdorDisplayCommPort.Items)
 		{
-			if (item == settings.OdorDisplayPort)
+			if (item == settings.Comm_OdorDisplayPort)
 			{
 				cmbOdorDisplayCommPort.SelectedItem = item;
 				break;
@@ -215,14 +215,14 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
         foreach (string item in cmbSmellInspCommPort.Items)
         {
-            if (item == settings.SmellInspPort)
+            if (item == settings.Comm_SmellInspPort)
             {
                 cmbSmellInspCommPort.SelectedItem = item;
                 break;
             }
         }
 
-		IonVisionSetupFilename = settings.IonVisionSetupFilename;
+		IonVisionSetupFilename = settings.Comm_IonVisionSetupFilename;
 
         var ivSetings = new IonVision.Settings(IonVisionSetupFilename);
         txbIonVisionIP.Text = ivSetings.IP;
@@ -233,8 +233,8 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 		var settings = Properties.Settings.Default;
 		try
 		{
-			settings.OdorDisplayPort = cmbOdorDisplayCommPort.SelectedItem?.ToString() ?? "";
-            settings.SmellInspPort = cmbSmellInspCommPort.SelectedItem?.ToString() ?? "";
+			settings.Comm_OdorDisplayPort = cmbOdorDisplayCommPort.SelectedItem?.ToString() ?? "";
+            settings.Comm_SmellInspPort = cmbSmellInspCommPort.SelectedItem?.ToString() ?? "";
         }
         catch { }
 		settings.Save();
@@ -341,7 +341,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
             txbIonVisionIP.Text = ivSetings.IP;
 
             var settings = Properties.Settings.Default;
-            settings.IonVisionSetupFilename = IonVisionSetupFilename;
+            settings.Comm_IonVisionSetupFilename = IonVisionSetupFilename;
             settings.Save();
         }
     }

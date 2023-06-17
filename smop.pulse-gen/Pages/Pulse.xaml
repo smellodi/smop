@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.PulseGen.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="500" d:DesignWidth="800"
       Title="Pulse"
       KeyDown="Page_KeyDown"
       Loaded="Page_Loaded"
@@ -15,6 +15,11 @@
         <Style x:Key="Status" TargetType="TextBlock">
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
+        <Style x:Key="DMS" TargetType="Label">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+            <Setter Property="Padding" Value="0,4"/>
         </Style>
     </Page.Resources>
 
@@ -60,7 +65,9 @@
                                     Text="Initial pause"
                                     IsCurrent="{Binding IsInitialPause}"/>
                 
-                <StackPanel x:Name="stpStageDisplays" Grid.Row="1" Orientation="Horizontal"/>
+                <StackPanel x:Name="stpStageDisplays" Grid.Row="1"
+                            Orientation="Horizontal"
+                            MinHeight="100"/>
 
                 <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
                                     Text="Final pause"
@@ -69,7 +76,8 @@
 
             <StackPanel x:Name="stpDMS"
                 Visibility="Hidden">
-                <Label Content="Running DMS measurement..."
+                <Label Style="{StaticResource DMS}"
+                    Content="Running DMS measurement..."
                     HorizontalContentAlignment="Center"/>
             </StackPanel>
 

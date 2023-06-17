@@ -29,17 +29,20 @@
     <Setting Name="App_ZoomLevel" Type="System.Double" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="OdorDisplayPort" Type="System.String" Scope="User">
+    <Setting Name="Comm_OdorDisplayPort" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="SmellInspPort" Type="System.String" Scope="User">
+    <Setting Name="Comm_SmellInspPort" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="IonVisionSetupFilename" Type="System.String" Scope="User">
+    <Setting Name="Comm_IonVisionSetupFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">Properties/IonVision.json</Value>
     </Setting>
-    <Setting Name="PulseSetupFilename" Type="System.String" Scope="User">
+    <Setting Name="Pulses_SetupFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Pulses_Randomize" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

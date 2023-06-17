@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Dynamic;
+using System.Globalization;
 using System.Linq;
+using System.Windows.Media;
 
 namespace Smop.OdorDisplay.Packets;
 
@@ -93,6 +96,8 @@ public abstract class SensorValue
 {
     public Device.Sensor Sensor { get; }
     public byte[] Data { get; }
+    public abstract string[] ValueNames { get; }
+    public abstract float[] Values { get;}
     public static SensorValue? Create(Device.Sensor sensor, byte[] data, ref int offset)
     {
         int dataLength = sensor switch
@@ -161,6 +166,8 @@ public abstract class SensorValue
 public class PIDValue : SensorValue
 {
     public float Volts { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/Volts" };
+    public override float[] Values => new float[] { Volts };
     public PIDValue(byte[] data) : base(Device.Sensor.PID, data)
     {
         Volts = FourBytes.ToFloat(data);
@@ -175,6 +182,8 @@ public class BeadThermistorValue : SensorValue
 {
     public float Ohms { get; }
     public float Volts { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/Ohms", $"{Sensor}/Volts" };
+    public override float[] Values => new float[] { Ohms, Volts };
     public BeadThermistorValue(byte[] data) : base(Device.Sensor.BeadThermistor, data)
     {
         Ohms = FourBytes.ToFloat(data[..4]);
@@ -193,6 +202,8 @@ public class BeadThermistorValue : SensorValue
 public class ThermometerValue : SensorValue
 {
     public float Celsius { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/Celsius" };
+    public override float[] Values => new float[] { Celsius };
     public ThermometerValue(Device.Sensor sensor, byte[] data) : base(sensor, data)
     {
         Celsius = FourBytes.ToFloat(data);
@@ -207,6 +218,8 @@ public class HumidityValue : SensorValue
 {
     public float Percent { get; }
     public float Celsius { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/Percent", $"{Sensor}/Celsius" };
+    public override float[] Values => new float[] { Percent, Celsius };
     public HumidityValue(Device.Sensor sensor, byte[] data) : base(sensor, data)
     {
         Percent = FourBytes.ToFloat(data[..4]);
@@ -226,6 +239,8 @@ public class PressureValue : SensorValue
 {
     public float Millibars { get; }
     public float Celsius { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/Millibars", $"{Sensor}/Celsius" };
+    public override float[] Values => new float[] { Millibars, Celsius };
     public PressureValue(byte[] data) : base(Device.Sensor.PressureSensor, data)
     {
         Millibars = FourBytes.ToFloat(data[..4]);
@@ -246,6 +261,8 @@ public class GasValue : SensorValue
     public float SLPM { get; }
     public float Celsius { get; }
     public float Millibars { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/SLPM", $"{Sensor}/Millibars", $"{Sensor}/Celsius" };
+    public override float[] Values => new float[] { SLPM, Millibars, Celsius };
     public GasValue(Device.Sensor sensor, byte[] data) : base(sensor, data)
     {
         SLPM = FourBytes.ToFloat(data[..4]);
@@ -267,6 +284,8 @@ public class GasValue : SensorValue
 public class ValveValue : SensorValue
 {
     public bool Opened { get; }
+    public override string[] ValueNames => new string[] { $"{Sensor}/Opened" };
+    public override float[] Values => new float[] { Opened ? 1 : 0 };
     public ValveValue(Device.Sensor sensor, byte[] data) : base(sensor, data)
     {
         Opened = data[0] != 0;

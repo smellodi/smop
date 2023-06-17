@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Logging;
 using Smop.PulseGen.Test;
 using System;
 using System.Collections.Generic;
@@ -31,11 +32,13 @@ public partial class Setup : Page, IPage<PulseSetup>
 	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
+	readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
+
 	readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
 
 	bool _isInitilized = false;
     string? _setupFileName = null;
-    Test.PulseSetup? _setup = null;
+    PulseSetup? _setup = null;
 
     Controls.ChannelIndicator? _currentIndicator = null;
 
@@ -117,7 +120,7 @@ public partial class Setup : Page, IPage<PulseSetup>
             return;
         }
 
-        _setup = Test.PulseSetup.Load(filename);
+        _setup = PulseSetup.Load(filename);
         if (_setup == null)
         {
             return;
@@ -129,7 +132,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         btnStart.IsEnabled = true;
 
         var settings = Properties.Settings.Default;
-        settings.PulseSetupFilename = _setupFileName;
+        settings.Pulses_SetupFilename = _setupFileName;
         settings.Save();
     }
 
@@ -164,16 +167,21 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     // Event handlers
 
-    private async void OdorDisplay_Data(object? sender, Data e)
+    private async void OdorDisplay_Data(object? sender, Data data)
     {
 		try
 		{
-			await Task.Run(() => Dispatcher.Invoke(() => UpdateIndicators(e)));
+			await Task.Run(() => Dispatcher.Invoke(() =>
+			{
+				UpdateIndicators(data);
+				_odorDisplayLogger.Add(data);
+
+            }));
 		}
 		catch (TaskCanceledException) { }
     }
 
-    private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
+    private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
     {
         try
         {
@@ -203,15 +211,17 @@ public partial class Setup : Page, IPage<PulseSetup>
             Focus();
         }
 
+        var settings = Properties.Settings.Default;
+        chkRandomize.IsChecked = settings.Pulses_Randomize;
+
+        LoadPulseSetup(settings.Pulses_SetupFilename);
+
         if (_isInitilized)
-		{
-			return;
+        {
+            return;
         }
 
-        var settings = Properties.Settings.Default;
-        LoadPulseSetup(settings.PulseSetupFilename);
-
-		await CreateIndicators();
+        await CreateIndicators();
 
         var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Start);
         var queryResult = _odorDisplay.Request(queryMeasurements, out Ack? ack, out Response? response);
@@ -291,8 +301,8 @@ public partial class Setup : Page, IPage<PulseSetup>
         var ofd = new OpenFileDialog
         {
             Filter = "Any file|*",
-			FileName = Path.GetFileName(settings.PulseSetupFilename),
-            InitialDirectory = Path.GetDirectoryName(settings.PulseSetupFilename) ?? AppDomain.CurrentDomain.BaseDirectory
+			FileName = Path.GetFileName(settings.Pulses_SetupFilename),
+            InitialDirectory = Path.GetDirectoryName(settings.Pulses_SetupFilename) ?? AppDomain.CurrentDomain.BaseDirectory
         };
 
         if (ofd.ShowDialog() ?? false)
@@ -312,5 +322,12 @@ public partial class Setup : Page, IPage<PulseSetup>
 
 			Next?.Invoke(this, _setup);
         }
+    }
+
+    private void Randomize_CheckedChanged(object sender, RoutedEventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+        settings.Pulses_Randomize = chkRandomize.IsChecked == true;
+        settings.Save();
     }
 }

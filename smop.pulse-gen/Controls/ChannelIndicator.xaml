@@ -10,7 +10,8 @@
 
     <UserControl.Resources>
         <utils:BoolToVisibilityConverter x:Key="bool2vis"/>
-        
+        <utils:NumberToVisibilityConverter x:Key="int2vis"/>
+
         <Style x:Key="Channel" TargetType="{x:Type Label}">
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
             <Setter Property="Background" Value="{StaticResource BrushPanelLightest}"/>
@@ -61,14 +62,25 @@
         <Label Grid.Row="1"
                Style="{StaticResource Channel}"
                DataContext="{Binding ElementName=channelIndicator}">
-            <TextBlock Style="{StaticResource ChannelIndicator}">
-            <Run Text="{Binding Title, Mode=OneWay}"/>
-            <LineBreak/>
-            <Run x:Name="runValue"
-                 Style="{StaticResource Value}"
-                 Text="{Binding ValueStr, Mode=OneWay}"/>
-            <Run Text="{Binding Units, Mode=OneWay}"/>
-            </TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Style="{StaticResource ChannelIndicator}" Grid.Column="0">
+                    <Run Text="{Binding Title, Mode=OneWay}"/>
+                    <LineBreak/>
+                    <Run x:Name="runValue"
+                         Style="{StaticResource Value}"
+                         Text="{Binding ValueStr, Mode=OneWay}"/>
+                    <Run Text="{Binding Units, Mode=OneWay}"/>
+                </TextBlock>
+                <ComboBox x:Name="cmdChannels" Grid.Column="1"
+                    Margin="8,0,0,0"
+                    Visibility="{Binding ChannelCount, Mode=OneWay, Converter={StaticResource int2vis}}"
+                />
+            </Grid>
         </Label>
     </Grid>
 </UserControl>

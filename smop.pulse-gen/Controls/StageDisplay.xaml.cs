@@ -96,7 +96,7 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
         ))
     );
 
-    #endregion 
+    #endregion
 
     public string DurationValue => Duration > 0 ? IntervalToStr(Duration, out _durationUnitsAreMs) : "";
     public string FlowValue => FlowToStr(Flow, out _flowUnitsAreCcm);

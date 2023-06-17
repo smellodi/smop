@@ -175,16 +175,59 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 		}
 	}
 
-	#endregion
+    #endregion
 
-	public string ValueStr => double.IsFinite(Value) ? Value.ToString($"F{Precision}") : "-";
+    #region ChannelCount property
+
+    [Description("ChannelCount"), Category("Common Properties")]
+    public int ChannelCount
+    {
+        get => (int)GetValue(ChannelCountProperty);
+        set => SetValue(ChannelCountProperty, value);
+    }
+
+    public static readonly DependencyProperty ChannelCountProperty = DependencyProperty.Register(
+        nameof(ChannelCount),
+        typeof(int),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback((s, e) =>
+			{
+				if (s is ChannelIndicator channelIndicator)
+				{
+					channelIndicator.cmdChannels.Items.Clear();
+					for (int i = 0; i < channelIndicator.ChannelCount; i++)
+					{
+						channelIndicator.cmdChannels.Items.Add($"{i + 1}");
+                    }
+					if (channelIndicator.ChannelCount > 0)
+					{
+						channelIndicator.cmdChannels.SelectedIndex = 0;
+                    }
+					channelIndicator.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(ChannelCount)));
+				}
+			}
+        ))
+    );
+
+    #endregion
+
+    public string ValueStr => double.IsFinite(Value) ? Value.ToString($"F{Precision}") : "-";
 	public bool IsWarningVisible => double.IsFinite(WarningThreshold) && double.IsFinite(Value) && WarningThreshold < Value;
 
+    public event EventHandler<int>? ChannelIdChanged;
+    
 	public event PropertyChangedEventHandler? PropertyChanged;
 
 	public ChannelIndicator()
 	{
 		InitializeComponent();
 		WarningThreshold = double.PositiveInfinity;
+
+        cmdChannels.SelectionChanged += Channels_SelectionChanged;
 	}
+
+    private void Channels_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+		ChannelIdChanged?.Invoke(this, int.Parse((string)cmdChannels.SelectedItem) - 1);
+    }
 }

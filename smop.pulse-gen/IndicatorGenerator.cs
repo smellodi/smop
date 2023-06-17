@@ -10,17 +10,45 @@ namespace Smop.PulseGen
     {
         public IndicatorGenerator() { }
 
-        public async Task Run(Action<ChannelIndicator> callback)
+        public async Task OdorDisplay(Action<ChannelIndicator> callback)
         {
             var queryDevices = new QueryDevices();
             var queryResult = _odorDisplay.Request(queryDevices, out Ack? ack, out Response? response);
-            if (queryResult.Error == OdorDisplay.Error.Success)
+            if (queryResult.Error == Smop.OdorDisplay.Error.Success)
             {
                 await CreateIndicators(response as Devices, callback);
             }
         }
 
-        readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
+        public void SmellInsp(Action<ChannelIndicator> callback)
+        {
+            ChannelIndicator? indicator;
+
+            indicator = CreateIndicator("Resistor", 64);
+            if (indicator != null)
+            {
+                callback(indicator);
+            }
+
+            indicator = CreateIndicator("Temperature");
+            if (indicator != null)
+            {
+                callback(indicator);
+            }
+
+            indicator = CreateIndicator("Humidity");
+            if (indicator != null)
+            {
+                callback(indicator);
+            }
+        }
+
+        public static string GetSourceId(ID deviceID, Capability cap) => $"od/{deviceID}/{cap}";
+        public static string GetSourceId(string measure) => $"snt/{measure}";
+
+        // Internal
+
+        readonly OdorDisplay.CommPort _odorDisplay = Smop.OdorDisplay.CommPort.Instance;
 
         private async Task CreateIndicators(Devices? devices, Action<ChannelIndicator> callback)
         {
@@ -50,7 +78,7 @@ namespace Smop.PulseGen
             // Read the capabilities
             var query = new QueryCapabilities(deviceID);
             var result = _odorDisplay.Request(query, out Ack? _, out Response? response);
-            if (result.Error != OdorDisplay.Error.Success || response is not Capabilities caps)
+            if (result.Error != Smop.OdorDisplay.Error.Success || response is not Capabilities caps)
             {
                 return;
             }
@@ -110,16 +138,34 @@ namespace Smop.PulseGen
                 _ => 0
             };
 
-            var title = $"{deviceID}\n{capName}";
-            var source = $"{deviceID}\n{cap}";
-
             return units == null ? null : new ChannelIndicator()
             {
-                Title = title,
+                Title = $"{deviceID}\n{capName}",
                 Units = units,
                 Precision = precision,
                 Value = 0,
-                Source = source,
+                Source = GetSourceId(deviceID, cap),
+            };
+        }
+
+        private static ChannelIndicator? CreateIndicator(string measure, int channelCount = 0)
+        {
+            var units = measure.ToLower() switch
+            {
+                "resistor" => "Ohms",
+                "temperature" => "°C",
+                "humidity" => "%",
+                _ => null,
+            };
+
+            return units == null ? null : new ChannelIndicator()
+            {
+                Title = measure,
+                Units = units,
+                Precision = 2,
+                Value = 0,
+                Source = GetSourceId(measure.ToLower()),
+                ChannelCount = channelCount,
             };
         }
     }

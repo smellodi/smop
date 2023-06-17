@@ -41,10 +41,11 @@ public partial class Setup : Page, IPage<PulseSetup>
     PulseSetup? _setup = null;
 
     Controls.ChannelIndicator? _currentIndicator = null;
+	int _smellInspResistor = 0;
 
 	private void ClearIndicators()
 	{
-		foreach (Controls.ChannelIndicator chi in stpIndicators.Children)
+		foreach (var chi in _indicators.Values)
 		{
 			chi.Value = 0;
 		}
@@ -69,12 +70,25 @@ public partial class Setup : Page, IPage<PulseSetup>
     private async Task CreateIndicators()
     {
         var indicatorGenerator = new IndicatorGenerator();
-        await indicatorGenerator.Run(indicator => Dispatcher.Invoke(() =>
+        await indicatorGenerator.OdorDisplay(indicator => Dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
-            stpIndicators.Children.Add(indicator);
+            stpOdorDisplayIndicators.Children.Add(indicator);
 			_indicators.Add(indicator.Source, indicator);
         }));
+
+        indicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
+        {
+            indicator.MouseDown += ChannelIndicator_MouseDown;
+            stpSmellInspIndicators.Children.Add(indicator);
+            _indicators.Add(indicator.Source, indicator);
+        }));
+
+        (stpSmellInspIndicators.Children[0] as Controls.ChannelIndicator)!.ChannelIdChanged += (s, e) =>
+        {
+            _smellInspResistor = e;
+            ResetGraph();
+        };
     }
 
     private void UpdateIndicators(Data data)
@@ -95,23 +109,39 @@ public partial class Setup : Page, IPage<PulseSetup>
                     _ => 0
                 };
                 
-				var source = $"{m.Device}\n{sv.Sensor}";
-
-				if (_indicators.ContainsKey(source))
-				{
-					var indicator = _indicators[source];
-					indicator.Value = value;
-
-					if (_currentIndicator == indicator)
-					{
-
-						double timestamp = Utils.Timestamp.Sec;
-						lmsGraph.Add(timestamp, value);
-					}
-				}
+				var source = IndicatorGenerator.GetSourceId(m.Device, (Smop.OdorDisplay.Device.Capability)sv.Sensor);
+                UpdateIndicator(source, value);
 			}
 		}
 	}
+
+    private void UpdateIndicators(SmellInsp.Data data)
+    {
+        var value = data.Resistances[_smellInspResistor];
+        var source = IndicatorGenerator.GetSourceId("resistor");
+        UpdateIndicator(source, value);
+
+        source = IndicatorGenerator.GetSourceId("temperature");
+        UpdateIndicator(source, data.Temperature);
+
+        source = IndicatorGenerator.GetSourceId("humidity");
+        UpdateIndicator(source, data.Humidity);
+    }
+
+    private void UpdateIndicator(string source, float value)
+    {
+        if (_indicators.ContainsKey(source))
+        {
+            var indicator = _indicators[source];
+            indicator.Value = value;
+
+            if (_currentIndicator == indicator)
+            {
+                double timestamp = Utils.Timestamp.Sec;
+                lmsGraph.Add(timestamp, value);
+            }
+        }
+    }
 
     private void LoadPulseSetup(string filename)
     {
@@ -175,7 +205,6 @@ public partial class Setup : Page, IPage<PulseSetup>
 			{
 				UpdateIndicators(data);
 				_odorDisplayLogger.Add(data);
-
             }));
 		}
 		catch (TaskCanceledException) { }
@@ -185,10 +214,10 @@ public partial class Setup : Page, IPage<PulseSetup>
     {
         try
         {
-            await Task.Run(() =>
-			{
-				// TODO
-			});
+            await Task.Run(() => Dispatcher.Invoke(() =>
+            {
+                UpdateIndicators(data);
+            }));
         }
         catch (TaskCanceledException) { }
     }
@@ -221,6 +250,10 @@ public partial class Setup : Page, IPage<PulseSetup>
             return;
         }
 
+		// Next code is called only once
+
+		tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
+
         await CreateIndicators();
 
         var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Start);
@@ -231,12 +264,6 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
 
         _isInitilized = true;
-
-        /*
-		if (_com.IsOpen && _pid.ArePIDsOn)
-		{
-			ResetIndicators(_lastSample);
-		}*/
     }
 
     private void Page_Unloaded(object? sender, RoutedEventArgs e)

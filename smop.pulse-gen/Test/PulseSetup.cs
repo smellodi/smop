@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace Smop.PulseGen.Test;
 
-public record class PulseChannelProps(int Id, double Flow, bool Active);
+public record class PulseChannelProps(int Id, float Flow, bool Active);
 public record class PulseProps(PulseChannelProps[] Channels);
 public record class PulseIntervals(float InitialPause, float Pulse, float DmsDelay, float FinalPause);
 
@@ -103,6 +104,12 @@ public class PulseSetup
         {
             session.RandomizePulses();
         }
+    }
+
+    public static IEnumerable<string> PulseChannelsAsStrings(PulseProps pulse)
+    {
+        int BoolToInt(bool value) => value ? 1 : 0;
+        return pulse.Channels.Select(ch => $"{ch.Id}:{BoolToInt(ch.Active)}/{ch.Flow}");
     }
 
     // Internal

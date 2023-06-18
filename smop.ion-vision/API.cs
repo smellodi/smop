@@ -606,8 +606,6 @@ public class API : IMinimalAPI
 
     // Internal
 
-    const object? Empty = null;
-
     readonly RestClient _client;
     readonly JsonSerializerOptions _serializationOptions = new()
     {

@@ -71,7 +71,7 @@ _port.Closed += (s, e) => Console.WriteLine("[PORT] closed");
 _port.Data += async (s, e) => await Task.Run(() => PrintData(e));
 _port.COMError += (s, e) => Console.WriteLine($"[PORT] {e}");
 
-SerialPortEmulator.SAMPLING_FREQUENCY = 2000;
+SerialPortEmulator.SamplingFrequency = 2000;
 
 if (SHOW_PORT_DEBUG)
     //_port.Debug += async (s, e) => await Task.Run(() => PrintDebug(e));

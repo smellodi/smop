@@ -57,6 +57,7 @@ public partial class MainWindow : Window
 		var eventLogger = EventLogger.Instance;
 		var odorDisplayLogger = OdorDisplayLogger.Instance;
         var smellInspLogger = SmellInspLogger.Instance;
+        var ionVisionLogger = IonVisionLogger.Instance;
 
         var timestamp = $"{DateTime.Now:u}";
 		LoggerStorage? reference = null;
@@ -76,6 +77,10 @@ public partial class MainWindow : Window
         if (smellInspLogger.HasRecords && !skipOtherLogfile)
         {
             result = smellInspLogger.SaveTo("snt", timestamp, canCancel, reference);
+        }
+        if (ionVisionLogger.HasRecords && !skipOtherLogfile)
+        {
+            result = ionVisionLogger.SaveTo("dms", timestamp, canCancel, reference);
         }
 
         if (result == SavingResult.None)
@@ -148,6 +153,7 @@ public partial class MainWindow : Window
         {
             OdorDisplayLogger.Instance.Clear();
             EventLogger.Instance.Clear();
+            IonVisionLogger.Instance.Clear();
 
             Content = _setupPage;
         }

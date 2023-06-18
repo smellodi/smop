@@ -1,6 +1,8 @@
-﻿using Smop.PulseGen.Pages;
+﻿using Smop.PulseGen.Logging;
 using Smop.PulseGen.Utils;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Smop.PulseGen.Test
 {
@@ -34,6 +36,7 @@ namespace Smop.PulseGen.Test
 
 
         public event EventHandler<StageChangedEventArgs>? StageChanged;
+        public event EventHandler<int>? DmsScanProgressChanged;
 
         public int SessionId => _sessionIndex + 1;
         public int PulseId => _pulseIndex + 1;
@@ -56,6 +59,11 @@ namespace Smop.PulseGen.Test
             {
                 _delayedActionDms.Stop();
                 _delayedActionDms = null;
+            }
+            if (_delayedActionDmsScanProgress != null)
+            {
+                _delayedActionDmsScanProgress.Stop();
+                _delayedActionDmsScanProgress = null;
             }
             GC.SuppressFinalize(this);
         }
@@ -80,13 +88,24 @@ namespace Smop.PulseGen.Test
 
         // Internal
 
+        const double DMS_PROGRESS_CHECK_INTERVAL = 1.0;
+
+        readonly OdorDisplayController _odorDisplay = new();
+        readonly IonVision.Communicator _ionVision = App.IonVision!;
+
+        readonly EventLogger _eventLogger = EventLogger.Instance;
+        readonly IonVisionLogger _ionVisionLogger = IonVisionLogger.Instance;
+
         PulseSetup _setup;
         int _sessionIndex = -1;
         int _pulseIndex = -1;
+
+        Stage _currentStage = Stage.None;
         Stage _extraStages = Stage.None;
 
         DispatchOnce? _delayedAction = null;
         DispatchOnce? _delayedActionDms = null;
+        DispatchOnce? _delayedActionDmsScanProgress = null;
 
         private void RunNextSession()
         {
@@ -94,6 +113,11 @@ namespace Smop.PulseGen.Test
 
             if (_setup.Sessions.Length > _sessionIndex)
             {
+                var session = _setup.Sessions[_sessionIndex];
+                _eventLogger.Add("session", _sessionIndex.ToString());
+
+                _odorDisplay.SetHumidity(session.Humidity);
+
                 _extraStages |= Stage.NewSession;
 
                 _pulseIndex = -1;
@@ -113,9 +137,13 @@ namespace Smop.PulseGen.Test
 
             if (session.Pulses.Length > _pulseIndex)
             {
+                var pulse = session.Pulses[_pulseIndex];
+                _eventLogger.Add("pulse", _pulseIndex.ToString(), string.Join(' ', PulseSetup.PulseChannelsAsStrings(pulse)));
+
+                _odorDisplay.SetFlows(pulse.Channels);
+
                 _extraStages |= Stage.NewPulse;
 
-                var pulse = session.Pulses[_pulseIndex];
                 _delayedAction = DispatchOnce.Do(session.Intervals.InitialPause, StartPulse);
 
                 if (session.Intervals.InitialPause > 0)
@@ -132,6 +160,11 @@ namespace Smop.PulseGen.Test
         private void StartPulse()
         {
             var session = _setup.Sessions[_sessionIndex];
+            var pulse = session.Pulses[_pulseIndex];
+
+            _eventLogger.Add("pulse", _pulseIndex.ToString(), "start");
+
+            _odorDisplay.OpenChannels(pulse.Channels);
 
             if (session.Intervals.DmsDelay >= 0)
             {
@@ -146,14 +179,33 @@ namespace Smop.PulseGen.Test
             _delayedAction = DispatchOnce.Do(session.Intervals.Pulse, FinishPulse);
         }
 
-        private void StartDMS()
+        private async void StartDMS()
         {
+            var session = _setup.Sessions[_sessionIndex];
+            var pulse = session.Pulses[_pulseIndex];
+
+            _eventLogger.Add("dms", "start");
+
+            var pulseData = PulseSetup.PulseChannelsAsStrings(pulse);
+
+            await _ionVision.SetScanResultComment(new { Pulse = pulseData });
+            await Task.Delay(100);
+            await _ionVision.StartScan();
+
+            _delayedActionDmsScanProgress = DispatchOnce.Do(DMS_PROGRESS_CHECK_INTERVAL, CheckDmsScanProgress);
+
             PublishStage(Stage.Pulse | Stage.DMS);
         }
 
         private void FinishPulse()
         {
             var session = _setup.Sessions[_sessionIndex];
+            var pulse = session.Pulses[_pulseIndex];
+
+            _eventLogger.Add("pulse", _pulseIndex.ToString(), "stop");
+
+            _odorDisplay.CloseChannels(pulse.Channels);
+
             _delayedAction = DispatchOnce.Do(session.Intervals.FinalPause, RunNextPulse);
 
             if (session.Intervals.FinalPause > 0)
@@ -167,8 +219,39 @@ namespace Smop.PulseGen.Test
             var session = _setup.Sessions[_sessionIndex];
             var pulse = session.Pulses[_pulseIndex];
 
-            StageChanged?.Invoke(this, new StageChangedEventArgs(session.Intervals, pulse, stage | _extraStages));
+            _currentStage = stage | _extraStages;
+
+            StageChanged?.Invoke(this, new StageChangedEventArgs(session.Intervals, pulse, _currentStage));
             _extraStages = Stage.None;
+        }
+
+        private async void CheckDmsScanProgress()
+        {
+            _delayedActionDmsScanProgress = null;
+
+            if (!_currentStage.HasFlag(Stage.Pulse))
+            {
+                return;
+            }
+
+            var progress = await _ionVision.GetScanProgress();
+            var value = progress?.Value?.Progress ?? 0;
+            DmsScanProgressChanged?.Invoke(this, value);
+
+            if (value > 0)
+            {
+                _delayedActionDmsScanProgress = DispatchOnce.Do(DMS_PROGRESS_CHECK_INTERVAL, CheckDmsScanProgress);
+            }
+            else
+            {
+                _eventLogger.Add("dms", "stop");
+
+                var scan = await _ionVision.GetScanResult();
+                if (scan?.Success ?? false)
+                {
+                    _ionVisionLogger.Add(scan.Value!);
+                }
+            }
         }
     }
 }

@@ -59,6 +59,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
         _controller = new Controller(setup);
         _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Intervals, e.Pulse, e.Stage));
+        _controller.DmsScanProgressChanged += (s, e) => Dispatcher.Invoke(() => SetDmsProgress(e));
 
         _delayedAction = DispatchOnce.Do(0.5, () => _controller?.Start());
     }
@@ -146,6 +147,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinalPause)));
 
         stpDMS.Visibility = stage.HasFlag(Stage.DMS) ? Visibility.Visible : Visibility.Hidden;
+        lblDmsProgress.Content = "DMS measurement started...";
 
         var isPulse = stage.HasFlag(Stage.Pulse);
         foreach (var stageDisplay in _stageDisplays)
@@ -183,6 +185,11 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
             CleanUp();
             Next?.Invoke(this, Navigation.Finished);
         }
+    }
+
+    private void SetDmsProgress(int progress)
+    {
+        lblDmsProgress.Content = progress > 0 ? $"DMS measurement: {progress}% completed" : $"DMS measurement finished";
     }
 
     // UI events

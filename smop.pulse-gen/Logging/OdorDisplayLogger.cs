@@ -9,11 +9,11 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>
 	{
 		public static string DELIM => ",";
 
-		public long Time { get; }
+		public long Timestamp { get; }
 
 		public Record(Data data)
 		{
-			Time = data.Timestamp;
+			Timestamp = Utils.Timestamp.Ms;
 
             var values = new List<float>
             {

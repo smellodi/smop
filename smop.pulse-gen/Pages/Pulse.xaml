@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.PulseGen.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="500" d:DesignWidth="800"
+      d:DesignHeight="600" d:DesignWidth="800"
       Title="Pulse"
       KeyDown="Page_KeyDown"
       Loaded="Page_Loaded"
@@ -63,6 +63,7 @@
 
                 <local:StageDisplay x:Name="pdsInitialPause" Grid.Row="0"
                                     Text="Initial pause"
+                                    Margin="0,0,0,12"
                                     IsCurrent="{Binding IsInitialPause}"/>
                 
                 <StackPanel x:Name="stpStageDisplays" Grid.Row="1"
@@ -71,13 +72,13 @@
 
                 <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
                                     Text="Final pause"
+                                    Margin="0,12,0,0"
                                     IsCurrent="{Binding IsFinalPause}"/>
             </Grid>
 
             <StackPanel x:Name="stpDMS"
                 Visibility="Hidden">
-                <Label Style="{StaticResource DMS}"
-                    Content="Running DMS measurement..."
+                <Label x:Name="lblDmsProgress" Style="{StaticResource DMS}"
                     HorizontalContentAlignment="Center"/>
             </StackPanel>
 

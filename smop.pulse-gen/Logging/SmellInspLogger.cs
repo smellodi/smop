@@ -8,15 +8,15 @@ public class SmellInspLogger : Logger<SmellInspLogger.Record>
 	{
 		public static string DELIM => ",";
 
-		public long Time { get; }
+		public long Timestamp { get; }
 
 		public Record(SmellInsp.Data data)
 		{
-			Time = Utils.Timestamp.Ms;
+			Timestamp = Utils.Timestamp.Ms;
 
             var values = new List<float>
             {
-                Time,
+                Timestamp,
                 data.Temperature,
                 data.Humidity
             };

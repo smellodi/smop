@@ -6,11 +6,6 @@ using Smop.PulseGen.Utils;
 
 namespace Smop.PulseGen.Logging;
 
-[Flags]
-public enum LogSource
-{
-}
-
 public enum SavingResult
 {
 	None,
@@ -134,7 +129,7 @@ public abstract class Logger<T> where T : class
 
 			if (filename != null && !filename.EndsWith(ending)) // force to place the timestamp and subname at the end
 			{
-				filename = filename.Substring(0, filename.Length - 1 - LoggerStorage.FILE_EXT.Length) + ending;
+				filename = filename[..(filename.Length - 1 - LoggerStorage.FILE_EXT.Length)] + ending;
 			}
 		}
 
@@ -170,7 +165,7 @@ public abstract class Logger<T> where T : class
 
 	protected readonly List<T> _records = new();
 
-	protected string Header { get; set; }
+	protected string Header { get; set; } = "";
 
 
     readonly string SaveInto = "Save data into";
@@ -243,7 +238,7 @@ public abstract class Logger<T> where T : class
 		return null;
 	}
 
-	protected bool Save(string? filename, IEnumerable<object> records, string header, bool suppressConfirmation)
+	protected bool Save(string? filename, IEnumerable<T> records, string header, bool suppressConfirmation)
 	{
 		if (string.IsNullOrEmpty(filename))
 		{
@@ -257,40 +252,38 @@ public abstract class Logger<T> where T : class
 			Directory.CreateDirectory(folder);
 		}
 
-		using (StreamWriter writer = System.IO.File.CreateText(filename))
-		{
-			try
-			{
-				if (!string.IsNullOrEmpty(header))
-				{
-					writer.WriteLine(header);
-				}
+        using StreamWriter writer = System.IO.File.CreateText(filename);
+        try
+        {
+            if (!string.IsNullOrEmpty(header))
+            {
+                writer.WriteLine(header);
+            }
 
-				writer.WriteLine(string.Join("\n", records));
+            writer.WriteLine(string.Join("\n", records));
 
-				if (!suppressConfirmation)
-				{
-					MsgBox.Notify(
-						$"{Application.Current.MainWindow.Title} - Logger",
-						$"Data saved into\n'{filename}'",
-						MsgBox.Button.OK);
-				}
-
-				return true;
-			}
-			catch (Exception ex)
-			{
-				var answer = MsgBox.Ask(
+            if (!suppressConfirmation)
+            {
+                MsgBox.Notify(
                     $"{Application.Current.MainWindow.Title} - Logger",
-                    $"Failed to save the file\n'{filename}':\n\n{ex.Message}\n\nRetry",
-					MsgBox.Button.Yes, MsgBox.Button.No);
-				if (answer == MsgBox.Button.Yes)
-				{
-					return Save(AskFileName(filename), records, header, suppressConfirmation);
-				}
-			}
-		}
+                    $"Data saved into\n'{filename}'",
+                    MsgBox.Button.OK);
+            }
 
-		return false;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            var answer = MsgBox.Ask(
+                $"{Application.Current.MainWindow.Title} - Logger",
+                $"Failed to save the file\n'{filename}':\n\n{ex.Message}\n\nRetry",
+                MsgBox.Button.Yes, MsgBox.Button.No);
+            if (answer == MsgBox.Button.Yes)
+            {
+                return Save(AskFileName(filename), records, header, suppressConfirmation);
+            }
+        }
+
+        return false;
 	}
 }

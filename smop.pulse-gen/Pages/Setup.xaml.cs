@@ -33,10 +33,12 @@ public partial class Setup : Page, IPage<PulseSetup>
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
 	readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
+    readonly SmellInspLogger _smellInspLogger = SmellInspLogger.Instance;
 
-	readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
+    readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
 
 	bool _isInitilized = false;
+    bool _ionVisionIsReady = false;
     string? _setupFileName = null;
     PulseSetup? _setup = null;
 
@@ -77,7 +79,7 @@ public partial class Setup : Page, IPage<PulseSetup>
 			_indicators.Add(indicator.Source, indicator);
         }));
 
-        indicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
+        IndicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpSmellInspIndicators.Children.Add(indicator);
@@ -118,13 +120,13 @@ public partial class Setup : Page, IPage<PulseSetup>
     private void UpdateIndicators(SmellInsp.Data data)
     {
         var value = data.Resistances[_smellInspResistor];
-        var source = IndicatorGenerator.GetSourceId("resistor");
+        var source = IndicatorGenerator.GetSourceId(IndicatorGenerator.SmellInspChannels[0].Type);
         UpdateIndicator(source, value);
 
-        source = IndicatorGenerator.GetSourceId("temperature");
+        source = IndicatorGenerator.GetSourceId(IndicatorGenerator.SmellInspChannels[1].Type);
         UpdateIndicator(source, data.Temperature);
 
-        source = IndicatorGenerator.GetSourceId("humidity");
+        source = IndicatorGenerator.GetSourceId(IndicatorGenerator.SmellInspChannels[2].Type);
         UpdateIndicator(source, data.Humidity);
     }
 
@@ -145,6 +147,8 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private void LoadPulseSetup(string filename)
     {
+        _setupFileName = null;
+
         if (!File.Exists(filename))
         {
             return;
@@ -159,11 +163,40 @@ public partial class Setup : Page, IPage<PulseSetup>
         _setupFileName = filename;
 
         txbSetupFile.Text = _setupFileName;
-        btnStart.IsEnabled = true;
+        UpdateUI();
 
         var settings = Properties.Settings.Default;
         settings.Pulses_SetupFilename = _setupFileName;
         settings.Save();
+    }
+
+    private void UpdateUI()
+    {
+        btnStart.IsEnabled = _setupFileName != null && _ionVisionIsReady;
+    }
+
+    private async Task InitializeIonVision(IonVision.Communicator ionVision)
+    {
+        await Task.Delay(1000);
+        List<string> completedSteps = new() { "Initialized", "Loading the project..." };
+        lblDmsStatus.Content = string.Join('\n', completedSteps);
+
+        await ionVision.SetProjectAndWait();
+        await Task.Delay(1000);
+        completedSteps.RemoveAt(completedSteps.Count - 1);
+        completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded");
+        completedSteps.Add("Loading the parameter...");
+        lblDmsStatus.Content = string.Join('\n', completedSteps);
+
+        await ionVision.SetParameterAndPreload();
+        await Task.Delay(500);
+        completedSteps.RemoveAt(completedSteps.Count - 1);
+        completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is loaded");
+        completedSteps.Add("Done!");
+        lblDmsStatus.Content = string.Join('\n', completedSteps);
+
+        _ionVisionIsReady = true;
+        UpdateUI();
     }
 
     private void Close()
@@ -217,6 +250,7 @@ public partial class Setup : Page, IPage<PulseSetup>
             await Task.Run(() => Dispatcher.Invoke(() =>
             {
                 UpdateIndicators(data);
+                _smellInspLogger.Add(data);
             }));
         }
         catch (TaskCanceledException) { }
@@ -250,9 +284,11 @@ public partial class Setup : Page, IPage<PulseSetup>
             return;
         }
 
-		// Next code is called only once
+        // Next code is called only once
 
-		tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
+        _isInitilized = true;
+
+        tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
 
         await CreateIndicators();
 
@@ -263,7 +299,10 @@ public partial class Setup : Page, IPage<PulseSetup>
 			Utils.MsgBox.Error(Title, $"Cannot start measurements in Odor Display:\n{queryResult.Reason}");
         }
 
-        _isInitilized = true;
+        if (App.IonVision != null)
+        {
+            await InitializeIonVision(App.IonVision);
+        }
     }
 
     private void Page_Unloaded(object? sender, RoutedEventArgs e)

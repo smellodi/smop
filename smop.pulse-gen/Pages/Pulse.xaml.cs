@@ -107,10 +107,10 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
     private void CreateAdditionalStageIndicators()
     {
-        _preStageDisplay = new StageDisplay() { Width = 24 };
+        _preStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(0, 0, 12, 0) };
         stpStageDisplays.Children.Insert(0, _preStageDisplay);
 
-        _postStageDisplay = new StageDisplay() { Width = 24 };
+        _postStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(12, 0, 0, 0) };
         stpStageDisplays.Children.Add(_postStageDisplay);
     }
 

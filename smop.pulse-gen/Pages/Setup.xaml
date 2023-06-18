@@ -13,6 +13,11 @@
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
+        <Style x:Key="Section" TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        
         <Style TargetType="TabControl">
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
             <Setter Property="Padding" Value="2"/>
@@ -71,6 +76,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
                         <RowDefinition/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
@@ -99,6 +105,15 @@
                                   Checked="Randomize_CheckedChanged"
                                   Unchecked="Randomize_CheckedChanged"/>
                     </UserControl>
+
+                    <StackPanel Grid.Row="2">
+                        <Separator/>
+                        <Label Style="{StaticResource Section}"
+                            Content="DMS status:"/>
+                        <Label Name="lblDmsStatus"
+                            Padding="28,0,0,0"
+                            Content="Initializing..."/>
+                    </StackPanel>
 
                     <UserControl Grid.Row="10" Style="{StaticResource FormRow}" Tag="Carrier gas">
                         <UserControl Style="{StaticResource ValueWithUnit}"

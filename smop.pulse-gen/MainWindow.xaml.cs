@@ -52,12 +52,13 @@ public partial class MainWindow : Window
 
 	private SavingResult SaveData(bool canCancel)
 	{
-		SavingResult result = SavingResult.None;
+		var result = SavingResult.None;
 
-		EventLogger eventLogger = EventLogger.Instance;
-		OdorDisplayLogger odorDisplayLogger = OdorDisplayLogger.Instance;
+		var eventLogger = EventLogger.Instance;
+		var odorDisplayLogger = OdorDisplayLogger.Instance;
+        var smellInspLogger = SmellInspLogger.Instance;
 
-		var timestamp = $"{DateTime.Now:u}";
+        var timestamp = $"{DateTime.Now:u}";
 		LoggerStorage? reference = null;
 
 		if (eventLogger.HasRecords)
@@ -70,8 +71,12 @@ public partial class MainWindow : Window
 
 		if (odorDisplayLogger.HasRecords && !skipOtherLogfile)
 		{
-			result = odorDisplayLogger.SaveTo("data", timestamp, canCancel, reference);
+			result = odorDisplayLogger.SaveTo("od", timestamp, canCancel, reference);
 		}
+        if (smellInspLogger.HasRecords && !skipOtherLogfile)
+        {
+            result = smellInspLogger.SaveTo("snt", timestamp, canCancel, reference);
+        }
 
         if (result == SavingResult.None)
         {

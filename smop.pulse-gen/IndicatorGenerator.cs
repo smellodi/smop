@@ -1,13 +1,20 @@
-﻿using Smop.OdorDisplay.Packets;
+﻿using Smop.OdorDisplay;
+using Smop.OdorDisplay.Packets;
 using System;
 using System.Threading.Tasks;
 using Smop.PulseGen.Controls;
-using static Smop.OdorDisplay.Device;
 
 namespace Smop.PulseGen
 {
     internal class IndicatorGenerator
     {
+        public record class SmellInspChannel(string Type, string Units, int Count);
+        public static SmellInspChannel[] SmellInspChannels => new SmellInspChannel[] {
+            new SmellInspChannel("Resistor", "Ohms", 64),
+            new SmellInspChannel("Temperature", "°C", 0),
+            new SmellInspChannel("Humidity", "%", 0)
+        };
+
         public IndicatorGenerator() { }
 
         public async Task OdorDisplay(Action<ChannelIndicator> callback)
@@ -20,30 +27,28 @@ namespace Smop.PulseGen
             }
         }
 
-        public void SmellInsp(Action<ChannelIndicator> callback)
+        public static void SmellInsp(Action<ChannelIndicator> callback)
         {
-            ChannelIndicator? indicator;
-
-            indicator = CreateIndicator("Resistor", 64);
-            if (indicator != null)
+            foreach (var channel in SmellInspChannels)
             {
-                callback(indicator);
-            }
+                var indicator = new ChannelIndicator()
+                {
+                    Title = channel.Type,
+                    Units = channel.Units,
+                    Precision = 2,
+                    Value = 0,
+                    Source = GetSourceId(channel.Type),
+                    ChannelCount = channel.Count,
+                };
 
-            indicator = CreateIndicator("Temperature");
-            if (indicator != null)
-            {
-                callback(indicator);
-            }
-
-            indicator = CreateIndicator("Humidity");
-            if (indicator != null)
-            {
-                callback(indicator);
+                if (indicator != null)
+                {
+                    callback(indicator);
+                }
             }
         }
 
-        public static string GetSourceId(ID deviceID, Capability cap) => $"od/{deviceID}/{cap}";
+        public static string GetSourceId(Device.ID deviceID, Device.Capability cap) => $"od/{deviceID}/{cap}";
         public static string GetSourceId(string measure) => $"snt/{measure}";
 
         // Internal
@@ -57,20 +62,20 @@ namespace Smop.PulseGen
                 return;
             }
 
-            await CreateIndicators(ID.Base, callback);
-            await CreateIndicators(ID.DilutionAir, callback);
+            await CreateIndicators(Device.ID.Base, callback);
+            await CreateIndicators(Device.ID.DilutionAir, callback);
 
             for (int i = 0; i < Devices.MaxOdorModuleCount; i++)
             {
                 if (devices.HasOdorModule(i))
                 {
                     /// IMPORTANT! this depends on <see cref="OdorDisplay.Devices.ID"/>
-                    await CreateIndicators((ID)(i+1), callback);
+                    await CreateIndicators((Device.ID)(i+1), callback);
                 }
             }
         }
 
-        private async Task CreateIndicators(ID deviceID, Action<ChannelIndicator> callback)
+        private async Task CreateIndicators(Device.ID deviceID, Action<ChannelIndicator> callback)
         {
             // Because of the frequent request to the device, lets have some pause
             await Task.Delay(50);
@@ -84,9 +89,9 @@ namespace Smop.PulseGen
             }
 
             // Create an indicator for each capability
-            foreach (var capId in Enum.GetValues(typeof(Capability)))
+            foreach (var capId in Enum.GetValues(typeof(Device.Capability)))
             {
-                var cap = (Capability)capId;
+                var cap = (Device.Capability)capId;
                 if (caps.Has(cap))
                 {
                     var indicator = CreateIndicator(deviceID, cap);
@@ -98,43 +103,55 @@ namespace Smop.PulseGen
             }
         }
 
-        private static ChannelIndicator? CreateIndicator(ID deviceID, Capability cap)
+        private static ChannelIndicator? CreateIndicator(Device.ID deviceID, Device.Capability cap)
         {
             var capName = cap switch
             {
-                Capability.PID => "PID",
-                Capability.BeadThermistor => "Bead therm.",
-                Capability.ChassisThermometer => "Chassis therm.",
-                Capability.OdorSourceThermometer => "Source therm.",
-                Capability.GeneralPurposeThermometer => "Thermometer",
-                Capability.InputAirHumiditySensor => "Input humd.",
-                Capability.OutputAirHumiditySensor => "Output humd.",
-                Capability.PressureSensor => "Pressure",
-                Capability.OdorantFlowSensor => "Flow",
-                Capability.DilutionAirFlowSensor => "Dil. flow",
-                Capability.OdorantValveSensor => "Valve",
-                Capability.OutputValveSensor => "Output valve",
+                Device.Capability.PID => "PID",
+                Device.Capability.BeadThermistor => "Bead therm.",
+                Device.Capability.ChassisThermometer => "Chassis therm.",
+                Device.Capability.OdorSourceThermometer => "Source therm.",
+                Device.Capability.GeneralPurposeThermometer => "Thermometer",
+                Device.Capability.InputAirHumiditySensor => "Input humd.",
+                Device.Capability.OutputAirHumiditySensor => "Output humd.",
+                Device.Capability.PressureSensor => "Pressure",
+                Device.Capability.OdorantFlowSensor => "Flow",
+                Device.Capability.DilutionAirFlowSensor => "Dil. flow",
+                Device.Capability.OdorantValveSensor => "Valve",
+                Device.Capability.OutputValveSensor => "Output valve",
                 _ => null
             };
             var units = cap switch
             {
-                Capability.PID => "mV",
-                Capability.BeadThermistor or Capability.ChassisThermometer or Capability.OdorSourceThermometer or Capability.GeneralPurposeThermometer => "°C",
-                Capability.InputAirHumiditySensor or Capability.OutputAirHumiditySensor => "%",
-                Capability.PressureSensor => "mBar",
-                Capability.OdorantFlowSensor or Capability.DilutionAirFlowSensor => "l/min",
-                Capability.OdorantValveSensor or Capability.OutputValveSensor => null,
+                Device.Capability.PID => "mV",
+                Device.Capability.BeadThermistor or 
+                    Device.Capability.ChassisThermometer or 
+                    Device.Capability.OdorSourceThermometer or 
+                    Device.Capability.GeneralPurposeThermometer => "°C",
+                Device.Capability.InputAirHumiditySensor or 
+                    Device.Capability.OutputAirHumiditySensor => "%",
+                Device.Capability.PressureSensor => "mBar",
+                Device.Capability.OdorantFlowSensor or 
+                    Device.Capability.DilutionAirFlowSensor => "l/min",
+                Device.Capability.OdorantValveSensor or 
+                    Device.Capability.OutputValveSensor => null,
                 _ => null
             };
 
             var precision = cap switch
             {
-                Capability.PID => 2,
-                Capability.BeadThermistor or Capability.ChassisThermometer or Capability.OdorSourceThermometer or Capability.GeneralPurposeThermometer => 1,
-                Capability.InputAirHumiditySensor or Capability.OutputAirHumiditySensor => 1,
-                Capability.PressureSensor => 1,
-                Capability.OdorantFlowSensor or Capability.DilutionAirFlowSensor => 2,
-                Capability.OdorantValveSensor or Capability.OutputValveSensor => 0,
+                Device.Capability.PID => 2,
+                Device.Capability.BeadThermistor or 
+                    Device.Capability.ChassisThermometer or 
+                    Device.Capability.OdorSourceThermometer or 
+                    Device.Capability.GeneralPurposeThermometer => 1,
+                Device.Capability.InputAirHumiditySensor or 
+                    Device.Capability.OutputAirHumiditySensor => 1,
+                Device.Capability.PressureSensor => 1,
+                Device.Capability.OdorantFlowSensor or 
+                    Device.Capability.DilutionAirFlowSensor => 2,
+                Device.Capability.OdorantValveSensor or 
+                    Device.Capability.OutputValveSensor => 0,
                 _ => 0
             };
 
@@ -145,27 +162,6 @@ namespace Smop.PulseGen
                 Precision = precision,
                 Value = 0,
                 Source = GetSourceId(deviceID, cap),
-            };
-        }
-
-        private static ChannelIndicator? CreateIndicator(string measure, int channelCount = 0)
-        {
-            var units = measure.ToLower() switch
-            {
-                "resistor" => "Ohms",
-                "temperature" => "°C",
-                "humidity" => "%",
-                _ => null,
-            };
-
-            return units == null ? null : new ChannelIndicator()
-            {
-                Title = measure,
-                Units = units,
-                Precision = 2,
-                Value = 0,
-                Source = GetSourceId(measure.ToLower()),
-                ChannelCount = channelCount,
             };
         }
     }

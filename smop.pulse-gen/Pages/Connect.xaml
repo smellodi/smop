@@ -110,8 +110,8 @@
             <Button x:Name="btnConnect" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"
                 Margin="0,12,0,0"
                 IsEnabled="{Binding HasNecessaryConnections, Mode=OneWay}"
-                Content="Connect"
-                Click="Connect_Click"/>
+                Content="Continue"
+                Click="Continue_Click"/>
         </Grid>
 
         <Label x:Name="lblDebug" Style="{StaticResource DebugWarning}" Visibility="Collapsed"/>

@@ -99,19 +99,14 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
     #endregion
 
     public string DurationValue => Duration > 0 ? IntervalToStr(Duration, out _durationUnitsAreMs) : "";
-    public string FlowValue => FlowToStr(Flow, out _flowUnitsAreCcm);
+    public string FlowValue => Flow >= 0 ? FlowToStr(Flow, out _flowUnitsAreCcm) : "";
     public string DurationUnits => Duration > 0 ? (_durationUnitsAreMs ? "ms" : "seconds") : "";
-    public string FlowUnits => _flowUnitsAreCcm ? "ccm" : "l/min";
+    public string FlowUnits => Flow >= 0 ? (_flowUnitsAreCcm ? "ccm" : "l/min") : "";
 
 
     public StageDisplay()
     {
         InitializeComponent();
-
-        IsCurrent = false;
-        Text = "";
-        Duration = 0;
-        Flow = 0;
     }
 
     // Internal

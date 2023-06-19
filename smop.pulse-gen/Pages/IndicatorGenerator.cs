@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Smop.PulseGen.Controls;
 
-namespace Smop.PulseGen
+namespace Smop.PulseGen.Pages
 {
     internal class IndicatorGenerator
     {
@@ -21,7 +21,7 @@ namespace Smop.PulseGen
         {
             var queryDevices = new QueryDevices();
             var queryResult = _odorDisplay.Request(queryDevices, out Ack? ack, out Response? response);
-            if (queryResult.Error == Smop.OdorDisplay.Error.Success)
+            if (queryResult.Error == Error.Success)
             {
                 await CreateIndicators(response as Devices, callback);
             }
@@ -53,7 +53,7 @@ namespace Smop.PulseGen
 
         // Internal
 
-        readonly OdorDisplay.CommPort _odorDisplay = Smop.OdorDisplay.CommPort.Instance;
+        readonly CommPort _odorDisplay = CommPort.Instance;
 
         private async Task CreateIndicators(Devices? devices, Action<ChannelIndicator> callback)
         {
@@ -70,7 +70,7 @@ namespace Smop.PulseGen
                 if (devices.HasOdorModule(i))
                 {
                     /// IMPORTANT! this depends on <see cref="OdorDisplay.Devices.ID"/>
-                    await CreateIndicators((Device.ID)(i+1), callback);
+                    await CreateIndicators((Device.ID)(i + 1), callback);
                 }
             }
         }
@@ -83,7 +83,7 @@ namespace Smop.PulseGen
             // Read the capabilities
             var query = new QueryCapabilities(deviceID);
             var result = _odorDisplay.Request(query, out Ack? _, out Response? response);
-            if (result.Error != Smop.OdorDisplay.Error.Success || response is not Capabilities caps)
+            if (result.Error != Error.Success || response is not Capabilities caps)
             {
                 return;
             }
@@ -124,16 +124,16 @@ namespace Smop.PulseGen
             var units = cap switch
             {
                 Device.Capability.PID => "mV",
-                Device.Capability.BeadThermistor or 
-                    Device.Capability.ChassisThermometer or 
-                    Device.Capability.OdorSourceThermometer or 
+                Device.Capability.BeadThermistor or
+                    Device.Capability.ChassisThermometer or
+                    Device.Capability.OdorSourceThermometer or
                     Device.Capability.GeneralPurposeThermometer => "°C",
-                Device.Capability.InputAirHumiditySensor or 
+                Device.Capability.InputAirHumiditySensor or
                     Device.Capability.OutputAirHumiditySensor => "%",
                 Device.Capability.PressureSensor => "mBar",
-                Device.Capability.OdorantFlowSensor or 
+                Device.Capability.OdorantFlowSensor or
                     Device.Capability.DilutionAirFlowSensor => "l/min",
-                Device.Capability.OdorantValveSensor or 
+                Device.Capability.OdorantValveSensor or
                     Device.Capability.OutputValveSensor => null,
                 _ => null
             };
@@ -141,16 +141,16 @@ namespace Smop.PulseGen
             var precision = cap switch
             {
                 Device.Capability.PID => 2,
-                Device.Capability.BeadThermistor or 
-                    Device.Capability.ChassisThermometer or 
-                    Device.Capability.OdorSourceThermometer or 
+                Device.Capability.BeadThermistor or
+                    Device.Capability.ChassisThermometer or
+                    Device.Capability.OdorSourceThermometer or
                     Device.Capability.GeneralPurposeThermometer => 1,
-                Device.Capability.InputAirHumiditySensor or 
+                Device.Capability.InputAirHumiditySensor or
                     Device.Capability.OutputAirHumiditySensor => 1,
                 Device.Capability.PressureSensor => 1,
-                Device.Capability.OdorantFlowSensor or 
+                Device.Capability.OdorantFlowSensor or
                     Device.Capability.DilutionAirFlowSensor => 2,
-                Device.Capability.OdorantValveSensor or 
+                Device.Capability.OdorantValveSensor or
                     Device.Capability.OutputValveSensor => 0,
                 _ => 0
             };

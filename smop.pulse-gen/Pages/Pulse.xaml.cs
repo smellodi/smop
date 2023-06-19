@@ -38,6 +38,9 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
 		DataContext = this;
 
+        pdsInitialPause.Flow = -1;
+        pdsFinalPause.Flow = -1;
+
         Application.Current.Exit += (s, e) => CleanUp();
     }
 
@@ -108,10 +111,10 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
     private void CreateAdditionalStageIndicators()
     {
-        _preStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(0, 0, 12, 0) };
+        _preStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(0, 0, 12, 0), Flow = -1 };
         stpStageDisplays.Children.Insert(0, _preStageDisplay);
 
-        _postStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(12, 0, 0, 0) };
+        _postStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(12, 0, 0, 0), Flow = -1 };
         stpStageDisplays.Children.Add(_postStageDisplay);
     }
 

@@ -9,13 +9,15 @@ internal class OdorDisplayController
 {
     public void SetHumidity(float value)
     {
-        var outputValveFlow = 10.0f * value / 100;
+        var humidifierFlow = Device.MaxBaseAirFlowRate * value / 100;
+        var dilutionAirFlow = 1f - humidifierFlow;
 
         Send(new SetActuators(new Actuator[]
         {
             new Actuator(Device.ID.Base, new ActuatorCapabilities(
-                ActuatorCapabilities.OutputValveOpenPermanently,
-                KeyValuePair.Create(Device.Controller.OdorantFlow, outputValveFlow)
+                ActuatorCapabilities.OdorantValveOpenPermanently,
+                KeyValuePair.Create(Device.Controller.OdorantFlow, humidifierFlow),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, dilutionAirFlow)
             )),
         }));
     }

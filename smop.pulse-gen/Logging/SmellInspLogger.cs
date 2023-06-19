@@ -2,18 +2,12 @@
 
 namespace Smop.PulseGen.Logging;
 
-public class SmellInspLogger : Logger<SmellInspLogger.Record>
+public class SmellInspLogger : Logger<SmellInspLogger.Record>, ILog
 {
-	public class Record
+	public class Record : RecordBase
 	{
-		public static string DELIM => ",";
-
-		public long Timestamp { get; }
-
-		public Record(SmellInsp.Data data)
+		public Record(SmellInsp.Data data) : base()
 		{
-			Timestamp = Utils.Timestamp.Ms;
-
             var values = new List<float>
             {
                 Timestamp,
@@ -57,7 +51,9 @@ public class SmellInspLogger : Logger<SmellInspLogger.Record>
 
 	public static SmellInspLogger Instance => _instance ??= new();
 
-	public void Add(SmellInsp.Data data)
+    public string Name => "snt";
+
+    public void Add(SmellInsp.Data data)
 	{
         if (_records.Count == 0)
         {

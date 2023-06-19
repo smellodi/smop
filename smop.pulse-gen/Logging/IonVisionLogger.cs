@@ -1,19 +1,15 @@
-﻿using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Smop.PulseGen.Logging;
 
-public class IonVisionLogger : Logger<IonVisionLogger.Record>
+public class IonVisionLogger : Logger<IonVisionLogger.Record>, ILog
 {
-	public class Record
-	{
-		public long Timestamp { get; }
+	public class Record : RecordBase
+    {
         public string Json { get; }
 
-        public Record(IonVision.ScanResult data)
+        public Record(IonVision.ScanResult data) : base()
 		{
-			Timestamp = Utils.Timestamp.Ms;
-
             Json = JsonSerializer.Serialize(data, serializationOptions);
         }
 
@@ -32,7 +28,9 @@ public class IonVisionLogger : Logger<IonVisionLogger.Record>
 
     public static IonVisionLogger Instance => _instance ??= new();
 
-	public void Add(IonVision.ScanResult data)
+    public string Name => "dms";
+
+    public void Add(IonVision.ScanResult data)
 	{
 		if (IsEnabled)
 		{

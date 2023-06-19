@@ -1,7 +1,6 @@
 ﻿using Smop.PulseGen.Logging;
 using Smop.PulseGen.Utils;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Smop.PulseGen.Test

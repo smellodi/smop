@@ -1,19 +1,16 @@
 ﻿namespace Smop.PulseGen.Logging;
 
-public class EventLogger : Logger<EventLogger.Record>
+public class EventLogger : Logger<EventLogger.Record>, ILog
 {
-	public class Record
+	public class Record : RecordBase
 	{
-		public static string DELIM => "\t";
 		public static string HEADER => $"ts{DELIM}type{DELIM}data";
 
-		public long Timestamp { get; }
 		public string Type { get; }
 		public string[] Data { get; }
 
-		public Record(string type, string[] data)
+		public Record(string type, string[] data) : base()
 		{
-			Timestamp = Utils.Timestamp.Ms;
 			Type = type;
 			Data = data;
 		}
@@ -32,7 +29,9 @@ public class EventLogger : Logger<EventLogger.Record>
 
 	public static EventLogger Instance => _instance ??= new();
 
-	public void Add(string type, params string[] data)
+    public string Name => "events";
+
+    public void Add(string type, params string[] data)
 	{
 		if (IsEnabled)
 		{

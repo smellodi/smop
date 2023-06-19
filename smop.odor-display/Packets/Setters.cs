@@ -57,6 +57,9 @@ public class ActuatorCapabilities : Dictionary<Device.Controller, float>
     public static float ValveOnPermanently => -1;
     public static float ValveOff => 0;
 
+    public static KeyValuePair<Device.Controller, float> OdorantValveOpenPermanently => KeyValuePair.Create(Device.Controller.OdorantValve, ValveOnPermanently);
+    public static KeyValuePair<Device.Controller, float> OdorantValveClose => KeyValuePair.Create(Device.Controller.OdorantValve, ValveOff);
+
     public static KeyValuePair<Device.Controller, float> OutputValveOpenPermanently => KeyValuePair.Create(Device.Controller.OutputValve, ValveOnPermanently);
     public static KeyValuePair<Device.Controller, float> OutputValveClose => KeyValuePair.Create(Device.Controller.OutputValve, ValveOff);
 

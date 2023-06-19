@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Smop.PulseGen.Logging;
+using Smop.PulseGen.Pages;
+using Smop.PulseGen.Test;
+using Smop.PulseGen.Utils;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Smop.PulseGen.Utils;
-using Smop.PulseGen.Logging;
-using Smop.PulseGen.Test;
-using System.Threading.Tasks;
-using Smop.PulseGen.Pages;
 
 namespace Smop.PulseGen;
 
@@ -52,12 +53,13 @@ public partial class MainWindow : Window
 
 	private SavingResult SaveData(bool canCancel)
 	{
-		var result = SavingResult.None;
-
-		var eventLogger = EventLogger.Instance;
-		var odorDisplayLogger = OdorDisplayLogger.Instance;
+        var eventLogger = EventLogger.Instance;
+        var odorDisplayLogger = OdorDisplayLogger.Instance;
         var smellInspLogger = SmellInspLogger.Instance;
         var ionVisionLogger = IonVisionLogger.Instance;
+
+        /*
+		var result = SavingResult.None;
 
         var timestamp = $"{DateTime.Now:u}";
 		LoggerStorage? reference = null;
@@ -81,7 +83,15 @@ public partial class MainWindow : Window
         if (ionVisionLogger.HasRecords && !skipOtherLogfile)
         {
             result = ionVisionLogger.SaveTo("dms", timestamp, canCancel, reference);
-        }
+        }*/
+
+        var logs = new List<ILog>();
+		if (eventLogger.HasRecords) logs.Add(eventLogger);
+        if (odorDisplayLogger.HasRecords) logs.Add(odorDisplayLogger);
+        if (smellInspLogger.HasRecords) logs.Add(smellInspLogger);
+        if (ionVisionLogger.HasRecords) logs.Add(ionVisionLogger);
+
+		var result = Logger.Save(logs.ToArray());
 
         if (result == SavingResult.None)
         {

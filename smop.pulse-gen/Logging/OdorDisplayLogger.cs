@@ -3,18 +3,12 @@ using System.Collections.Generic;
 
 namespace Smop.PulseGen.Logging;
 
-public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>
+public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
 {
-	public class Record
-	{
-		public static string DELIM => ",";
-
-		public long Timestamp { get; }
-
-		public Record(Data data)
+	public class Record : RecordBase
+    {
+		public Record(Data data) : base()
 		{
-			Timestamp = Utils.Timestamp.Ms;
-
             var values = new List<float>
             {
                 data.Timestamp
@@ -66,7 +60,9 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>
 
 	public static OdorDisplayLogger Instance => _instance ??= new();
 
-	public void Add(Data data)
+    public string Name => "odor_display";
+
+    public void Add(Data data)
 	{
         if (_records.Count == 0)
         {

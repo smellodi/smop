@@ -10,10 +10,9 @@
              d:DesignHeight="60" d:DesignWidth="200">
 
     <UserControl.Resources>
-        <utils:NumberToVisibilityConverter x:Key="num2vis"/>
+        <!--utils:NumberToVisibilityConverter x:Key="num2vis"/-->
         
         <Style TargetType="Label">
-            <Setter Property="Margin" Value="20,0"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
@@ -32,15 +31,15 @@
     <Grid DataContext="{Binding ElementName=display}">
         <StackPanel VerticalAlignment="Center"
                     Margin="0,16">
-            <Label Content="{Binding Text}"/>
-            <Label Padding="5, 2, 5, 2">
+            <Label Content="{Binding Text}"
+                   Margin="20,0"/>
+            <Label>
                 <TextBlock>
                     <Run Text="{Binding DurationValue, Mode=OneWay}"/>
                     <Run Text="{Binding DurationUnits, Mode=OneWay}"/>
                 </TextBlock>
             </Label>
-            <Label Padding="5, 0, 5, 5"
-                   Visibility="{Binding Path=Flow, Converter={StaticResource num2vis}}">
+            <Label>
                 <TextBlock>
                     <Run Text="{Binding FlowValue, Mode=OneWay}"/>
                     <Run Text="{Binding FlowUnits, Mode=OneWay}"/>

@@ -1,7 +1,7 @@
 {
-  "ip": "169.254.79.113",
-  "project": "Oleg fast scan",
-  "parameterId": "daa1c397-ebd0-4920-b405-5c6029d45fdd", // 8036cca5-0677-475c-aa7f-1c9202d94b85
-  "parameterName": "Default scan",
-  "user": "TUNI"
+  "ip": "192.168.1.2",
+  "project": "SMELLODI 2 CHANNEL OD",
+  "parameterId": "10051ceb-0ab5-4afc-9c06-8efb41ab64c1", // 8036cca5-0677-475c-aa7f-1c9202d94b85
+  "parameterName": "N-butanol and Isopropanol SMELLODI",
+  "user": null
 }

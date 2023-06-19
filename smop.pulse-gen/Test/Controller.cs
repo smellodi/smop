@@ -1,7 +1,6 @@
 ﻿using Smop.PulseGen.Logging;
 using Smop.PulseGen.Utils;
 using System;
-using System.Threading.Tasks;
 
 namespace Smop.PulseGen.Test
 {
@@ -87,7 +86,7 @@ namespace Smop.PulseGen.Test
 
         // Internal
 
-        const double DMS_PROGRESS_CHECK_INTERVAL = 1.0;
+        const double DMS_PROGRESS_CHECK_INTERVAL = 1;
 
         readonly OdorDisplayController _odorDisplay = new();
         readonly IonVision.Communicator _ionVision = App.IonVision!;
@@ -105,6 +104,8 @@ namespace Smop.PulseGen.Test
         DispatchOnce? _delayedAction = null;
         DispatchOnce? _delayedActionDms = null;
         DispatchOnce? _delayedActionDmsScanProgress = null;
+
+        bool _waitForScanProgress = true;
 
         private void RunNextSession()
         {
@@ -156,14 +157,17 @@ namespace Smop.PulseGen.Test
             }
         }
 
-        private void StartPulse()
+        private async void StartPulse()
         {
             var session = _setup.Sessions[_sessionIndex];
             var pulse = session.Pulses[_pulseIndex];
 
             _eventLogger.Add("pulse", _pulseIndex.ToString(), "start");
 
-            _odorDisplay.OpenChannels(pulse.Channels);
+            var pulseData = PulseSetup.PulseChannelsAsStrings(pulse);
+            await _ionVision.SetScanResultComment(new { Pulse = pulseData });
+ 
+            _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);
 
             if (session.Intervals.DmsDelay >= 0)
             {
@@ -185,18 +189,16 @@ namespace Smop.PulseGen.Test
 
             _eventLogger.Add("dms", "start");
 
-            var pulseData = PulseSetup.PulseChannelsAsStrings(pulse);
-
-            await _ionVision.SetScanResultComment(new { Pulse = pulseData });
-            await Task.Delay(100);
             await _ionVision.StartScan();
+
+            _waitForScanProgress = true;
 
             _delayedActionDmsScanProgress = DispatchOnce.Do(DMS_PROGRESS_CHECK_INTERVAL, CheckDmsScanProgress);
 
             PublishStage(Stage.Pulse | Stage.DMS);
         }
 
-        private void FinishPulse()
+        private async void FinishPulse()
         {
             var session = _setup.Sessions[_sessionIndex];
             var pulse = session.Pulses[_pulseIndex];
@@ -210,6 +212,12 @@ namespace Smop.PulseGen.Test
             if (session.Intervals.FinalPause > 0)
             {
                 PublishStage(Stage.FinalPause);
+            }
+
+            var scan = await _ionVision.GetScanResult();
+            if (scan?.Success ?? false)
+            {
+                _ionVisionLogger.Add(scan.Value!);
             }
         }
 
@@ -234,22 +242,23 @@ namespace Smop.PulseGen.Test
             }
 
             var progress = await _ionVision.GetScanProgress();
-            var value = progress?.Value?.Progress ?? 0;
-            DmsScanProgressChanged?.Invoke(this, value);
+            var value = progress?.Value?.Progress ?? -1;
 
-            if (value > 0)
+            if (value >= 0)
+            {
+                _waitForScanProgress = false;
+                DmsScanProgressChanged?.Invoke(this, value);
+                _delayedActionDmsScanProgress = DispatchOnce.Do(DMS_PROGRESS_CHECK_INTERVAL, CheckDmsScanProgress);
+            }
+            else if (_waitForScanProgress)
             {
                 _delayedActionDmsScanProgress = DispatchOnce.Do(DMS_PROGRESS_CHECK_INTERVAL, CheckDmsScanProgress);
             }
             else
             {
-                _eventLogger.Add("dms", "stop");
+                DmsScanProgressChanged?.Invoke(this, -1);
 
-                var scan = await _ionVision.GetScanResult();
-                if (scan?.Success ?? false)
-                {
-                    _ionVisionLogger.Add(scan.Value!);
-                }
+                _eventLogger.Add("dms", "stop");
             }
         }
     }

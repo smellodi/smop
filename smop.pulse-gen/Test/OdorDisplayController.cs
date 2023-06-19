@@ -7,48 +7,59 @@ namespace Smop.PulseGen.Test;
 
 internal class OdorDisplayController
 {
-    public void SetHumidity(float value)
+    public OdorDisplay.Result Init()
+    {
+        return Send(new SetSystem(true, true));
+    }
+
+    public OdorDisplay.Result Start()
+    {
+        return Send(new SetMeasurements(SetMeasurements.Command.Start));
+    }
+
+    public OdorDisplay.Result SetHumidity(float value)
     {
         var humidifierFlow = Device.MaxBaseAirFlowRate * value / 100;
         var dilutionAirFlow = 1f - humidifierFlow;
 
-        Send(new SetActuators(new Actuator[]
+        return Send(new SetActuators(new Actuator[]
         {
             new Actuator(Device.ID.Base, new ActuatorCapabilities(
-                ActuatorCapabilities.OdorantValveOpenPermanently,
-                KeyValuePair.Create(Device.Controller.OdorantFlow, humidifierFlow),
-                KeyValuePair.Create(Device.Controller.DilutionAirFlow, dilutionAirFlow)
+                KeyValuePair.Create(Device.Controller.OdorantFlow, humidifierFlow / Device.MaxBaseAirFlowRate),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, dilutionAirFlow / Device.MaxBaseAirFlowRate),
+                ActuatorCapabilities.OdorantValveOpenPermanently
             )),
         }));
     }
 
-    public void SetFlows(PulseChannelProps[] channels)
+    public OdorDisplay.Result SetFlows(PulseChannelProps[] channels)
+    {
+        var actuators = new List<Actuator>();
+        foreach (var channel in channels)
+        {
+            actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow / 1000 / Device.MaxBaseAirFlowRate)
+            )));
+        }
+        
+        return Send(new SetActuators(actuators.ToArray()));
+    }
+
+    public OdorDisplay.Result OpenChannels(PulseChannelProps[] channels, float durationSec)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
         {
             actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
             {
-                { Device.Controller.OdorantFlow, channel.Flow },
+                { Device.Controller.OdorantValve, durationSec * 1000 },
             }));
         }
-        Send(new SetActuators(actuators.ToArray()));
+
+        return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public void OpenChannels(PulseChannelProps[] channels)
-    {
-        var actuators = new List<Actuator>();
-        foreach (var channel in channels)
-        {
-            actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
-            {
-                { Device.Controller.OutputValve, channel.Active ? 1 : 0 },
-            }));
-        }
-        Send(new SetActuators(actuators.ToArray()));
-    }
-
-    public void CloseChannels(PulseChannelProps[] channels)
+    public OdorDisplay.Result CloseChannels(PulseChannelProps[] channels)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -58,14 +69,15 @@ internal class OdorDisplayController
                 { Device.Controller.OutputValve, 0 },
             }));
         }
-        Send(new SetActuators(actuators.ToArray()));
+
+        return Send(new SetActuators(actuators.ToArray()));
     }
 
     // Internal
 
     readonly CommPort _odorDisplay = CommPort.Instance;
 
-    private void Send(SetActuators request)
+    private OdorDisplay.Result Send(Request request)
     {
         Debug.WriteLine($"[OD] Sent:     {request}");
 
@@ -75,5 +87,7 @@ internal class OdorDisplayController
             Debug.WriteLine($"[OD] Received: {ack}");
         if (result.Error == Error.Success && response != null)
             Debug.WriteLine("[OD]   " + response);
+
+        return result;
     }
 }

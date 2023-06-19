@@ -192,7 +192,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
     private void SetDmsProgress(int progress)
     {
-        lblDmsProgress.Content = progress > 0 ? $"DMS measurement: {progress}% completed" : $"DMS measurement finished";
+        lblDmsProgress.Content = progress >= 0 ? $"DMS measurement: {progress}% completed" : $"DMS measurement finished";
     }
 
     // UI events

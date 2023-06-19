@@ -7,8 +7,27 @@ using System.Linq;
 
 namespace Smop.PulseGen.Test;
 
+/// <summary>
+/// One odor channel properties
+/// </summary>
+/// <param name="Id">CHannel ID, 1..9</param>
+/// <param name="Flow">Flow in ccm</param>
+/// <param name="Active">Set to true for the channel to be opened during the pulse</param>
 public record class PulseChannelProps(int Id, float Flow, bool Active);
+
+/// <summary>
+/// Pulse parameters
+/// </summary>
+/// <param name="Channels">List of pulse channels</param>
 public record class PulseProps(PulseChannelProps[] Channels);
+
+/// <summary>
+/// Pulse intervals
+/// </summary>
+/// <param name="InitialPause">the interval between the flows are set and the valves are opened</param>
+/// <param name="Pulse">Pulse duration from the valves are open till the valves are closed</param>
+/// <param name="DmsDelay">Interval between valves are opened and the DMS measurement starts</param>
+/// <param name="FinalPause">Internal between the valves are close and the next pulse starts</param>
 public record class PulseIntervals(float InitialPause, float Pulse, float DmsDelay, float FinalPause);
 
 public class SessionProps

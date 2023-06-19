@@ -15,7 +15,7 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "devs", ("retrieves attached modules", new QueryDevices()) },
     { "capsb", ("retrieves Base module capabilities", new QueryCapabilities(Device.ID.Base)) },
     { "caps1", ("retrieves Odor1 module capabilities", new QueryCapabilities(Device.ID.Odor1)) },
-    { "seta", ("sets Base odorant flow = 5 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
+    { "set1", ("sets Base odorant flow = 5 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
         {
             new Actuator(Device.ID.Base, new ActuatorCapabilities(
                 ActuatorCapabilities.OutputValveOpenPermanently,
@@ -27,7 +27,43 @@ var commands = new Dictionary<string, (string, Request?)>()
                 { Device.Controller.ChassisTemperature, 25f },
             })
         })) },
-    { "sets", ("start the fan, disabled PID", new SetSystem(true, false)) },
+    { "set2", ("sets Base [humidity = 4 ccm, dilution = 6 ccm, odorant+output valve ON]", new SetActuators(new Actuator[]
+        {
+            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 4f / Device.MaxBaseAirFlowRate),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, 6f / Device.MaxBaseAirFlowRate),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+                //ActuatorCapabilities.OutputValveOpenPermanently,
+            )),
+        })) },
+    { "set3", ("sets Base [odorant+output OFF]", new SetActuators(new Actuator[]
+        {
+            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+                ActuatorCapabilities.OdorantValveClose
+                //ActuatorCapabilities.OutputValveClose
+            )),
+        })) },
+    { "set4", ("sets Odor1 [flow = 0.1 ccm, odorant ON]", new SetActuators(new Actuator[]
+        {
+            new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0.1f / Device.MaxBaseAirFlowRate),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+            ))
+        })) },
+    { "set5", ("sets Odor1 [odorant OFF]", new SetActuators(new Actuator[]
+        {
+            new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+                ActuatorCapabilities.OdorantValveClose
+            ))
+        })) },
+    { "set6", ("sets Odor1 [flow = 0.1 ccm, odorant ON=2 sec]", new SetActuators(new Actuator[]
+        {
+            new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0.1f / Device.MaxBaseAirFlowRate),
+                KeyValuePair.Create(Device.Controller.OdorantValve, 2000f)
+            ))
+        })) },
+    { "sets", ("start the fan, enabled PID", new SetSystem(true, true)) },
     { "setm", ("start measurements; press ENTRER to stop it", new SetMeasurements(SetMeasurements.Command.Start)) },
     { "setmo", ("retrieves a measurement once", new SetMeasurements(SetMeasurements.Command.Once)) },
     { "help", ("displays available commands", null) },

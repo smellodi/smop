@@ -55,7 +55,7 @@
                     Click="SaveData_Click"/>
             <Button x:Name="btnStartOver"
                     Style="{StaticResource Next}"
-                    Content="Restart"
+                    Content="Back to homepage"
                     Click="Return_Click"/>
             <Button
                     Style="{StaticResource Next}"

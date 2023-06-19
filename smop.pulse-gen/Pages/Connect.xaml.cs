@@ -163,18 +163,20 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
             Utils.MsgBox.Error(Title, "Cannot connect to the device");
             return;
         }
-        else if (info.Value!.CurrentVersion != _ionVision.SupportedVersion)
+        else if (!info.Value!.CurrentVersion.StartsWith(_ionVision.SupportedVersion))
         {
-            Utils.MsgBox.Warn(Title,
+            if (Utils.MsgBox.Warn(Title,
 				string.Format("Version mismatch: this software targets the version {0}, but the device is operating the version {1}",
 					_ionVision.SupportedVersion,
-                    info.Value!.CurrentVersion));
+                    info.Value!.CurrentVersion)) == Utils.MsgBox.Button.No)
+			{
+                _ionVision = null;
+				return;
+            }
         }
-		else
-		{
-            btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
-        }
+
+        btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
 
 		var status = await _ionVision.GetSystemStatus();
 		if (status.Success)

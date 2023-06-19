@@ -650,7 +650,10 @@ public class API : IMinimalAPI
         where U : class
     {
         var request = new RestRequest(path);
-        request.AddBody(JsonSerializer.Serialize(param, preserveParamCase ? null : _serializationOptions));
+        if (param != null)
+        {
+            request.AddBody(JsonSerializer.Serialize(param, preserveParamCase ? null : _serializationOptions));
+        }
         try
         { 
             var response = await _client.PostAsync(request);

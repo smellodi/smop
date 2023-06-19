@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using static Smop.OdorDisplay.Device;
 
 namespace Smop.PulseGen.Pages;
 
@@ -177,21 +178,26 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private async Task InitializeIonVision(IonVision.Communicator ionVision)
     {
-        await Task.Delay(1000);
-        List<string> completedSteps = new() { "Initialized", "Loading the project..." };
+        await ionVision.SetClock();
+
+        await Task.Delay(100);
+        List<string> completedSteps = new() { "Initialized", $"Loading '{ionVision.Settings.Project}' project..." };
         lblDmsStatus.Content = string.Join('\n', completedSteps);
 
         await ionVision.SetProjectAndWait();
-        await Task.Delay(1000);
+        await Task.Delay(15000);
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded");
-        completedSteps.Add("Loading the parameter...");
+        completedSteps.Add($"Loading '{ionVision.Settings.ParameterName}' parameter...");
         lblDmsStatus.Content = string.Join('\n', completedSteps);
 
         await ionVision.SetParameterAndPreload();
         await Task.Delay(500);
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is loaded");
+        lblDmsStatus.Content = string.Join('\n', completedSteps);
+
+        await Task.Delay(500);
         completedSteps.Add("Done!");
         lblDmsStatus.Content = string.Join('\n', completedSteps);
 
@@ -199,8 +205,19 @@ public partial class Setup : Page, IPage<PulseSetup>
         UpdateUI();
     }
 
+    private void HandleOdorDisplayError(OdorDisplay.Result odorDisplayResult, string action)
+    {
+        if (odorDisplayResult.Error != OdorDisplay.Error.Success)
+        {
+            Utils.MsgBox.Error(Title, $"Odor Display: Cannot {action}:\n{odorDisplayResult.Reason}");
+        }
+    }
+
     private void Close()
     {
+        _odorDisplay.Data -= OdorDisplay_Data;
+        _smellInsp.Data -= SmellInsp_Data;
+
         var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Stop);
         _odorDisplay.Request(queryMeasurements, out _, out Response? _);
     }
@@ -264,20 +281,17 @@ public partial class Setup : Page, IPage<PulseSetup>
 			.BindScaleToZoomLevel(sctScale)
 			.BindVisibilityToDebug(lblDebug);
 
-        _odorDisplay.Data += OdorDisplay_Data;
-        _smellInsp.Data += SmellInsp_Data;
-
 		ClearIndicators();
-
-        if (Focusable)
-        {
-            Focus();
-        }
 
         var settings = Properties.Settings.Default;
         chkRandomize.IsChecked = settings.Pulses_Randomize;
 
         LoadPulseSetup(settings.Pulses_SetupFilename);
+
+        if (Focusable)
+        {
+            Focus();
+        }
 
         if (_isInitilized)
         {
@@ -288,16 +302,18 @@ public partial class Setup : Page, IPage<PulseSetup>
 
         _isInitilized = true;
 
+        _odorDisplay.Data += OdorDisplay_Data;
+        _smellInsp.Data += SmellInsp_Data;
+
         tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
 
         await CreateIndicators();
 
-        var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Start);
-        var queryResult = _odorDisplay.Request(queryMeasurements, out Ack? ack, out Response? response);
-        if (queryResult.Error != OdorDisplay.Error.Success)
-        {
-			Utils.MsgBox.Error(Title, $"Cannot start measurements in Odor Display:\n{queryResult.Reason}");
-        }
+        var odController = new OdorDisplayController();
+        HandleOdorDisplayError(odController.Init(), "initilize");
+
+        System.Threading.Thread.Sleep(100);
+        HandleOdorDisplayError(odController.Start(), "start measurements");
 
         if (App.IonVision != null)
         {
@@ -307,9 +323,6 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private void Page_Unloaded(object? sender, RoutedEventArgs e)
 	{
-        _odorDisplay.Data -= OdorDisplay_Data;
-        _smellInsp.Data -= SmellInsp_Data;
-        
 		_storage
             .UnbindScaleToZoomLevel(sctScale)
 			.UnbindVisibilityToDebug(lblDebug);

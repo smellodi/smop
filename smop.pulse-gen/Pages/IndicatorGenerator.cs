@@ -6,7 +6,7 @@ using Smop.PulseGen.Controls;
 
 namespace Smop.PulseGen.Pages
 {
-    internal class IndicatorGenerator
+    internal static class IndicatorGenerator
     {
         public record class SmellInspChannel(string Type, string Units, int Count);
         public static SmellInspChannel[] SmellInspChannels => new SmellInspChannel[] {
@@ -15,12 +15,10 @@ namespace Smop.PulseGen.Pages
             new SmellInspChannel("Humidity", "%", 0)
         };
 
-        public IndicatorGenerator() { }
-
-        public async Task OdorDisplay(Action<ChannelIndicator> callback)
+        public static async Task OdorDisplay(Action<ChannelIndicator> callback)
         {
             var queryDevices = new QueryDevices();
-            var queryResult = _odorDisplay.Request(queryDevices, out Ack? ack, out Response? response);
+            var queryResult = CommPort.Instance.Request(queryDevices, out Ack? ack, out Response? response);
             if (queryResult.Error == Error.Success)
             {
                 await CreateIndicators(response as Devices, callback);
@@ -53,9 +51,7 @@ namespace Smop.PulseGen.Pages
 
         // Internal
 
-        readonly CommPort _odorDisplay = CommPort.Instance;
-
-        private async Task CreateIndicators(Devices? devices, Action<ChannelIndicator> callback)
+        private static async Task CreateIndicators(Devices? devices, Action<ChannelIndicator> callback)
         {
             if (devices == null)
             {
@@ -75,14 +71,14 @@ namespace Smop.PulseGen.Pages
             }
         }
 
-        private async Task CreateIndicators(Device.ID deviceID, Action<ChannelIndicator> callback)
+        private static async Task CreateIndicators(Device.ID deviceID, Action<ChannelIndicator> callback)
         {
             // Because of the frequent request to the device, lets have some pause
             await Task.Delay(50);
 
             // Read the capabilities
             var query = new QueryCapabilities(deviceID);
-            var result = _odorDisplay.Request(query, out Ack? _, out Response? response);
+            var result = CommPort.Instance.Request(query, out Ack? _, out Response? response);
             if (result.Error != Error.Success || response is not Capabilities caps)
             {
                 return;

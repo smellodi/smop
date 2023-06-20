@@ -84,13 +84,32 @@ public class Storage : INotifyPropertyChanged
 		return this;
 	}
 
-	public Storage UnbindVisibilityToDebug(DependencyObject obj)
+    public Storage BindContentToZoomLevel(DependencyObject obj)
+    {
+		var zoomValueBinding = new Binding(nameof(ZoomLevel))
+		{
+			Source = this,
+			Converter = new Utils.ZoomToPercentageConverter()
+        };
+
+        BindingOperations.SetBinding(obj, ContentControl.ContentProperty, zoomValueBinding);
+
+        return this;
+    }
+
+    public Storage UnbindVisibilityToDebug(DependencyObject obj)
 	{
 		BindingOperations.ClearBinding(obj, UIElement.VisibilityProperty);
 		return this;
 	}
 
-	public Storage UnbindScaleToZoomLevel(DependencyObject obj)
+    public Storage UnbindContentToZoomLevel(DependencyObject obj)
+    {
+        BindingOperations.ClearBinding(obj, ContentControl.ContentProperty);
+        return this;
+    }
+
+    public Storage UnbindScaleToZoomLevel(DependencyObject obj)
 	{
 		BindingOperations.ClearBinding(obj, ScaleTransform.ScaleXProperty);
 		BindingOperations.ClearBinding(obj, ScaleTransform.ScaleYProperty);

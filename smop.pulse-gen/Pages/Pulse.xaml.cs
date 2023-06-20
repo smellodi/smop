@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Logging;
 using Smop.PulseGen.Test;
@@ -63,6 +64,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         _controller = new Controller(setup);
         _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Intervals, e.Pulse, e.Stage));
         _controller.DmsScanProgressChanged += (s, e) => Dispatcher.Invoke(() => SetDmsProgress(e));
+        _controller.OdorDisplayDataArrived += (s, e) => Dispatcher.Invoke(() => SetMeasurments(e));
 
         _delayedAction = DispatchOnce.Do(0.5, () => _controller?.Start());
     }
@@ -195,13 +197,83 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         lblDmsProgress.Content = progress >= 0 ? $"DMS measurement: {progress}% completed" : $"DMS measurement finished";
     }
 
+    private void SetMeasurments(OdorDisplay.Packets.Data data)
+    {
+        foreach (var m in data.Measurements)
+        {
+            if (m.Device == OdorDisplay.Device.ID.Base)
+            {
+                foreach (var sv in m.SensorValues)
+                {
+                    switch (sv.Sensor)
+                    {
+                        case OdorDisplay.Device.Sensor.ChassisThermometer:
+                            lblChassisTemp.Content = $"{((ThermometerValue)sv).Celsius:F1} °C";
+                            break;
+                        case OdorDisplay.Device.Sensor.OdorSourceThermometer:
+                            lblOdorSourceTemp.Content = $"{((ThermometerValue)sv).Celsius:F1} °C";
+                            break;
+                        case OdorDisplay.Device.Sensor.GeneralPurposeThermometer:
+                            lblGeneralTemp.Content = $"{((ThermometerValue)sv).Celsius:F1} °C";
+                            break;
+                        case OdorDisplay.Device.Sensor.InputAirHumiditySensor:
+                            {
+                                var v = (HumidityValue)sv;
+                                lblInputAirHumidity.Content = $"{v.Percent:F1} %, {v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.OutputAirHumiditySensor:
+                            {
+                                var v = (HumidityValue)sv;
+                                lblOutputAirHumidity.Content = $"{v.Percent:F1} %, {v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.PressureSensor:
+                            {
+                                var v = (PressureValue)sv;
+                                lblPressure.Content = $"{v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.OdorantFlowSensor:
+                            {
+                                var v = (GasValue)sv;
+                                lblHumidifiedAirFlow.Content = $"{v.SLPM:F1}, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
+                            {
+                                var v = (GasValue)sv;
+                                lblDilutionAirFlow.Content = $"{v.SLPM:F1}, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.OdorantValveSensor:
+                            chkOdorantValveOpened.IsChecked = ((ValveValue)sv).Opened;
+                            break;
+                        case OdorDisplay.Device.Sensor.OutputValveSensor:
+                            chkOutputValveOpened.IsChecked = ((ValveValue)sv).Opened;
+                            break;
+                        case OdorDisplay.Device.Sensor.PID:
+                            lblPID.Content = $"{((PIDValue)sv).Volts:F4}";
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
     // UI events
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
 	{
 		Storage.Instance
 			.BindScaleToZoomLevel(sctScale)
-			.BindVisibilityToDebug(lblDebug);
+            .BindContentToZoomLevel(lblZoom)
+            .BindVisibilityToDebug(lblDebug);
+
+        if (Focusable)
+        {
+            Focus();
+        }
 
         SetStage(null, null, Stage.None);
 	}
@@ -210,7 +282,8 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 	{
 		Storage.Instance
 			.UnbindScaleToZoomLevel(sctScale)
-			.UnbindVisibilityToDebug(lblDebug);
+            .UnbindContentToZoomLevel(lblZoom)
+            .UnbindVisibilityToDebug(lblDebug);
 	}
 
     private void Page_KeyDown(object? sender, KeyEventArgs e)

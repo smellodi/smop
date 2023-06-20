@@ -41,20 +41,6 @@ public class BoolToVisibilityConverter : IValueConverter
 	}
 }
 
-/*public class NotBoolToVisibilityConverter : IValueConverter
-{
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return (bool)value ? Visibility.Hidden : Visibility.Visible;
-	}
-
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		var visibility = (Visibility)value;
-		return visibility != Visibility.Visible;
-	}
-}*/
-
 public class ObjectToBoolConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -68,42 +54,23 @@ public class ObjectToBoolConverter : IValueConverter
 	}
 }
 
-/*public class AnyToBlankConverter : IValueConverter
+public class ZoomToPercentageConverter : IValueConverter
 {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return "";
-	}
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value.GetType() == typeof(float) || value.GetType() == typeof(double))
+        {
+            double number = (double)value * 100;
+            return $"{number:F0}%";
+        }
+        else
+        {
+            return "NaN";
+        }
+    }
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
-}*/
-
-/*public class ComboBoxItemToVisilityConverter : IValueConverter
-{
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return (value as ComboBoxItem)?.Tag.ToString() == parameter.ToString() ? Visibility.Visible : Visibility.Collapsed;
-	}
-
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
-}*/
-
-/*[ValueConversion(typeof(bool), typeof(bool))]
-public class InverseBooleanConverter : IValueConverter
-{
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return !(bool)value;
-	}
-
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return !(bool)value;
-	}
-}*/
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

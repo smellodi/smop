@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 using Smop.OdorDisplay.Packets;
-using Smop.PulseGen.Logging;
 using Smop.PulseGen.Test;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using static Smop.OdorDisplay.Device;
 
 namespace Smop.PulseGen.Pages;
 
@@ -33,15 +31,13 @@ public partial class Setup : Page, IPage<PulseSetup>
 	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-	readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
-    readonly SmellInspLogger _smellInspLogger = SmellInspLogger.Instance;
-
     readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
 
 	bool _isInitilized = false;
     bool _ionVisionIsReady = false;
     string? _setupFileName = null;
     PulseSetup? _setup = null;
+    int _ionVisionProjectLoadDuration = 2000;
 
     Controls.ChannelIndicator? _currentIndicator = null;
 	int _smellInspResistor = 0;
@@ -72,8 +68,7 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private async Task CreateIndicators()
     {
-        var indicatorGenerator = new IndicatorGenerator();
-        await indicatorGenerator.OdorDisplay(indicator => Dispatcher.Invoke(() =>
+        await IndicatorGenerator.OdorDisplay(indicator => Dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpOdorDisplayIndicators.Children.Add(indicator);
@@ -112,7 +107,7 @@ public partial class Setup : Page, IPage<PulseSetup>
                     _ => 0
                 };
                 
-				var source = IndicatorGenerator.GetSourceId(m.Device, (Smop.OdorDisplay.Device.Capability)sv.Sensor);
+				var source = IndicatorGenerator.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
                 UpdateIndicator(source, value);
 			}
 		}
@@ -178,28 +173,28 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private async Task InitializeIonVision(IonVision.Communicator ionVision)
     {
-        await ionVision.SetClock();
+        HandleIonVisionError(await ionVision.SetClock(), "SetClock");
 
         await Task.Delay(100);
         List<string> completedSteps = new() { "Initialized", $"Loading '{ionVision.Settings.Project}' project..." };
-        lblDmsStatus.Content = string.Join('\n', completedSteps);
+        tblDmsStatus.Text = string.Join('\n', completedSteps);
 
-        await ionVision.SetProjectAndWait();
-        await Task.Delay(15000);
+        HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
+        await Task.Delay(_ionVisionProjectLoadDuration);
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded");
         completedSteps.Add($"Loading '{ionVision.Settings.ParameterName}' parameter...");
-        lblDmsStatus.Content = string.Join('\n', completedSteps);
+        tblDmsStatus.Text = string.Join('\n', completedSteps);
 
-        await ionVision.SetParameterAndPreload();
+        HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
         await Task.Delay(500);
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is loaded");
-        lblDmsStatus.Content = string.Join('\n', completedSteps);
+        tblDmsStatus.Text = string.Join('\n', completedSteps);
 
         await Task.Delay(500);
         completedSteps.Add("Done!");
-        lblDmsStatus.Content = string.Join('\n', completedSteps);
+        tblDmsStatus.Text = string.Join('\n', completedSteps);
 
         _ionVisionIsReady = true;
         UpdateUI();
@@ -213,37 +208,18 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
     }
 
+    private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
+    {
+        var error = !response.Success ? response.Error : "OK";
+        System.Diagnostics.Debug.WriteLine($"[IV] {action}: {error}");
+        return response;
+    }
+
     private void Close()
     {
-        _odorDisplay.Data -= OdorDisplay_Data;
-        _smellInsp.Data -= SmellInsp_Data;
-
         var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Stop);
         _odorDisplay.Request(queryMeasurements, out _, out Response? _);
     }
-
-    /*
-	private void HandleError(Result result)
-	{
-		if (result.Error == Error.Success)
-		{
-			return; // no error
-		}
-		else if (result.Error == Error.CRC)
-		{
-			return; // these are not critical errors, just continue
-		}
-		else if (result.Error.HasFlag(Error.DeviceError))
-		{
-			//var deviceError = (OdorDisplay.Packets.Packet.Result)((int)result.Error & ~(int)Error.DeviceError);
-			Utils.MsgBox.Error(Title, $"Device error:\n{result.Reason}");
-			return; // hopefully, these are not critical errors, just continue
-		}
-
-		Utils.MsgBox.Error(Title, $"Critical error:\n{result}\n\nApplication terminated.");
-		Application.Current.Shutdown();
-	}*/
-
 
     // Event handlers
 
@@ -254,7 +230,7 @@ public partial class Setup : Page, IPage<PulseSetup>
 			await Task.Run(() => Dispatcher.Invoke(() =>
 			{
 				UpdateIndicators(data);
-				_odorDisplayLogger.Add(data);
+                //_odorDisplayLogger.Add(data);
             }));
 		}
 		catch (TaskCanceledException) { }
@@ -267,7 +243,7 @@ public partial class Setup : Page, IPage<PulseSetup>
             await Task.Run(() => Dispatcher.Invoke(() =>
             {
                 UpdateIndicators(data);
-                _smellInspLogger.Add(data);
+                //_smellInspLogger.Add(data);
             }));
         }
         catch (TaskCanceledException) { }
@@ -279,9 +255,13 @@ public partial class Setup : Page, IPage<PulseSetup>
 	{
 		_storage
 			.BindScaleToZoomLevel(sctScale)
-			.BindVisibilityToDebug(lblDebug);
+            .BindContentToZoomLevel(lblZoom)
+            .BindVisibilityToDebug(lblDebug);
 
-		ClearIndicators();
+        _odorDisplay.Data += OdorDisplay_Data;
+        _smellInsp.Data += SmellInsp_Data;
+        
+        ClearIndicators();
 
         var settings = Properties.Settings.Default;
         chkRandomize.IsChecked = settings.Pulses_Randomize;
@@ -302,10 +282,8 @@ public partial class Setup : Page, IPage<PulseSetup>
 
         _isInitilized = true;
 
-        _odorDisplay.Data += OdorDisplay_Data;
-        _smellInsp.Data += SmellInsp_Data;
-
         tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
+        _ionVisionProjectLoadDuration = _storage.IsDebugging ? 2000 : 15000;
 
         await CreateIndicators();
 
@@ -323,38 +301,43 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private void Page_Unloaded(object? sender, RoutedEventArgs e)
 	{
-		_storage
+        _odorDisplay.Data -= OdorDisplay_Data;
+        _smellInsp.Data -= SmellInsp_Data;
+        
+        _storage
             .UnbindScaleToZoomLevel(sctScale)
-			.UnbindVisibilityToDebug(lblDebug);
+            .UnbindContentToZoomLevel(lblZoom)
+            .UnbindVisibilityToDebug(lblDebug);
 	}
 
 	private void Page_KeyDown(object? sender, KeyEventArgs e)
 	{
-		if (e.Key == Key.F4 && _setup != null)
+		if (e.Key == Key.F4)
 		{
-			Next?.Invoke(this, _setup);
-		}
+            Start_Click(this, new RoutedEventArgs());
+        }
 	}
 
-	private void FreshAir_KeyUp(object? sender, KeyEventArgs e)
-	{
-		if (e.Key == Key.F2 && txbFreshAir.IsReadOnly)
-		{
-			txbFreshAir.IsReadOnly = false;
-		}
-		else if (e.Key == Key.Enter)
-		{
-			/*
-			if (Utils.Validation.Do(txbFreshAir, 0, 10, (object? s, double value) => _mfc.FreshAirSpeed = value))
-			{
-				txbFreshAir.MoveFocus(new TraversalRequest(FocusNavigationDirection.Up));
-			}
-			else
-			{
-				txbFreshAir.Undo();
-			}*/
-		}
+    /*
+    private void FreshAir_KeyUp(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F2 && txbFreshAir.IsReadOnly)
+        {
+            txbFreshAir.IsReadOnly = false;
+        }
+        else if (e.Key == Key.Enter)
+        {
+            if (Utils.Validation.Do(txbFreshAir, 0, 10, (object? s, double value) => _mfc.FreshAirSpeed = value))
+            {
+                txbFreshAir.MoveFocus(new TraversalRequest(FocusNavigationDirection.Up));
+            }
+            else
+            {
+                txbFreshAir.Undo();
+            }
+        }
 	}
+    */
 
 	private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
 	{

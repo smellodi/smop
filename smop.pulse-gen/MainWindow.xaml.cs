@@ -198,11 +198,8 @@ public partial class MainWindow : Window
 				"F2 - starts simulator\n\n" +
 				"HOME page\n" +
 				"F4 - starts Odor Pulses procedure\n\n" +
-				"TEST page\n" +
-				"F2 - forces the test to finish\n" +
-				"F4 - toggles status bar visibility\n\n" +
-				"RESULT page\n" +
-				"F4 - toggles result visibility\n\n" +
+				"PULSES page\n" +
+				"F2 - forces the test to finish\n\n" +
 				"Any page\n" +
 				"F9 - zooms out\n" +
 				"F10 - zooms in\n" +

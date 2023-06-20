@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 
 namespace Smop.PulseGen.Logging;
 
@@ -44,4 +45,14 @@ public class IonVisionLogger : Logger<IonVisionLogger.Record>, ILog
     static IonVisionLogger? _instance = null;
 
 	protected IonVisionLogger() : base() { }
+
+    protected override string RecordsToText()
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("[");
+        stringBuilder.AppendLine(string.Join(",\n", _records));
+        stringBuilder.Append("]");
+
+        return stringBuilder.ToString();
+    }
 }

@@ -165,14 +165,24 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
         }
         else if (!info.Value!.CurrentVersion.StartsWith(_ionVision.SupportedVersion))
         {
-            if (Utils.MsgBox.Warn(Title,
-				string.Format("Version mismatch: this software targets the version {0}, but the device is operating the version {1}",
-					_ionVision.SupportedVersion,
-                    info.Value!.CurrentVersion)) == Utils.MsgBox.Button.No)
+            var settings = Properties.Settings.Default;
+            var ignoredVersions = settings.Comm_IonVision_IgnoreVersionWarning ?? new System.Collections.Specialized.StringCollection();
+
+            if (!ignoredVersions.Contains(info.Value!.CurrentVersion))
 			{
-                _ionVision = null;
-				return;
-            }
+				var msg = $"Version mismatch: this software targets the version {_ionVision.SupportedVersion}, but the device is operating the version {info.Value!.CurrentVersion}. Continue?";
+                if (Utils.MsgBox.Warn(Title, msg, Utils.MsgBox.Button.Yes, Utils.MsgBox.Button.No) == Utils.MsgBox.Button.No)
+				{
+					_ionVision = null;
+					return;
+				}
+				else
+				{
+                    ignoredVersions.Add(info.Value!.CurrentVersion);
+					settings.Comm_IonVision_IgnoreVersionWarning = ignoredVersions;
+					settings.Save();
+                }
+			}
         }
 
         btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;
@@ -208,7 +218,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
 		foreach (string item in cmbOdorDisplayCommPort.Items)
 		{
-			if (item == settings.Comm_OdorDisplayPort)
+			if (item == settings.Comm_OdorDisplay_Port)
 			{
 				cmbOdorDisplayCommPort.SelectedItem = item;
 				break;
@@ -217,14 +227,14 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
         foreach (string item in cmbSmellInspCommPort.Items)
         {
-            if (item == settings.Comm_SmellInspPort)
+            if (item == settings.Comm_SmellInsp_Port)
             {
                 cmbSmellInspCommPort.SelectedItem = item;
                 break;
             }
         }
 
-		IonVisionSetupFilename = settings.Comm_IonVisionSetupFilename;
+		IonVisionSetupFilename = settings.Comm_IonVision_SetupFilename;
 
         var ivSetings = new IonVision.Settings(IonVisionSetupFilename);
         txbIonVisionIP.Text = ivSetings.IP;
@@ -235,8 +245,8 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 		var settings = Properties.Settings.Default;
 		try
 		{
-			settings.Comm_OdorDisplayPort = cmbOdorDisplayCommPort.SelectedItem?.ToString() ?? "";
-            settings.Comm_SmellInspPort = cmbSmellInspCommPort.SelectedItem?.ToString() ?? "";
+			settings.Comm_OdorDisplay_Port = cmbOdorDisplayCommPort.SelectedItem?.ToString() ?? "";
+            settings.Comm_SmellInsp_Port = cmbSmellInspCommPort.SelectedItem?.ToString() ?? "";
         }
         catch { }
 		settings.Save();
@@ -254,7 +264,8 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 	{
 		_storage
 			.BindScaleToZoomLevel(sctScale)
-			.BindVisibilityToDebug(lblDebug);
+            .BindContentToZoomLevel(lblZoom)
+            .BindVisibilityToDebug(lblDebug);
 
 		if (Focusable)
 		{
@@ -266,7 +277,8 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 	{
 		_storage
 			.UnbindScaleToZoomLevel(sctScale)
-			.UnbindVisibilityToDebug(lblDebug);
+            .UnbindContentToZoomLevel(lblZoom)
+            .UnbindVisibilityToDebug(lblDebug);
 	}
 
 	private void Page_KeyDown(object? sender, KeyEventArgs e)
@@ -274,11 +286,11 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 		if (e.Key == Key.F2)
 		{
 			cmbOdorDisplayCommPort.Items.Clear();
-			cmbOdorDisplayCommPort.Items.Add("COM3");
+			cmbOdorDisplayCommPort.Items.Add("simulator");
 			cmbOdorDisplayCommPort.SelectedIndex = 0;
 
             cmbSmellInspCommPort.Items.Clear();
-            cmbSmellInspCommPort.Items.Add("COM4");
+            cmbSmellInspCommPort.Items.Add("simulator");
             cmbSmellInspCommPort.SelectedIndex = 0;
 
             txbIonVisionIP.Text = "simulator";
@@ -343,7 +355,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
             txbIonVisionIP.Text = ivSetings.IP;
 
             var settings = Properties.Settings.Default;
-            settings.Comm_IonVisionSetupFilename = IonVisionSetupFilename;
+            settings.Comm_IonVision_SetupFilename = IonVisionSetupFilename;
             settings.Save();
         }
     }

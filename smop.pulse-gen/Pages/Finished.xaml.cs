@@ -56,14 +56,16 @@ public partial class Finished : Page, IPage<Navigation>
 	{
 		Storage.Instance
 			.BindScaleToZoomLevel(sctScale)
-			.BindVisibilityToDebug(lblDebug);
+            .BindContentToZoomLevel(lblZoom)
+            .BindVisibilityToDebug(lblDebug);
 	}
 
 	private void Page_Unloaded(object sender, RoutedEventArgs e)
 	{
 		Storage.Instance
 			.UnbindScaleToZoomLevel(sctScale)
-			.UnbindVisibilityToDebug(lblDebug);
+            .UnbindContentToZoomLevel(lblZoom)
+            .UnbindVisibilityToDebug(lblDebug);
 	}
 
 	private void Page_GotFocus(object sender, RoutedEventArgs e)

@@ -7,6 +7,7 @@
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="800"
       Title="Pulse"
+      Focusable="True"
       KeyDown="Page_KeyDown"
       Loaded="Page_Loaded"
       Unloaded="Page_Unloaded">
@@ -16,7 +17,32 @@
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
-        <Style x:Key="DMS" TargetType="Label">
+        
+        <Style x:Key="Header" TargetType="Label">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Margin" Value="0,12,0,0"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
+        <Style x:Key="SubHeader" TargetType="Label">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="0,18,0,0"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
+        <Style x:Key="MeasurementLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
+        <Style x:Key="MeasurementValue" TargetType="Label">
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
+        <Style x:Key="Stage" TargetType="Label">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
             <Setter Property="Padding" Value="0,4"/>
@@ -33,62 +59,163 @@
             <ScaleTransform x:Name="sctScale"/>
         </Grid.LayoutTransform>
 
-        <TextBlock Grid.Row="0" Style="{StaticResource PageTitle}">
-            <Run Text="Pulse"/>
-        </TextBlock>
+        <TextBlock Grid.Row="0" Style="{StaticResource PageTitle}"
+            Text="Pulses"/>
 
-        <StackPanel Grid.Row="1"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center">
-            <WrapPanel Margin="0,12"
-                       HorizontalAlignment="Center">
-                <TextBlock Style="{StaticResource Status}">
-                    <Run Text="Session "/>
-                    <Run x:Name="runSession"/>
-                    <Run Text="/"/>
-                    <Run x:Name="runSessionCount"/>
-                    <Run Text=", Pulse "/>
-                    <Run x:Name="runPulse"/>
-                    <Run Text="/"/>
-                    <Run x:Name="runPulseCount"/>
-                </TextBlock> 
-            </WrapPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0"
+                MinWidth="200"
+                HorizontalAlignment="Left">
+                <Label Style="{StaticResource Header}"
+                    Content="Data Observer"/>
 
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
+                <Label Style="{StaticResource SubHeader}"
+                    Content="General"/>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="PID, mV"/>
+                    <Label x:Name="lblPID" Style="{StaticResource MeasurementValue}"
+                       Content="0.0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Pressure, mB"/>
+                    <Label x:Name="lblPressure" Style="{StaticResource MeasurementValue}"
+                       Content="0.0"/>
+                </WrapPanel>
 
-                <local:StageDisplay x:Name="pdsInitialPause" Grid.Row="0"
-                                    Text="Initial pause"
-                                    Margin="0,0,0,12"
-                                    IsCurrent="{Binding IsInitialPause}"/>
-                
-                <StackPanel x:Name="stpStageDisplays" Grid.Row="1"
-                            Orientation="Horizontal"
-                            MinHeight="100"/>
+                <Label Style="{StaticResource SubHeader}"
+                    Content="Flows"/>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Humidified air"/>
+                    <Label x:Name="lblHumidifiedAirFlow" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Dilution air"/>
+                    <Label x:Name="lblDilutionAirFlow" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
 
-                <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
-                                    Text="Final pause"
-                                    Margin="0,12,0,0"
-                                    IsCurrent="{Binding IsFinalPause}"/>
-            </Grid>
+                <Label Style="{StaticResource SubHeader}"
+                    Content="Temperature"/>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Chassis"/>
+                    <Label x:Name="lblChassisTemp" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Water"/>
+                    <Label x:Name="lblOdorSourceTemp" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="General"/>
+                    <Label x:Name="lblGeneralTemp" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
 
-            <StackPanel x:Name="stpDMS"
-                Visibility="Hidden">
-                <Label x:Name="lblDmsProgress" Style="{StaticResource DMS}"
-                    HorizontalContentAlignment="Center"/>
+                <Label Style="{StaticResource SubHeader}"
+                    Content="Humidity"/>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Input air"/>
+                    <Label x:Name="lblInputAirHumidity" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <Label Style="{StaticResource MeasurementLabel}"
+                        Content="Output air"/>
+                    <Label x:Name="lblOutputAirHumidity" Style="{StaticResource MeasurementValue}"
+                       Content="0"/>
+                </WrapPanel>
+
+                <Label Style="{StaticResource SubHeader}"
+                    Content="Valves"/>
+                <CheckBox x:Name="chkOdorantValveOpened"
+                    Content="Humidified air"/>
+                <CheckBox x:Name="chkOutputValveOpened"
+                    Content="Dilution air"/>
             </StackPanel>
 
-            <local:WaitingInstruction x:Name="wtiWaiting"
-                Margin="12"
-                Width="250"
-                Height="50"
-                VerticalAlignment="Bottom"
-                Text="Wait"/>
-        </StackPanel>
+            <StackPanel Grid.Column="2"
+                MinWidth="200"
+                HorizontalAlignment="Right">
+            </StackPanel>
+
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="1"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+
+                    <WrapPanel Margin="0,12"
+                        HorizontalAlignment="Center">
+                        <TextBlock Style="{StaticResource Status}">
+                            <Run Text="Session "/>
+                            <Run x:Name="runSession"/>
+                            <Run Text="/"/>
+                            <Run x:Name="runSessionCount"/>
+                            <Run Text=", Pulse "/>
+                            <Run x:Name="runPulse"/>
+                            <Run Text="/"/>
+                            <Run x:Name="runPulseCount"/>
+                        </TextBlock>
+                    </WrapPanel>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <local:StageDisplay x:Name="pdsInitialPause" Grid.Row="0"
+                                        Text="Initial pause"
+                                        Margin="0,0,0,12"
+                                        IsCurrent="{Binding IsInitialPause}"/>
+
+                        <StackPanel x:Name="stpStageDisplays" Grid.Row="1"
+                                Orientation="Horizontal"
+                                MinHeight="100"/>
+
+                        <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
+                                        Text="Final pause"
+                                        Margin="0,12,0,0"
+                                        IsCurrent="{Binding IsFinalPause}"/>
+                    </Grid>
+
+                    <StackPanel x:Name="stpDMS"
+                        Visibility="Hidden">
+                        <Label x:Name="lblDmsProgress" Style="{StaticResource Stage}"
+                            HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <local:WaitingInstruction x:Name="wtiWaiting"
+                        Margin="12"
+                        Width="250"
+                        Height="50"
+                        VerticalAlignment="Bottom"
+                        Text="Wait"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
 
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
@@ -99,6 +226,7 @@
                     Click="Interrupt_Click"/>
         </StackPanel>
 
+        <Label x:Name="lblZoom" Style="{StaticResource ZoomIndicator}"/>
         <Label x:Name="lblDebug" Style="{StaticResource DebugWarning}" Visibility="Collapsed"/>
     </Grid>
 </Page>

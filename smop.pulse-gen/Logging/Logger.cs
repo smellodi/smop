@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Windows;
 using Smop.PulseGen.Utils;
 
@@ -23,7 +24,7 @@ public abstract class RecordBase
 		Timestamp = Utils.Timestamp.Ms;
 	}
 
-    protected static string DELIM => "\t";
+    protected static string Delim => "\t";
 }
 /*
 public class LoggerStorage
@@ -203,7 +204,7 @@ public interface ILog
 {
     public string Name { get; }
 
-    public bool Save(string filename, string? header = null);
+    public bool Save(string filename);
 	public void Clear();
 }
 
@@ -269,8 +270,6 @@ public abstract class Logger<T> where T : RecordBase
 {
     public bool HasRecords => _records.Count > 0;
     
-	//public LoggerStorage File { get; private set; } = new();
-
     public bool IsEnabled { get; set; } = true;
 
 	/*
@@ -325,17 +324,12 @@ public abstract class Logger<T> where T : RecordBase
 		return result;
 	}
 	*/
-    public bool Save(string filename, string? header = null)
+    public bool Save(string filename)
     {
-        using StreamWriter writer = new StreamWriter(filename);
+        using var writer = new StreamWriter(filename);
         try
         {
-            if (!string.IsNullOrEmpty(header))
-            {
-                writer.WriteLine(header);
-            }
-
-            writer.WriteLine(string.Join("\n", _records));
+			writer.Write(RecordsToText());
         }
         catch (Exception)
         {
@@ -353,8 +347,6 @@ public abstract class Logger<T> where T : RecordBase
 
 	// Internal
 
-	//protected const string NAME = "smop";
-
 	protected readonly List<T> _records = new();
 
 	protected string Header { get; set; } = "";
@@ -367,7 +359,24 @@ public abstract class Logger<T> where T : RecordBase
     readonly string EnableAutoSaving = "Enable auto-saving";
 	*/
     protected Logger() { }
-	/*
+
+	protected virtual string RecordsToText()
+	{
+		StringBuilder stringBuilder = new StringBuilder();
+        if (!string.IsNullOrEmpty(Header))
+        {
+            stringBuilder.AppendLine(Header);
+        }
+
+		foreach (var record in _records)
+		{
+			stringBuilder.AppendLine(record.ToString());
+        }
+
+		return stringBuilder.ToString();
+    }
+
+    /*
 	protected (SavingResult, bool) PromptToSave(ref string filename, bool canCancel, string greeting = "")
 	{
 		if (!string.IsNullOrEmpty(greeting))

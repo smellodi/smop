@@ -11,6 +11,7 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
 		{
             var values = new List<float>
             {
+                Timestamp,
                 data.Timestamp
             };
 
@@ -32,7 +33,8 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
         {
             var names = new List<string>
             {
-                "Timestamp"
+                "Timestamp",
+                "Device timestamp"
             };
             foreach (Measurement m in data.Measurements)
             {
@@ -45,12 +47,12 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
                 }
             }
 
-            return string.Join(DELIM, names);
+            return string.Join(Delim, names);
         }
         
         public override string ToString()
 		{
-			return string.Join(DELIM, _fields);
+			return string.Join(Delim, _fields);
 		}
 
 		// Internal

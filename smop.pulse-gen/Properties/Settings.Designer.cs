@@ -109,18 +109,6 @@ namespace Smop.PulseGen.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Logger_FilenameBase {
-            get {
-                return ((string)(this["Logger_FilenameBase"]));
-            }
-            set {
-                this["Logger_FilenameBase"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("1")]
         public double App_ZoomLevel {
             get {
@@ -134,36 +122,36 @@ namespace Smop.PulseGen.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Comm_OdorDisplayPort {
+        public string Comm_OdorDisplay_Port {
             get {
-                return ((string)(this["Comm_OdorDisplayPort"]));
+                return ((string)(this["Comm_OdorDisplay_Port"]));
             }
             set {
-                this["Comm_OdorDisplayPort"] = value;
+                this["Comm_OdorDisplay_Port"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Comm_SmellInspPort {
+        public string Comm_SmellInsp_Port {
             get {
-                return ((string)(this["Comm_SmellInspPort"]));
+                return ((string)(this["Comm_SmellInsp_Port"]));
             }
             set {
-                this["Comm_SmellInspPort"] = value;
+                this["Comm_SmellInsp_Port"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Properties/IonVision.json")]
-        public string Comm_IonVisionSetupFilename {
+        public string Comm_IonVision_SetupFilename {
             get {
-                return ((string)(this["Comm_IonVisionSetupFilename"]));
+                return ((string)(this["Comm_IonVision_SetupFilename"]));
             }
             set {
-                this["Comm_IonVisionSetupFilename"] = value;
+                this["Comm_IonVision_SetupFilename"] = value;
             }
         }
         
@@ -188,6 +176,17 @@ namespace Smop.PulseGen.Properties {
             }
             set {
                 this["Pulses_Randomize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection Comm_IonVision_IgnoreVersionWarning {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["Comm_IonVision_IgnoreVersionWarning"]));
+            }
+            set {
+                this["Comm_IonVision_IgnoreVersionWarning"] = value;
             }
         }
     }

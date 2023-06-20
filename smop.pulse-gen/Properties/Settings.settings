@@ -23,19 +23,16 @@
     <Setting Name="Logger_Folder" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Logger_FilenameBase" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
     <Setting Name="App_ZoomLevel" Type="System.Double" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="Comm_OdorDisplayPort" Type="System.String" Scope="User">
+    <Setting Name="Comm_OdorDisplay_Port" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Comm_SmellInspPort" Type="System.String" Scope="User">
+    <Setting Name="Comm_SmellInsp_Port" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Comm_IonVisionSetupFilename" Type="System.String" Scope="User">
+    <Setting Name="Comm_IonVision_SetupFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)">Properties/IonVision.json</Value>
     </Setting>
     <Setting Name="Pulses_SetupFilename" Type="System.String" Scope="User">
@@ -43,6 +40,9 @@
     </Setting>
     <Setting Name="Pulses_Randomize" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Comm_IonVision_IgnoreVersionWarning" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

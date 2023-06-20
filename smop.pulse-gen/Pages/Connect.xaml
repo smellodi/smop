@@ -114,6 +114,7 @@
                 Click="Continue_Click"/>
         </Grid>
 
+        <Label x:Name="lblZoom" Style="{StaticResource ZoomIndicator}"/>
         <Label x:Name="lblDebug" Style="{StaticResource DebugWarning}" Visibility="Collapsed"/>
     </Grid>
 </Page>

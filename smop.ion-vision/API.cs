@@ -13,6 +13,10 @@ public class API : IMinimalAPI
         public T? Value { get; private set; }
         public string? Error { get; private set; }
         public bool Success => Value != null;
+        /// <summary>
+        /// For the future: this field may contain name of the function for which this response was generated.
+        /// </summary>
+        public string? Action { get; set; } = null;
         public Response(T? value, string? error)
         {
             Value = value;

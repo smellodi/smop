@@ -36,12 +36,12 @@ public class SmellInspLogger : Logger<SmellInspLogger.Record>, ILog
                 names.Add($"Resistance{i + 1}");
             }
 
-            return string.Join(DELIM, names);
+            return string.Join(Delim, names);
         }
         
         public override string ToString()
 		{
-			return string.Join(DELIM, _fields);
+			return string.Join(Delim, _fields);
 		}
 
 		// Internal

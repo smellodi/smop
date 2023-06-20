@@ -4,7 +4,7 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
 {
 	public class Record : RecordBase
 	{
-		public static string HEADER => $"ts{DELIM}type{DELIM}data";
+		public static string Header => $"ts{Delim}type{Delim}data";
 
 		public string Type { get; }
 		public string[] Data { get; }
@@ -17,10 +17,10 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
 
 		public override string ToString()
 		{
-			var result = $"{Timestamp}{DELIM}{Type}";
+			var result = $"{Timestamp}{Delim}{Type}";
 			if (Data != null && Data.Length > 0)
 			{
-				result += DELIM + string.Join(DELIM, Data);
+				result += Delim + string.Join(Delim, Data);
 			}
 
 			return result;
@@ -47,6 +47,6 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
 
 	protected EventLogger() : base()
 	{
-		Header = Record.HEADER;
+		Header = Record.Header;
     }
 }

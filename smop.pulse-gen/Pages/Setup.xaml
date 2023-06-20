@@ -61,7 +61,7 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="250"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
@@ -70,9 +70,6 @@
                 BorderThickness="1"
                 Padding="4">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto"/>
-                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
@@ -89,8 +86,8 @@
                                 <ColumnDefinition Width="auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="txbSetupFile" Grid.Column="0"
-                                Width="224"
-                                IsReadOnly="True"/>
+                                IsReadOnly="True">
+                            </TextBox>
                             <Button Grid.Column="1"
                                 Content="..."
                                 Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
@@ -110,12 +107,14 @@
                         <Separator/>
                         <Label Style="{StaticResource Section}"
                             Content="DMS status:"/>
-                        <Label Name="lblDmsStatus"
-                            Padding="28,0,0,0"
-                            Content="Initializing..."/>
+                        <TextBlock Name="tblDmsStatus"
+                            TextWrapping="Wrap"
+                            Padding="6,0,0,0">
+                            <Run Text="Initializing..."/>
+                        </TextBlock>
                     </StackPanel>
 
-                    <UserControl Grid.Row="10" Style="{StaticResource FormRow}" Tag="Carrier gas">
+                    <!--<UserControl Grid.Row="10" Style="{StaticResource FormRow}" Tag="Carrier gas" Visibility="Collapsed">
                         <UserControl Style="{StaticResource ValueWithUnit}"
                             Tag="L/min"
                             VerticalAlignment="Top"
@@ -129,7 +128,7 @@
                                 KeyUp="FreshAir_KeyUp"
                                 ToolTip="Clean air (non-negative number).\nPress ENTER to set the value"/>
                         </UserControl>
-                    </UserControl>
+                    </UserControl>-->
                 </Grid>
             </Border>
 
@@ -182,6 +181,7 @@
                     Click="Start_Click"/>
         </WrapPanel>
 
+        <Label x:Name="lblZoom" Style="{StaticResource ZoomIndicator}"/>
         <Label x:Name="lblDebug" Style="{StaticResource DebugWarning}" Visibility="Collapsed"/>
     </Grid>
 </Page>

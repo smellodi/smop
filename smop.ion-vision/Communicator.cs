@@ -5,8 +5,6 @@ namespace Smop.IonVision;
 
 public class Communicator: IDisposable
 {
-    public const int PROJECT_LOADING_DURATION = 2000;
-
     public string SupportedVersion => _api.Version;
 
     public Settings Settings => _settings;
@@ -58,10 +56,10 @@ public class Communicator: IDisposable
 
     /// <summary>Sets the SMOP project as active and waiting until it is loaded</summary>
     /// <returns>Error message if the project was not set as active</returns>
-    public async Task<API.Response<Confirm>> SetProjectAndWait(int ms = PROJECT_LOADING_DURATION)
+    public async Task<API.Response<Confirm>> SetProjectAndWait(int ms = 0)
     {
         var response = await _api.SetProject(new ProjectAsName(_settings.Project));
-        if (response.Success)
+        if (response.Success && ms > 0)
         {
             await Task.Delay(ms);
         }

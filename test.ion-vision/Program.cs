@@ -126,7 +126,6 @@ static void Print<T>(API.Response<T> response)
         var text = JsonSerializer.Serialize(response.Value!, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            
         });
         Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}... and {text.Length - MAX_CHARS_TO_PRINT} chars more.");
 

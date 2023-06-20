@@ -37,7 +37,6 @@ public partial class Setup : Page, IPage<PulseSetup>
     bool _ionVisionIsReady = false;
     string? _setupFileName = null;
     PulseSetup? _setup = null;
-    int _ionVisionProjectLoadDuration = 2000;
 
     Controls.ChannelIndicator? _currentIndicator = null;
 	int _smellInspResistor = 0;
@@ -180,21 +179,33 @@ public partial class Setup : Page, IPage<PulseSetup>
     {
         HandleIonVisionError(await ionVision.SetClock(), "SetClock");
 
-        await Task.Delay(100);
-        List<string> completedSteps = new() { "Initialized", $"Loading '{ionVision.Settings.Project}' project..." };
+        await Task.Delay(300);
+        List<string> completedSteps = new() { "Current clock set", $"Loading '{ionVision.Settings.Project}' project..." };
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
         HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
-        await Task.Delay(_ionVisionProjectLoadDuration);
+
+        bool isProjectLoaded = false;
+        while (!isProjectLoaded)
+        {
+            await Task.Delay(1000);
+            isProjectLoaded = HandleIonVisionError(await ionVision.GetProject(), "GetProject").Success;
+        }
+
         completedSteps.RemoveAt(completedSteps.Count - 1);
-        completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded");
+        completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded.");
         completedSteps.Add($"Loading '{ionVision.Settings.ParameterName}' parameter...");
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
-        HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
         await Task.Delay(500);
+        HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
         completedSteps.RemoveAt(completedSteps.Count - 1);
-        completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is loaded");
+        completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...");
+        tblDmsStatus.Text = string.Join('\n', completedSteps);
+
+        await Task.Delay(1000);
+        completedSteps.RemoveAt(completedSteps.Count - 1);
+        completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.");
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
         await Task.Delay(500);
@@ -288,7 +299,6 @@ public partial class Setup : Page, IPage<PulseSetup>
         _isInitilized = true;
 
         tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
-        _ionVisionProjectLoadDuration = _storage.IsDebugging ? 2000 : 15000;
 
         await CreateIndicators();
 

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Xml;
+using System.Xml.Linq;
 using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Logging;
@@ -47,7 +49,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
     public void Start(PulseSetup setup)
     {
-        var maxChannelId = OdorDisplay.Packets.Devices.MaxOdorModuleCount;
+        var maxChannelId = Devices.MaxOdorModuleCount;
         var channelsExist = new bool[maxChannelId];
 
         foreach (var session in setup.Sessions)
@@ -78,6 +80,8 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
     // Internal
 
     readonly Dictionary<int, StageDisplay> _stageDisplays = new();
+    
+    Dictionary<OdorDisplay.Device.ID, (Label,CheckBox)>? _odorChannelObservers;
 
     Controller? _controller = null;
 
@@ -118,6 +122,33 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
         _postStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(12, 0, 0, 0), Flow = -1 };
         stpStageDisplays.Children.Add(_postStageDisplay);
+    }
+
+
+    private void CreateChannelObservers(Data data)
+    {
+        _odorChannelObservers = new();
+
+        foreach (var m in data.Measurements)
+        {
+            if (m.Device >= OdorDisplay.Device.ID.Odor1 && m.Device <= OdorDisplay.Device.ID.Odor9)
+            {
+                var container = new WrapPanel() { Margin = new Thickness(0, 6, 0, 6)};
+                var label = new Label() { Content = m.Device };
+                label.Style = (Style)Resources["MeasurementLabel"];
+                var valve = new CheckBox();
+                valve.Style = (Style)Resources["MeasurementValve"];
+                var value = new Label() { Content = 0 };
+                value.Style = (Style)Resources["MeasurementValue"];
+
+                container.Children.Add(label);
+                container.Children.Add(valve);
+                container.Children.Add(value);
+                stpChannels.Children.Add(container);
+
+                _odorChannelObservers.Add(m.Device, (value, valve));
+            }
+        }
     }
 
     private void SetStage(PulseIntervals? intervals, PulseProps? pulse, Stage stage)
@@ -197,8 +228,13 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         lblDmsProgress.Content = progress >= 0 ? $"DMS measurement: {progress}% completed" : $"DMS measurement finished";
     }
 
-    private void SetMeasurments(OdorDisplay.Packets.Data data)
+    private void SetMeasurments(Data data)
     {
+        if (_odorChannelObservers == null)
+        {
+            CreateChannelObservers(data);
+        }
+
         foreach (var m in data.Measurements)
         {
             if (m.Device == OdorDisplay.Device.ID.Base)
@@ -237,13 +273,13 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                lblHumidifiedAirFlow.Content = $"{v.SLPM:F1}, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblHumidifiedAirFlow.Content = $"{v.SLPM * OdorDisplay.Device.MaxBaseAirFlowRate:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                lblDilutionAirFlow.Content = $"{v.SLPM:F1}, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblDilutionAirFlow.Content = $"{v.SLPM * OdorDisplay.Device.MaxBaseAirFlowRate:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
@@ -254,6 +290,25 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                             break;
                         case OdorDisplay.Device.Sensor.PID:
                             lblPID.Content = $"{((PIDValue)sv).Volts:F4}";
+                            break;
+                    }
+                }
+            }
+            else if (_odorChannelObservers?.ContainsKey(m.Device) ?? false)
+            {
+                var observer = _odorChannelObservers[m.Device];
+                foreach (var sv in m.SensorValues)
+                {
+                    switch (sv.Sensor)
+                    {
+                        case OdorDisplay.Device.Sensor.OdorantFlowSensor:
+                            {
+                                var v = (GasValue)sv;
+                                observer.Item1.Content = $"{v.SLPM * OdorDisplay.Device.MaxOdoredAirFlowRate * 1000:F1} ccm,\n{v.Millibars:F1} mB,\n{v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.OdorantValveSensor:
+                            observer.Item2.IsChecked = ((ValveValue)sv).Opened;
                             break;
                     }
                 }

@@ -93,16 +93,19 @@ public partial class Setup : Page, IPage<PulseSetup>
 	{
 		foreach (var m in data.Measurements)
 		{
+            bool isBase = m.Device == OdorDisplay.Device.ID.Base;
 			foreach (var sv in m.SensorValues)
 			{
                 var value = sv switch
                 {
                     PIDValue pid => pid.Volts,
-                    ThermometerValue temp => temp.Celsius,
+                    ThermometerValue temp => temp.Celsius,          // Ignored values:
                     BeadThermistorValue beadTemp => beadTemp.Ohms,  // beadTemp.Volts
                     HumidityValue humidity => humidity.Percent,     // humidity.Celsius
                     PressureValue pressure => pressure.Millibars,   // pressure.Celsius
-                    GasValue gas => gas.SLPM,                       // gas.Millibars, gas.Celsius
+                    GasValue gas => isBase ?                        // gas.Millibars, gas.Celsius
+                        gas.SLPM * OdorDisplay.Device.MaxBaseAirFlowRate :
+                        gas.SLPM * OdorDisplay.Device.MaxOdoredAirFlowRate * 1000,
                     ValveValue valve => valve.Opened ? 1 : 0,
                     _ => 0
                 };
@@ -159,6 +162,8 @@ public partial class Setup : Page, IPage<PulseSetup>
         _setupFileName = filename;
 
         txbSetupFile.Text = _setupFileName;
+        txbSetupFile.ScrollToHorizontalOffset(double.MaxValue);
+
         UpdateUI();
 
         var settings = Properties.Settings.Default;

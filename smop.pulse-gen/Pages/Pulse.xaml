@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.PulseGen.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="600" d:DesignWidth="800"
+      d:DesignHeight="746" d:DesignWidth="800"
       Title="Pulse"
       Focusable="True"
       KeyDown="Page_KeyDown"
@@ -42,6 +42,12 @@
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
+        <Style x:Key="MeasurementValve" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="6,6,6,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
         <Style x:Key="Stage" TargetType="Label">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
@@ -71,9 +77,10 @@
             
             <StackPanel Grid.Column="0"
                 MinWidth="200"
+                Margin="6,0,0,0"
                 HorizontalAlignment="Left">
                 <Label Style="{StaticResource Header}"
-                    Content="Data Observer"/>
+                    Content="Base"/>
 
                 <Label Style="{StaticResource SubHeader}"
                     Content="General"/>
@@ -143,15 +150,21 @@
 
                 <Label Style="{StaticResource SubHeader}"
                     Content="Valves"/>
-                <CheckBox x:Name="chkOdorantValveOpened"
+                <CheckBox x:Name="chkOdorantValveOpened" Style="{StaticResource MeasurementValve}"
                     Content="Humidified air"/>
-                <CheckBox x:Name="chkOutputValveOpened"
+                <CheckBox x:Name="chkOutputValveOpened" Style="{StaticResource MeasurementValve}"
                     Content="Dilution air"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2"
                 MinWidth="200"
                 HorizontalAlignment="Right">
+                <Label Style="{StaticResource Header}"
+                    HorizontalContentAlignment="Right"
+                    Content="Channels"/>
+                
+                <StackPanel x:Name="stpChannels"
+                            Margin="0,18,0,0"/>
             </StackPanel>
 
             <Grid Grid.Column="1">

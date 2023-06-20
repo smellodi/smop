@@ -128,7 +128,7 @@ namespace Smop.PulseGen.Pages
                     Device.Capability.OutputAirHumiditySensor => "%",
                 Device.Capability.PressureSensor => "mBar",
                 Device.Capability.OdorantFlowSensor or
-                    Device.Capability.DilutionAirFlowSensor => "l/min",
+                    Device.Capability.DilutionAirFlowSensor => deviceID == Device.ID.Base ? "l/min" : "ccm",
                 Device.Capability.OdorantValveSensor or
                     Device.Capability.OutputValveSensor => null,
                 _ => null
@@ -145,7 +145,7 @@ namespace Smop.PulseGen.Pages
                     Device.Capability.OutputAirHumiditySensor => 1,
                 Device.Capability.PressureSensor => 1,
                 Device.Capability.OdorantFlowSensor or
-                    Device.Capability.DilutionAirFlowSensor => 2,
+                    Device.Capability.DilutionAirFlowSensor => 1,
                 Device.Capability.OdorantValveSensor or
                     Device.Capability.OutputValveSensor => 0,
                 _ => 0

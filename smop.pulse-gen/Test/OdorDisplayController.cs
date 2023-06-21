@@ -38,7 +38,8 @@ internal class OdorDisplayController
         foreach (var channel in channels)
         {
             actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow)
+                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow),
+                KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
             )));
         }
         

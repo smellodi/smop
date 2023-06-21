@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using Smop.OdorDisplay.Packets;
 
@@ -88,13 +88,16 @@ public class SerialPortEmulator : ISerialPort
 
     // Internal
 
+    readonly Queue<Request> _requests = new();
+    readonly Queue<byte[]> _responses = new();
+
+    readonly System.Timers.Timer _dataTimer = new(SamplingFrequency);
+    readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+    readonly HashSet<(long, Device.ID, Device.Controller)> _valveCloseEvents = new();
+
     bool _isOpen = false;
     bool _timerAutoStop = false;
-    Queue<Request> _requests = new();
-    Queue<byte[]> _responses = new();
-
-    System.Timers.Timer _dataTimer = new(SamplingFrequency);
-    Stopwatch _stopwatch = Stopwatch.StartNew();
 
     readonly Dictionary<Device.ID, Actuator> _state = new()
     {
@@ -130,6 +133,8 @@ public class SerialPortEmulator : ISerialPort
 
     private void Execute(Request req)
     {
+        var ts = _stopwatch.ElapsedMilliseconds;
+
         if (req.Type == Type.SetActuators)
         {
             var setActuatorsReq = (SetActuators)req;
@@ -142,6 +147,10 @@ public class SerialPortEmulator : ISerialPort
                     {
                         if (deviceState.Capabilities.ContainsKey(cap.Key))
                         {
+                            if ((cap.Key == Device.Controller.OdorantValve || cap.Key == Device.Controller.OutputValve) && cap.Value > 0)
+                            {
+                                _valveCloseEvents.Add(((long)(ts + cap.Value), actuator.DeviceID, cap.Key));
+                            }
                             deviceState.Capabilities[cap.Key] = cap.Value;
                         }
                     }
@@ -246,6 +255,8 @@ public class SerialPortEmulator : ISerialPort
 
     private Data GenerateData()
     {
+        UpdateClosedValves();
+
         var baseCaps = _state[Device.ID.Base].Capabilities;
 
         var measurements = new List<Measurement>
@@ -280,6 +291,17 @@ public class SerialPortEmulator : ISerialPort
         }
 
         return new Data((int)_stopwatch.ElapsedMilliseconds, measurements.ToArray());
+    }
+
+    private void UpdateClosedValves()
+    {
+        var ts = _stopwatch.ElapsedMilliseconds;
+        foreach (var finished in _valveCloseEvents.Where(ev => ev.Item1 <= ts))
+        {
+            _state[finished.Item2]!.Capabilities[finished.Item3] = 0;
+        }
+
+        _valveCloseEvents.RemoveWhere(ev => ev.Item1 <= ts);
     }
 
     private static class Random

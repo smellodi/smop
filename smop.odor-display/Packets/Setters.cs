@@ -164,7 +164,8 @@ public class Actuator
                 var value = FourBytes.ToFloat(payload[index..(index += 4)]);
                 if (ctrl == Device.Controller.OdorantFlow || ctrl == Device.Controller.DilutionAirFlow)
                 {
-                    var maxFlowRate = device == Device.ID.Base ? Device.MaxBaseAirFlowRate : Device.MaxOdoredAirFlowRate;
+                    // The base MFC returns normalized value, but Odor MFC returns l/min
+                    var maxFlowRate = device == Device.ID.Base ? Device.MaxBaseAirFlowRate : 1;
                     value *= maxFlowRate;
                 }
                 caps.Add(ctrl, value);

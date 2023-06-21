@@ -1,9 +1,11 @@
 ﻿using Microsoft.Win32;
+using Smop.IonVision;
 using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Test;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -97,14 +99,14 @@ public partial class Setup : Page, IPage<PulseSetup>
 			{
                 var value = sv switch
                 {
-                    PIDValue pid => pid.Volts,
+                    PIDValue pid => pid.Volts * 1000,
                     ThermometerValue temp => temp.Celsius,          // Ignored values:
                     BeadThermistorValue beadTemp => beadTemp.Ohms,  // beadTemp.Volts
                     HumidityValue humidity => humidity.Percent,     // humidity.Celsius
                     PressureValue pressure => pressure.Millibars,   // pressure.Celsius
                     GasValue gas => isBase ?                        // gas.Millibars, gas.Celsius
-                        gas.SLPM * OdorDisplay.Device.MaxBaseAirFlowRate :
-                        gas.SLPM * OdorDisplay.Device.MaxOdoredAirFlowRate * 1000,
+                        gas.SLPM :
+                        gas.SLPM * 1000,
                     ValveValue valve => valve.Opened ? 1 : 0,
                     _ => 0
                 };
@@ -183,13 +185,30 @@ public partial class Setup : Page, IPage<PulseSetup>
         List<string> completedSteps = new() { "Current clock set", $"Loading '{ionVision.Settings.Project}' project..." };
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
-        HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
-
-        bool isProjectLoaded = false;
-        while (!isProjectLoaded)
+        var response = HandleIonVisionError(await ionVision.GetProject(), "GetProject");
+        if (response.Value?.Project != ionVision.Settings.Project)
         {
-            await Task.Delay(1000);
-            isProjectLoaded = HandleIonVisionError(await ionVision.GetProject(), "GetProject").Success;
+            await Task.Delay(300);
+            HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
+
+            bool isProjectLoaded = false;
+            while (!isProjectLoaded)
+            {
+                await Task.Delay(1000);
+                response = await ionVision.GetProject();
+                if (response.Success)
+                {
+                    isProjectLoaded = true;
+                }
+                else if (response.Error?.StartsWith("Request failed") ?? false)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[IV] loading a project...");
+                }
+                else
+                {
+                    // impossible if the project exists
+                }
+            }
         }
 
         completedSteps.RemoveAt(completedSteps.Count - 1);
@@ -198,7 +217,22 @@ public partial class Setup : Page, IPage<PulseSetup>
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
         await Task.Delay(500);
-        HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
+        var setParamResponse = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
+        /*if (!setParamResponse.Success)
+        {
+            await Task.Delay(200);
+            var parametersResponse = await ionVision.GetParameters();
+            string parameterList = string.Join("\n", parametersResponse.Value!.Select(p => $"{p.Name}/{p.Id}"));
+            Utils.MsgBox.Warn(Title, $"Parameter '{ionVision.Settings.ParameterName}/{ionVision.Settings.ParameterId}' does not exist.\nPlease edit IonVision setup file\nand set one of the following parameters\n\n{parameterList}",
+                Utils.MsgBox.Button.OK);
+
+            completedSteps.RemoveAt(completedSteps.Count - 1);
+            completedSteps.Add($"Failed to set parameter '{ionVision.Settings.ParameterName}'");
+            tblDmsStatus.Text = string.Join('\n', completedSteps);
+
+            return;
+        }*/
+
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...");
         tblDmsStatus.Text = string.Join('\n', completedSteps);

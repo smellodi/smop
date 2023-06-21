@@ -4,10 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace Smop.PulseGen.Pages;
@@ -183,6 +185,21 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 					settings.Save();
                 }
 			}
+        }
+
+        await Task.Delay(200);
+        btnConnectToIonVision.IsEnabled = false;
+        var projects = await _ionVision.GetProjects();
+        btnConnectToIonVision.IsEnabled = true;
+
+		if (!projects.Value?.Contains(_ionVision.Settings.Project) ?? false)
+		{
+			string projectList = string.Join("\n", projects.Value!);
+			Utils.MsgBox.Warn(Title, $"Project '{_ionVision.Settings.Project}' does not exist.\nPlease edit '{IonVisionSetupFilename}' file\nand set one of the following projects\n\n{projectList}",
+				Utils.MsgBox.Button.OK);
+
+            _ionVision = null;
+            return;
         }
 
         btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;

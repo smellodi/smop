@@ -19,14 +19,14 @@ internal class OdorDisplayController
 
     public OdorDisplay.Result SetHumidity(float value)
     {
-        var humidifierFlow = Device.MaxBaseAirFlowRate * value / 100;
-        var dilutionAirFlow = 1f - humidifierFlow;
+        var humidifierFlow = Device.MaxBaseAirFlowRate * value / 100; // l/min
+        var dilutionAirFlow = Device.MaxBaseAirFlowRate - humidifierFlow;  // l/min
 
         return Send(new SetActuators(new Actuator[]
         {
             new Actuator(Device.ID.Base, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, humidifierFlow / Device.MaxBaseAirFlowRate),
-                KeyValuePair.Create(Device.Controller.DilutionAirFlow, dilutionAirFlow / Device.MaxBaseAirFlowRate),
+                KeyValuePair.Create(Device.Controller.OdorantFlow, humidifierFlow),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, dilutionAirFlow),
                 ActuatorCapabilities.OdorantValveOpenPermanently
             )),
         }));
@@ -38,7 +38,7 @@ internal class OdorDisplayController
         foreach (var channel in channels)
         {
             actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow / 1000 / Device.MaxBaseAirFlowRate)
+                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow)
             )));
         }
         
@@ -50,10 +50,13 @@ internal class OdorDisplayController
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
         {
-            actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
+            if (channel.Active)
             {
-                { Device.Controller.OdorantValve, durationSec * 1000 },
-            }));
+                actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
+                {
+                    { Device.Controller.OdorantValve, durationSec * 1000 },
+                }));
+            }
         }
 
         return Send(new SetActuators(actuators.ToArray()));

@@ -223,7 +223,7 @@ internal class Controller : IDisposable
 
         _eventLogger.Add("pulse", _pulseIndex.ToString(), "stop");
 
-        _odorDisplay.CloseChannels(pulse.Channels);
+        //_odorDisplay.CloseChannels(pulse.Channels);
 
         _delayedAction = DispatchOnce.Do(session.Intervals.FinalPause, RunNextPulse);
 

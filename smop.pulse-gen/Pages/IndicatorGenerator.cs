@@ -33,7 +33,7 @@ namespace Smop.PulseGen.Pages
                 {
                     Title = channel.Type,
                     Units = channel.Units,
-                    Precision = 2,
+                    Precision = 1,
                     Value = 0,
                     Source = GetSourceId(channel.Type),
                     ChannelCount = channel.Count,
@@ -108,8 +108,8 @@ namespace Smop.PulseGen.Pages
                 Device.Capability.ChassisThermometer => "Chassis therm.",
                 Device.Capability.OdorSourceThermometer => "Source therm.",
                 Device.Capability.GeneralPurposeThermometer => "Thermometer",
-                Device.Capability.InputAirHumiditySensor => "Input humd.",
-                Device.Capability.OutputAirHumiditySensor => "Output humd.",
+                Device.Capability.OutputAirHumiditySensor => "Input humd.",
+                Device.Capability.InputAirHumiditySensor => "Output humd.",
                 Device.Capability.PressureSensor => "Pressure",
                 Device.Capability.OdorantFlowSensor => "Flow",
                 Device.Capability.DilutionAirFlowSensor => "Dil. flow",
@@ -124,11 +124,11 @@ namespace Smop.PulseGen.Pages
                     Device.Capability.ChassisThermometer or
                     Device.Capability.OdorSourceThermometer or
                     Device.Capability.GeneralPurposeThermometer => "°C",
-                Device.Capability.InputAirHumiditySensor or
-                    Device.Capability.OutputAirHumiditySensor => "%",
+                Device.Capability.OutputAirHumiditySensor or
+                    Device.Capability.InputAirHumiditySensor => "%",
                 Device.Capability.PressureSensor => "mBar",
                 Device.Capability.OdorantFlowSensor or
-                    Device.Capability.DilutionAirFlowSensor => deviceID == Device.ID.Base ? "l/min" : "ccm",
+                    Device.Capability.DilutionAirFlowSensor => deviceID == Device.ID.Base ? "l/min" : "sccm",
                 Device.Capability.OdorantValveSensor or
                     Device.Capability.OutputValveSensor => null,
                 _ => null
@@ -136,13 +136,13 @@ namespace Smop.PulseGen.Pages
 
             var precision = cap switch
             {
-                Device.Capability.PID => 2,
+                Device.Capability.PID => 1,
                 Device.Capability.BeadThermistor or
                     Device.Capability.ChassisThermometer or
                     Device.Capability.OdorSourceThermometer or
                     Device.Capability.GeneralPurposeThermometer => 1,
-                Device.Capability.InputAirHumiditySensor or
-                    Device.Capability.OutputAirHumiditySensor => 1,
+                Device.Capability.OutputAirHumiditySensor or
+                    Device.Capability.InputAirHumiditySensor => 1,
                 Device.Capability.PressureSensor => 1,
                 Device.Capability.OdorantFlowSensor or
                     Device.Capability.DilutionAirFlowSensor => 1,

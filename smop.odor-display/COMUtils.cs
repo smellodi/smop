@@ -46,7 +46,8 @@ public class COMUtils
     /// <summary>
     /// Most likely SMOP port, i.e. the one that has a known description
     /// </summary>
-    public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Description?.Contains("Smellodi") ?? false);
+    public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Manufacturer?.Contains("TUNI") ?? false);
+    //public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Description?.Contains("Smellodi") ?? false);
 
     public COMUtils()
     {

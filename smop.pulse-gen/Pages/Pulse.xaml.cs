@@ -252,16 +252,16 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                         case OdorDisplay.Device.Sensor.GeneralPurposeThermometer:
                             lblGeneralTemp.Content = $"{((ThermometerValue)sv).Celsius:F1} °C";
                             break;
-                        case OdorDisplay.Device.Sensor.InputAirHumiditySensor:
-                            {
-                                var v = (HumidityValue)sv;
-                                lblInputAirHumidity.Content = $"{v.Percent:F1} %, {v.Celsius:F1} °C";
-                                break;
-                            }
                         case OdorDisplay.Device.Sensor.OutputAirHumiditySensor:
                             {
                                 var v = (HumidityValue)sv;
                                 lblOutputAirHumidity.Content = $"{v.Percent:F1} %, {v.Celsius:F1} °C";
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.InputAirHumiditySensor:
+                            {
+                                var v = (HumidityValue)sv;
+                                lblInputAirHumidity.Content = $"{v.Percent:F1} %, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.PressureSensor:
@@ -273,13 +273,13 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                lblHumidifiedAirFlow.Content = $"{v.SLPM * OdorDisplay.Device.MaxBaseAirFlowRate:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblHumidifiedAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                lblDilutionAirFlow.Content = $"{v.SLPM * OdorDisplay.Device.MaxBaseAirFlowRate:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblDilutionAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
@@ -289,7 +289,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                             chkOutputValveOpened.IsChecked = ((ValveValue)sv).Opened;
                             break;
                         case OdorDisplay.Device.Sensor.PID:
-                            lblPID.Content = $"{((PIDValue)sv).Volts:F4}";
+                            lblPID.Content = $"{((PIDValue)sv).Volts * 1000:F1}";
                             break;
                     }
                 }
@@ -304,7 +304,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                observer.Item1.Content = $"{v.SLPM * OdorDisplay.Device.MaxOdoredAirFlowRate * 1000:F1} ccm,\n{v.Millibars:F1} mB,\n{v.Celsius:F1} °C";
+                                observer.Item1.Content = $"{v.SLPM * 1000:F1} sccm,\n{v.Millibars:F1} mB,\n{v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:

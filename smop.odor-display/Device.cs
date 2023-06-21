@@ -49,11 +49,11 @@ public static class Device
         /// <summary>
         /// Base module only has it
         /// </summary>
-        InputAirHumiditySensor = 5,
+        OutputAirHumiditySensor = 5,
         /// <summary>
         /// Base module only has it
         /// </summary>
-        OutputAirHumiditySensor = 6,
+        InputAirHumiditySensor = 6,
         /// <summary>
         /// Base module only has it
         /// </summary>
@@ -106,8 +106,8 @@ public static class Device
         ChassisThermometer = Capability.ChassisThermometer,
         OdorSourceThermometer = Capability.OdorSourceThermometer,
         GeneralPurposeThermometer = Capability.GeneralPurposeThermometer,
-        InputAirHumiditySensor = Capability.InputAirHumiditySensor,
         OutputAirHumiditySensor = Capability.OutputAirHumiditySensor,
+        InputAirHumiditySensor = Capability.InputAirHumiditySensor,
         PressureSensor = Capability.PressureSensor,
         OdorantFlowSensor = Capability.OdorantFlowSensor,
         DilutionAirFlowSensor = Capability.DilutionAirFlowSensor,
@@ -130,7 +130,7 @@ public static class Device
     public static float MaxBaseAirFlowRate => 10f;
 
     /// <summary>
-    /// L/min
+    /// sccm
     /// </summary>
-    public static float MaxOdoredAirFlowRate => 1.5f;
+    public static float MaxOdoredAirFlowRate => 100f;
 }

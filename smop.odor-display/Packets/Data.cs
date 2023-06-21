@@ -104,7 +104,7 @@ public abstract class SensorValue
         {
             Device.Sensor.PID or Device.Sensor.ChassisThermometer or Device.Sensor.OdorSourceThermometer or Device.Sensor.GeneralPurposeThermometer
                 => 4,
-            Device.Sensor.BeadThermistor or Device.Sensor.InputAirHumiditySensor or Device.Sensor.OutputAirHumiditySensor or Device.Sensor.PressureSensor
+            Device.Sensor.BeadThermistor or Device.Sensor.OutputAirHumiditySensor or Device.Sensor.InputAirHumiditySensor or Device.Sensor.PressureSensor
                 => 8,
             Device.Sensor.OdorantFlowSensor or Device.Sensor.DilutionAirFlowSensor
                 => 12,
@@ -132,7 +132,7 @@ public abstract class SensorValue
                 => new ThermometerValue(sensor, sensorData),
             Device.Sensor.BeadThermistor
                 => new BeadThermistorValue(sensorData),
-            Device.Sensor.InputAirHumiditySensor or Device.Sensor.OutputAirHumiditySensor
+            Device.Sensor.OutputAirHumiditySensor or Device.Sensor.InputAirHumiditySensor
                 => new HumidityValue(sensor, sensorData),
             Device.Sensor.PressureSensor
                 => new PressureValue(sensorData),

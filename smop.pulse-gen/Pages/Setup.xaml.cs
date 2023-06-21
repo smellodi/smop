@@ -1,11 +1,11 @@
 ﻿using Microsoft.Win32;
-using Smop.IonVision;
 using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Controls;
 using Smop.PulseGen.Test;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -58,13 +58,23 @@ public partial class Setup : Page, IPage<PulseSetup>
 		}
 	}
 
-	private void ResetGraph(string? dataSource = null, double baseValue = .0)
+	private void ResetGraph(ChannelIndicator? chi, double baseValue = .0)
 	{
-		if (_currentIndicator?.Source == dataSource || dataSource == null)
-		{
-			var interval = (double)(_storage.IsDebugging ? OdorDisplay.SerialPortEmulator.SamplingFrequency : OdorDisplay.Device.DataMeasurementInterval) / 1000;
-			lmsGraph.Reset(interval, baseValue);
-		}
+        var interval = 1.0;
+        if (chi == null)
+        {
+            interval = 1.0;
+        }
+        else if (chi.Source.StartsWith("od"))
+        {
+            interval = (double)(_storage.IsDebugging ? OdorDisplay.SerialPortEmulator.SamplingFrequency : OdorDisplay.Device.DataMeasurementInterval) / 1000;
+        }
+        else if (chi.Source.StartsWith("snt"))
+        {
+            interval = SmellInsp.ISerialPort.Interval;
+        }
+
+        lmsGraph.Reset(interval, baseValue);
 	}
 
     private async Task CreateIndicators()
@@ -76,18 +86,21 @@ public partial class Setup : Page, IPage<PulseSetup>
 			_indicators.Add(indicator.Source, indicator);
         }));
 
-        IndicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
+        await IndicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpSmellInspIndicators.Children.Add(indicator);
             _indicators.Add(indicator.Source, indicator);
         }));
 
-        (stpSmellInspIndicators.Children[0] as Controls.ChannelIndicator)!.ChannelIdChanged += (s, e) =>
+        if (stpSmellInspIndicators.Children[0] is ChannelIndicator chi)
         {
-            _smellInspResistor = e;
-            ResetGraph();
-        };
+            chi.ChannelIdChanged += (s, e) =>
+            {
+                _smellInspResistor = e;
+                ResetGraph(chi);
+            };
+        }
     }
 
     private void UpdateIndicators(Data data)
@@ -220,15 +233,16 @@ public partial class Setup : Page, IPage<PulseSetup>
         var setParamResponse = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
         /*if (!setParamResponse.Success)
         {
-            await Task.Delay(200);
-            var parametersResponse = await ionVision.GetParameters();
-            string parameterList = string.Join("\n", parametersResponse.Value!.Select(p => $"{p.Name}/{p.Id}"));
-            Utils.MsgBox.Warn(Title, $"Parameter '{ionVision.Settings.ParameterName}/{ionVision.Settings.ParameterId}' does not exist.\nPlease edit IonVision setup file\nand set one of the following parameters\n\n{parameterList}",
-                Utils.MsgBox.Button.OK);
-
             completedSteps.RemoveAt(completedSteps.Count - 1);
             completedSteps.Add($"Failed to set parameter '{ionVision.Settings.ParameterName}'");
             tblDmsStatus.Text = string.Join('\n', completedSteps);
+
+            var parametersResponse = await ionVision.GetParameters();
+            string parameterList = string.Join("\n", (parametersResponse.Value ?? Array.Empty<IonVision.Parameter>())
+                .Take(25)
+                .Select(p => $"{p.Name}/{p.Id}"));
+            Utils.MsgBox.Error(Title, $"Parameter '{ionVision.Settings.ParameterName}/{ionVision.Settings.ParameterId}' does not exist.\nPlease edit IonVision setup file\nand set one of the following parameters:\n\n{parameterList}",
+                Utils.MsgBox.Button.OK);
 
             return;
         }*/
@@ -280,7 +294,6 @@ public partial class Setup : Page, IPage<PulseSetup>
 			await Task.Run(() => Dispatcher.Invoke(() =>
 			{
 				UpdateIndicators(data);
-                //_odorDisplayLogger.Add(data);
             }));
 		}
 		catch (TaskCanceledException) { }
@@ -293,7 +306,6 @@ public partial class Setup : Page, IPage<PulseSetup>
             await Task.Run(() => Dispatcher.Invoke(() =>
             {
                 UpdateIndicators(data);
-                //_smellInspLogger.Add(data);
             }));
         }
         catch (TaskCanceledException) { }
@@ -401,7 +413,7 @@ public partial class Setup : Page, IPage<PulseSetup>
 			_currentIndicator = chi;
 			_currentIndicator!.IsActive = true;
 
-            ResetGraph();
+            ResetGraph(chi);
         }
 	}
 

@@ -49,6 +49,7 @@ public class SerialPortEmulator : ISerialPort
                 if (_requests.Count > 0)
                 {
                     var req = _requests.Dequeue();
+                    Execute(req);
                     MakeResponse(req);
                 }
             }
@@ -94,6 +95,60 @@ public class SerialPortEmulator : ISerialPort
 
     System.Timers.Timer _dataTimer = new(SamplingFrequency);
     Stopwatch _stopwatch = Stopwatch.StartNew();
+
+    readonly Dictionary<Device.ID, Actuator> _state = new()
+    {
+        { Device.ID.Base,
+            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+            KeyValuePair.Create(Device.Controller.ChassisTemperature, 27f),
+            KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+            KeyValuePair.Create(Device.Controller.DilutionAirFlow, 0f),
+            KeyValuePair.Create(Device.Controller.OdorantValve, 0f),
+            KeyValuePair.Create(Device.Controller.OutputValve, 0f)
+        )) },
+        { Device.ID.Odor1, new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+            KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+            KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+        )) },
+        { Device.ID.Odor2, new Actuator(Device.ID.Odor2, new ActuatorCapabilities(
+            KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+            KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+        )) },
+        { Device.ID.Odor3, new Actuator(Device.ID.Odor3, new ActuatorCapabilities(
+            KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+            KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+        )) },
+        { Device.ID.Odor4, new Actuator(Device.ID.Odor4, new ActuatorCapabilities(
+            KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+            KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+        )) },
+        { Device.ID.Odor5, new Actuator(Device.ID.Odor5, new ActuatorCapabilities(
+            KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+            KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+        )) },
+    };
+
+    private void Execute(Request req)
+    {
+        if (req.Type == Type.SetActuators)
+        {
+            var setActuatorsReq = (SetActuators)req;
+            foreach (var actuator in setActuatorsReq!.Actuators)
+            {
+                if (_state.ContainsKey(actuator.DeviceID))
+                {
+                    var deviceState = _state[actuator.DeviceID];
+                    foreach (var cap in actuator.Capabilities)
+                    {
+                        if (deviceState.Capabilities.ContainsKey(cap.Key))
+                        {
+                            deviceState.Capabilities[cap.Key] = cap.Value;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private void MakeResponse(Request req)
     {
@@ -191,34 +246,40 @@ public class SerialPortEmulator : ISerialPort
 
     private Data GenerateData()
     {
-        return new Data((int)_stopwatch.ElapsedMilliseconds, new Measurement[]
-                {
-                    new Measurement(Device.ID.Base, new SensorValue[]
-                    {
-                        new PIDValue(2.5f + Random.Range(0.1f)),
-                        //new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
-                        new ThermometerValue(Device.Sensor.ChassisThermometer, 27.0f + Random.Range(0.1f)),
-                        new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
-                        new ThermometerValue(Device.Sensor.GeneralPurposeThermometer, 27.0f + Random.Range(0.1f)),
-                        new HumidityValue(Device.Sensor.OutputAirHumiditySensor, 60f + Random.Range(0.2f), 27.1f + Random.Range(0.1f)),
-                        new HumidityValue(Device.Sensor.InputAirHumiditySensor, 55f + Random.Range(0.2f), 26.6f + Random.Range(0.1f)),
-                        new PressureValue(1200f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
-                        new GasValue(Device.Sensor.OdorantFlowSensor, 1.0f + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
-                        new GasValue(Device.Sensor.DilutionAirFlowSensor, 1.0f + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
-                        new ValveValue(Device.Sensor.OdorantValveSensor, true),
-                        new ValveValue(Device.Sensor.OutputValveSensor, true),
-                    }),
-                    new Measurement(Device.ID.Odor1, new SensorValue[]
-                    {
-                        new GasValue(Device.Sensor.OdorantFlowSensor, 0.1f + Random.Range(0.005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
-                        new ValveValue(Device.Sensor.OdorantValveSensor, true),
-                    }),
-                    new Measurement(Device.ID.Odor2, new SensorValue[]
-                    {
-                        new GasValue(Device.Sensor.OdorantFlowSensor, 0.05f + Random.Range(0.0005f), 27.3f + Random.Range(0.1f), 1003.0f + Random.Range(0.5f)),
-                        new ValveValue(Device.Sensor.OdorantValveSensor, true),
-                    }),
-                });
+        var baseCaps = _state[Device.ID.Base].Capabilities;
+
+        var measurements = new List<Measurement>
+        {
+            new Measurement(Device.ID.Base, new SensorValue[]
+            {
+                new PIDValue(0.06f + Random.Range(0.001f)),
+                //new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
+                new ThermometerValue(Device.Sensor.ChassisThermometer, baseCaps[Device.Controller.ChassisTemperature] + Random.Range(0.1f)),
+                new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
+                new ThermometerValue(Device.Sensor.GeneralPurposeThermometer, 27.0f + Random.Range(0.1f)),
+                new HumidityValue(Device.Sensor.OutputAirHumiditySensor, (baseCaps[Device.Controller.OdorantFlow] * Device.MaxBaseAirFlowRate) + Random.Range(0.04f), 27.1f + Random.Range(0.1f)),
+                new HumidityValue(Device.Sensor.InputAirHumiditySensor, 0f + Random.Range(0.05f), 26.6f + Random.Range(0.1f)),
+                new PressureValue(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
+                new GasValue(Device.Sensor.OdorantFlowSensor, baseCaps[Device.Controller.OdorantFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
+                new GasValue(Device.Sensor.DilutionAirFlowSensor, baseCaps[Device.Controller.DilutionAirFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
+                new ValveValue(Device.Sensor.OdorantValveSensor, baseCaps[Device.Controller.OdorantValve] != 0),
+                new ValveValue(Device.Sensor.OutputValveSensor, false),
+            })
+        };
+
+        var flowConverter = Device.MaxOdoredAirFlowRate / 1000;
+        for (int i = 1; i < _state.Count; i++)
+        {
+            var id = (Device.ID)i;
+            var odorCaps = _state[id].Capabilities;
+            measurements.Add(new Measurement(id, new SensorValue[]
+            {
+                new GasValue(Device.Sensor.OdorantFlowSensor, odorCaps[Device.Controller.OdorantFlow] * flowConverter + Random.Range(0.0005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
+                new ValveValue(Device.Sensor.OdorantValveSensor, odorCaps[Device.Controller.OdorantValve] != 0),
+            }));
+        }
+
+        return new Data((int)_stopwatch.ElapsedMilliseconds, measurements.ToArray());
     }
 
     private static class Random

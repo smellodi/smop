@@ -134,12 +134,20 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
             if (m.Device >= OdorDisplay.Device.ID.Odor1 && m.Device <= OdorDisplay.Device.ID.Odor9)
             {
                 var container = new WrapPanel() { Margin = new Thickness(0, 6, 0, 6)};
-                var label = new Label() { Content = m.Device };
-                label.Style = (Style)Resources["MeasurementLabel"];
-                var valve = new CheckBox();
-                valve.Style = (Style)Resources["MeasurementValve"];
-                var value = new Label() { Content = 0 };
-                value.Style = (Style)Resources["MeasurementValue"];
+                var label = new Label
+                {
+                    Content = m.Device,
+                    Style = (Style)Resources["MeasurementLabel"]
+                };
+                var valve = new CheckBox
+                {
+                    Style = (Style)Resources["MeasurementValve"]
+                };
+                var value = new Label
+                {
+                    Content = 0,
+                    Style = (Style)Resources["MeasurementValue"]
+                };
 
                 container.Children.Add(label);
                 container.Children.Add(valve);
@@ -183,7 +191,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinalPause)));
 
         stpDMS.Visibility = stage.HasFlag(Stage.DMS) ? Visibility.Visible : Visibility.Hidden;
-        lblDmsProgress.Content = "DMS measurement started...";
+        lblDmsProgress.Content = "DMS: started...";
 
         var isPulse = stage.HasFlag(Stage.Pulse);
         foreach (var stageDisplay in _stageDisplays)
@@ -225,7 +233,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
     private void SetDmsProgress(int progress)
     {
-        lblDmsProgress.Content = progress >= 0 ? $"DMS measurement: {progress}% completed" : $"DMS measurement finished";
+        lblDmsProgress.Content = progress >= 0 ? $"DMS: {progress}%" : $"DMS: finished";
     }
 
     private void SetMeasurments(Data data)
@@ -267,19 +275,19 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                         case OdorDisplay.Device.Sensor.PressureSensor:
                             {
                                 var v = (PressureValue)sv;
-                                lblPressure.Content = $"{v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblPressure.Content = $"{v.Millibars:F1} mBar, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                lblHumidifiedAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblHumidifiedAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mBar, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                lblDilutionAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mB, {v.Celsius:F1} °C";
+                                lblDilutionAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mBar, {v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
@@ -289,7 +297,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                             chkOutputValveOpened.IsChecked = ((ValveValue)sv).Opened;
                             break;
                         case OdorDisplay.Device.Sensor.PID:
-                            lblPID.Content = $"{((PIDValue)sv).Volts * 1000:F1}";
+                            lblPID.Content = $"{((PIDValue)sv).Volts * 1000:F1} mV";
                             break;
                     }
                 }
@@ -304,7 +312,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (GasValue)sv;
-                                observer.Item1.Content = $"{v.SLPM * 1000:F1} sccm,\n{v.Millibars:F1} mB,\n{v.Celsius:F1} °C";
+                                observer.Item1.Content = $"{v.SLPM * 1000:F1} sccm,\n{v.Millibars:F1} mBar,\n{v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:

@@ -25,10 +25,11 @@ namespace Smop.PulseGen.Pages
             }
         }
 
-        public static void SmellInsp(Action<ChannelIndicator> callback)
+        public static async Task SmellInsp(Action<ChannelIndicator> callback)
         {
             foreach (var channel in SmellInspChannels)
             {
+                await Task.Delay(50);
                 var indicator = new ChannelIndicator()
                 {
                     Title = channel.Type,

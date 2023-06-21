@@ -71,7 +71,7 @@ public class SerialPortEmulator : ISerialPort
     bool _hasDataToSend = false;
     bool _hasInfoToSend = false;
 
-    System.Timers.Timer _dataTimer = new(1800);
+    System.Timers.Timer _dataTimer = new((int)(ISerialPort.Interval * 1000));
 
     private string GenerateData()
     {

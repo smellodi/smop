@@ -37,7 +37,7 @@
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
         <Style x:Key="MeasurementValue" TargetType="Label">
-            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="FontSize" Value="17"/>
             <Setter Property="Padding" Value="4,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
@@ -51,7 +51,7 @@
         <Style x:Key="Stage" TargetType="Label">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
-            <Setter Property="Padding" Value="0,4"/>
+            <Setter Property="Padding" Value="0,8,0,4"/>
         </Style>
     </Page.Resources>
 
@@ -86,13 +86,13 @@
                     Content="General"/>
                 <WrapPanel>
                     <Label Style="{StaticResource MeasurementLabel}"
-                        Content="PID, mV"/>
+                        Content="PID"/>
                     <Label x:Name="lblPID" Style="{StaticResource MeasurementValue}"
                        Content="0.0"/>
                 </WrapPanel>
                 <WrapPanel>
                     <Label Style="{StaticResource MeasurementLabel}"
-                        Content="Pressure, mB"/>
+                        Content="Pressure"/>
                     <Label x:Name="lblPressure" Style="{StaticResource MeasurementValue}"
                        Content="0.0"/>
                 </WrapPanel>
@@ -206,7 +206,8 @@
 
                         <StackPanel x:Name="stpStageDisplays" Grid.Row="1"
                                 Orientation="Horizontal"
-                                MinHeight="100"/>
+                                MinHeight="100">
+                        </StackPanel>
 
                         <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
                                         Text="Final pause"
@@ -221,8 +222,7 @@
                     </StackPanel>
 
                     <local:WaitingInstruction x:Name="wtiWaiting"
-                        Margin="12"
-                        Width="250"
+                        Margin="0,12"
                         Height="50"
                         VerticalAlignment="Bottom"
                         Text="Wait"/>

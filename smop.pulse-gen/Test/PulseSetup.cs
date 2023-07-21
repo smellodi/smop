@@ -138,7 +138,7 @@ public class PulseSetup
         float humidity = lastSessionProps?.Humidity ?? -1;
         float delay = lastSessionProps?.Intervals.InitialPause ?? 0;
         float duration = lastSessionProps?.Intervals.Pulse ?? 1000;
-        float dmsDelay = lastSessionProps?.Intervals.DmsDelay ?? 0;
+        float dmsDelay = lastSessionProps?.Intervals.DmsDelay ?? -1;
         float finalPause = lastSessionProps?.Intervals.FinalPause ?? 0;
 
         foreach (var field in p)

@@ -196,7 +196,7 @@ internal class Controller : IDisposable
             _delayedActionDms = DispatchOnce.Do(session.Intervals.DmsDelay, StartDMS);
         }
 
-        if (session.Intervals.DmsDelay > 0 || _ionVision == null)
+        if (session.Intervals.DmsDelay != 0 || _ionVision == null)
         {
             PublishStage(Stage.Pulse);
         }
@@ -243,7 +243,7 @@ internal class Controller : IDisposable
             PublishStage(Stage.FinalPause);
         }
 
-        if (_ionVision != null)
+        if (_ionVision != null && session.Intervals.DmsDelay >= 0)
         {
             var scan = HandleIonVisionError(await _ionVision.GetScanResult(), "GetScanResult");
             if (scan?.Success ?? false)

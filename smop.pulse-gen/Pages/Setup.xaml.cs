@@ -3,7 +3,6 @@ using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Test;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -187,7 +186,7 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private void UpdateUI()
     {
-        btnStart.IsEnabled = _setupFileName != null && _ionVisionIsReady;
+        btnStart.IsEnabled = _setupFileName != null && (App.IonVision == null || _ionVisionIsReady);
     }
 
     private async Task InitializeIonVision(IonVision.Communicator ionVision)
@@ -345,6 +344,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         _isInitilized = true;
 
         tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
+        tabIonVision.IsEnabled = App.IonVision != null;
 
         await CreateIndicators();
 
@@ -357,6 +357,10 @@ public partial class Setup : Page, IPage<PulseSetup>
         if (App.IonVision != null)
         {
             await InitializeIonVision(App.IonVision);
+        }
+        else
+        {
+            tblDmsStatus.Text = "not in use";
         }
     }
 

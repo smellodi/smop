@@ -8,7 +8,7 @@ public partial class App : Application
 {
 	#region Global objects
 
-	public static IonVision.Communicator? IonVision = null;
+	public static IonVision.Communicator? IonVision { get; set; } = null;
 
     #endregion
 

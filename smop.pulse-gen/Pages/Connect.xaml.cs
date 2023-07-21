@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace Smop.PulseGen.Pages;
@@ -19,7 +18,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 	public event EventHandler<EventArgs>? Next;
 	public event PropertyChangedEventHandler? PropertyChanged;
 
-	public bool HasNecessaryConnections => _odorDisplay.IsOpen && _ionVision != null;
+	public bool HasNecessaryConnections => _odorDisplay.IsOpen;
 
 	public Connect()
 	{

@@ -5,8 +5,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Xml;
-using System.Xml.Linq;
 using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Logging;
@@ -161,7 +159,11 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
 
     private void SetStage(PulseIntervals? intervals, PulseProps? pulse, Stage stage)
     {
-        if (_stage == stage) return;
+        if (_stage == stage)
+        {
+            return;
+        }
+
         _stage = stage;
 
         if (stage.HasFlag(Stage.NewSession) && intervals != null)
@@ -212,7 +214,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
             (Stage.Pulse | Stage.DMS) => -1,
             Stage.FinalPause => intervals?.FinalPause ?? 0,
             Stage.None or Stage.Finished => 0,
-            _ => throw new NotImplementedException($"Stage '{_stage}' of does not exist")
+            _ => throw new NotImplementedException($"Stage '{_stage}' does not exist")
         };
 
         if (pause > 1)

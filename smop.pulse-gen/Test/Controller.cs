@@ -103,7 +103,7 @@ internal class Controller : IDisposable
     const double DMS_PROGRESS_CHECK_INTERVAL = 1;
 
     readonly OdorDisplayController _odorDisplay = new();
-    readonly IonVision.Communicator _ionVision = App.IonVision!;
+    readonly IonVision.Communicator? _ionVision = App.IonVision;
 
     readonly PulseSetup _setup;
 
@@ -183,7 +183,11 @@ internal class Controller : IDisposable
         _eventLogger.Add("pulse", _pulseIndex.ToString(), "start");
 
         var pulseData = PulseSetup.PulseChannelsAsStrings(pulse);
-        HandleIonVisionError(await _ionVision.SetScanResultComment(new { Pulse = pulseData }), "SetScanResultComment");
+
+        if (_ionVision != null)
+        {
+            HandleIonVisionError(await _ionVision.SetScanResultComment(new { Pulse = pulseData }), "SetScanResultComment");
+        }
 
         _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);
 
@@ -191,8 +195,8 @@ internal class Controller : IDisposable
         {
             _delayedActionDms = DispatchOnce.Do(session.Intervals.DmsDelay, StartDMS);
         }
-        
-        if (session.Intervals.DmsDelay != 0)
+
+        if (session.Intervals.DmsDelay > 0 || _ionVision == null)
         {
             PublishStage(Stage.Pulse);
         }
@@ -202,6 +206,13 @@ internal class Controller : IDisposable
 
     private async void StartDMS()
     {
+        _delayedActionDms = null;
+
+        if (_ionVision == null)
+        {
+            return;
+        }
+
         var session = _setup.Sessions[_sessionIndex];
         var pulse = session.Pulses[_pulseIndex];
 
@@ -232,10 +243,13 @@ internal class Controller : IDisposable
             PublishStage(Stage.FinalPause);
         }
 
-        var scan = HandleIonVisionError(await _ionVision.GetScanResult(), "GetScanResult");
-        if (scan?.Success ?? false)
+        if (_ionVision != null)
         {
-            _ionVisionLogger.Add(scan.Value!);
+            var scan = HandleIonVisionError(await _ionVision.GetScanResult(), "GetScanResult");
+            if (scan?.Success ?? false)
+            {
+                _ionVisionLogger.Add(scan.Value!);
+            }
         }
     }
 
@@ -254,7 +268,7 @@ internal class Controller : IDisposable
     {
         _delayedActionDmsScanProgress = null;
 
-        if (!_currentStage.HasFlag(Stage.Pulse))
+        if (_ionVision == null || !_currentStage.HasFlag(Stage.Pulse))
         {
             return;
         }

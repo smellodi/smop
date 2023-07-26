@@ -38,6 +38,7 @@ public class LiveLogger : IDisposable
 
 	public async void Dispose()
 	{
+		GC.SuppressFinalize(this);
 		await _file.DisposeAsync();
 	}
 
@@ -47,7 +48,7 @@ public class LiveLogger : IDisposable
 
 	readonly StreamWriter _file;
 
-	private string GetAppSettingsFolder()
+	private static string GetAppSettingsFolder()
 	{
 		var sysAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 		var appName = AppDomain.CurrentDomain.FriendlyName;

@@ -237,7 +237,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         if (!hasParameterLoaded)
         {
             await Task.Delay(300);
-            var setParamResponse = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
+            HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
 
             completedSteps.RemoveAt(completedSteps.Count - 1);
             completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...");

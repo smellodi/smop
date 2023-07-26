@@ -234,6 +234,6 @@ public partial class MsgBox : Window
 	private void Window_Loaded(object sender, RoutedEventArgs e)
 	{
 		var hwnd = new WindowInteropHelper(this).Handle;
-		SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
+        _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
 	}
 }

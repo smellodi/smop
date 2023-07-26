@@ -114,13 +114,13 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
     bool _durationUnitsAreMs = true;
     bool _flowUnitsAreCcm = true;
 
-    private string IntervalToStr(int ms, out bool isShownAsMs)
+    private static string IntervalToStr(int ms, out bool isShownAsMs)
     {
         isShownAsMs = ms < 1000;
         return isShownAsMs ? ms.ToString() : ((double)ms / 1000).ToString("0.##");
     }
 
-    private string FlowToStr(double ccm, out bool isShownAsCcm)
+    private static string FlowToStr(double ccm, out bool isShownAsCcm)
     {
         isShownAsCcm = ccm < 1000;
         return isShownAsCcm ? ccm.ToString() : ((double)ccm / 1000).ToString("0.##");

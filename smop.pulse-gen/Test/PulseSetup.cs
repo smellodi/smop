@@ -10,7 +10,7 @@ namespace Smop.PulseGen.Test;
 /// <summary>
 /// One odor channel properties
 /// </summary>
-/// <param name="Id">CHannel ID, 1..9</param>
+/// <param name="Id">Channel ID, 1..9</param>
 /// <param name="Flow">Flow in ccm</param>
 /// <param name="Active">Set to true for the channel to be opened during the pulse</param>
 public record class PulseChannelProps(int Id, float Flow, bool Active);
@@ -28,10 +28,20 @@ public record class PulseProps(PulseChannelProps[] Channels);
 /// <param name="Pulse">Pulse duration from the valves are open till the valves are closed</param>
 /// <param name="DmsDelay">Interval between valves are opened and the DMS measurement starts</param>
 /// <param name="FinalPause">Internal between the valves are close and the next pulse starts</param>
-public record class PulseIntervals(float InitialPause, float Pulse, float DmsDelay, float FinalPause);
+public record class PulseIntervals(float InitialPause, float Pulse, float DmsDelay, float FinalPause)
+{
+    public bool HasDms => DmsDelay >= 0;
+}
 
+
+/// <summary>
+/// Session properties: humidity, intervals, list of pulses
+/// </summary>
 public class SessionProps
 {
+    /// <summary>
+    /// 0..1
+    /// </summary>
     public float Humidity { get; init; }
     public PulseIntervals Intervals { get; init; }
     public PulseProps[] Pulses => _pulses.ToArray();
@@ -55,9 +65,12 @@ public class SessionProps
 
     // Internal
 
-    List<PulseProps> _pulses = new();
+    readonly List<PulseProps> _pulses = new();
 }
 
+/// <summary>
+/// Pulse generation setup (list of sessions)
+/// </summary>
 public class PulseSetup
 {
     public SessionProps[] Sessions { get; init; } = Array.Empty<SessionProps>();
@@ -125,13 +138,12 @@ public class PulseSetup
         }
     }
 
-    public static IEnumerable<string> PulseChannelsAsStrings(PulseProps pulse)
-    {
-        int BoolToInt(bool value) => value ? 1 : 0;
-        return pulse.Channels.Select(ch => $"{ch.Id}:{BoolToInt(ch.Active)}/{ch.Flow}");
-    }
+    public static IEnumerable<string> PulseChannelsAsStrings(PulseProps pulse) =>
+        pulse.Channels.Select(ch => $"{ch.Id}:{BoolToState(ch.Active)}/{ch.Flow}");
 
     // Internal
+
+    private static string BoolToState(bool value) => value ? "ON" : "OFF";
 
     private static SessionProps CreateSessionProps(string[] p, SessionProps? lastSessionProps, int lineIndex)
     {

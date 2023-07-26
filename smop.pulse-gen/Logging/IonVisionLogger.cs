@@ -48,10 +48,10 @@ public class IonVisionLogger : Logger<IonVisionLogger.Record>, ILog
 
     protected override string RecordsToText()
     {
-        StringBuilder stringBuilder = new StringBuilder();
+        var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine("[");
         stringBuilder.AppendLine(string.Join(",\n", _records));
-        stringBuilder.Append("]");
+        stringBuilder.Append(']');
 
         return stringBuilder.ToString();
     }

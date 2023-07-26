@@ -191,12 +191,12 @@ internal class Controller : IDisposable
 
         _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);
 
-        if (session.Intervals.DmsDelay >= 0)
+        if (session.Intervals.HasDms)
         {
             _delayedActionDms = DispatchOnce.Do(session.Intervals.DmsDelay, StartDMS);
         }
 
-        if (session.Intervals.DmsDelay != 0 || _ionVision == null)
+        if (!session.Intervals.HasDms || session.Intervals.DmsDelay > 0 || _ionVision == null)  /// otherwise <see cref="PublishStage"/> will be called by <see cref="StartDMS"/>
         {
             PublishStage(Stage.Pulse);
         }
@@ -243,7 +243,7 @@ internal class Controller : IDisposable
             PublishStage(Stage.FinalPause);
         }
 
-        if (_ionVision != null && session.Intervals.DmsDelay >= 0)
+        if (_ionVision != null && session.Intervals.HasDms)
         {
             var scan = HandleIonVisionError(await _ionVision.GetScanResult(), "GetScanResult");
             if (scan?.Success ?? false)

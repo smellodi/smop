@@ -110,6 +110,7 @@ public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, I
 
 	public void Dispose()
 	{
+		GC.SuppressFinalize(this);
 		_timer.Dispose();
 	}
 

@@ -362,7 +362,7 @@ public abstract class Logger<T> where T : RecordBase
 
 	protected virtual string RecordsToText()
 	{
-		StringBuilder stringBuilder = new StringBuilder();
+		var stringBuilder = new StringBuilder();
         if (!string.IsNullOrEmpty(Header))
         {
             stringBuilder.AppendLine(Header);

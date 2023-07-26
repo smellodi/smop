@@ -179,7 +179,8 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         {
             foreach (var stageDisplay in _stageDisplays)
             {
-                stageDisplay.Value.Flow = pulse.Channels.First(ch => ch.Id == stageDisplay.Key).Flow;
+                var channelFlow = pulse.Channels.FirstOrDefault(ch => ch.Id == stageDisplay.Key)?.Flow ?? 0;
+                stageDisplay.Value.Flow = channelFlow;
             }
 
             runPulse.Text = _controller?.PulseId.ToString() ?? "0";

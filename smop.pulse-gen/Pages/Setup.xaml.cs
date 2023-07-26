@@ -32,7 +32,7 @@ public partial class Setup : Page, IPage<PulseSetup>
 	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-    readonly Dictionary<string, Controls.ChannelIndicator> _indicators = new();
+    readonly Dictionary<string, ChannelIndicator> _indicators = new();
 
 	bool _isInitilized = false;
     bool _ionVisionIsReady = false;
@@ -225,11 +225,26 @@ public partial class Setup : Page, IPage<PulseSetup>
 
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded.");
-        completedSteps.Add($"Loading '{ionVision.Settings.ParameterName}' parameter...");
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
         await Task.Delay(500);
-        var setParamResponse = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
+
+        completedSteps.Add($"Loading '{ionVision.Settings.ParameterName}' parameter...");
+        tblDmsStatus.Text = string.Join('\n', completedSteps);
+
+        var getParameterResponse = await ionVision.GetParameter();
+        bool hasParameterLoaded = getParameterResponse.Value?.Parameter.Id == ionVision.Settings.ParameterId;
+        if (!hasParameterLoaded)
+        {
+            await Task.Delay(300);
+            var setParamResponse = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
+
+            completedSteps.RemoveAt(completedSteps.Count - 1);
+            completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...");
+            tblDmsStatus.Text = string.Join('\n', completedSteps);
+
+            await Task.Delay(1000);
+        }
         /*if (!setParamResponse.Success)
         {
             completedSteps.RemoveAt(completedSteps.Count - 1);
@@ -247,11 +262,6 @@ public partial class Setup : Page, IPage<PulseSetup>
         }*/
 
         completedSteps.RemoveAt(completedSteps.Count - 1);
-        completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...");
-        tblDmsStatus.Text = string.Join('\n', completedSteps);
-
-        await Task.Delay(1000);
-        completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.");
         tblDmsStatus.Text = string.Join('\n', completedSteps);
 
@@ -261,6 +271,11 @@ public partial class Setup : Page, IPage<PulseSetup>
 
         _ionVisionIsReady = true;
         UpdateUI();
+        /*
+        Utils.DispatchOnce.Do(3, () => Dispatcher.InvokeAsync(async () =>
+        {
+            await InitializeIonVision(App.IonVision);
+        }));*/
     }
 
     private void HandleOdorDisplayError(OdorDisplay.Result odorDisplayResult, string action)

@@ -115,6 +115,7 @@ public partial class LiveData : UserControl
 	const int PIXELS_PER_POINT = 4;
 
 	readonly System.Drawing.Color COLOR_GRAY = System.Drawing.Color.FromArgb(80, 80, 80);
+
 	readonly List<MeasureModel> _data = new();
 	readonly ScottPlot.Plottable.ScatterPlot _scatter;
 

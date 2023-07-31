@@ -11,6 +11,6 @@ public enum Navigation
 {
 	Exit,
 	Setup,
-	Test,
+	Generator,
 	Finished,
 }

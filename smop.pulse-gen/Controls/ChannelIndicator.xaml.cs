@@ -7,8 +7,6 @@ namespace Smop.PulseGen.Controls;
 
 public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 {
-	//public enum DataSource { MFC, Valve, SourceTemp, ChassisHeater, MFCDryAir, InputHumidity, OutputHumidity, Pressure, PID }
-
 	#region Title property
 
 	[Description("Title"), Category("Common Properties")]

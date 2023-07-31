@@ -10,8 +10,6 @@
              d:DesignHeight="60" d:DesignWidth="200">
 
     <UserControl.Resources>
-        <!--utils:NumberToVisibilityConverter x:Key="num2vis"/-->
-        
         <Style TargetType="Label">
             <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>

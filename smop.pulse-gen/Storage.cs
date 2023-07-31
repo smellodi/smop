@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using Smop.PulseGen.Utils.Extensions;
 
 namespace Smop.PulseGen;
 
@@ -48,12 +49,12 @@ public class Storage : INotifyPropertyChanged
 
 	public void ZoomIn()
 	{
-		ZoomLevel = Utils.MathExt.Limit(_zoomLevel + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
+		ZoomLevel = MathExt.Limit(_zoomLevel + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
 	}
 
 	public void ZoomOut()
 	{
-		ZoomLevel = Utils.MathExt.Limit(_zoomLevel - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
+		ZoomLevel = MathExt.Limit(_zoomLevel - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
 	}
 
 	// Helpers

@@ -58,9 +58,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Controls\CheckButton.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Pages\OdorProduction\Production.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -122,10 +119,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Controls\CheckButton.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Update="Pages\OdorProduction\Production.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>

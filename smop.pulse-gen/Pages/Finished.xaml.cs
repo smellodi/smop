@@ -16,9 +16,6 @@ public partial class Finished : Page, IPage<Navigation>
 		}
 	}
 
-    /// <summary>
-    /// true: exit, false: return to the front page
-    /// </summary>
     public event EventHandler<Navigation>? Next; 
 	public event EventHandler<RequestSavingArgs>? RequestSaving;
 

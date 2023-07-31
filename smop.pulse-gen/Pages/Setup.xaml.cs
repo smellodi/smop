@@ -39,7 +39,7 @@ public partial class Setup : Page, IPage<PulseSetup>
     string? _setupFileName = null;
     PulseSetup? _setup = null;
 
-    Controls.ChannelIndicator? _currentIndicator = null;
+    ChannelIndicator? _currentIndicator = null;
 	int _smellInspResistor = 0;
 
 	private void ClearIndicators()
@@ -245,21 +245,6 @@ public partial class Setup : Page, IPage<PulseSetup>
 
             await Task.Delay(1000);
         }
-        /*if (!setParamResponse.Success)
-        {
-            completedSteps.RemoveAt(completedSteps.Count - 1);
-            completedSteps.Add($"Failed to set parameter '{ionVision.Settings.ParameterName}'");
-            tblDmsStatus.Text = string.Join('\n', completedSteps);
-
-            var parametersResponse = await ionVision.GetParameters();
-            string parameterList = string.Join("\n", (parametersResponse.Value ?? Array.Empty<IonVision.Parameter>())
-                .Take(25)
-                .Select(p => $"{p.Name}/{p.Id}"));
-            Utils.MsgBox.Error(Title, $"Parameter '{ionVision.Settings.ParameterName}/{ionVision.Settings.ParameterId}' does not exist.\nPlease edit IonVision setup file\nand set one of the following parameters:\n\n{parameterList}",
-                Utils.MsgBox.Button.OK);
-
-            return;
-        }*/
 
         completedSteps.RemoveAt(completedSteps.Count - 1);
         completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.");
@@ -271,11 +256,6 @@ public partial class Setup : Page, IPage<PulseSetup>
 
         _ionVisionIsReady = true;
         UpdateUI();
-        /*
-        Utils.DispatchOnce.Do(3, () => Dispatcher.InvokeAsync(async () =>
-        {
-            await InitializeIonVision(App.IonVision);
-        }));*/
     }
 
     private void HandleOdorDisplayError(OdorDisplay.Result odorDisplayResult, string action)
@@ -398,30 +378,9 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
 	}
 
-    /*
-    private void FreshAir_KeyUp(object? sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.F2 && txbFreshAir.IsReadOnly)
-        {
-            txbFreshAir.IsReadOnly = false;
-        }
-        else if (e.Key == Key.Enter)
-        {
-            if (Utils.Validation.Do(txbFreshAir, 0, 10, (object? s, double value) => _mfc.FreshAirSpeed = value))
-            {
-                txbFreshAir.MoveFocus(new TraversalRequest(FocusNavigationDirection.Up));
-            }
-            else
-            {
-                txbFreshAir.Undo();
-            }
-        }
-	}
-    */
-
 	private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
 	{
-		var chi = sender as Controls.ChannelIndicator;
+		var chi = sender as ChannelIndicator;
 		if (!chi?.IsActive ?? false)
 		{
 			if (_currentIndicator != null)

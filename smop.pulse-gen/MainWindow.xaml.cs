@@ -58,33 +58,6 @@ public partial class MainWindow : Window
         var smellInspLogger = SmellInspLogger.Instance;
         var ionVisionLogger = IonVisionLogger.Instance;
 
-        /*
-		var result = SavingResult.None;
-
-        var timestamp = $"{DateTime.Now:u}";
-		LoggerStorage? reference = null;
-
-		if (eventLogger.HasRecords)
-		{
-			result = eventLogger.SaveTo("events", timestamp, canCancel, null);
-			reference = eventLogger.File;
-		}
-
-		bool skipOtherLogfile = result == SavingResult.Discard || result == SavingResult.Cancel;
-
-		if (odorDisplayLogger.HasRecords && !skipOtherLogfile)
-		{
-			result = odorDisplayLogger.SaveTo("od", timestamp, canCancel, reference);
-		}
-        if (smellInspLogger.HasRecords && !skipOtherLogfile)
-        {
-            result = smellInspLogger.SaveTo("snt", timestamp, canCancel, reference);
-        }
-        if (ionVisionLogger.HasRecords && !skipOtherLogfile)
-        {
-            result = ionVisionLogger.SaveTo("dms", timestamp, canCancel, reference);
-        }*/
-
         var logs = new List<ILog>();
 		if (eventLogger.HasRecords) logs.Add(eventLogger);
         if (odorDisplayLogger.HasRecords) logs.Add(odorDisplayLogger);
@@ -139,7 +112,7 @@ public partial class MainWindow : Window
 	private void SetupPage_Next(object? sender, PulseSetup setup)
 	{
         Content = _pulsePage;
-        (_pulsePage as ITest)?.Start(setup);
+        _pulsePage.Start(setup);
     }
 
     private void Page_Next(object? sender, Navigation next)
@@ -172,7 +145,7 @@ public partial class MainWindow : Window
             System.Diagnostics.Debug.WriteLine($"[MW] Unrecognized navigation target '{next}'");
         }
 
-        (_pulsePage as ITest)?.Dispose();
+        _pulsePage.Dispose();
     }
 
 	private void FinishedPage_RequestSaving(object? sender, Pages.Finished.RequestSavingArgs e)
@@ -182,7 +155,6 @@ public partial class MainWindow : Window
     }
 
     // UI events
-
 
     private void Window_Loaded(object sender, RoutedEventArgs e)
 	{
@@ -196,13 +168,12 @@ public partial class MainWindow : Window
 			MsgBox.Notify(Title, "Developer and tester shortcuts:\n\n" +
 				"CONNECTION page\n" +
 				"F2 - starts simulator\n\n" +
-				"HOME page\n" +
+				"SETUP page\n" +
 				"F4 - starts Odor Pulses procedure\n\n" +
 				"PULSES page\n" +
 				"F2 - forces the test to finish\n\n" +
 				"Any page\n" +
-				"F9 - zooms out\n" +
-				"F10 - zooms in\n" +
+				"Ctrl + Scroll - zooms UI in/out\n" +
 				"F11 - toggles full screen\n");
 		}
 		else if (e.Key == Key.OemMinus)
@@ -244,7 +215,7 @@ public partial class MainWindow : Window
 		settings.MainWindow_IsMaximized = WindowState == WindowState.Maximized;
 		settings.Save();
 
-        (_pulsePage as ITest)?.Dispose();
+        _pulsePage.Dispose();
 
         await Task.Delay(100);
     }

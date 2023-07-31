@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using Smop.PulseGen.Utils;
+using Smop.PulseGen.Utils.Extensions;
 
 namespace Smop.PulseGen.Logging;
 

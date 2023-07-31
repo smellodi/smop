@@ -19,7 +19,7 @@ internal enum Stage
     Finished = 0x80,
 }
 
-internal class Controller : IDisposable
+internal class PulseController : IDisposable
 {
     public class StageChangedEventArgs
     {
@@ -43,7 +43,7 @@ internal class Controller : IDisposable
     public int SessionCount => _setup.Sessions.Length;
     public int PulseCount => 0 <= _sessionIndex && _sessionIndex < _setup.Sessions.Length ? _setup.Sessions[_sessionIndex].Pulses.Length : 0;
 
-    public Controller(PulseSetup setup)
+    public PulseController(PulseSetup setup)
     {
         _setup = setup;
     }

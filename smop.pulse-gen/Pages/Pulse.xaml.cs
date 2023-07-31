@@ -13,7 +13,7 @@ using Smop.PulseGen.Utils;
 
 namespace Smop.PulseGen.Pages;
 
-public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChanged
+public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyPropertyChanged
 {
 	public class RequestSavingArgs : EventArgs
 	{
@@ -27,9 +27,6 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
     public bool IsInitialPause { get; private set; } = false;
     public bool IsFinalPause { get; private set; } = false;
 
-    /// <summary>
-    /// true: finished all trials, false: interrupted
-    /// </summary>
     public event EventHandler<Navigation>? Next;
 	public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -61,7 +58,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
         CreateChannelStageIndicators(channelsExist);
         CreateAdditionalStageIndicators();
 
-        _controller = new Controller(setup);
+        _controller = new PulseController(setup);
         _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Intervals, e.Pulse, e.Stage));
         _controller.DmsScanProgressChanged += (s, e) => Dispatcher.Invoke(() => SetDmsProgress(e));
         _controller.OdorDisplayDataArrived += (s, e) => Dispatcher.Invoke(() => SetMeasurments(e));
@@ -81,7 +78,7 @@ public partial class Pulse : Page, IPage<Navigation>, ITest, INotifyPropertyChan
     
     Dictionary<OdorDisplay.Device.ID, (Label,CheckBox)>? _odorChannelObservers;
 
-    Controller? _controller = null;
+    PulseController? _controller = null;
 
     Stage _stage = Stage.None;
 

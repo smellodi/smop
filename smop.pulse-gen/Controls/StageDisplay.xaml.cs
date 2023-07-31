@@ -6,8 +6,6 @@ namespace Smop.PulseGen.Controls;
 
 public partial class StageDisplay : UserControl, INotifyPropertyChanged
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     #region IsCurrent property
 
     [Description("Is current"), Category("Common Properties")]
@@ -103,6 +101,7 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
     public string DurationUnits => Duration > 0 ? (_durationUnitsAreMs ? "ms" : "seconds") : "";
     public string FlowUnits => Flow >= 0 ? (_flowUnitsAreCcm ? "ccm" : "l/min") : "";
 
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public StageDisplay()
     {

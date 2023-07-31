@@ -124,8 +124,8 @@
                     <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <TabControl>
-                    <TabItem Header="Odor Display">
+                <TabControl SelectionChanged="TabControl_SelectionChanged">
+                    <TabItem x:Name="tabOdorDisplay" Header="Odor Display">
                         <ScrollViewer Grid.Row="0"
                             Padding="0,2"
                             HorizontalScrollBarVisibility="Auto" 
@@ -148,11 +148,9 @@
                     </TabItem>
                     <TabItem x:Name="tabIonVision" Header="Ion Vision"/>
                 </TabControl>
-                <TabPanel>
-                </TabPanel>
 
                 <local:LiveData x:Name="lmsGraph" Grid.Row="1"
-                            Margin="0,12,0,0"/>
+                    Margin="0,12,0,0"/>
             </Grid>
         </Grid>
         

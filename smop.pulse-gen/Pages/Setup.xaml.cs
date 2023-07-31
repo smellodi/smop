@@ -431,4 +431,9 @@ public partial class Setup : Page, IPage<PulseSetup>
         settings.Pulses_Randomize = chkRandomize.IsChecked == true;
         settings.Save();
     }
+
+    private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        lmsGraph.Visibility = tabOdorDisplay.IsSelected ? Visibility.Visible : Visibility.Hidden;
+    }
 }

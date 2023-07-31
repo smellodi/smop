@@ -3,10 +3,7 @@
 ## Dependencies
 
 NuGet packages:
-- NAudio
 - ScottPlot.WPF
-- System.IO.Ports
-- System.Management
 
 ## Connecting to devices
 

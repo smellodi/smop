@@ -114,8 +114,8 @@ public class Communicator: IDisposable
     /// <returns>Clock</returns>
     public Task<API.Response<Clock>> GetClock() => _api.GetClock();
 
-    /// <summary>Sets the system clock</summary>
-    /// <returns>Clock</returns>
+    /// <summary>Sets the system clock to the clock of the machine running this code</summary>
+    /// <returns>Confirmation message</returns>
     public Task<API.Response<Confirm>> SetClock() => _api.SetClock(new ClockToSet(
             DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
             "Europe/Helsinki",

@@ -9,11 +9,14 @@ NuGet packages:
 
 ### Odor Display
 
-Connection to the odor display device is obligatory. The software may suggest a COM port to connect to, but it is users' responsibility to figure out what COM port is the correct one.
+Connection to the odor display device is obligatory. The software may suggest a COM port to connect to, 
+but it is user's responsibility to figure out what COM port is the correct one.
 
 ### IonVision
 
-`IonVision.json` must contain correct information regaring the IobVision device:
+Parameters for connection to IonVision device must be stored in a JSON file. 
+`IonVision.json` file that is packaged with the app must be edited to contain correct information prior to 
+running the app for the the first time. The parameters are:
 
 - `ip`: the IonVision IP address,
 - `user`: user to be logged in, or "null" (without quotation marks) skip this step,
@@ -22,23 +25,25 @@ Connection to the odor display device is obligatory. The software may suggest a 
 - `parameterName`: name of this parameter,
 
 Users can load any other JSON file containing these fields using the `...` button on the Connection page.
-Note that it is not necessary to connect to IonVision and Smell Inspector to proceed to the next step.
+Note that it is not necessary to connect to IonVision to proceed to the next step.
 
 ### Smell Inspector
 
-Users must select the proper COM port.
+Users must select the proper COM port. Note that it is not necessary to connect to Smell Inspector 
+to proceed to the next step.
 
 ## Testing without real devices connected
 
-On the Connection page, press F2 to start the simulation mode.
+Press F2 on the Connection page to start the simulation mode.
 
 ## Setup file
 
-The setup file (plain TXT) containing generator parameters can be selected in the Setup page.
-The file contains description of pulses grouped into sessions.
+The setup file (plain text format) containing generator parameters can be selected in the Setup page.
+The file must contain description of pulses grouped into sessions.
 
-First row must describe the first session and start with `INIT:` keyword followed by the session parameters.
-The following space-separated sessions parameters are allowed:
+First row must describe the first session and start with `INIT:` keyword followed by the session parameters 
+present as a list of space-separated `key=value` pairs.
+The following sessions parameters are allowed:
 
 - `HUMIDITY` : humidity in percentages in the range 0..100,
 - `DELAY` : delay (seconds) before the gas is released,
@@ -51,7 +56,7 @@ Example:
 INIT: HUMIDITY=40 DELAY=5 DMS=5 DURATION=90 FINAL=5
 ```
 
-This example says that:
+In this example
 - the humidity will be set to 40% before the first pulse starts,
 - then, for each pulse:
 	- pulse channels' flows will be set at T=0,
@@ -76,10 +81,12 @@ closed, but its MFC will be programmed to blow with 60 nccm into the waste.
 
 ## Logged data
 
-After the pulse generating script finishes its work, all log files will be saved to a folder with the current timestamp set as its name, like `2023-07-26 14-27-12Z`.
+After the pulse generating script finishes its work, all log files will be saved to a folder with the current 
+timestamp set as its name, like `2023-07-26 14-27-12Z`.
 The parent folder is `Documents` by default, but users can change it when prompted to save data.
 
 List of timestamped events (actions, like valve opened and closed) will be recorded into `events.txt` file.
 Data from the odor display will be stored in `odor_display.txt` file.
-If IonVision was connected, then `dms.json` file will contain an array of DMS measurements with the comment set to the pulse channels description.
-If Smell Inspector was connected, then `snt.json` file will contain an array of SNT measurements, 66 values per measurement.
+If IonVision was connected, then `dms.json` file will contain an array of DMS measurements with the comment 
+set to the pulse channels description. If Smell Inspector was connected, then `snt.json` file will contain 
+an array of SNT measurements, 66 values per measurement.

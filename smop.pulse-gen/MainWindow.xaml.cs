@@ -36,7 +36,7 @@ public partial class MainWindow : Window
 			Height = settings.MainWindow_Height;
 		}
 
-		string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "X";
+		string version = Utils.Resources.GetVersion();
 		Title += $"   v{version}";
 	}
 

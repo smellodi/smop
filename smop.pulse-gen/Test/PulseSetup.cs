@@ -83,6 +83,8 @@ public class PulseSetup
 
         try
         {
+            var linesWithInvalidData = new List<int>();
+
             using var reader = new StreamReader(filename);
             int lineIndex = 0;
 
@@ -102,30 +104,56 @@ public class PulseSetup
                     var sessionProps = CreateSessionProps(p, lastSession, lineIndex);
                     lastSession = sessionProps;
 
-                    sessions.Add(sessionProps);
+                    if (sessionProps != null)
+                    {
+                        sessions.Add(sessionProps);
+                    }
+                    else
+                    {
+                        linesWithInvalidData.Add(lineIndex);
+                    }
                 }
                 else if (p[0] == "pulse")
                 {
                     if (lastSession != null)
                     {
                         p = p[1].Trim().Split(' ');
-                        var pulseProps = CreatePulseProps(p);
-                        lastSession.AddPulse(pulseProps);
+                        var (pulseProps, hasInvalidValues) = CreatePulseProps(p);
+
+                        if (pulseProps != null)
+                        {
+                            lastSession.AddPulse(pulseProps);
+                        }
+
+                        if (pulseProps == null || hasInvalidValues)
+                        {
+                            linesWithInvalidData.Add(lineIndex);
+                        }
                     }
                     else
                     {
+                        linesWithInvalidData.Add(lineIndex);
                         Debug.WriteLine($"[PST] no session defined yet on line {lineIndex}");
                     }
                 }
                 else
                 {
+                    linesWithInvalidData.Add(lineIndex);
                     Debug.WriteLine($"[PST] unknown command '{p[0]}' on line {lineIndex}");
                 }
+            }
+
+            if (linesWithInvalidData.Count > 0)
+            {
+                var lines = string.Join(", ", linesWithInvalidData);
+                MsgBox.Warn(System.Windows.Application.Current.MainWindow.Title,
+                    $"The setup file was read and parsed, but the following lines were ignored:\n{lines}",
+                    new MsgBox.Button[] { MsgBox.Button.OK });
             }
         }
         catch (Exception e)
         {
-            MsgBox.Error(App.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{e.Message}");
+            MsgBox.Error(System.Windows.Application.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{e.Message}");
         }
 
         return new PulseSetup() { Sessions = sessions.ToArray() };
@@ -144,9 +172,12 @@ public class PulseSetup
 
     // Internal
 
+    const float MAX_INTERVAL = 60 * 60; // seconds
+    const float MAX_FLOW = 1000; // nccm
+
     private static string BoolToState(bool value) => value ? "ON" : "OFF";
 
-    private static SessionProps CreateSessionProps(string[] p, SessionProps? lastSessionProps, int lineIndex)
+    private static SessionProps? CreateSessionProps(string[] p, SessionProps? lastSessionProps, int lineIndex)
     {
         float humidity = lastSessionProps?.Humidity ?? -1;
         float delay = lastSessionProps?.Intervals.InitialPause ?? 0;
@@ -193,15 +224,24 @@ public class PulseSetup
             }
         }
 
-        return new SessionProps(humidity, new PulseIntervals(delay, duration, dmsDelay, finalPause));
+        return
+            humidity < 0 || humidity > MAX_INTERVAL ||
+            delay < 0 || delay > MAX_INTERVAL ||
+            duration <= 0 || duration > MAX_INTERVAL ||
+            dmsDelay > MAX_INTERVAL ||
+            finalPause < 0 || finalPause > MAX_INTERVAL ||
+            dmsDelay > duration
+                ? null
+                : new SessionProps(humidity, new PulseIntervals(delay, duration, dmsDelay, finalPause));
     }
 
-    private static PulseProps CreatePulseProps(string[] p)
+    private static (PulseProps?, bool) CreatePulseProps(string[] p)
     {
+        bool hasInvalidValues = false;
         var channels = new List<PulseChannelProps>();
         foreach (var field in p)
         {
-            if (field.Length < 5)
+            if (field.Length < 3)
             {
                 continue;
             }
@@ -212,19 +252,38 @@ public class PulseSetup
             }
 
             var pcp = keyvalue[1].Split(',');
-            if (pcp.Length != 2)
+            if (pcp.Length > 2)
             {
                 continue;
             }
 
             var id = int.Parse(keyvalue[0]);
             var flow = float.Parse(pcp[0]);
-            var active = int.Parse(pcp[1]) != 0;
 
-            var pulseChannelProps = new PulseChannelProps(id, flow, active);
-            channels.Add(pulseChannelProps);
+            var active = true;
+            if (pcp.Length > 1)
+            {
+                if (int.TryParse(pcp[1], out int activeValue))
+                {
+                    active = activeValue > 0;
+                }
+                else if (pcp[1] == "off")
+                {
+                    active = false;
+                }
+            }
+
+            if (id > 0 && id < 10 && flow >= 0 && flow <= MAX_FLOW)
+            {
+                var pulseChannelProps = new PulseChannelProps(id, flow, active);
+                channels.Add(pulseChannelProps);
+            }
+            else
+            {
+                hasInvalidValues = true;
+            }
         }
 
-        return new PulseProps(channels.ToArray());
+        return (channels.Count > 0 ? new PulseProps(channels.ToArray()) : null, hasInvalidValues);
     }
 }

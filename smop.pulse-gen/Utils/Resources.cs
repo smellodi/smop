@@ -11,5 +11,10 @@ namespace Smop.PulseGen.Utils
         {
             return new Uri(Path.Combine(UriBase, filename), kind);
         }
+        public static string GetVersion()
+        {
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            return version == null ? "X" : $"{version.Major}.{version.Minor}.{version.Build}";
+        }
     }
 }

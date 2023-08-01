@@ -60,16 +60,19 @@ This example says that:
 	- channels' valves will be closed at T=95s,
 	- the pulse generation procedure will end at T=100s, continuing to the next pulse, if any.
 
-At least one pulse must be specified after each session description, one per line. The pulse definition starts with the `PULSE:` keyword followed by a list of channel descriptions separated by space.
-Channel definition starts with the channel number (1..9), equality sign `=`, and two values separated by a comma (with no spaces!): the channel flow in nccm, 
-and channel usage (`1` means the channel's valve must be opened, and `0` means the channel will remain closed during the pulse).
+At least one pulse must be specified after each session description, one per line. The pulse definition starts 
+with the `PULSE:` keyword followed by a list of channel descriptions separated by space. Channel definition starts 
+with the channel number (1..9), equality sign `=`, and the flow rate in nccm (max 1000 nccm). Channels not listed 
+will have no flow and their valves will remain closed. If a closed channel should get some flow rate, then 
+`,0` or `,OFF` should follow its flow rate.
 
 Example:
 ```
-PULSE: 1=70,1 2=60,0 4=50,1
+PULSE: 1=70 2=60,OFF 4=50
 ```
-Here, the valves of channels `1` and `4` will be opened when the pulse starts, and channels' flowing rates will be 70 nccm and 50 nccm respectively.
-The channel `2` will be closed, but its MFC will be programmed to flow with 60 nccm into the waste. Other channels will not be affected.
+Here, the valves of channels `1` and `4` will be opened when the pulse starts, and channels' flowing rates will be 
+70 nccm and 50 nccm respectively. All other channels will be inactive, except the channel `2` that will remain 
+closed, but its MFC will be programmed to blow with 60 nccm into the waste.
 
 ## Logged data
 

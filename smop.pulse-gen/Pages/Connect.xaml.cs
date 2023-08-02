@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32;
-using Smop.OdorDisplay.Packets;
+﻿using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -375,7 +374,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 		string appBaseDir = AppDomain.CurrentDomain.BaseDirectory;
 		string ionVisionSetupPath = Path.Combine(appBaseDir, IonVisionSetupFilename);
 
-        var ofd = new OpenFileDialog
+        var ofd = new Microsoft.Win32.OpenFileDialog
         {
             Filter = "JSON files|*.json",
             FileName = Path.GetFileName(ionVisionSetupPath),

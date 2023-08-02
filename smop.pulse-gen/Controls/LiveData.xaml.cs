@@ -5,7 +5,11 @@ namespace Smop.PulseGen.Controls;
 
 public partial class LiveData : UserControl
 {
-	static readonly System.Drawing.Color LINE_COLOR = System.Drawing.Color.FromArgb(16, 160, 255);
+    public class MeasureModel
+    {
+        public double Timestamp { get; set; }
+        public double Value { get; set; }
+    }
 
 	public double Step
 	{
@@ -23,12 +27,6 @@ public partial class LiveData : UserControl
 		}
 	}
 
-	public class MeasureModel
-	{
-		public double Timestamp { get; set; }
-		public double Value { get; set; }
-	}
-
 	public LiveData()
 	{
 		InitializeComponent();
@@ -40,8 +38,8 @@ public partial class LiveData : UserControl
 		};
 
 		chart.Plot.Add(_scatter);
-		chart.Plot.XAxis.Color(COLOR_GRAY);
-		chart.Plot.YAxis.Color(COLOR_GRAY);
+		chart.Plot.XAxis.Color(AXIS_COLOR);
+		chart.Plot.YAxis.Color(AXIS_COLOR);
 
 		chart.Plot.XAxis.TickLabelStyle(fontSize: 10);
 		chart.Plot.XAxis.SetSizeLimit(10, 20, 0);
@@ -110,11 +108,11 @@ public partial class LiveData : UserControl
 	}
 
 
-	// Internal 
+    // Internal 
 
-	const int PIXELS_PER_POINT = 4;
-
-	readonly System.Drawing.Color COLOR_GRAY = System.Drawing.Color.FromArgb(80, 80, 80);
+    static readonly System.Drawing.Color LINE_COLOR = System.Drawing.Color.FromArgb(16, 160, 255);
+    static readonly System.Drawing.Color AXIS_COLOR = System.Drawing.Color.FromArgb(80, 80, 80);
+    static readonly int PIXELS_PER_POINT = 4;
 
 	readonly List<MeasureModel> _data = new();
 	readonly ScottPlot.Plottable.ScatterPlot _scatter;

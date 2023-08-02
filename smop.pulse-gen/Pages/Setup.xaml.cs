@@ -1,7 +1,7 @@
 ﻿using Microsoft.Win32;
 using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
-using Smop.PulseGen.Test;
+using Smop.PulseGen.Generator;
 using System;
 using System.Collections.Generic;
 using System.IO;

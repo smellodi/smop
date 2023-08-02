@@ -1,6 +1,5 @@
 ﻿using Smop.PulseGen.Logging;
 using Smop.PulseGen.Pages;
-using Smop.PulseGen.Test;
 using Smop.PulseGen.Utils;
 using System;
 using System.Collections.Generic;
@@ -109,7 +108,7 @@ public partial class MainWindow : Window
 		Content = _setupPage;
 	}
 
-	private void SetupPage_Next(object? sender, PulseSetup setup)
+	private void SetupPage_Next(object? sender, Generator.PulseSetup setup)
 	{
         Content = _pulsePage;
         _pulsePage.Start(setup);

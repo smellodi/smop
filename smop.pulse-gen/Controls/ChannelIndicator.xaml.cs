@@ -213,7 +213,6 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 	public bool IsWarningVisible => double.IsFinite(WarningThreshold) && double.IsFinite(Value) && WarningThreshold < Value;
 
     public event EventHandler<int>? ChannelIdChanged;
-    
 	public event PropertyChangedEventHandler? PropertyChanged;
 
 	public ChannelIndicator()

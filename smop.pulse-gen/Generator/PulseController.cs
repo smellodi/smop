@@ -1,10 +1,9 @@
 ﻿using Smop.PulseGen.Logging;
 using Smop.PulseGen.Utils;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Smop.PulseGen.Test;
+namespace Smop.PulseGen.Generator;
 
 [Flags]
 internal enum Stage
@@ -296,7 +295,7 @@ internal class PulseController : IDisposable
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
-        Debug.WriteLine($"[IV] {action}: {error}");
+        System.Diagnostics.Debug.WriteLine($"[IV] {action}: {error}");
         return response;
     }
 

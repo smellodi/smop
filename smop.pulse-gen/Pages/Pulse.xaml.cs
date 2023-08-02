@@ -8,7 +8,7 @@ using System.Windows.Input;
 using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Logging;
-using Smop.PulseGen.Test;
+using Smop.PulseGen.Generator;
 using Smop.PulseGen.Utils;
 
 namespace Smop.PulseGen.Pages;

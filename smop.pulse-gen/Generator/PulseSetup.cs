@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace Smop.PulseGen.Test;
+namespace Smop.PulseGen.Generator;
 
 /// <summary>
 /// One odor channel properties
@@ -189,12 +189,12 @@ public class PulseSetup
         {
             if (field.Length < 3)
             {
-                continue;
+                return null;
             }
             var keyvalue = field.Split('=');
             if (keyvalue.Length != 2)
             {
-                continue;
+                return null;
             }
 
             var key = keyvalue[0];
@@ -221,6 +221,7 @@ public class PulseSetup
             else
             {
                 Debug.WriteLine($"[PST] unknown field '{field}' on line {lineIndex}");
+                return null;
             }
         }
 
@@ -243,18 +244,18 @@ public class PulseSetup
         {
             if (field.Length < 3)
             {
-                continue;
+                return (null, true);
             }
             var keyvalue = field.Split('=');
             if (keyvalue.Length != 2)
             {
-                continue;
+                return (null, true);
             }
 
             var pcp = keyvalue[1].Split(',');
             if (pcp.Length > 2)
             {
-                continue;
+                return (null, true);
             }
 
             var id = int.Parse(keyvalue[0]);

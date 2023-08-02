@@ -3,24 +3,11 @@ using System.Collections.Generic;
 
 namespace Smop.PulseGen.Utils;
 
+/// <summary>
+/// Use <see cref="Do(double, Action)"/> static method of this class to execute a delayed action
+/// </summary>
 public class DispatchOnce : System.Timers.Timer
 {
-	public DispatchOnce(double seconds, Action action, bool start = true) : base()
-	{
-		var pause = (int)(1000 * seconds);
-		_actions.Enqueue(new ScheduledAction() { Pause = pause, Action = action });
-
-		Interval = pause;
-		AutoReset = false;
-
-		Elapsed += (s, e) => Execute();
-
-		if (start)
-		{
-			Start();
-		}
-	}
-
 	public static DispatchOnce? Do(double seconds, Action action)
 	{
 		if (seconds > 0)
@@ -51,7 +38,23 @@ public class DispatchOnce : System.Timers.Timer
 
 	readonly Queue<ScheduledAction> _actions = new();
 
-	private void Execute()
+    private DispatchOnce(double seconds, Action action, bool start = true) : base()
+    {
+        var pause = (int)(1000 * seconds);
+        _actions.Enqueue(new ScheduledAction() { Pause = pause, Action = action });
+
+        Interval = pause;
+        AutoReset = false;
+
+        Elapsed += (s, e) => Execute();
+
+        if (start)
+        {
+            Start();
+        }
+    }
+
+    private void Execute()
 	{
 		Stop();
 

@@ -30,20 +30,23 @@ public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, I
 
 	#endregion
 
-	[Description("Waiting time"), Category("Common Properties")]
+	/// <summary>
+	/// Waiting time in seconds
+	/// </summary>
 	public double WaitingTime
 	{
 		get => prbProgress.Maximum;
 		set
 		{
 			double val = Math.Max(0, value);
-			double progress = Progress;
 			prbProgress.Maximum = val;
-			prbProgress.Value = val * progress;
+			prbProgress.Value = val * Progress;
 		}
 	}
 
-	[Description("Progress"), Category("Common Properties")]
+	/// <summary>
+	/// Value in the range 0..1
+	/// </summary>
 	public double Progress
 	{
 		get => prbProgress.Maximum > 0 ? prbProgress.Value / prbProgress.Maximum : 0;
@@ -110,13 +113,13 @@ public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, I
 
 	public void Dispose()
 	{
-		GC.SuppressFinalize(this);
 		_timer.Dispose();
-	}
+        GC.SuppressFinalize(this);
+    }
 
-	// Internal
+    // Internal
 
-	const double UPDATE_INTERVAL = 0.1;
+    const double UPDATE_INTERVAL = 0.1;
 
 	readonly System.Timers.Timer _timer = new();
 

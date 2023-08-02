@@ -3,7 +3,7 @@ using Smop.OdorDisplay.Packets;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Smop.PulseGen.Test;
+namespace Smop.PulseGen.Generator;
 
 internal class OdorDisplayController
 {

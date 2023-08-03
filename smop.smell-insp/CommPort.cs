@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.IO.Ports;
-using System.Threading;
-using Result = Smop.OdorDisplay.Result;
-using Error = Smop.OdorDisplay.Error;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading;
+using Error = Smop.OdorDisplay.Error;
+using Result = Smop.OdorDisplay.Result;
 
 namespace Smop.SmellInsp;
 
@@ -35,7 +35,7 @@ public class CommPort
     /// Fires when a data packet is received
     /// The handler MUST be async!
     /// </summary>
-    public event EventHandler <Data>? Data;
+    public event EventHandler<Data>? Data;
 
     /// <summary>
     /// Fires when an info packet is received

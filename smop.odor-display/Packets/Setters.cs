@@ -21,11 +21,12 @@ public class SetActuators : Request
 public class SetSystem : Request
 {
     public bool Fans => _payload![0] != 0;
-    public bool PIDs =>_payload![1] != 0;
+    public bool PIDs => _payload![1] != 0;
     public SetSystem(bool fans, bool pids) : base(Type.SetSystem, new byte[] {
         (byte)(fans ? 1 : 0),
         (byte)(pids ? 1 : 0)
-    }) { }
+    })
+    { }
     public override string ToString() => $"{_type}:" +
         $"\n    Fans {Fans.AsFlag()}" +
         $"\n    PIDs {PIDs.AsFlag()}";

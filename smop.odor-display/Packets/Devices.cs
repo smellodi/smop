@@ -30,7 +30,7 @@ public class Devices : Response
         {
             $"Base module: {HasBaseModule.AsFlag()}",
         };
-        for (int i = 0; i < MaxOdorModuleCount; i++ )
+        for (int i = 0; i < MaxOdorModuleCount; i++)
         {
             flags.Add($"Odor{i + 1}: {HasOdorModule(i).AsFlag()}");
         }

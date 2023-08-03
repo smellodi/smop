@@ -8,35 +8,35 @@ namespace Smop.PulseGen.Utils;
 /// </summary>
 public class DispatchOnce : System.Timers.Timer
 {
-	public static DispatchOnce? Do(double seconds, Action action)
-	{
-		if (seconds > 0)
-		{
-			return new DispatchOnce(seconds, action);
-		}
-		else
-		{
-			action();
-			return null;
-		}
-	}
+    public static DispatchOnce? Do(double seconds, Action action)
+    {
+        if (seconds > 0)
+        {
+            return new DispatchOnce(seconds, action);
+        }
+        else
+        {
+            action();
+            return null;
+        }
+    }
 
-	public DispatchOnce Then(double seconds, Action action)
-	{
-		_actions.Enqueue(new ScheduledAction() { Pause = (int)(1000 * seconds), Action = action });
-		return this;
-	}
+    public DispatchOnce Then(double seconds, Action action)
+    {
+        _actions.Enqueue(new ScheduledAction() { Pause = (int)(1000 * seconds), Action = action });
+        return this;
+    }
 
 
-	// Internal
+    // Internal
 
-	struct ScheduledAction
-	{
-		public int Pause;
-		public Action Action;
-	}
+    struct ScheduledAction
+    {
+        public int Pause;
+        public Action Action;
+    }
 
-	readonly Queue<ScheduledAction> _actions = new();
+    readonly Queue<ScheduledAction> _actions = new();
 
     private DispatchOnce(double seconds, Action action, bool start = true) : base()
     {
@@ -55,17 +55,17 @@ public class DispatchOnce : System.Timers.Timer
     }
 
     private void Execute()
-	{
-		Stop();
+    {
+        Stop();
 
-		var action = _actions.Dequeue();
-		action.Action();
+        var action = _actions.Dequeue();
+        action.Action();
 
-		if (_actions.Count > 0)
-		{
-			var next = _actions.Peek();
-			Interval = next.Pause;
-			Start();
-		}
-	}
+        if (_actions.Count > 0)
+        {
+            var next = _actions.Peek();
+            Interval = next.Pause;
+            Start();
+        }
+    }
 }

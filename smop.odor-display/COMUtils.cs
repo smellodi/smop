@@ -1,10 +1,10 @@
-﻿using System;
+﻿using FTD2XX_NET;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
-using FTD2XX_NET;
 
 namespace Smop.OdorDisplay;
 
@@ -173,9 +173,9 @@ public class COMUtils
             ManagementBaseObject[]? records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
             ports = records.Select(rec =>
                 {
-                    var name = 
+                    var name =
                         portNames.FirstOrDefault(name => rec["Caption"]?.ToString()?.Contains($"({name})") ?? false) ??
-                        portNames.FirstOrDefault(name => rec["DeviceID"]?.ToString()?.Contains($"{name}") ?? false) ?? 
+                        portNames.FirstOrDefault(name => rec["DeviceID"]?.ToString()?.Contains($"{name}") ?? false) ??
                         "";
                     var description = rec["Description"]?.ToString();
                     var manufacturer = rec["Manufacturer"]?.ToString();
@@ -218,7 +218,7 @@ public class COMUtils
 
     // Debugging
 
-    static HashSet<string> PropsToPrint = new() { "Caption", "Description", "Manufacturer", "Name", "Service"};
+    static HashSet<string> PropsToPrint = new() { "Caption", "Description", "Manufacturer", "Name", "Service" };
     static HashSet<string> ManufacturersToPrint = new() { "microsoft" };
     static HashSet<string> ManufacturersNotToPrint = new() { "microsoft", "standard", "(standard", "intel", "acer", "rivet", "nvidia", "realtek", "generic" };
     /*

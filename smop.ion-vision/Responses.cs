@@ -93,7 +93,8 @@ public record class Calibration(
 );
 
 // Could be modified 
-public record class SimpleComment() {
+public record class SimpleComment()
+{
     // Nulls not to be added
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Text { get; set; }

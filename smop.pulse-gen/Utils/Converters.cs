@@ -9,15 +9,15 @@ public class NumberToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-		if (value.GetType() == typeof(int))
-		{
-			return (int)value != 0 ? Visibility.Visible : Visibility.Collapsed;
-		}
-		else if (value.GetType() == typeof(double))
-		{
-			return (double)value != 0 ? Visibility.Visible : Visibility.Collapsed;
-		}
-		else return Visibility.Visible;
+        if (value.GetType() == typeof(int))
+        {
+            return (int)value != 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else if (value.GetType() == typeof(double))
+        {
+            return (double)value != 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else return Visibility.Visible;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -29,29 +29,29 @@ public class NumberToVisibilityConverter : IValueConverter
 
 public class BoolToVisibilityConverter : IValueConverter
 {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return (bool)value ? Visibility.Visible : Visibility.Hidden;
-	}
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return (bool)value ? Visibility.Visible : Visibility.Hidden;
+    }
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		var visibility = (Visibility)value;
-		return visibility == Visibility.Visible;
-	}
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var visibility = (Visibility)value;
+        return visibility == Visibility.Visible;
+    }
 }
 
 public class ObjectToBoolConverter : IValueConverter
 {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		return value != null;
-	}
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return value != null;
+    }
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
 }
 
 public class ZoomToPercentageConverter : IValueConverter

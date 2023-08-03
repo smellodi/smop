@@ -4,13 +4,13 @@ namespace Smop.PulseGen.Pages;
 
 internal interface IPage<T>
 {
-	event EventHandler<T> Next;
+    event EventHandler<T> Next;
 }
 
 public enum Navigation
 {
-	Exit,
-	Setup,
-	Generator,
-	Finished,
+    Exit,
+    Setup,
+    Generator,
+    Finished,
 }

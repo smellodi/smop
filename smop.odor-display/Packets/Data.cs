@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Dynamic;
-using System.Globalization;
 using System.Linq;
-using System.Windows.Media;
 
 namespace Smop.OdorDisplay.Packets;
 
@@ -97,7 +94,7 @@ public abstract class SensorValue
     public Device.Sensor Sensor { get; }
     public byte[] Data { get; }
     public abstract string[] ValueNames { get; }
-    public abstract float[] Values { get;}
+    public abstract float[] Values { get; }
     public static SensorValue? Create(Device.Sensor sensor, byte[] data, ref int offset)
     {
         int dataLength = sensor switch

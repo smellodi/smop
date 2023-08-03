@@ -76,7 +76,7 @@ internal class FileSimulator : Simulator
                     data = input.ReadToEnd();
                     trialCountLeft = 0;
                 }
-                catch (Exception) 
+                catch (Exception)
                 {
                     trialCountLeft--;
                 }

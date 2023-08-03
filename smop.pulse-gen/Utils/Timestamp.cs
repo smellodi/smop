@@ -7,17 +7,17 @@ namespace Smop.PulseGen.Utils;
 /// </summary>
 public static class Timestamp
 {
-	/// <summary>
-	/// In milliseconds
-	/// </summary>
-	public static long Ms => (DateTime.Now.Ticks - _start) / 10000;
+    /// <summary>
+    /// In milliseconds
+    /// </summary>
+    public static long Ms => (DateTime.Now.Ticks - _start) / 10000;
 
-	/// <summary>
-	/// In seconds
-	/// </summary>
-	public static double Sec => (double)(DateTime.Now.Ticks - _start) / 10000000;
+    /// <summary>
+    /// In seconds
+    /// </summary>
+    public static double Sec => (double)(DateTime.Now.Ticks - _start) / 10000000;
 
-	// Internal
+    // Internal
 
-	static readonly long _start = DateTime.Now.Ticks;
+    static readonly long _start = DateTime.Now.Ticks;
 }

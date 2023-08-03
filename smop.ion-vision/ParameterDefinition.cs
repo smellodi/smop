@@ -51,7 +51,7 @@ public record class Delays(
 public record class RangeStep(
     float Min,
     float Max,
-    float Steps 
+    float Steps
 ) : Range(Min, Max);
 public record class SteppingControl(
     RangeStep Usv,

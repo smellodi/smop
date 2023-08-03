@@ -5,10 +5,10 @@ namespace Smop.PulseGen.Logging;
 
 public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
 {
-	public class Record : RecordBase
+    public class Record : RecordBase
     {
-		public Record(Data data) : base()
-		{
+        public Record(Data data) : base()
+        {
             var values = new List<float>
             {
                 Timestamp,
@@ -16,9 +16,9 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
             };
 
             foreach (Measurement m in data.Measurements)
-			{
+            {
                 foreach (var sv in m.SensorValues)
-				{
+                {
                     foreach (float value in sv.Values)
                     {
                         values.Add(value);
@@ -49,38 +49,38 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
 
             return string.Join(Delim, names);
         }
-        
+
         public override string ToString()
-		{
-			return string.Join(Delim, _fields);
-		}
+        {
+            return string.Join(Delim, _fields);
+        }
 
-		// Internal
+        // Internal
 
-		readonly float[] _fields;
-	}
+        readonly float[] _fields;
+    }
 
-	public static OdorDisplayLogger Instance => _instance ??= new();
+    public static OdorDisplayLogger Instance => _instance ??= new();
 
     public string Name => "odor_display";
 
     public void Add(Data data)
-	{
+    {
         if (_records.Count == 0)
         {
             Header = Record.MakeHeader(data);
         }
 
-		if (IsEnabled)
-		{
-			var record = new Record(data);
-			_records.Add(record);
-		}
-	}
+        if (IsEnabled)
+        {
+            var record = new Record(data);
+            _records.Add(record);
+        }
+    }
 
-	// Internal
+    // Internal
 
-	static OdorDisplayLogger? _instance = null;
+    static OdorDisplayLogger? _instance = null;
 
-	protected OdorDisplayLogger() : base() { }
+    protected OdorDisplayLogger() : base() { }
 }

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using RestSharp;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using RestSharp;
 
 namespace Smop.IonVision;
 
@@ -132,7 +132,7 @@ public class API : IMinimalAPI
     /// <summary>Creates a new parameter</summary>
     /// <param name="parameter">New parameter definition</param>
     /// <returns>Parameter as name</returns>
-    public Task<Response<ParameterAsId>> CreateParameter(ParameterDefinition parameter) => Create<ParameterDefinition,ParameterAsId>("parameter", parameter, true);
+    public Task<Response<ParameterAsId>> CreateParameter(ParameterDefinition parameter) => Create<ParameterDefinition, ParameterAsId>("parameter", parameter, true);
 
     /// <summary>Retrieves the parameter definition</summary>
     /// <param name="parameter">Parameter</param>
@@ -638,7 +638,7 @@ public class API : IMinimalAPI
             request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
         }
         try
-        { 
+        {
             var response = await _client.PutAsync(request);
             return response.As<Confirm>();
         }
@@ -649,7 +649,7 @@ public class API : IMinimalAPI
     }
     private Task<Response<Confirm>> Set(string path) => Set<object>(path);
 
-    private async Task<Response<U>> Create<T,U>(string path, T? param, bool preserveParamCase = false, bool preserveResponseCase = false)
+    private async Task<Response<U>> Create<T, U>(string path, T? param, bool preserveParamCase = false, bool preserveResponseCase = false)
         where T : class
         where U : class
     {
@@ -659,7 +659,7 @@ public class API : IMinimalAPI
             request.AddBody(JsonSerializer.Serialize(param, preserveParamCase ? null : _serializationOptions));
         }
         try
-        { 
+        {
             var response = await _client.PostAsync(request);
             return response.As<U>(preserveResponseCase);
         }
@@ -736,7 +736,7 @@ internal static class RestResponseExtension
         {
             data = data[..maxDataLengthToPrint] + "...";
         }
-        
+
         Console.WriteLine($"[API] {(int)response.StatusCode} ({response.StatusDescription}), {data} ({response.ContentLength} bytes)");
 
         if (response.IsSuccessful)

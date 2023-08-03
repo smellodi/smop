@@ -6,37 +6,37 @@ namespace Smop.PulseGen;
 
 public partial class App : Application
 {
-	#region Global objects
+    #region Global objects
 
-	public static IonVision.Communicator? IonVision { get; set; } = null;
+    public static IonVision.Communicator? IonVision { get; set; } = null;
 
     #endregion
 
     private void Application_Startup(object sender, StartupEventArgs e)
-	{
-		var settings = PulseGen.Properties.Settings.Default;
-		if (settings.CallUpgrade)
-		{
-			settings.Upgrade();
-			settings.CallUpgrade = false;
-			settings.Save();
-		}
+    {
+        var settings = PulseGen.Properties.Settings.Default;
+        if (settings.CallUpgrade)
+        {
+            settings.Upgrade();
+            settings.CallUpgrade = false;
+            settings.Save();
+        }
 
-		// Set the US-culture across the application to avoid decimal point parsing/logging issues
-		var culture = CultureInfo.GetCultureInfo("en-US");
-		CultureInfo.DefaultThreadCurrentCulture = culture;
-		CultureInfo.DefaultThreadCurrentUICulture = culture;
-		System.Threading.Thread.CurrentThread.CurrentCulture = culture;
-		System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
+        // Set the US-culture across the application to avoid decimal point parsing/logging issues
+        var culture = CultureInfo.GetCultureInfo("en-US");
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
 
-		// Force all TextBox's to select its content upon focused
-		EventManager.RegisterClassHandler(typeof(TextBox),
-			UIElement.GotFocusEvent,
-			new RoutedEventHandler(TextBox_GotFocus));
-	}
+        // Force all TextBox's to select its content upon focused
+        EventManager.RegisterClassHandler(typeof(TextBox),
+            UIElement.GotFocusEvent,
+            new RoutedEventHandler(TextBox_GotFocus));
+    }
 
-	private void TextBox_GotFocus(object sender, RoutedEventArgs e)
-	{
-		(sender as TextBox)?.SelectAll();
-	}
+    private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+    {
+        (sender as TextBox)?.SelectAll();
+    }
 }

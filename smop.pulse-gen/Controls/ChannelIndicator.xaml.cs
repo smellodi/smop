@@ -7,171 +7,171 @@ namespace Smop.PulseGen.Controls;
 
 public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 {
-	#region Title property
+    #region Title property
 
-	[Description("Title"), Category("Common Properties")]
-	public string Title
-	{
-		get => (string)GetValue(TitleProperty);
-		set => SetValue(TitleProperty, value);
-	}
+    [Description("Title"), Category("Common Properties")]
+    public string Title
+    {
+        get => (string)GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
 
-	public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
-		nameof(Title),
-		typeof(string),
-		typeof(ChannelIndicator),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(TitleProperty_Changed)));
+    public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
+        nameof(Title),
+        typeof(string),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(TitleProperty_Changed)));
 
-	private static void TitleProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-	{
-		if (sender is ChannelIndicator instance)
-		{
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Title)));
-		}
-	}
+    private static void TitleProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is ChannelIndicator instance)
+        {
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Title)));
+        }
+    }
 
-	#endregion 
+    #endregion
 
-	#region Value property
+    #region Value property
 
-	[Description("Value"), Category("Common Properties")]
-	public double Value
-	{
-		get => (double)GetValue(ValueProperty);
-		set => SetValue(ValueProperty, value);
-	}
+    [Description("Value"), Category("Common Properties")]
+    public double Value
+    {
+        get => (double)GetValue(ValueProperty);
+        set => SetValue(ValueProperty, value);
+    }
 
-	public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
-		nameof(Value),
-		typeof(double),
-		typeof(ChannelIndicator),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(ValueProperty_Changed)));
+    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
+        nameof(Value),
+        typeof(double),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(ValueProperty_Changed)));
 
-	private static void ValueProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-	{
-		if (sender is ChannelIndicator instance)
-		{
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Value)));
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(ValueStr)));
-		}
-	}
+    private static void ValueProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is ChannelIndicator instance)
+        {
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Value)));
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(ValueStr)));
+        }
+    }
 
-	#endregion 
+    #endregion
 
-	#region Units property
+    #region Units property
 
-	[Description("Value"), Category("Common Properties")]
-	public string Units
-	{
-		get => (string)GetValue(UnitsProperty);
-		set => SetValue(UnitsProperty, value);
-	}
+    [Description("Value"), Category("Common Properties")]
+    public string Units
+    {
+        get => (string)GetValue(UnitsProperty);
+        set => SetValue(UnitsProperty, value);
+    }
 
-	public static readonly DependencyProperty UnitsProperty = DependencyProperty.Register(
-		nameof(Units),
-		typeof(string),
-		typeof(ChannelIndicator),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(UnitsProperty_Changed)));
+    public static readonly DependencyProperty UnitsProperty = DependencyProperty.Register(
+        nameof(Units),
+        typeof(string),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(UnitsProperty_Changed)));
 
-	private static void UnitsProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-	{
-		if (sender is ChannelIndicator instance)
-		{
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Units)));
-		}
-	}
+    private static void UnitsProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is ChannelIndicator instance)
+        {
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Units)));
+        }
+    }
 
-	#endregion 
+    #endregion
 
-	#region IsActive property
+    #region IsActive property
 
-	[Description("Is the indicator active"), Category("Common Properties")]
-	public bool IsActive
-	{
-		get => (bool)GetValue(IsActiveProperty);
-		set => SetValue(IsActiveProperty, value);
-	}
+    [Description("Is the indicator active"), Category("Common Properties")]
+    public bool IsActive
+    {
+        get => (bool)GetValue(IsActiveProperty);
+        set => SetValue(IsActiveProperty, value);
+    }
 
-	public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register(
-		nameof(IsActive),
-		typeof(bool),
-		typeof(ChannelIndicator),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(IsActiveProperty_Changed)));
+    public static readonly DependencyProperty IsActiveProperty = DependencyProperty.Register(
+        nameof(IsActive),
+        typeof(bool),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(IsActiveProperty_Changed)));
 
-	private static void IsActiveProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-	{
-		if (sender is ChannelIndicator instance)
-		{
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(IsActive)));
-		}
-	}
+    private static void IsActiveProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is ChannelIndicator instance)
+        {
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(IsActive)));
+        }
+    }
 
-	#endregion
+    #endregion
 
-	#region Precision property
+    #region Precision property
 
-	[Description("Precision"), Category("Common Properties")]
-	public int Precision
-	{
-		get => (int)GetValue(PrecisionProperty);
-		set => SetValue(PrecisionProperty, Math.Max(0, value));
-	}
+    [Description("Precision"), Category("Common Properties")]
+    public int Precision
+    {
+        get => (int)GetValue(PrecisionProperty);
+        set => SetValue(PrecisionProperty, Math.Max(0, value));
+    }
 
-	public static readonly DependencyProperty PrecisionProperty = DependencyProperty.Register(
-		nameof(Precision),
-		typeof(int),
-		typeof(ChannelIndicator),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(PrecisionProperty_Changed)));
+    public static readonly DependencyProperty PrecisionProperty = DependencyProperty.Register(
+        nameof(Precision),
+        typeof(int),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(PrecisionProperty_Changed)));
 
-	private static void PrecisionProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-	{
-		if (sender is ChannelIndicator instance)
-		{
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Precision)));
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(ValueStr)));
-		}
-	}
+    private static void PrecisionProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is ChannelIndicator instance)
+        {
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(Precision)));
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(ValueStr)));
+        }
+    }
 
-	#endregion
+    #endregion
 
-	#region Source property
+    #region Source property
 
-	[Description("Data source ID"), Category("Common Properties")]
-	public string Source
-	{
-		get => (string)GetValue(SourceProperty);
-		set => SetValue(SourceProperty, value);
-	}
+    [Description("Data source ID"), Category("Common Properties")]
+    public string Source
+    {
+        get => (string)GetValue(SourceProperty);
+        set => SetValue(SourceProperty, value);
+    }
 
-	public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
-		nameof(Source),
-		typeof(string),
-		typeof(ChannelIndicator));
+    public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
+        nameof(Source),
+        typeof(string),
+        typeof(ChannelIndicator));
 
-	#endregion
+    #endregion
 
-	#region Warning threshold property
+    #region Warning threshold property
 
-	[Description("Warning threshold"), Category("Common Properties")]
-	public double WarningThreshold
-	{
-		get => (double)GetValue(WarningThresholdProperty);
-		set => SetValue(WarningThresholdProperty, value);
-	}
+    [Description("Warning threshold"), Category("Common Properties")]
+    public double WarningThreshold
+    {
+        get => (double)GetValue(WarningThresholdProperty);
+        set => SetValue(WarningThresholdProperty, value);
+    }
 
-	public static readonly DependencyProperty WarningThresholdProperty = DependencyProperty.Register(
-		nameof(WarningThreshold),
-		typeof(double),
-		typeof(ChannelIndicator),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(WarningThresholdProperty_Changed)));
+    public static readonly DependencyProperty WarningThresholdProperty = DependencyProperty.Register(
+        nameof(WarningThreshold),
+        typeof(double),
+        typeof(ChannelIndicator),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(WarningThresholdProperty_Changed)));
 
-	private static void WarningThresholdProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
-	{
-		if (sender is ChannelIndicator instance)
-		{
-			instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(IsWarningVisible)));
-		}
-	}
+    private static void WarningThresholdProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (sender is ChannelIndicator instance)
+        {
+            instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(IsWarningVisible)));
+        }
+    }
 
     #endregion
 
@@ -189,42 +189,42 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
         typeof(int),
         typeof(ChannelIndicator),
         new FrameworkPropertyMetadata(new PropertyChangedCallback((s, e) =>
-			{
-				if (s is ChannelIndicator channelIndicator)
-				{
-					channelIndicator.cmdChannels.Items.Clear();
-					for (int i = 0; i < channelIndicator.ChannelCount; i++)
-					{
-						channelIndicator.cmdChannels.Items.Add($"{i + 1}");
+            {
+                if (s is ChannelIndicator channelIndicator)
+                {
+                    channelIndicator.cmdChannels.Items.Clear();
+                    for (int i = 0; i < channelIndicator.ChannelCount; i++)
+                    {
+                        channelIndicator.cmdChannels.Items.Add($"{i + 1}");
                     }
-					if (channelIndicator.ChannelCount > 0)
-					{
-						channelIndicator.cmdChannels.SelectedIndex = 0;
+                    if (channelIndicator.ChannelCount > 0)
+                    {
+                        channelIndicator.cmdChannels.SelectedIndex = 0;
                     }
-					channelIndicator.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(ChannelCount)));
-				}
-			}
+                    channelIndicator.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(ChannelCount)));
+                }
+            }
         ))
     );
 
     #endregion
 
     public string ValueStr => double.IsFinite(Value) ? Value.ToString($"F{Precision}") : "-";
-	public bool IsWarningVisible => double.IsFinite(WarningThreshold) && double.IsFinite(Value) && WarningThreshold < Value;
+    public bool IsWarningVisible => double.IsFinite(WarningThreshold) && double.IsFinite(Value) && WarningThreshold < Value;
 
     public event EventHandler<int>? ChannelIdChanged;
-	public event PropertyChangedEventHandler? PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-	public ChannelIndicator()
-	{
-		InitializeComponent();
-		WarningThreshold = double.PositiveInfinity;
+    public ChannelIndicator()
+    {
+        InitializeComponent();
+        WarningThreshold = double.PositiveInfinity;
 
         cmdChannels.SelectionChanged += Channels_SelectionChanged;
-	}
+    }
 
     private void Channels_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-		ChannelIdChanged?.Invoke(this, int.Parse((string)cmdChannels.SelectedItem) - 1);
+        ChannelIdChanged?.Invoke(this, int.Parse((string)cmdChannels.SelectedItem) - 1);
     }
 }

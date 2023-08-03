@@ -83,15 +83,15 @@ public abstract class Packet
             (byte)_type,
             _from, _to,
         };
-        
+
         for (int i = 0; i < PREAMBLE_LENGTH; i++)
         {
             result.Insert(0, PREAMBLE_BYTE);
         }
-        
+
         result.AddRange(TwoBytes.ToArray(Length));
         result.AddRange(_payload ?? new byte[] { });
-        
+
         result.Add(_checksum);
 
         return result.ToArray();

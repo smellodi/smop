@@ -101,9 +101,9 @@ if (ports.Length == 0)
     Console.WriteLine("  none");
 }
 else foreach (var port in ports)
-{
-    Console.WriteLine($"  {port.Name} ({port.Description}; {port.Manufacturer})");
-}
+    {
+        Console.WriteLine($"  {port.Name} ({port.Description}; {port.Manufacturer})");
+    }
 Console.WriteLine("");
 
 COMUtils.Port? smopCOMPort = COMUtils.SMOPPort;

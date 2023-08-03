@@ -42,7 +42,7 @@ internal class OdorDisplayController
                 KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
             )));
         }
-        
+
         return Send(new SetActuators(actuators.ToArray()));
     }
 

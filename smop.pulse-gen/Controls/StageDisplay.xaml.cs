@@ -52,7 +52,7 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
     public int Duration
     {
         get => (int)GetValue(DurationProperty);
-        set 
+        set
         {
             SetValue(DurationProperty, value);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DurationValue)));

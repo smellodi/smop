@@ -1,29 +1,29 @@
-﻿using System;
+﻿using Smop.PulseGen.Utils;
+using Smop.PulseGen.Utils.Extensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows;
-using Smop.PulseGen.Utils;
-using Smop.PulseGen.Utils.Extensions;
 
 namespace Smop.PulseGen.Logging;
 
 public enum SavingResult
 {
-	None,
-	Save,
-	Discard,
-	Cancel,
+    None,
+    Save,
+    Discard,
+    Cancel,
 }
 
 public abstract class RecordBase
 {
     public long Timestamp { get; }
 
-	public RecordBase() : base()
-	{
-		Timestamp = Utils.Timestamp.Ms;
-	}
+    public RecordBase() : base()
+    {
+        Timestamp = Utils.Timestamp.Ms;
+    }
 
     protected static string Delim => "\t";
 }
@@ -75,22 +75,22 @@ public class LogLocation
         return SavingResult.Cancel;
     }
 
-	public string GetFileName(string logName)
-	{
-		return Path.Combine(Folder, logName + ".txt");
-	}
+    public string GetFileName(string logName)
+    {
+        return Path.Combine(Folder, logName + ".txt");
+    }
 
-	public void EnsureLocationExists()
-	{
-		if (!Directory.Exists(Folder))
-		{
-			Directory.CreateDirectory(Folder);
-		}
-	}
+    public void EnsureLocationExists()
+    {
+        if (!Directory.Exists(Folder))
+        {
+            Directory.CreateDirectory(Folder);
+        }
+    }
 
-	// Internal
+    // Internal
 
-	readonly string SaveInto = "Save data into";
+    readonly string SaveInto = "Save data into";
     readonly string PressChange = "Press 'Change' to set another destination file";
     readonly string PressDiscard = "Press 'Discard' to discard data";
     readonly string PressCancel = "Press 'Cancel' to cancel the action";
@@ -126,17 +126,17 @@ public interface ILog
     public string Name { get; }
 
     public bool Save(string filename);
-	public void Clear();
+    public void Clear();
 }
 
 public static class Logger
 {
     public static SavingResult Save(ILog[] logs)
     {
-		if (logs.Length == 0)
-		{
-			return SavingResult.None;
-		}
+        if (logs.Length == 0)
+        {
+            return SavingResult.None;
+        }
 
         var logLocation = new LogLocation();
         var result = logLocation.PromptToSave();
@@ -166,8 +166,8 @@ public static class Logger
                     result = Save(logs);
                 }
             }
-			else
-			{
+            else
+            {
                 MsgBox.Notify(
                     $"{Application.Current.MainWindow.Title} - Logger",
                     $"Data saved into\n'{logLocation.Folder}'",
@@ -190,7 +190,7 @@ public static class Logger
 public abstract class Logger<T> where T : RecordBase
 {
     public bool HasRecords => _records.Count > 0;
-    
+
     public bool IsEnabled { get; set; } = true;
 
     public bool Save(string filename)
@@ -198,7 +198,7 @@ public abstract class Logger<T> where T : RecordBase
         using var writer = new StreamWriter(filename);
         try
         {
-			writer.Write(RecordsToText());
+            writer.Write(RecordsToText());
         }
         catch (Exception)
         {
@@ -209,32 +209,32 @@ public abstract class Logger<T> where T : RecordBase
     }
 
     public void Clear()
-	{
-		_records.Clear();
-	}
+    {
+        _records.Clear();
+    }
 
 
-	// Internal
+    // Internal
 
-	protected readonly List<T> _records = new();
+    protected readonly List<T> _records = new();
 
-	protected string Header { get; set; } = "";
+    protected string Header { get; set; } = "";
 
     protected Logger() { }
 
-	protected virtual string RecordsToText()
-	{
-		var stringBuilder = new StringBuilder();
+    protected virtual string RecordsToText()
+    {
+        var stringBuilder = new StringBuilder();
         if (!string.IsNullOrEmpty(Header))
         {
             stringBuilder.AppendLine(Header);
         }
 
-		foreach (var record in _records)
-		{
-			stringBuilder.AppendLine(record.ToString());
+        foreach (var record in _records)
+        {
+            stringBuilder.AppendLine(record.ToString());
         }
 
-		return stringBuilder.ToString();
+        return stringBuilder.ToString();
     }
 }

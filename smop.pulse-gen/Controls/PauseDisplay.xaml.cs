@@ -6,74 +6,74 @@ namespace Smop.PulseGen.Controls;
 
 public partial class PauseDisplay : UserControl, INotifyPropertyChanged
 {
-	public event PropertyChangedEventHandler? PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-	#region IsCurrent property
+    #region IsCurrent property
 
-	[Description("Is current"), Category("Common Properties")]
-	public bool IsCurrent
-	{
-		get => (bool)GetValue(IsCurrentProperty);
-		set => SetValue(IsCurrentProperty, value);
-	}
+    [Description("Is current"), Category("Common Properties")]
+    public bool IsCurrent
+    {
+        get => (bool)GetValue(IsCurrentProperty);
+        set => SetValue(IsCurrentProperty, value);
+    }
 
-	public static readonly DependencyProperty IsCurrentProperty = DependencyProperty.Register(
-		nameof(IsCurrent),
-		typeof(bool),
-		typeof(PauseDisplay),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(
-			(s, e) => (s as PauseDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(IsCurrent)))
-		))
-	);
+    public static readonly DependencyProperty IsCurrentProperty = DependencyProperty.Register(
+        nameof(IsCurrent),
+        typeof(bool),
+        typeof(PauseDisplay),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(
+            (s, e) => (s as PauseDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(IsCurrent)))
+        ))
+    );
 
-	#endregion 
+    #endregion
 
-	#region Text property
+    #region Text property
 
-	[Description("Indicator label"), Category("Common Properties")]
-	public string Text
-	{
-		get => (string)GetValue(TextProperty);
-		set => SetValue(TextProperty, value);
-	}
+    [Description("Indicator label"), Category("Common Properties")]
+    public string Text
+    {
+        get => (string)GetValue(TextProperty);
+        set => SetValue(TextProperty, value);
+    }
 
-	public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-		nameof(Text),
-		typeof(string),
-		typeof(PauseDisplay),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(
-			(s, e) => (s as PauseDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Text)))
-		))
-	);
+    public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+        nameof(Text),
+        typeof(string),
+        typeof(PauseDisplay),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(
+            (s, e) => (s as PauseDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Text)))
+        ))
+    );
 
-	#endregion 
+    #endregion
 
-	#region Value property
+    #region Value property
 
-	[Description("Indicator value"), Category("Common Properties")]
-	public double Value
-	{
-		get => (double)GetValue(ValueProperty);
-		set => SetValue(ValueProperty, value);
-	}
+    [Description("Indicator value"), Category("Common Properties")]
+    public double Value
+    {
+        get => (double)GetValue(ValueProperty);
+        set => SetValue(ValueProperty, value);
+    }
 
-	public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
-		nameof(Value),
-		typeof(double),
-		typeof(PauseDisplay),
-		new FrameworkPropertyMetadata(new PropertyChangedCallback(
-			(s, e) => (s as PauseDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Value)))
-		))
-	);
+    public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
+        nameof(Value),
+        typeof(double),
+        typeof(PauseDisplay),
+        new FrameworkPropertyMetadata(new PropertyChangedCallback(
+            (s, e) => (s as PauseDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Value)))
+        ))
+    );
 
-	#endregion 
+    #endregion
 
-	public PauseDisplay()
-	{
-		InitializeComponent();
+    public PauseDisplay()
+    {
+        InitializeComponent();
 
-		IsCurrent = false;
-		Text = "";
-		Value = 0;
-	}
+        IsCurrent = false;
+        Text = "";
+        Value = 0;
+    }
 }

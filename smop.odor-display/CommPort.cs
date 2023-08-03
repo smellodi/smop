@@ -1,9 +1,9 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using System.IO.Ports;
-using System.Threading;
+﻿using Smop.OdorDisplay.Packets;
+using System;
 using System.Collections.Generic;
-using Smop.OdorDisplay.Packets;
+using System.IO.Ports;
+using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Smop.OdorDisplay;
 
@@ -33,7 +33,7 @@ public class CommPort
     /// Fires when the device pushes Data packet a request
     /// The handler MUST be async!
     /// </summary>
-    public event EventHandler <Data>? Data;
+    public event EventHandler<Data>? Data;
 
     /// <summary>
     /// Debug info
@@ -130,7 +130,7 @@ public class CommPort
     /// <param name="ack"><see cref="Packets.Type.Ack"/> response packet </param>
     /// <param name="response">Another optional response packet</param>
     /// <returns>Error code and description</returns>
-    public Result Request<T,U>(T request, out Ack? ack, out U? response)
+    public Result Request<T, U>(T request, out Ack? ack, out U? response)
         where T : Request
         where U : Response
     {
@@ -489,7 +489,7 @@ public class CommPort
                     {
                         _requests.Dequeue();
                         Debug?.Invoke(this, $"RCV [{request.Duration}ms] {response.Type} ({response.ByteString})");
-                        
+
                         if (error == Error.Success)
                         {
                             /// allows <see cref="ReadResponses(Packets.Type[], out Response[])"/> to continue

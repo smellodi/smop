@@ -36,6 +36,7 @@ public class Capabilities : Response
 
     readonly Dictionary<Device.Capability, bool> _caps = new();
 
-    internal Capabilities(Dictionary<Device.Capability,bool> caps) :
-        base(Type.Capabilities, caps.Select(cap => (byte)(cap.Value ? 0xFF : 0)).ToArray()) { _caps = caps; }
+    internal Capabilities(Dictionary<Device.Capability, bool> caps) :
+        base(Type.Capabilities, caps.Select(cap => (byte)(cap.Value ? 0xFF : 0)).ToArray())
+    { _caps = caps; }
 }

@@ -14,51 +14,51 @@ namespace Smop.PulseGen.Pages;
 
 public partial class Setup : Page, IPage<PulseSetup>
 {
-	public event EventHandler<PulseSetup>? Next;
+    public event EventHandler<PulseSetup>? Next;
 
-	public Setup()
-	{
-		InitializeComponent();
+    public Setup()
+    {
+        InitializeComponent();
 
-		DataContext = this;
+        DataContext = this;
 
-		Application.Current.Exit += (s, e) => Close();
+        Application.Current.Exit += (s, e) => Close();
     }
 
     // Internal
 
     readonly Storage _storage = Storage.Instance;
 
-	readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
+    readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
     readonly Dictionary<string, ChannelIndicator> _indicators = new();
 
-	bool _isInitilized = false;
+    bool _isInitilized = false;
     bool _ionVisionIsReady = false;
     string? _setupFileName = null;
     PulseSetup? _setup = null;
 
     ChannelIndicator? _currentIndicator = null;
-	int _smellInspResistor = 0;
+    int _smellInspResistor = 0;
 
-	private void ClearIndicators()
-	{
-		foreach (var chi in _indicators.Values)
-		{
-			chi.Value = 0;
-		}
+    private void ClearIndicators()
+    {
+        foreach (var chi in _indicators.Values)
+        {
+            chi.Value = 0;
+        }
 
-		if (_currentIndicator != null)
-		{
-			_currentIndicator.IsActive = false;
-			_currentIndicator = null;
-			lmsGraph.Empty();
-		}
-	}
+        if (_currentIndicator != null)
+        {
+            _currentIndicator.IsActive = false;
+            _currentIndicator = null;
+            lmsGraph.Empty();
+        }
+    }
 
-	private void ResetGraph(ChannelIndicator? chi, double baseValue = .0)
-	{
+    private void ResetGraph(ChannelIndicator? chi, double baseValue = .0)
+    {
         var interval = 1.0;
         if (chi == null)
         {
@@ -74,7 +74,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
 
         lmsGraph.Reset(interval, baseValue);
-	}
+    }
 
     private async Task CreateIndicators()
     {
@@ -82,7 +82,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpOdorDisplayIndicators.Children.Add(indicator);
-			_indicators.Add(indicator.Source, indicator);
+            _indicators.Add(indicator.Source, indicator);
         }));
 
         await IndicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
@@ -103,12 +103,12 @@ public partial class Setup : Page, IPage<PulseSetup>
     }
 
     private void UpdateIndicators(Data data)
-	{
-		foreach (var m in data.Measurements)
-		{
+    {
+        foreach (var m in data.Measurements)
+        {
             bool isBase = m.Device == OdorDisplay.Device.ID.Base;
-			foreach (var sv in m.SensorValues)
-			{
+            foreach (var sv in m.SensorValues)
+            {
                 var value = sv switch
                 {
                     PIDValue pid => pid.Volts * 1000,
@@ -122,12 +122,12 @@ public partial class Setup : Page, IPage<PulseSetup>
                     ValveValue valve => valve.Opened ? 1 : 0,
                     _ => 0
                 };
-                
-				var source = IndicatorGenerator.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
+
+                var source = IndicatorGenerator.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
                 UpdateIndicator(source, value);
-			}
-		}
-	}
+            }
+        }
+    }
 
     private void UpdateIndicators(SmellInsp.Data data)
     {
@@ -283,14 +283,14 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private async void OdorDisplay_Data(object? sender, Data data)
     {
-		try
-		{
-			await Task.Run(() => Dispatcher.Invoke(() =>
-			{
-				UpdateIndicators(data);
+        try
+        {
+            await Task.Run(() => Dispatcher.Invoke(() =>
+            {
+                UpdateIndicators(data);
             }));
-		}
-		catch (TaskCanceledException) { }
+        }
+        catch (TaskCanceledException) { }
     }
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
@@ -308,15 +308,15 @@ public partial class Setup : Page, IPage<PulseSetup>
     // UI events
 
     private async void Page_Loaded(object? sender, RoutedEventArgs e)
-	{
-		_storage
-			.BindScaleToZoomLevel(sctScale)
+    {
+        _storage
+            .BindScaleToZoomLevel(sctScale)
             .BindContentToZoomLevel(lblZoom)
             .BindVisibilityToDebug(lblDebug);
 
         _odorDisplay.Data += OdorDisplay_Data;
         _smellInsp.Data += SmellInsp_Data;
-        
+
         ClearIndicators();
 
         var settings = Properties.Settings.Default;
@@ -360,40 +360,40 @@ public partial class Setup : Page, IPage<PulseSetup>
     }
 
     private void Page_Unloaded(object? sender, RoutedEventArgs e)
-	{
+    {
         _odorDisplay.Data -= OdorDisplay_Data;
         _smellInsp.Data -= SmellInsp_Data;
-        
+
         _storage
             .UnbindScaleToZoomLevel(sctScale)
             .UnbindContentToZoomLevel(lblZoom)
             .UnbindVisibilityToDebug(lblDebug);
-	}
+    }
 
-	private void Page_KeyDown(object? sender, KeyEventArgs e)
-	{
-		if (e.Key == Key.F4)
-		{
+    private void Page_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F4)
+        {
             Start_Click(this, new RoutedEventArgs());
         }
-	}
+    }
 
-	private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
-	{
-		var chi = sender as ChannelIndicator;
-		if (!chi?.IsActive ?? false)
-		{
-			if (_currentIndicator != null)
-			{
-				_currentIndicator.IsActive = false;
-			}
+    private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
+    {
+        var chi = sender as ChannelIndicator;
+        if (!chi?.IsActive ?? false)
+        {
+            if (_currentIndicator != null)
+            {
+                _currentIndicator.IsActive = false;
+            }
 
-			_currentIndicator = chi;
-			_currentIndicator!.IsActive = true;
+            _currentIndicator = chi;
+            _currentIndicator!.IsActive = true;
 
             ResetGraph(chi);
         }
-	}
+    }
 
     private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
     {
@@ -402,26 +402,26 @@ public partial class Setup : Page, IPage<PulseSetup>
         var ofd = new OpenFileDialog
         {
             Filter = "Any file|*",
-			FileName = Path.GetFileName(settings.Pulses_SetupFilename),
+            FileName = Path.GetFileName(settings.Pulses_SetupFilename),
             InitialDirectory = Path.GetDirectoryName(settings.Pulses_SetupFilename) ?? AppDomain.CurrentDomain.BaseDirectory
         };
 
         if (ofd.ShowDialog() ?? false)
         {
-			LoadPulseSetup(ofd.FileName);
+            LoadPulseSetup(ofd.FileName);
         }
     }
 
     private void Start_Click(object sender, RoutedEventArgs e)
     {
-		if (_setup != null)
-		{
-			if (chkRandomize.IsChecked == true)
-			{
+        if (_setup != null)
+        {
+            if (chkRandomize.IsChecked == true)
+            {
                 _setup.Randomize();
             }
 
-			Next?.Invoke(this, _setup);
+            Next?.Invoke(this, _setup);
         }
     }
 

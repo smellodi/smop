@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Smop.IonVision;
 
-public class Communicator: IDisposable
+public class Communicator : IDisposable
 {
     public string SupportedVersion => _api.Version;
 
@@ -68,7 +68,7 @@ public class Communicator: IDisposable
 
     /// <summary>Retrieves the current parameter definition</summary>
     /// <returns>Parameter definition</returns>
-    public Task<API.Response<ParameterDefinition>> GetParameterDefinition() => 
+    public Task<API.Response<ParameterDefinition>> GetParameterDefinition() =>
         _api.GetParameterDefinition(new Parameter(_settings.ParameterId, _settings.ParameterName));
 
 

@@ -4,10 +4,10 @@ namespace Smop.PulseGen.Logging;
 
 public class SmellInspLogger : Logger<SmellInspLogger.Record>, ILog
 {
-	public class Record : RecordBase
-	{
-		public Record(SmellInsp.Data data) : base()
-		{
+    public class Record : RecordBase
+    {
+        public Record(SmellInsp.Data data) : base()
+        {
             var values = new List<float>
             {
                 Timestamp,
@@ -16,7 +16,7 @@ public class SmellInspLogger : Logger<SmellInspLogger.Record>, ILog
             };
 
             foreach (var res in data.Resistances)
-			{
+            {
                 values.Add(res);
             }
 
@@ -38,38 +38,38 @@ public class SmellInspLogger : Logger<SmellInspLogger.Record>, ILog
 
             return string.Join(Delim, names);
         }
-        
+
         public override string ToString()
-		{
-			return string.Join(Delim, _fields);
-		}
+        {
+            return string.Join(Delim, _fields);
+        }
 
-		// Internal
+        // Internal
 
-		readonly float[] _fields;
-	}
+        readonly float[] _fields;
+    }
 
-	public static SmellInspLogger Instance => _instance ??= new();
+    public static SmellInspLogger Instance => _instance ??= new();
 
     public string Name => "snt";
 
     public void Add(SmellInsp.Data data)
-	{
+    {
         if (_records.Count == 0)
         {
             Header = Record.MakeHeader(data);
         }
 
-		if (IsEnabled)
-		{
-			var record = new Record(data);
-			_records.Add(record);
-		}
-	}
+        if (IsEnabled)
+        {
+            var record = new Record(data);
+            _records.Add(record);
+        }
+    }
 
-	// Internal
+    // Internal
 
-	static SmellInspLogger? _instance = null;
+    static SmellInspLogger? _instance = null;
 
-	protected SmellInspLogger() : base() { }
+    protected SmellInspLogger() : base() { }
 }

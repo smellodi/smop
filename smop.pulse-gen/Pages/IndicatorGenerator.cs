@@ -1,8 +1,8 @@
 ﻿using Smop.OdorDisplay;
 using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Controls;
 using System;
 using System.Threading.Tasks;
-using Smop.PulseGen.Controls;
 
 namespace Smop.PulseGen.Pages
 {

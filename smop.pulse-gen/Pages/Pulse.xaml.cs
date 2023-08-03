@@ -1,40 +1,40 @@
-﻿using System;
+﻿using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Controls;
+using Smop.PulseGen.Generator;
+using Smop.PulseGen.Logging;
+using Smop.PulseGen.Utils;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Smop.OdorDisplay.Packets;
-using Smop.PulseGen.Controls;
-using Smop.PulseGen.Logging;
-using Smop.PulseGen.Generator;
-using Smop.PulseGen.Utils;
 
 namespace Smop.PulseGen.Pages;
 
 public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyPropertyChanged
 {
-	public class RequestSavingArgs : EventArgs
-	{
-		public SavingResult Result { get; set; }
-		public RequestSavingArgs(SavingResult result)
-		{
-			Result = result;
-		}
-	}
+    public class RequestSavingArgs : EventArgs
+    {
+        public SavingResult Result { get; set; }
+        public RequestSavingArgs(SavingResult result)
+        {
+            Result = result;
+        }
+    }
 
     public bool IsInitialPause { get; private set; } = false;
     public bool IsFinalPause { get; private set; } = false;
 
     public event EventHandler<Navigation>? Next;
-	public event PropertyChangedEventHandler? PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-	public Pulse()
-	{
-		InitializeComponent();
+    public Pulse()
+    {
+        InitializeComponent();
 
-		DataContext = this;
+        DataContext = this;
 
         pdsInitialPause.Flow = -1;
         pdsFinalPause.Flow = -1;
@@ -75,8 +75,8 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     // Internal
 
     readonly Dictionary<int, StageDisplay> _stageDisplays = new();
-    
-    Dictionary<OdorDisplay.Device.ID, (Label,CheckBox)>? _odorChannelObservers;
+
+    Dictionary<OdorDisplay.Device.ID, (Label, CheckBox)>? _odorChannelObservers;
 
     PulseController? _controller = null;
 
@@ -128,7 +128,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         {
             if (m.Device >= OdorDisplay.Device.ID.Odor1 && m.Device <= OdorDisplay.Device.ID.Odor9)
             {
-                var container = new WrapPanel() { Margin = new Thickness(0, 6, 0, 6)};
+                var container = new WrapPanel() { Margin = new Thickness(0, 6, 0, 6) };
                 var label = new Label
                 {
                     Content = m.Device,
@@ -327,9 +327,9 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     // UI events
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
-	{
-		Storage.Instance
-			.BindScaleToZoomLevel(sctScale)
+    {
+        Storage.Instance
+            .BindScaleToZoomLevel(sctScale)
             .BindContentToZoomLevel(lblZoom)
             .BindVisibilityToDebug(lblDebug);
 
@@ -339,15 +339,15 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         }
 
         SetStage(null, null, Stage.None);
-	}
+    }
 
-	private void Page_Unloaded(object sender, RoutedEventArgs e)
-	{
-		Storage.Instance
-			.UnbindScaleToZoomLevel(sctScale)
+    private void Page_Unloaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance
+            .UnbindScaleToZoomLevel(sctScale)
             .UnbindContentToZoomLevel(lblZoom)
             .UnbindVisibilityToDebug(lblDebug);
-	}
+    }
 
     private void Page_KeyDown(object? sender, KeyEventArgs e)
     {
@@ -358,8 +358,8 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     }
 
     private void Interrupt_Click(object sender, RoutedEventArgs e)
-	{
+    {
         CleanUp();
-		Next?.Invoke(this, Navigation.Setup);
-	}
+        Next?.Invoke(this, Navigation.Setup);
+    }
 }

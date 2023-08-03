@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
+﻿using Smop.PulseGen.Utils.Extensions;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using Smop.PulseGen.Utils.Extensions;
 
 namespace Smop.PulseGen;
 
@@ -12,85 +12,85 @@ namespace Smop.PulseGen;
 /// </summary>
 public class Storage : INotifyPropertyChanged
 {
-	public static Storage Instance => _instance ??= new();
+    public static Storage Instance => _instance ??= new();
 
-	public event PropertyChangedEventHandler? PropertyChanged;
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-	// Variables
+    // Variables
 
-	public bool IsDebugging
-	{
-		get => _isDebugging;
-		set
-		{
-			if (_isDebugging != value)
-			{
-				_isDebugging = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDebugging)));
-			}
-		}
-	}
+    public bool IsDebugging
+    {
+        get => _isDebugging;
+        set
+        {
+            if (_isDebugging != value)
+            {
+                _isDebugging = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDebugging)));
+            }
+        }
+    }
 
-	public double ZoomLevel
-	{
-		get => _zoomLevel;
-		set
-		{
-			if (_zoomLevel != value)
-			{
-				_zoomLevel = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ZoomLevel)));
-				Save();
-			}
-		}
-	}
+    public double ZoomLevel
+    {
+        get => _zoomLevel;
+        set
+        {
+            if (_zoomLevel != value)
+            {
+                _zoomLevel = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ZoomLevel)));
+                Save();
+            }
+        }
+    }
 
-	// Actions
+    // Actions
 
-	public void ZoomIn()
-	{
-		ZoomLevel = MathExt.Limit(_zoomLevel + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
-	}
+    public void ZoomIn()
+    {
+        ZoomLevel = MathExt.Limit(_zoomLevel + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
+    }
 
-	public void ZoomOut()
-	{
-		ZoomLevel = MathExt.Limit(_zoomLevel - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
-	}
+    public void ZoomOut()
+    {
+        ZoomLevel = MathExt.Limit(_zoomLevel - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
+    }
 
-	// Helpers
+    // Helpers
 
-	public Storage BindVisibilityToDebug(DependencyObject obj)
-	{
-		var isDebuggingBinding = new Binding(nameof(IsDebugging))
-		{
-			Source = this,
-			Converter = new BooleanToVisibilityConverter()
-		};
+    public Storage BindVisibilityToDebug(DependencyObject obj)
+    {
+        var isDebuggingBinding = new Binding(nameof(IsDebugging))
+        {
+            Source = this,
+            Converter = new BooleanToVisibilityConverter()
+        };
 
-		BindingOperations.SetBinding(obj, UIElement.VisibilityProperty, isDebuggingBinding);
-		
-		return this;
-	}
+        BindingOperations.SetBinding(obj, UIElement.VisibilityProperty, isDebuggingBinding);
 
-	public Storage BindScaleToZoomLevel(DependencyObject obj)
-	{
-		var zoomLevelBinding = new Binding(nameof(ZoomLevel))
-		{
-			Source = this
-		};
+        return this;
+    }
 
-		BindingOperations.SetBinding(obj, ScaleTransform.ScaleXProperty, zoomLevelBinding);
-		BindingOperations.SetBinding(obj, ScaleTransform.ScaleYProperty, zoomLevelBinding);
-		
-		return this;
-	}
+    public Storage BindScaleToZoomLevel(DependencyObject obj)
+    {
+        var zoomLevelBinding = new Binding(nameof(ZoomLevel))
+        {
+            Source = this
+        };
+
+        BindingOperations.SetBinding(obj, ScaleTransform.ScaleXProperty, zoomLevelBinding);
+        BindingOperations.SetBinding(obj, ScaleTransform.ScaleYProperty, zoomLevelBinding);
+
+        return this;
+    }
 
     public Storage BindContentToZoomLevel(DependencyObject obj)
     {
-		var zoomValueBinding = new Binding(nameof(ZoomLevel))
-		{
-			Source = this,
-			Converter = new Utils.ZoomToPercentageConverter()
+        var zoomValueBinding = new Binding(nameof(ZoomLevel))
+        {
+            Source = this,
+            Converter = new Utils.ZoomToPercentageConverter()
         };
 
         BindingOperations.SetBinding(obj, ContentControl.ContentProperty, zoomValueBinding);
@@ -99,10 +99,10 @@ public class Storage : INotifyPropertyChanged
     }
 
     public Storage UnbindVisibilityToDebug(DependencyObject obj)
-	{
-		BindingOperations.ClearBinding(obj, UIElement.VisibilityProperty);
-		return this;
-	}
+    {
+        BindingOperations.ClearBinding(obj, UIElement.VisibilityProperty);
+        return this;
+    }
 
     public Storage UnbindContentToZoomLevel(DependencyObject obj)
     {
@@ -111,36 +111,36 @@ public class Storage : INotifyPropertyChanged
     }
 
     public Storage UnbindScaleToZoomLevel(DependencyObject obj)
-	{
-		BindingOperations.ClearBinding(obj, ScaleTransform.ScaleXProperty);
-		BindingOperations.ClearBinding(obj, ScaleTransform.ScaleYProperty);
-		
-		return this;
-	}
+    {
+        BindingOperations.ClearBinding(obj, ScaleTransform.ScaleXProperty);
+        BindingOperations.ClearBinding(obj, ScaleTransform.ScaleYProperty);
+
+        return this;
+    }
 
 
-	// Internal
+    // Internal
 
-	static Storage? _instance;
+    static Storage? _instance;
 
-	const double ZOOM_MIN = 0.8;
-	const double ZOOM_MAX = 3.0;
-	const double ZOOM_STEP = 0.1;
+    const double ZOOM_MIN = 0.8;
+    const double ZOOM_MAX = 3.0;
+    const double ZOOM_STEP = 0.1;
 
-	bool _isDebugging = false;
-	double _zoomLevel;
+    bool _isDebugging = false;
+    double _zoomLevel;
 
-	private Storage() 
-	{
-		var settings = Properties.Settings.Default;
+    private Storage()
+    {
+        var settings = Properties.Settings.Default;
 
-		_zoomLevel = settings.App_ZoomLevel;
-	}
+        _zoomLevel = settings.App_ZoomLevel;
+    }
 
-	private void Save()
-	{
-		var settings = Properties.Settings.Default;
-		settings.App_ZoomLevel = _zoomLevel;
-		settings.Save();
-	}
+    private void Save()
+    {
+        var settings = Properties.Settings.Default;
+        settings.App_ZoomLevel = _zoomLevel;
+        settings.Save();
+    }
 }

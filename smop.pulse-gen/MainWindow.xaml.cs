@@ -41,7 +41,7 @@ public partial class MainWindow : Window
 
     // Internal
 
-    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(MainWindow));
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(MainWindow));
     
     readonly Connect _connectPage = new();
     readonly Setup _setupPage = new();
@@ -107,7 +107,7 @@ public partial class MainWindow : Window
 
     private void SetupPage_Next(object? sender, Generator.PulseSetup setup)
     {
-        NLogger.Info("Navigate to {Target}", Navigation.Generator);
+        _nlog.Info("Navigate to {Target}", Navigation.Generator);
 
         Content = _pulsePage;
         _pulsePage.Start(setup);
@@ -120,7 +120,7 @@ public partial class MainWindow : Window
             ToggleFullScreen();
         }
 
-        NLogger.Info("Navigate to {Target}", next);
+        _nlog.Info("Navigate to {Target}", next);
 
         if (next == Navigation.Exit)
         {
@@ -142,7 +142,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            NLogger.Error($"Unrecognized navigation target '{next}'");
+            _nlog.Error($"Unrecognized navigation target '{next}'");
         }
 
         _pulsePage.Dispose();

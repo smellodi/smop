@@ -1,7 +1,6 @@
 ﻿using Smop.OdorDisplay;
 using Smop.OdorDisplay.Packets;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Smop.PulseGen.Generator;
 
@@ -79,20 +78,20 @@ internal class OdorDisplayController
 
     // Internal
 
-    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
 
     readonly CommPort _odorDisplay = CommPort.Instance;
 
     private OdorDisplay.Result Send(Request request)
     {
-        NLogger.Info($"Sent: {request}");
+        _nlog.Info($"Sent: {request}");
 
         var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
 
         if (ack != null)
-            NLogger.Info($"Received: {ack}");
+            _nlog.Info($"Received: {ack}");
         if (result.Error == Error.Success && response != null)
-            NLogger.Info($"Received: {response}");
+            _nlog.Info($"Received: {response}");
 
         return result;
     }

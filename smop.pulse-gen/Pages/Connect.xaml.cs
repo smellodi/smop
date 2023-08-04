@@ -51,7 +51,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     // Internal
 
-    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(Connect) + "Page");
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(Connect) + "Page");
 
     readonly System.Windows.Media.Imaging.BitmapImage _greenButtonImage;
 
@@ -230,7 +230,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
-        NLogger.Info($"{action}: {error}");
+        _nlog.Info($"{action}: {error}");
         return response;
     }
 

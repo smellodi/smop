@@ -1,9 +1,7 @@
-﻿using Smop.OdorDisplay.Packets;
-using Smop.PulseGen.Utils;
+﻿using Smop.PulseGen.Utils;
 using Smop.PulseGen.Utils.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -99,10 +97,12 @@ public class PulseSetup
                     continue;
                 }
 
-                if (p[0] == "init")
+                var (key, value) = (p[0], p[1]);
+
+                if (key == "init")
                 {
-                    p = p[1].Trim().Split(' ');
-                    var sessionProps = CreateSessionProps(p, lastSession, lineIndex);
+                    var props = value.Trim().Split(' ');
+                    var sessionProps = CreateSessionProps(props, lastSession, lineIndex);
                     lastSession = sessionProps;
 
                     if (sessionProps != null)
@@ -114,12 +114,12 @@ public class PulseSetup
                         linesWithInvalidData.Add(lineIndex);
                     }
                 }
-                else if (p[0] == "pulse")
+                else if (key == "pulse")
                 {
                     if (lastSession != null)
                     {
-                        p = p[1].Trim().Split(' ');
-                        var (pulseProps, hasInvalidValues) = CreatePulseProps(p);
+                        var props = value.Trim().Split(' ');
+                        var (pulseProps, hasInvalidValues) = CreatePulseProps(props);
 
                         if (pulseProps != null)
                         {
@@ -134,13 +134,13 @@ public class PulseSetup
                     else
                     {
                         linesWithInvalidData.Add(lineIndex);
-                        NLogger.Warn("no session defined yet on line {LineIndex}", lineIndex);
+                        _nlog.Warn("no session defined yet on line {LineIndex}", lineIndex);
                     }
                 }
                 else
                 {
                     linesWithInvalidData.Add(lineIndex);
-                    NLogger.Warn($"unknown command '{p[0]}' on line {lineIndex}");
+                    _nlog.Warn($"unknown command '{key}' on line {lineIndex}");
                 }
             }
 
@@ -154,7 +154,7 @@ public class PulseSetup
         }
         catch (Exception ex)
         {
-            NLogger.Error(ex, "Cannot read or parse the pulse setup file");
+            _nlog.Error(ex, "Cannot read or parse the pulse setup file");
             MsgBox.Error(System.Windows.Application.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{ex.Message}");
         }
 
@@ -170,11 +170,11 @@ public class PulseSetup
     }
 
     public static IEnumerable<string> PulseChannelsAsStrings(PulseProps pulse) =>
-        pulse.Channels.Select(ch => $"{ch.Id}:{BoolToState(ch.Active)}/{ch.Flow}");
+        pulse.Channels.Select(ch => $"{ch.Id}:{ch.Flow}/{BoolToState(ch.Active)}");
 
     // Internal
 
-    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(PulseSetup));
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(PulseSetup));
 
     const float MAX_INTERVAL = 60 * 60; // seconds
     const float MAX_FLOW = 1000; // nccm
@@ -193,40 +193,40 @@ public class PulseSetup
         {
             if (field.Length < 3)
             {
-                NLogger.Warn($"invalid field `{field}` on line {lineIndex}");
+                _nlog.Warn($"invalid field `{field}` on line {lineIndex}");
                 return null;
             }
             var keyvalue = field.Split('=');
             if (keyvalue.Length != 2)
             {
-                NLogger.Warn($"invalid keyvalue `{string.Join('=', keyvalue)}` on line {lineIndex}");
+                _nlog.Warn($"invalid keyvalue `{string.Join('=', keyvalue)}` on line {lineIndex}");
                 return null;
             }
 
-            var key = keyvalue[0];
+            var (key, value) = (keyvalue[0], keyvalue[1]);
             if (key == "humidity")
             {
-                humidity = float.Parse(keyvalue[1]);
+                humidity = float.Parse(value);
             }
             else if (key == "delay")
             {
-                delay = float.Parse(keyvalue[1]);
+                delay = float.Parse(value);
             }
             else if (key == "duration")
             {
-                duration = float.Parse(keyvalue[1]);
+                duration = float.Parse(value);
             }
             else if (key == "dms")
             {
-                dmsDelay = float.Parse(keyvalue[1]);
+                dmsDelay = float.Parse(value);
             }
             else if (key == "final")
             {
-                finalPause = float.Parse(keyvalue[1]);
+                finalPause = float.Parse(value);
             }
             else
             {
-                NLogger.Warn($"unknown field '{field}' on line {lineIndex}");
+                _nlog.Warn($"unknown field '{field}' on line {lineIndex}");
                 return null;
             }
         }
@@ -242,11 +242,11 @@ public class PulseSetup
                 : new SessionProps(humidity, new PulseIntervals(delay, duration, dmsDelay, finalPause));
     }
 
-    private static (PulseProps?, bool) CreatePulseProps(string[] p)
+    private static (PulseProps?, bool) CreatePulseProps(string[] fields)
     {
         bool hasInvalidValues = false;
         var channels = new List<PulseChannelProps>();
-        foreach (var field in p)
+        foreach (var field in fields)
         {
             if (field.Length < 3)
             {
@@ -258,23 +258,23 @@ public class PulseSetup
                 return (null, true);
             }
 
-            var pcp = keyvalue[1].Split(',');
-            if (pcp.Length > 2)
+            var paramList = keyvalue[1].Split(',');
+            if (paramList.Length > 2)
             {
                 return (null, true);
             }
 
             var id = int.Parse(keyvalue[0]);
-            var flow = float.Parse(pcp[0]);
+            var flow = float.Parse(paramList[0]);
 
             var active = true;
-            if (pcp.Length > 1)
+            if (paramList.Length > 1)
             {
-                if (int.TryParse(pcp[1], out int activeValue))
+                if (int.TryParse(paramList[1], out int activeValue))
                 {
                     active = activeValue > 0;
                 }
-                else if (pcp[1] == "off")
+                else if (paramList[1] == "off")
                 {
                     active = false;
                 }

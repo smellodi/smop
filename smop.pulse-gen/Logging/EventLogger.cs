@@ -1,4 +1,6 @@
-﻿namespace Smop.PulseGen.Logging;
+﻿using Smop.PulseGen.Generator;
+
+namespace Smop.PulseGen.Logging;
 
 public class EventLogger : Logger<EventLogger.Record>, ILog
 {
@@ -37,6 +39,7 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
         {
             var record = new Record(type, data);
             _records.Add(record);
+            _nlog.Info(record);
         }
     }
 
@@ -44,6 +47,7 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
     // Internal
 
     static EventLogger? _instance = null;
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(EventLogger));
 
     protected EventLogger() : base()
     {

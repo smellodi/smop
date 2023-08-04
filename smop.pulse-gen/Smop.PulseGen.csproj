@@ -44,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NLog" Version="5.2.2" />
     <PackageReference Include="ScottPlot.WPF" Version="4.1.16" />
   </ItemGroup>
 

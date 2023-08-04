@@ -1,4 +1,5 @@
-﻿using Smop.PulseGen.Utils;
+﻿using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Utils;
 using Smop.PulseGen.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -133,13 +134,13 @@ public class PulseSetup
                     else
                     {
                         linesWithInvalidData.Add(lineIndex);
-                        Debug.WriteLine($"[PST] no session defined yet on line {lineIndex}");
+                        NLogger.Warn("no session defined yet on line {LineIndex}", lineIndex);
                     }
                 }
                 else
                 {
                     linesWithInvalidData.Add(lineIndex);
-                    Debug.WriteLine($"[PST] unknown command '{p[0]}' on line {lineIndex}");
+                    NLogger.Warn($"unknown command '{p[0]}' on line {lineIndex}");
                 }
             }
 
@@ -151,9 +152,10 @@ public class PulseSetup
                     new MsgBox.Button[] { MsgBox.Button.OK });
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            MsgBox.Error(System.Windows.Application.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{e.Message}");
+            NLogger.Error(ex, "Cannot read or parse the pulse setup file");
+            MsgBox.Error(System.Windows.Application.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{ex.Message}");
         }
 
         return new PulseSetup() { Sessions = sessions.ToArray() };
@@ -172,6 +174,8 @@ public class PulseSetup
 
     // Internal
 
+    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(PulseSetup));
+
     const float MAX_INTERVAL = 60 * 60; // seconds
     const float MAX_FLOW = 1000; // nccm
 
@@ -189,11 +193,13 @@ public class PulseSetup
         {
             if (field.Length < 3)
             {
+                NLogger.Warn($"invalid field `{field}` on line {lineIndex}");
                 return null;
             }
             var keyvalue = field.Split('=');
             if (keyvalue.Length != 2)
             {
+                NLogger.Warn($"invalid keyvalue `{string.Join('=', keyvalue)}` on line {lineIndex}");
                 return null;
             }
 
@@ -220,7 +226,7 @@ public class PulseSetup
             }
             else
             {
-                Debug.WriteLine($"[PST] unknown field '{field}' on line {lineIndex}");
+                NLogger.Warn($"unknown field '{field}' on line {lineIndex}");
                 return null;
             }
         }

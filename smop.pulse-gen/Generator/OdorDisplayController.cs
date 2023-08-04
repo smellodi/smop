@@ -79,18 +79,20 @@ internal class OdorDisplayController
 
     // Internal
 
+    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
+
     readonly CommPort _odorDisplay = CommPort.Instance;
 
     private OdorDisplay.Result Send(Request request)
     {
-        Debug.WriteLine($"[OD] Sent:     {request}");
+        NLogger.Info($"Sent: {request}");
 
         var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
 
         if (ack != null)
-            Debug.WriteLine($"[OD] Received: {ack}");
+            NLogger.Info($"Received: {ack}");
         if (result.Error == Error.Success && response != null)
-            Debug.WriteLine("[OD]   " + response);
+            NLogger.Info($"Received: {response}");
 
         return result;
     }

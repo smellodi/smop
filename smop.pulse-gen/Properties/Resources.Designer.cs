@@ -59,50 +59,5 @@ namespace Smop.PulseGen.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Chassis heater.
-        /// </summary>
-        internal static string ChassisHeater {
-            get {
-                return ResourceManager.GetString("ChassisHeater", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Input humidity.
-        /// </summary>
-        internal static string InputHumidity {
-            get {
-                return ResourceManager.GetString("InputHumidity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Language.
-        /// </summary>
-        internal static string Language {
-            get {
-                return ResourceManager.GetString("Language", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Output humidity.
-        /// </summary>
-        internal static string OutputHumidity {
-            get {
-                return ResourceManager.GetString("OutputHumidity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Source temperature.
-        /// </summary>
-        internal static string SourceTemperature {
-            get {
-                return ResourceManager.GetString("SourceTemperature", resourceCulture);
-            }
-        }
     }
 }

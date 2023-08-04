@@ -27,6 +27,8 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     // Internal
 
+    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(Setup) + "Page");
+
     readonly Storage _storage = Storage.Instance;
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
@@ -214,7 +216,7 @@ public partial class Setup : Page, IPage<PulseSetup>
                 }
                 else if (response.Error?.StartsWith("Request failed") ?? false)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[IV] loading a project...");
+                    NLogger.Info("loading a project...");
                 }
                 else
                 {
@@ -269,7 +271,7 @@ public partial class Setup : Page, IPage<PulseSetup>
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
-        System.Diagnostics.Debug.WriteLine($"[IV] {action}: {error}");
+        NLogger.Info($"{action}: {error}");
         return response;
     }
 

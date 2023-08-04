@@ -12,9 +12,9 @@ using System.Windows.Threading;
 
 namespace Smop.PulseGen.Pages;
 
-public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
+public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 {
-    public event EventHandler<EventArgs>? Next;
+    public event EventHandler<Navigation>? Next;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public bool HasNecessaryConnections => _odorDisplay.IsOpen;
@@ -50,6 +50,8 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
 
 
     // Internal
+
+    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(Connect) + "Page");
 
     readonly System.Windows.Media.Imaging.BitmapImage _greenButtonImage;
 
@@ -228,7 +230,7 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
-        System.Diagnostics.Debug.WriteLine($"[IV] {action}: {error}");
+        NLogger.Info($"{action}: {error}");
         return response;
     }
 
@@ -399,6 +401,6 @@ public partial class Connect : Page, IPage<EventArgs>, INotifyPropertyChanged
     private void Continue_Click(object? sender, RoutedEventArgs e)
     {
         SaveSettings();
-        Next?.Invoke(this, EventArgs.Empty);
+        Next?.Invoke(this, Navigation.Setup);
     }
 }

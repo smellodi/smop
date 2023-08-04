@@ -22,6 +22,26 @@ public partial class App : Application
             settings.Save();
         }
 
+        // Configure the logger
+        var config = new NLog.Config.LoggingConfiguration();
+
+        var logfile = new NLog.Targets.FileTarget("File")
+        { 
+            FileName = "${basedir}/logs/logfile.txt",
+            ArchiveOldFileOnStartup = true,
+            MaxArchiveFiles = 5,
+            Layout = "${longdate} ${callsite}:${callsite-linenumber} ${message}${exception:format=ToString}"
+        };
+        var logdebug = new NLog.Targets.DebugSystemTarget("logdebug")
+        {
+            Layout = "[${logger}] ${message}"
+        };
+
+        config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logdebug);
+        config.AddRule(NLog.LogLevel.Debug, NLog.LogLevel.Fatal, logfile);
+
+        NLog.LogManager.Configuration = config;
+
         // Set the US-culture across the application to avoid decimal point parsing/logging issues
         var culture = CultureInfo.GetCultureInfo("en-US");
         CultureInfo.DefaultThreadCurrentCulture = culture;

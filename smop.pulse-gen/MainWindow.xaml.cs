@@ -17,7 +17,7 @@ public partial class MainWindow : Window
 
         var settings = Properties.Settings.Default;
 
-        _connectPage.Next += ConnectPage_Next;
+        _connectPage.Next += Page_Next;
         _setupPage.Next += SetupPage_Next;
         _pulsePage.Next += Page_Next;
         _finishedPage.Next += Page_Next;
@@ -41,14 +41,16 @@ public partial class MainWindow : Window
 
     // Internal
 
-    private readonly Connect _connectPage = new();
-    private readonly Setup _setupPage = new();
-    private readonly Pulse _pulsePage = new();
-    private readonly Finished _finishedPage = new();
+    static readonly NLog.Logger NLogger = NLog.LogManager.GetLogger(nameof(MainWindow));
+    
+    readonly Connect _connectPage = new();
+    readonly Setup _setupPage = new();
+    readonly Pulse _pulsePage = new();
+    readonly Finished _finishedPage = new();
 
-    private readonly Storage _storage = Storage.Instance;
+    readonly Storage _storage = Storage.Instance;
 
-    private bool IsInFullScreen => WindowStyle == WindowStyle.None;
+    bool IsInFullScreen => WindowStyle == WindowStyle.None;
 
     private SavingResult SaveData(bool canCancel)
     {
@@ -103,13 +105,10 @@ public partial class MainWindow : Window
 
     // Events handlers
 
-    private void ConnectPage_Next(object? sender, EventArgs e)
-    {
-        Content = _setupPage;
-    }
-
     private void SetupPage_Next(object? sender, Generator.PulseSetup setup)
     {
+        NLogger.Info("Navigate to {Target}", Navigation.Generator);
+
         Content = _pulsePage;
         _pulsePage.Start(setup);
     }
@@ -120,6 +119,8 @@ public partial class MainWindow : Window
         {
             ToggleFullScreen();
         }
+
+        NLogger.Info("Navigate to {Target}", next);
 
         if (next == Navigation.Exit)
         {
@@ -141,7 +142,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            System.Diagnostics.Debug.WriteLine($"[MW] Unrecognized navigation target '{next}'");
+            NLogger.Error($"Unrecognized navigation target '{next}'");
         }
 
         _pulsePage.Dispose();
@@ -215,6 +216,8 @@ public partial class MainWindow : Window
         settings.Save();
 
         _pulsePage.Dispose();
+
+        NLog.LogManager.Shutdown();
 
         await Task.Delay(100);
     }

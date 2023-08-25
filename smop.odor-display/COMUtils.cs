@@ -142,7 +142,7 @@ public class COMUtils
                     if (ftdi_res != FTDI.FT_STATUS.FT_OK)
                         return null;
 
-                    result = new Port(comName, dev.Description, data.Manufacturer ?? dev.SerialNumber);
+                    result = new Port(comName, dev.Description, data.Manufacturer ?? dev.SerialNumber); //-V3080
                 }
                 finally
                 {

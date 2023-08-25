@@ -16,13 +16,13 @@ internal class FileSimulator : Simulator
         _input = Path.Combine(FileServer.Folder, FileServer.MLInput);
         if (!File.Exists(_input))
         {
-            File.Create(_input);
+            _inputStream = File.Create(_input);
         }
 
         _output = Path.Combine(FileServer.Folder, FileServer.MLOutput);
         if (!File.Exists(_output))
         {
-            File.Create(_output);
+            _outputStream = File.Create(_output);
         }
 
         _watcher = new FileSystemWatcher(FileServer.Folder, FileServer.MLInput);
@@ -33,6 +33,8 @@ internal class FileSimulator : Simulator
 
     public override void Dispose()
     {
+        _inputStream?.Dispose();
+        _outputStream?.Dispose();
         _watcher.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -46,6 +48,9 @@ internal class FileSimulator : Simulator
     FileSystemWatcher _watcher;
     string _input;
     string _output;
+
+    FileStream? _inputStream;
+    FileStream? _outputStream;
 
     long _lastChangeTimestamp = 0;
 

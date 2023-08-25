@@ -22,13 +22,13 @@ internal class FileServer : Server
         _input = Path.Combine(Folder, MLInput);
         if (!File.Exists(_input))
         {
-            File.Create(_input);
+            _inputStream = File.Create(_input);
         }
 
         _output = Path.Combine(Folder, MLOutput);
         if (!File.Exists(_output))
         {
-            File.Create(_output);
+            _outputStream = File.Create(_output);
         }
 
         _watcher = new FileSystemWatcher(Folder, MLOutput);
@@ -39,6 +39,8 @@ internal class FileServer : Server
 
     public override void Dispose()
     {
+        _inputStream?.Dispose();
+        _outputStream?.Dispose();
         _watcher.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -52,6 +54,9 @@ internal class FileServer : Server
     FileSystemWatcher _watcher;
     string _input;
     string _output;
+
+    FileStream? _inputStream;
+    FileStream? _outputStream;
 
     long _lastChangeTimestamp = 0;
 

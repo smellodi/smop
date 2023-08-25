@@ -1,14 +1,15 @@
-﻿using Smop.OdorDisplay;
-using Smop.OdorDisplay.Packets;
-using System.Diagnostics;
-using System.Windows.Threading;
+﻿//#define SHOW_PORT_DEBUG
 
-const bool SHOW_PORT_DEBUG = true;
+using Smop.OdorDisplay;
+using Smop.OdorDisplay.Packets;
+using System.Windows.Threading;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing Multichannel Odor Display communication module (SMOP.OdorDisplay)...\n");
 
+#if !SHOW_PORT_DEBUG
 int linesToScrollUp = 0;
+#endif
 var commands = new Dictionary<string, (string, Request?)>()
 {
     { "ver", ("retrieves version", new QueryVersion()) },
@@ -123,9 +124,10 @@ _port.COMError += (s, e) => Console.WriteLine($"[PORT] {e}");
 
 SerialPortEmulator.SamplingFrequency = 2000;
 
-if (SHOW_PORT_DEBUG)
+#if SHOW_PORT_DEBUG
     //_port.Debug += async (s, e) => await Task.Run(() => PrintDebug(e));
     _port.Debug += (s, e) => PrintDebug(e);
+#endif
 
 do
 {
@@ -183,7 +185,9 @@ while (true)
     if (result.Error == Error.Success && response != null)
         Console.WriteLine("  " + response);
 
+#if !SHOW_PORT_DEBUG
     linesToScrollUp = 0;
+#endif
 }
 
 
@@ -199,17 +203,21 @@ void PrintData(Data e)
     var line = Console.CursorTop;
     if (Console.CursorLeft > 0)
         Console.WriteLine("\n");
-    if (!SHOW_PORT_DEBUG && linesToScrollUp > 0)
+#if !SHOW_PORT_DEBUG
+    if (linesToScrollUp > 0)
     {
         Console.CursorTop -= linesToScrollUp;
     }
+#endif
     Console.WriteLine("  " + e);
     Console.Write("\nCommand: ");
-    if (!SHOW_PORT_DEBUG && linesToScrollUp == 0)
+#if !SHOW_PORT_DEBUG
+    if (linesToScrollUp == 0)
     {
         linesToScrollUp = Console.CursorTop - line;
-        Debug.WriteLine(linesToScrollUp);
+        System.Diagnostics.Debug.WriteLine(linesToScrollUp);
     }
+#endif
 }
 
 void PrintHelp()
@@ -224,9 +232,11 @@ void PrintHelp()
     }
 }
 
+#if SHOW_PORT_DEBUG
 void PrintDebug(string str)
 {
     if (Console.CursorLeft > 0)
         Console.WriteLine("");
     Console.WriteLine($"[PORT] debug: {str}");
 }
+#endif

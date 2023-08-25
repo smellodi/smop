@@ -258,14 +258,14 @@ public class CommPort
 
                 if (error == Error.Success)
                 {
-                    if (responses.Length == 2)
+                    if (responses.Length != 2)
                     {
-                        response = responses.Length > 0 ? responses[0] : null;
-                        result = responses.Length > 1 ? responses[1] as Ack : null;
+                        error = Error.InvalidData;
                     }
                     else
                     {
-                        error = Error.InvalidData;
+                        response = responses[0];
+                        result = responses[1] as Ack;
                     }
                 }
             }
@@ -415,12 +415,6 @@ public class CommPort
 
             bytesRemaining -= readCount;
             bufferOffset += readCount;
-        }
-
-        if (bytesRemaining > 0)
-        {
-            packet = null;
-            return Error.Timeout;
         }
 
         packageStartOffset += Packet.PREAMBLE_LENGTH;

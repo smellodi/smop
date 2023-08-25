@@ -40,10 +40,7 @@ namespace Smop.PulseGen.Pages
                     ChannelCount = channel.Count,
                 };
 
-                if (indicator != null)
-                {
-                    callback(indicator);
-                }
+                callback(indicator);
             }
         }
 

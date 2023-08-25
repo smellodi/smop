@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 
 namespace Smop.SmellInsp;
@@ -6,7 +7,7 @@ namespace Smop.SmellInsp;
 /// <summary>
 /// This class is used to emulate communication with the device via <see cref="CommPort"/>
 /// </summary>
-public class SerialPortEmulator : ISerialPort
+public class SerialPortEmulator : ISerialPort, IDisposable
 {
     public bool IsOpen => _isOpen;
 
@@ -50,7 +51,7 @@ public class SerialPortEmulator : ISerialPort
             }
         }
 
-        throw new System.Exception("Closed");
+        throw new Exception("Closed");
     }
 
     public void WriteLine(string text)
@@ -58,6 +59,12 @@ public class SerialPortEmulator : ISerialPort
         text = text.Trim();
         if (text == $"{Command.GET_INFO}")
             _hasInfoToSend = true;
+    }
+
+    public void Dispose()
+    {
+        _dataTimer.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     // Internal
@@ -99,6 +106,6 @@ public class SerialPortEmulator : ISerialPort
     {
         public static float Range(float pm) => (float)((_random.NextDouble() - 0.5) * 2 * pm);
 
-        static System.Random _random = new();
+        static readonly System.Random _random = new();
     }
 }

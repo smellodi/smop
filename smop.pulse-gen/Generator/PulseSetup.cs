@@ -156,6 +156,7 @@ public class PulseSetup
         {
             _nlog.Error(ex, "Cannot read or parse the pulse setup file");
             MsgBox.Error(System.Windows.Application.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{ex.Message}");
+            return null;
         }
 
         return new PulseSetup() { Sessions = sessions.ToArray() };

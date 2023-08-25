@@ -553,7 +553,7 @@ public class API : IMinimalAPI
 
     /// <summary>Get a list of timezones</summary>
     /// <returns>List of timezones</returns>
-    public Task<Response<Timezone[]>> GetClockTimezones() => GetOptions<Timezone[]>("settings/clock");
+    public Task<Response<Timezone[]>> GetClockTimezones() => Get<Timezone[]>("settings/clock");
 
     /// <summary>Get the keyboard</summary>
     /// <returns>Keyboard</returns>
@@ -583,7 +583,7 @@ public class API : IMinimalAPI
 
     /// <summary>Get a list of available external locations to save data to</summary>
     /// <returns>List of available locations</returns>
-    public Task<Response<string[]>> GetAvailableDataSaveLocations() => GetOptions<string[]>("settings/dataSaveLocations");
+    public Task<Response<string[]>> GetAvailableDataSaveLocations() => Get<string[]>("settings/dataSaveLocations");
 
     #endregion
 
@@ -686,21 +686,8 @@ public class API : IMinimalAPI
             return new Response<Confirm>(null, ex.Message);
         }
     }
-    private Task<Response<Confirm>> Remove(string path) => Remove<object>(path);
 
-    private async Task<Response<T>> GetOptions<T>(string path, bool preserveCase = false) where T : class
-    {
-        var request = new RestRequest(path);
-        try
-        {
-            var response = await _client.GetAsync(request);
-            return response.As<T>(preserveCase);
-        }
-        catch (Exception ex)
-        {
-            return new Response<T>(null, ex.Message);
-        }
-    }
+    private Task<Response<Confirm>> Remove(string path) => Remove<object>(path);
 
     private static string ToParams(params (string, object?)[] list)
     {

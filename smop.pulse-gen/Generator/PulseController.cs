@@ -60,16 +60,19 @@ internal class PulseController : IDisposable
         if (_delayedAction != null)
         {
             _delayedAction.Stop();
+            _delayedAction.Dispose();
             _delayedAction = null;
         }
         if (_delayedActionDms != null)
         {
             _delayedActionDms.Stop();
+            _delayedActionDms.Dispose();
             _delayedActionDms = null;
         }
         if (_delayedActionDmsScanProgress != null)
         {
             _delayedActionDmsScanProgress.Stop();
+            _delayedActionDmsScanProgress.Dispose();
             _delayedActionDmsScanProgress = null;
         }
 

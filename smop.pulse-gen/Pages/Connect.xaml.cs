@@ -111,7 +111,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
 
                 var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
-                if (result.Error == OdorDisplay.Error.Success && response is OdorDisplay.Packets.Version version)
+                if (queryResult.Error == OdorDisplay.Error.Success && response is OdorDisplay.Packets.Version version)
                 {
                     lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
                 }

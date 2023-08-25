@@ -1,15 +1,17 @@
 ﻿// Based on Test.OdorDisplay
 
-using Smop.SmellInsp;
-using System.Diagnostics;
-using System.Windows.Threading;
+//#define SHOW_PORT_DEBUG
 
-const bool SHOW_PORT_DEBUG = true;
+using Smop.SmellInsp;
+using System.Windows.Threading;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing Smell Inspector communication module (SMOP.SmellInsp)...\n");
 
+#if !SHOW_PORT_DEBUG
 int linesToScrollUp = 0;
+#endif
+
 var commands = new Dictionary<string, (string, Command?)>()
 {
     { "0", ("fan 0", Command.FAN0) },
@@ -52,8 +54,9 @@ _port.Data += async (s, e) => await Task.Run(() => PrintData(e));
 _port.DeviceInfo += async (s, e) => await Task.Run(() => PrintData(e));
 _port.COMError += (s, e) => Console.WriteLine($"[PORT] {e}");
 
-if (SHOW_PORT_DEBUG)
-    _port.Debug += (s, e) => PrintDebug(e);
+#if SHOW_PORT_DEBUG
+_port.Debug += (s, e) => PrintDebug(e);
+#endif
 
 do
 {
@@ -123,7 +126,9 @@ bool HandleCommand(string cmd)
     Console.WriteLine($"Sent:     {request}");
     Console.WriteLine("  " + result.Reason);
 
+#if !SHOW_PORT_DEBUG
     linesToScrollUp = 0;
+#endif
 
     return true;
 }
@@ -133,17 +138,21 @@ void PrintData(object e)
     var line = Console.CursorTop;
     if (Console.CursorLeft > 0)
         Console.WriteLine("\n");
-    if (!SHOW_PORT_DEBUG && linesToScrollUp > 0)
+#if !SHOW_PORT_DEBUG
+    if (linesToScrollUp > 0)
     {
         Console.CursorTop -= linesToScrollUp;
     }
+#endif
     Console.WriteLine("  " + e);
     Console.Write("\nCommand: ");
-    if (!SHOW_PORT_DEBUG && linesToScrollUp == 0)
+#if !SHOW_PORT_DEBUG
+    if (linesToScrollUp == 0)
     {
         linesToScrollUp = Console.CursorTop - line;
-        Debug.WriteLine(linesToScrollUp);
+        System.Diagnostics.Debug.WriteLine(linesToScrollUp);
     }
+#endif
 }
 
 void PrintHelp()
@@ -158,9 +167,11 @@ void PrintHelp()
     }
 }
 
+#if SHOW_PORT_DEBUG
 void PrintDebug(string str)
 {
     if (Console.CursorLeft > 0)
         Console.WriteLine("");
     Console.WriteLine($"[PORT] debug: {str}");
 }
+#endif

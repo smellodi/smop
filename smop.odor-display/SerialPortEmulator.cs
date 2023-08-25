@@ -8,7 +8,7 @@ namespace Smop.OdorDisplay;
 /// <summary>
 /// This class is used to emulate communication with the device via <see cref="CommPort"/>
 /// </summary>
-public class SerialPortEmulator : ISerialPort
+public class SerialPortEmulator : ISerialPort, System.IDisposable
 {
     /// <summary>
     /// ms
@@ -84,6 +84,12 @@ public class SerialPortEmulator : ISerialPort
             var bytesWithoutPreamble = buffer[(offset + Packet.PREAMBLE_LENGTH)..(offset + count)];
             _requests.Enqueue(Request.From(bytesWithoutPreamble));
         }
+    }
+
+    public void Dispose()
+    {
+        _dataTimer.Dispose();
+        System.GC.SuppressFinalize(this);
     }
 
     // Internal

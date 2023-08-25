@@ -299,6 +299,9 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                         case OdorDisplay.Device.Sensor.PID:
                             lblPID.Content = $"{((PIDValue)sv).Volts * 1000:F1} mV";
                             break;
+                        case OdorDisplay.Device.Sensor.BeadThermistor:
+                            // do nothing, we have no indicator for this
+                            break;
                     }
                 }
             }

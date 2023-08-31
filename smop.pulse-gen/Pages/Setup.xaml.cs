@@ -264,7 +264,7 @@ public partial class Setup : Page, IPage<PulseSetup>
     {
         if (odorDisplayResult.Error != OdorDisplay.Error.Success)
         {
-            Utils.MsgBox.Error(Title, $"Odor Display: Cannot {action}:\n{odorDisplayResult.Reason}");
+            Dialogs.MsgBox.Error(Title, $"Odor Display: Cannot {action}:\n{odorDisplayResult.Reason}");
         }
     }
 
@@ -399,7 +399,26 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
     {
+        var editor = new Dialogs.PulseSetupEditor();
+
         var settings = Properties.Settings.Default;
+        if (string.IsNullOrEmpty(settings.Pulses_SetupFilename) || !File.Exists(settings.Pulses_SetupFilename))
+        {
+            settings.Pulses_SetupFilename = "Properties/setup.txt";
+        }
+
+        editor.Load(settings.Pulses_SetupFilename);
+
+        if (editor.ShowDialog() == true)
+        {
+            var filename = editor.Filename ?? settings.Pulses_SetupFilename;
+            new PulseSetup()
+                { Sessions = editor.Sessions }
+                .Save(filename);
+            LoadPulseSetup(filename);
+        }
+
+        return;
 
         var ofd = new OpenFileDialog
         {

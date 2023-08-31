@@ -1,4 +1,4 @@
-﻿using Smop.PulseGen.Utils;
+﻿using Smop.PulseGen.Dialogs;
 using Smop.PulseGen.Utils.Extensions;
 using System;
 using System.Collections.Generic;

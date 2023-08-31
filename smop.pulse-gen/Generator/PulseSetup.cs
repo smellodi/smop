@@ -1,4 +1,4 @@
-﻿using Smop.PulseGen.Utils;
+﻿using Smop.PulseGen.Dialogs;
 using Smop.PulseGen.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -42,8 +42,8 @@ public class SessionProps
     /// <summary>
     /// 0..1
     /// </summary>
-    public float Humidity { get; init; }
-    public PulseIntervals Intervals { get; init; }
+    public float Humidity { get; set; }
+    public PulseIntervals Intervals { get; set; }
     public PulseProps[] Pulses => _pulses.ToArray();
 
     public SessionProps(float humidity, PulseIntervals intervals)
@@ -55,6 +55,11 @@ public class SessionProps
     public void AddPulse(PulseProps pulse)
     {
         _pulses.Add(pulse);
+    }
+
+    public void RemovePulse(int index)
+    {
+        _pulses.RemoveAt(index);
     }
 
     public void RandomizePulses()
@@ -160,6 +165,26 @@ public class PulseSetup
         }
 
         return new PulseSetup() { Sessions = sessions.ToArray() };
+    }
+
+    public void Save(string filename)
+    {
+        using var writer = new StreamWriter(filename);
+        foreach (var session in Sessions)
+        {
+            var dms = session.Intervals.DmsDelay >= 0 ? $"DMS={session.Intervals.DmsDelay} " : "";
+            writer.WriteLine($"INIT: HUMIDITY={session.Humidity} DELAY={session.Intervals.InitialPause} {dms}DURATION={session.Intervals.Pulse} FINAL={session.Intervals.FinalPause}");
+            foreach (var pulse in session.Pulses)
+            {
+                writer.Write($"PULSE:");
+                foreach (var channel in pulse.Channels)
+                {
+                    var isActive = channel.Active ? "ON" : "OFF";
+                    writer.Write($" {channel.Id}={channel.Flow},{isActive}");
+                }
+                writer.WriteLine();
+            }
+        }
     }
 
     public void Randomize()

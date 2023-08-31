@@ -1,7 +1,7 @@
 ﻿using Smop.PulseGen.Logging;
 using Smop.PulseGen.Pages;
 using Smop.PulseGen.Utils;
-using System;
+using Smop.PulseGen.Dialogs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;

@@ -1,4 +1,5 @@
 ﻿using Smop.OdorDisplay.Packets;
+using Smop.PulseGen.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -104,7 +105,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
             if (result.Error != OdorDisplay.Error.Success)
             {
-                Utils.MsgBox.Error(Title, "Cannot open the port");
+                MsgBox.Error(Title, "Cannot open the port");
             }
             else
             {
@@ -131,7 +132,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
             if (result.Error != Smop.OdorDisplay.Error.Success)
             {
-                Utils.MsgBox.Error(Title, "Cannot open the port");
+                MsgBox.Error(Title, "Cannot open the port");
             }
             else
             {
@@ -186,7 +187,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         if (!info.Success)
         {
-            Utils.MsgBox.Error(Title, "Cannot connect to the device");
+            MsgBox.Error(Title, "Cannot connect to the device");
             return false;
         }
         else if (!info.Value!.CurrentVersion.StartsWith(ionVision.SupportedVersion))
@@ -197,9 +198,9 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             if (!ignoredVersions.Contains(info.Value!.CurrentVersion))
             {
                 var msg = $"Version mismatch: this software targets the version {ionVision.SupportedVersion}, but the device is operating the version {info.Value!.CurrentVersion}. Continue?";
-                var reply = Utils.MsgBox.Custom(Title, msg, Utils.MsgBox.MsgIcon.Warning,
-                    "ignore warnings for this version", null, Utils.MsgBox.Button.Yes, Utils.MsgBox.Button.No);
-                if (reply.Button == Utils.MsgBox.Button.No)
+                var reply = MsgBox.Custom(Title, msg, MsgBox.MsgIcon.Warning,
+                    "ignore warnings for this version", null, MsgBox.Button.Yes, MsgBox.Button.No);
+                if (reply.Button == MsgBox.Button.No)
                 {
                     return false;
                 }
@@ -218,8 +219,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         if (!projects.Value?.Contains(ionVision.Settings.Project) ?? false)
         {
             string projectList = string.Join("\n", projects.Value!);
-            Utils.MsgBox.Warn(Title, $"Project '{ionVision.Settings.Project}' does not exist.\nPlease edit '{IonVisionSetupFilename}' file\nand set one of the following projects\n\n{projectList}",
-                Utils.MsgBox.Button.OK);
+            MsgBox.Warn(Title, $"Project '{ionVision.Settings.Project}' does not exist.\nPlease edit '{IonVisionSetupFilename}' file\nand set one of the following projects\n\n{projectList}",
+                MsgBox.Button.OK);
 
             return false;
         }

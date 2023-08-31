@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
-namespace Smop.PulseGen.Utils;
+namespace Smop.PulseGen.Dialogs;
 
 public partial class MsgBox : Window
 {

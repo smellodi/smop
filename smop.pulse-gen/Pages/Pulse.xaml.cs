@@ -50,7 +50,8 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         foreach (var session in setup.Sessions)
             foreach (var pulse in session.Pulses)
                 foreach (var channel in pulse.Channels)
-                    channelsExist[channel.Id - 1] = true;
+                    if (channel.Flow > 0 || channel.Active)
+                        channelsExist[channel.Id - 1] = true;
 
         stpStageDisplays.Children.Clear();
         _stageDisplays.Clear();

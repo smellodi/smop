@@ -227,10 +227,11 @@ public class API : IMinimalAPI
     /// <returns>List of scan IDs</returns>
     public Task<Response<string[]>> GetProjectResults(string name) => Get<string[]>($"project/{name}/results");
 
-    /// <summary>Get the list of project parameters</summary>
+    /// <summary>Get the list of project parameters.
+    /// NOTE! Not working, use <see cref="GetProjectDefinition(string)"/> instead.</summary>
     /// <param name="name">Project name</param>
     /// <returns>List of project parameters</returns>
-    public Task<Response<Parameter[]>> GetProjectSequence(string name) => Get<Parameter[]>($"project/{name}/sequence");
+    public Task<Response<Parameter[]>> GetProjectParameters(string name) => Get<Parameter[]>($"project/{name}/sequence");
 
     /// <summary>Sets the project list of parameters</summary>
     /// <param name="name">Project name</param>

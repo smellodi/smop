@@ -251,6 +251,16 @@ namespace Smop.PulseGen.Dialogs
 
         // UI
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Storage.Instance.BindScaleToZoomLevel(sctScale);
+        }
+
+        private void Window_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Storage.Instance.UnbindScaleToZoomLevel(sctScale);
+        }
+
         private void New_Click(object sender, RoutedEventArgs e)
         {
             var newFilename = InputBox.Show(Title, "Type file name for the new setup:", "");

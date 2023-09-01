@@ -12,7 +12,9 @@
         WindowStyle="ToolWindow"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
-        Icon="/Assets/icons/main.png">
+        Icon="/Assets/icons/main.png"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
     <Window.Resources>
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="4,0" />
@@ -22,6 +24,9 @@
     </Window.Resources>
     
     <Grid>
+        <Grid.LayoutTransform>
+            <ScaleTransform x:Name="sctScale"/>
+        </Grid.LayoutTransform>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>

@@ -174,6 +174,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             if (status.Success)
             {
                 lblIonVisionInfo.Content = $"Device type: {status.Value?.DeviceType ?? 0}";
+                btnChooseIonVisionSetupFile.IsEnabled = false;
+                btnEditIonVisionSetup.IsEnabled = false;
             }
 
             App.IonVision = _ionVision;
@@ -274,8 +276,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         IonVisionSetupFilename = settings.Comm_IonVision_SetupFilename;
 
-        var ivSetings = new IonVision.Settings(IonVisionSetupFilename);
-        txbIonVisionIP.Text = ivSetings.IP;
+        var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
+        txbIonVisionIP.Text = ivSettings.IP;
     }
 
     private void SaveSettings()
@@ -367,11 +369,13 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     {
         btnConnectToIonVision.IsEnabled = false;
         btnChooseIonVisionSetupFile.IsEnabled = false;
+        btnEditIonVisionSetup.IsEnabled = false;
 
         await ConnectToIonVisionAsync();
 
         btnConnectToIonVision.IsEnabled = true;
         btnChooseIonVisionSetupFile.IsEnabled = true;
+        btnEditIonVisionSetup.IsEnabled = true;
     }
 
     private void ChooseIonVisionSetupFile_Click(object? sender, RoutedEventArgs e)
@@ -390,12 +394,27 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         {
             IonVisionSetupFilename = ofd.FileName;
 
-            var ivSetings = new IonVision.Settings(IonVisionSetupFilename);
-            txbIonVisionIP.Text = ivSetings.IP;
+            var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
+            txbIonVisionIP.Text = ivSettings.IP;
 
             var settings = Properties.Settings.Default;
             settings.Comm_IonVision_SetupFilename = IonVisionSetupFilename;
             settings.Save();
+        }
+    }
+
+    private void EditIonVisionSetup_Click(object? sender, RoutedEventArgs e)
+    {
+        var setupDialog = new IonVisionSetupEditor();
+        setupDialog.Load(IonVisionSetupFilename);
+        if (setupDialog.ShowDialog() == true)
+        {
+            var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
+            ivSettings.IP = setupDialog.IP!;
+            ivSettings.Project = setupDialog.Project!;
+            ivSettings.ParameterName = setupDialog.ParameterName!;
+            ivSettings.ParameterId = setupDialog.ParameterId!;
+            ivSettings.Save();
         }
     }
 

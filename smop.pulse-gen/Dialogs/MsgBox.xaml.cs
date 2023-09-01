@@ -222,4 +222,14 @@ public partial class MsgBox : Window
             return new Result(box.ClickedButton, box.CustomButtonID, box.IsOptionAccepted);
         }
     }
+
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance.BindScaleToZoomLevel(sctScale);
+    }
+
+    private void Window_Unloaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance.UnbindScaleToZoomLevel(sctScale);
+    }
 }

@@ -116,6 +116,7 @@
                                 Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
                                 Click="ChoosePulseSetupFile_Click"/>
                             <Button Grid.Column="2"
+                                Margin="2,0,0,0"
                                 Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
                                 Click="EditPulseSetup_Click">
                                 <Image Source="/Assets/images/edit.png"/>

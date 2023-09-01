@@ -42,11 +42,13 @@
     <None Remove="Assets\images\button-green.png" />
     <None Remove="Assets\images\button-red.png" />
     <None Remove="Assets\images\edit.png" />
+    <None Remove="Assets\images\wait.gif" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NLog" Version="5.2.2" />
     <PackageReference Include="ScottPlot.WPF" Version="4.1.16" />
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,9 +60,13 @@
     <Resource Include="Assets\images\exclamation.png" />
     <Resource Include="Assets\images\information.png" />
     <Resource Include="Assets\images\question.png" />
+    <Resource Include="Assets\images\wait.gif" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Dialogs\IonVisionSetupEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Pages\OdorProduction\Production.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

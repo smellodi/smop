@@ -105,7 +105,8 @@
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
-                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="txbSetupFile" Grid.Column="0"
                                 IsReadOnly="True">
@@ -114,6 +115,11 @@
                                 Content="..."
                                 Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
                                 Click="ChoosePulseSetupFile_Click"/>
+                            <Button Grid.Column="2"
+                                Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
+                                Click="EditPulseSetup_Click">
+                                <Image Source="/Assets/images/edit.png"/>
+                            </Button>
                         </Grid>
                     </StackPanel>
 

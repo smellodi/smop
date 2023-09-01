@@ -2,6 +2,7 @@
 using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Generator;
+using Smop.PulseGen.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -162,6 +163,12 @@ public partial class Setup : Page, IPage<PulseSetup>
     private void LoadPulseSetup(string filename)
     {
         _setupFileName = null;
+
+        if (string.IsNullOrEmpty(filename))
+        {
+            DispatchOnce.Do(0.5, () => Dispatcher.Invoke(() => EditPulseSetup_Click(this, new RoutedEventArgs())));
+            return;
+        }
 
         if (!File.Exists(filename))
         {
@@ -324,7 +331,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         var settings = Properties.Settings.Default;
         chkRandomize.IsChecked = settings.Pulses_Randomize;
 
-        LoadPulseSetup(settings.Pulses_SetupFilename);
+        LoadPulseSetup(settings.Pulses_SetupFilename.Trim());
 
         if (Focusable)
         {
@@ -399,38 +406,43 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
     {
-        var editor = new Dialogs.PulseSetupEditor();
-
         var settings = Properties.Settings.Default;
-        if (string.IsNullOrEmpty(settings.Pulses_SetupFilename) || !File.Exists(settings.Pulses_SetupFilename))
-        {
-            settings.Pulses_SetupFilename = "Properties/setup.txt";
-        }
-
-        editor.Load(settings.Pulses_SetupFilename);
-
-        if (editor.ShowDialog() == true)
-        {
-            var filename = editor.Filename ?? settings.Pulses_SetupFilename;
-            new PulseSetup()
-                { Sessions = editor.Sessions }
-                .Save(filename);
-            LoadPulseSetup(filename);
-        }
-
-        return;
-
         var ofd = new OpenFileDialog
         {
             Filter = "Any file|*",
-            FileName = Path.GetFileName(settings.Pulses_SetupFilename),
-            InitialDirectory = Path.GetDirectoryName(settings.Pulses_SetupFilename) ?? AppDomain.CurrentDomain.BaseDirectory
+            FileName = Path.GetFileName(settings.Pulses_SetupFilename.Trim()),
+            InitialDirectory = Path.GetDirectoryName(settings.Pulses_SetupFilename.Trim()) ?? AppDomain.CurrentDomain.BaseDirectory
         };
 
         if (ofd.ShowDialog() ?? false)
         {
             LoadPulseSetup(ofd.FileName);
         }
+    }
+
+    private void EditPulseSetup_Click(object? sender, RoutedEventArgs e)
+    {
+        var editor = new Dialogs.PulseSetupEditor();
+
+        var settings = Properties.Settings.Default;
+        if (string.IsNullOrEmpty(settings.Pulses_SetupFilename.Trim()) || !File.Exists(settings.Pulses_SetupFilename.Trim()))
+        {
+            settings.Pulses_SetupFilename = "Properties/setup.txt";
+        }
+
+        editor.Load(settings.Pulses_SetupFilename.Trim());
+
+        if (editor.ShowDialog() == true)
+        {
+            var filename = editor.Filename ?? settings.Pulses_SetupFilename.Trim();
+
+            var setup = new PulseSetup() { Sessions = editor.Sessions };
+            setup.Save(filename);
+
+            LoadPulseSetup(filename);
+        }
+
+        return;
     }
 
     private void Start_Click(object sender, RoutedEventArgs e)

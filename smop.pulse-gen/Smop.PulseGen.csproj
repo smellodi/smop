@@ -41,6 +41,7 @@
   <ItemGroup>
     <None Remove="Assets\images\button-green.png" />
     <None Remove="Assets\images\button-red.png" />
+    <None Remove="Assets\images\edit.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +53,7 @@
     <Resource Include="Assets\icons\main.png" />
     <Resource Include="Assets\images\button-green.png" />
     <Resource Include="Assets\images\button-red.png" />
+    <Resource Include="Assets\images\edit.png" />
     <Resource Include="Assets\images\error.png" />
     <Resource Include="Assets\images\exclamation.png" />
     <Resource Include="Assets\images\information.png" />

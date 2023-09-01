@@ -1,8 +1,5 @@
-﻿using System;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
 using System.Windows;
-using System.Windows.Interop;
 
 namespace Smop.PulseGen.Dialogs;
 
@@ -54,19 +51,14 @@ public partial class InputBox : Window, INotifyPropertyChanged
 
     // Internal
 
-    const int GWL_STYLE = -16;
-    const int WS_SYSMENU = 0x80000;
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-    [DllImport("user32.dll")]
-    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
     InputType _inputType;
 
     private InputBox(string? title, string? message, string? value, InputType inputType)
     {
         InitializeComponent();
+
+        DialogTools.HideWindowButtons(this);
+
         DataContext = this;
 
         _inputType = inputType;
@@ -80,11 +72,7 @@ public partial class InputBox : Window, INotifyPropertyChanged
         txbInput.Focus();
     }
 
-    private void Window_Loaded(object sender, RoutedEventArgs e)
-    {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
-    }
+    // UI
 
     private void OK_Click(object sender, RoutedEventArgs e)
     {

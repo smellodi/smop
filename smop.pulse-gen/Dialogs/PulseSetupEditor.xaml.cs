@@ -181,6 +181,9 @@ namespace Smop.PulseGen.Dialogs
         public PulseSetupEditor()
         {
             InitializeComponent();
+
+            DialogTools.HideWindowButtons(this);
+
             DataContext = this;
         }
 
@@ -267,13 +270,13 @@ namespace Smop.PulseGen.Dialogs
                 newFilename += ".txt";
             }
 
-            if (File.Exists("Properties\\" + newFilename))
+            if (File.Exists("Properties/" + newFilename))
             {
                 MsgBox.Error(Title, $"File '{newFilename}' exists already");
                 return;
             }
 
-            Filename = "Properties\\" + newFilename;
+            Filename = "Properties/" + newFilename;
             tblFileName.Text = Filename;
 
             lsvPulses.Items.Clear();

@@ -12,8 +12,7 @@
         WindowStyle="ToolWindow"
         SizeToContent="WidthAndHeight"
         WindowStartupLocation="CenterOwner"
-        Icon="/Assets/icons/main.png"
-        Loaded="Window_Loaded">
+        Icon="/Assets/icons/main.png">
     <Window.Resources>
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="10,0,0,0" />

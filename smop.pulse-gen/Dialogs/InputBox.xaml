@@ -12,8 +12,7 @@
         WindowStyle="ToolWindow"
         SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
-        Icon="/Assets/icons/main.png"
-        Loaded="Window_Loaded">
+        Icon="/Assets/icons/main.png">
     <Window.Resources>
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="4,0" />
@@ -31,7 +30,8 @@
 
         <TextBlock x:Name="txbMessage" Grid.Row="0"
                    Margin="12"
-                   Text="Message as asdas dasd asda asdasda s adasd as"
+                   Text="Message"
+                   HorizontalAlignment="Left"
                    TextWrapping="Wrap"/>
         <TextBox x:Name="txbInput" Grid.Row="1"
                  Margin="12,0"

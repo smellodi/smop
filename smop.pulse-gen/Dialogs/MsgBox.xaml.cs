@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
 namespace Smop.PulseGen.Dialogs;
@@ -109,17 +107,11 @@ public partial class MsgBox : Window
 
     readonly MsgIcon _icon;
 
-    const int GWL_STYLE = -16;
-    const int WS_SYSMENU = 0x80000;
-
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-    [DllImport("user32.dll")]
-    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
     private MsgBox(string? title, string? message, MsgIcon icon, string[]? customButtons, Button[] stdButtons)
     {
         InitializeComponent();
+
+        DialogTools.HideWindowButtons(this);
 
         if (stdButtons?.Length + customButtons?.Length == 0)
         {
@@ -229,11 +221,5 @@ public partial class MsgBox : Window
 
             return new Result(box.ClickedButton, box.CustomButtonID, box.IsOptionAccepted);
         }
-    }
-
-    private void Window_Loaded(object sender, RoutedEventArgs e)
-    {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        _ = SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) & ~WS_SYSMENU);
     }
 }

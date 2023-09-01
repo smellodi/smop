@@ -19,34 +19,15 @@ public partial class InputBox : Window, INotifyPropertyChanged
 
     public static string? Show(string? title, string? message, string? value, InputType inputType = InputType.String)
     {
-        if (Application.Current.Dispatcher.Thread != System.Threading.Thread.CurrentThread)
-        {
-            return Application.Current.Dispatcher.Invoke(() =>
-            {
-                var box = new InputBox(title, message, value, inputType)
-                {
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    ShowInTaskbar = true
-                };
-
-                return box.ShowDialog() == true ? box.Value : null;
-            });
-        }
-        else
+        string? CreateAndShow()
         {
             var box = new InputBox(title, message, value, inputType);
-            if (!Application.Current.MainWindow.IsLoaded)
-            {
-                box.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                box.ShowInTaskbar = true;
-            }
-            else
-            {
-                box.Owner = Application.Current.MainWindow;
-            }
+            DialogTools.SetCentralPosition(box);
 
             return box.ShowDialog() == true ? box.Value : null;
         }
+
+        return DialogTools.ShowSafe(CreateAndShow);
     }
 
     // Internal

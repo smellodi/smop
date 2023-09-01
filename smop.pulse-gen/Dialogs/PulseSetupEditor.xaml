@@ -6,7 +6,7 @@
         xmlns:validators="clr-namespace:Smop.PulseGen.Validators"
         mc:Ignorable="d"
         Title="Pulse setup file editor"
-        MinHeight="480"
+        MinHeight="500"
         MinWidth="300"
         Height="510"
         Width="390"
@@ -123,7 +123,7 @@
                 <Label Style="{StaticResource Header}" Grid.Row="0">Pulses</Label>
                 <ListView x:Name="lsvPulses" Grid.Row="1"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          MaxHeight="238"
+                          MaxHeight="106"
                           SelectionChanged="Pulses_SelectionChanged"
                           KeyUp="Pulses_KeyUp"/>
                 <Button x:Name="btnAddPulse" Grid.Row="2"

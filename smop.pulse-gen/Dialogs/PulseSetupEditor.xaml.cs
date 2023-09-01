@@ -183,6 +183,7 @@ namespace Smop.PulseGen.Dialogs
             InitializeComponent();
 
             DialogTools.HideWindowButtons(this);
+            DialogTools.SetCentralPosition(this);
 
             DataContext = this;
         }

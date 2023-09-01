@@ -19,6 +19,31 @@ namespace Smop.PulseGen.Dialogs
             }
         }
 
+        public static void SetCentralPosition(Window window)
+        {
+            if (!Application.Current.MainWindow.IsLoaded || Application.Current.Dispatcher.Thread != System.Threading.Thread.CurrentThread)
+            {
+                window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                window.ShowInTaskbar = true;
+            }
+            else
+            {
+                window.Owner = Application.Current.MainWindow;
+            }
+        }
+
+        public static T ShowSafe<T>(Func<T> createAndShow)
+        {
+            if (Application.Current.Dispatcher.Thread != System.Threading.Thread.CurrentThread)
+            {
+                return Application.Current.Dispatcher.Invoke(createAndShow);
+            }
+            else
+            {
+                return createAndShow();
+            }
+        }
+
         // Internal
 
         const int GWL_STYLE = -16;

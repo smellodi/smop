@@ -187,40 +187,18 @@ public partial class MsgBox : Window
             box.chkOption.IsChecked = false;
         }
 
-        if (Application.Current.Dispatcher.Thread != System.Threading.Thread.CurrentThread)
-        {
-            return Application.Current.Dispatcher.Invoke(() =>
-            {
-                var box = new MsgBox(title, message, icon, customButtons, stdButtons)
-                {
-                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    ShowInTaskbar = true
-                };
-
-                SetOption(box);
-                box.ShowDialog();
-
-                return new Result(box.ClickedButton, box.CustomButtonID, box.IsOptionAccepted);
-            });
-        }
-        else
+        Result CreateAndShow()
         {
             var box = new MsgBox(title, message, icon, customButtons, stdButtons);
-            if (!Application.Current.MainWindow.IsLoaded)
-            {
-                box.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                box.ShowInTaskbar = true;
-            }
-            else
-            {
-                box.Owner = Application.Current.MainWindow;
-            }
+            DialogTools.SetCentralPosition(box);
 
             SetOption(box);
             box.ShowDialog();
 
             return new Result(box.ClickedButton, box.CustomButtonID, box.IsOptionAccepted);
         }
+
+        return DialogTools.ShowSafe(CreateAndShow);
     }
 
     private void Window_Loaded(object sender, RoutedEventArgs e)

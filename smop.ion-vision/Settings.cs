@@ -27,7 +27,7 @@ public class Settings
         get => _properties.ParameterName;
         set { _properties = _properties with { ParameterName = value }; }
     }
-    public string User
+    public string? User
     {
         get => _properties.User;
         set { _properties = _properties with { User = value }; }
@@ -79,8 +79,8 @@ public class Settings
 
     // Internal
 
-    record class Properties(string IP, string Project, string ParameterId, string ParameterName, string User);
+    record class Properties(string IP, string Project, string ParameterId, string ParameterName, string? User);
 
-    Properties _properties = new("localhost", "Smellodi", "GUID", "Default", "TUNI");
+    Properties _properties = new("localhost", "Smellodi", "GUID", "Default", null);
     readonly string _filename;
 }

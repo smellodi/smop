@@ -12,7 +12,7 @@ public record class Confirm(
 );
 
 public record class User(
-    string Name
+    string? Name
 );
 
 public record class ParameterAsId(

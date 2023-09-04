@@ -68,7 +68,7 @@ public record class MeasurementData(
 );
 public record class ScanResult(
     string Id,
-    string Measurer,
+    string? Measurer,
     string StartTime,
     string FinishTime,
     string Parameters,

@@ -92,7 +92,7 @@ public class PulseSetup
             using var reader = new StreamReader(filename);
             int lineIndex = 0;
 
-            foreach (var line in reader.ReadToEnd().Split('\n'))
+            foreach (var line in reader.ReadToEnd().Split('\n').Where(p => !string.IsNullOrEmpty(p)).ToArray())
             {
                 lineIndex += 1;
 
@@ -104,9 +104,9 @@ public class PulseSetup
 
                 var (key, value) = (p[0], p[1]);
 
-                if (key == "init")
+                if (key == SESSION_INIT)
                 {
-                    var props = value.Trim().Split(' ');
+                    var props = value.Trim().Split(' ').Where(p => !string.IsNullOrEmpty(p)).ToArray();
                     var sessionProps = CreateSessionProps(props, lastSession, lineIndex);
                     lastSession = sessionProps;
 
@@ -119,11 +119,11 @@ public class PulseSetup
                         linesWithInvalidData.Add(lineIndex);
                     }
                 }
-                else if (key == "pulse")
+                else if (key == SESSION_PULSE)
                 {
                     if (lastSession != null)
                     {
-                        var props = value.Trim().Split(' ');
+                        var props = value.Trim().Split(' ').Where(p => !string.IsNullOrEmpty(p)).ToArray(); ;
                         var (pulseProps, hasInvalidValues) = CreatePulseProps(props);
 
                         if (pulseProps != null)
@@ -172,14 +172,21 @@ public class PulseSetup
         using var writer = new StreamWriter(filename);
         foreach (var session in Sessions)
         {
-            var dms = session.Intervals.DmsDelay >= 0 ? $"DMS={session.Intervals.DmsDelay} " : "";
-            writer.WriteLine($"INIT: HUMIDITY={session.Humidity} DELAY={session.Intervals.InitialPause} {dms}DURATION={session.Intervals.Pulse} FINAL={session.Intervals.FinalPause}");
+            writer.WriteLine(string.Join("",
+                $"{SESSION_INIT}:",
+                $" {SESSION_HUMIDITY}={session.Humidity}",
+                $" {PULSE_INITIAL_PAUSE}={session.Intervals.InitialPause}",
+                session.Intervals.DmsDelay >= 0 ?
+                    $" {DMS_DELAY}={session.Intervals.DmsDelay}" : "",
+                $" {PULSE_DURATION}={session.Intervals.Pulse}",
+                $" {PULSE_FINAL_PAUSE}={session.Intervals.FinalPause}"
+            ));
             foreach (var pulse in session.Pulses)
             {
-                writer.Write($"PULSE:");
+                writer.Write($"{SESSION_PULSE}:");
                 foreach (var channel in pulse.Channels)
                 {
-                    var isActive = channel.Active ? "ON" : "OFF";
+                    var isActive = channel.Active ? PULSE_CHANNEL_ON : PULSE_CHANNEL_OFF;
                     writer.Write($" {channel.Id}={channel.Flow},{isActive}");
                 }
                 writer.WriteLine();
@@ -196,16 +203,26 @@ public class PulseSetup
     }
 
     public static IEnumerable<string> PulseChannelsAsStrings(PulseProps pulse) =>
-        pulse.Channels.Select(ch => $"{ch.Id}:{ch.Flow}/{BoolToState(ch.Active)}");
+        pulse.Channels.Select(ch => $"{ch.Id}={ch.Flow},{BoolToState(ch.Active)}");
 
     // Internal
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(PulseSetup));
 
+    static readonly string SESSION_INIT = "init";
+    static readonly string SESSION_PULSE = "pulse";
+    static readonly string SESSION_HUMIDITY = "humidity";
+    static readonly string PULSE_INITIAL_PAUSE = "delay";
+    static readonly string PULSE_DURATION = "duration";
+    static readonly string PULSE_FINAL_PAUSE = "final";
+    static readonly string PULSE_CHANNEL_ON = "on";
+    static readonly string PULSE_CHANNEL_OFF = "off";
+    static readonly string DMS_DELAY = "dms";
+
     const float MAX_INTERVAL = 60 * 60; // seconds
     const float MAX_FLOW = 1000; // nccm
 
-    private static string BoolToState(bool value) => value ? "ON" : "OFF";
+    private static string BoolToState(bool value) => value ? PULSE_CHANNEL_ON : PULSE_CHANNEL_OFF;
 
     private static SessionProps? CreateSessionProps(string[] p, SessionProps? lastSessionProps, int lineIndex)
     {
@@ -230,23 +247,23 @@ public class PulseSetup
             }
 
             var (key, value) = (keyvalue[0], keyvalue[1]);
-            if (key == "humidity")
+            if (key == SESSION_HUMIDITY)
             {
                 humidity = float.Parse(value);
             }
-            else if (key == "delay")
+            else if (key == PULSE_INITIAL_PAUSE)
             {
                 delay = float.Parse(value);
             }
-            else if (key == "duration")
+            else if (key == PULSE_DURATION)
             {
                 duration = float.Parse(value);
             }
-            else if (key == "dms")
+            else if (key == DMS_DELAY)
             {
                 dmsDelay = float.Parse(value);
             }
-            else if (key == "final")
+            else if (key == PULSE_FINAL_PAUSE)
             {
                 finalPause = float.Parse(value);
             }
@@ -300,7 +317,7 @@ public class PulseSetup
                 {
                     active = activeValue > 0;
                 }
-                else if (paramList[1] == "off")
+                else if (paramList[1] == PULSE_CHANNEL_OFF)
                 {
                     active = false;
                 }

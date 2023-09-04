@@ -51,7 +51,7 @@
         <WrapPanel Grid.Row="0"
                    Margin="8"
                    VerticalAlignment="Center">
-            <TextBlock x:Name="tblFileName" TextWrapping="Wrap" Text="Full path the settings file"/>
+            <TextBlock x:Name="tblFileName" TextWrapping="Wrap" Text="Full path to the settings file"/>
         </WrapPanel>
 
         <Grid Grid.Row="1">

@@ -10,9 +10,6 @@ using System.Windows.Controls;
 
 namespace Smop.PulseGen.Dialogs
 {
-    /// <summary>
-    /// Interaction logic for PulseSetupEditor.xaml
-    /// </summary>
     public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     {
         public SessionProps[] Sessions => _sessions.ToArray();
@@ -300,11 +297,6 @@ namespace Smop.PulseGen.Dialogs
             SessionAdd_Click(this, new RoutedEventArgs());
         }
 
-        private void Open_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void SessionAdd_Click(object sender, RoutedEventArgs e)
         {
             var session = new SessionProps(40, new PulseIntervals(10, 60, 10, 10));
@@ -328,10 +320,10 @@ namespace Smop.PulseGen.Dialogs
                     new PulseChannelProps(3, 0f, false),
                     new PulseChannelProps(4, 0f, false),
                     new PulseChannelProps(5, 0f, false),
-                    new PulseChannelProps(6, 0f, false),
+                    /*new PulseChannelProps(6, 0f, false),
                     new PulseChannelProps(7, 0f, false),
                     new PulseChannelProps(8, 0f, false),
-                    new PulseChannelProps(9, 0f, false),
+                    new PulseChannelProps(9, 0f, false),*/
                 }));
             }
 

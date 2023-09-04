@@ -5,7 +5,7 @@ using System.Windows.Interop;
 
 namespace Smop.PulseGen.Dialogs
 {
-    internal class DialogTools
+    internal static class DialogTools
     {
         public static void HideWindowButtons(Window window)
         {

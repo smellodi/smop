@@ -6,9 +6,6 @@ using System.Windows;
 
 namespace Smop.PulseGen.Dialogs
 {
-    /// <summary>
-    /// Interaction logic for PulseSetupEditor.xaml
-    /// </summary>
     public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged
     {
         public string? IP { get; private set; }

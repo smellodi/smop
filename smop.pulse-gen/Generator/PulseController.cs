@@ -190,7 +190,7 @@ internal class PulseController : IDisposable
 
         if (_ionVision != null)
         {
-            HandleIonVisionError(await _ionVision.SetScanResultComment(new { Pulse = pulseData }), "SetScanResultComment");
+            HandleIonVisionError(await _ionVision.SetScanResultComment(new { Pulses = pulseData }), "SetScanResultComment");
         }
 
         _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);

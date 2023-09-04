@@ -92,9 +92,6 @@
                        Margin="0,0,0,8">
                 <Button Content="New..."
                         Click="New_Click"/>
-                <!--Control Style="{StaticResource HorizontalSpacer}"/>
-                <Button Content="Open..."
-                        Click="Open_Click"/-->
             </WrapPanel>
 
             <Grid Grid.Row="1" Grid.Column="0">

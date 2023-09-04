@@ -56,122 +56,12 @@ namespace Smop.PulseGen.Dialogs
         public string SessionFinalPause
         {
             get => Session?.Intervals.FinalPause.ToString("F1") ?? "";
-            set { if (_sessionIndex >= 0 && float.TryParse(value, out float v)) _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { FinalPause = v }; }
+            set 
+            {
+                if (_sessionIndex >= 0 && float.TryParse(value, out float v)) 
+                    _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { FinalPause = v };
+            }
         }
-
-        // Pulses channel uses
-
-        public bool PulseChannel1Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 1)?.Active ?? false;
-            set => UpdateChannelUse(1, value);
-        }
-
-        public bool PulseChannel2Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 2)?.Active ?? false;
-            set => UpdateChannelUse(2, value);
-        }
-
-        public bool PulseChannel3Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 3)?.Active ?? false;
-            set => UpdateChannelUse(3, value);
-        }
-
-        public bool PulseChannel4Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 4)?.Active ?? false;
-            set => UpdateChannelUse(4, value);
-        }
-
-        public bool PulseChannel5Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 5)?.Active ?? false;
-            set => UpdateChannelUse(5, value);
-        }
-        /*
-        public bool PulseChannel6Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 6)?.Active ?? false;
-            set => UpdateChannelUse(6, value);
-        }
-
-        public bool PulseChannel7Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 7)?.Active ?? false;
-            set => UpdateChannelUse(7, value); 
-        }
-
-        public bool PulseChannel8Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 8)?.Active ?? false;
-            set => UpdateChannelUse(8, value);
-        }
-
-        public bool PulseChannel9Use
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 9)?.Active ?? false;
-            set => UpdateChannelUse(9, value);
-        }*/
-
-
-        // Pulse channel flows
-
-        public string PulseChannel1Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 1)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(1, value);
-        }
-
-        public string PulseChannel2Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 2)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(2, value);
-        }
-
-        public string PulseChannel3Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 3)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(3, value);
-        }
-
-        public string PulseChannel4Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 4)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(4, value);
-        }
-
-        public string PulseChannel5Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 5)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(5, value);
-        }
-        /*
-        public string PulseChannel6Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 6)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(6, value);
-        }
-
-        public string PulseChannel7Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 7)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(7, value);
-        }
-
-        public string PulseChannel8Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 8)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(8, value);
-        }
-
-        public string PulseChannel9Flow
-        {
-            get => Channels?.FirstOrDefault(c => c.Id == 9)?.Flow.ToString("F2") ?? "";
-            set => UpdateChannelFlow(9, value);
-        }
-        */
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -183,6 +73,41 @@ namespace Smop.PulseGen.Dialogs
             DialogTools.SetCentralPosition(this);
 
             DataContext = this;
+
+            _pulseChannelFlowValid = FindResource("TextBoxWithoutError") as Style;
+            _pulseChannelFlowInvalid = FindResource("TextBoxWithError") as Style;
+
+            for (int i = 1; i <= PulseChannels.Count; i++)
+            {
+                var id = i.ToString();
+
+                grdPulse.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+                var label = new Label() { Content = id };
+                Grid.SetRow(label, i);
+                Grid.SetColumn(label, 0);
+                grdPulse.Children.Add(label);
+
+                var chk = new CheckBox() { Tag = id };
+                chk.Checked += PulseChannelUse_CheckedChanged;
+                chk.Unchecked += PulseChannelUse_CheckedChanged;
+                Grid.SetRow(chk, i);
+                Grid.SetColumn(chk, 1);
+                grdPulse.Children.Add(chk);
+
+                _pulseChannelUseControl.Add(chk);
+
+                var txb = new TextBox() { Tag = id };
+                txb.TextChanged += PulseChannelFlow_TextChanged;
+                Grid.SetRow(txb, i);
+                Grid.SetColumn(txb, 2);
+
+                txb.Style = _pulseChannelFlowValid;
+
+                grdPulse.Children.Add(txb);
+
+                _pulseChannelFlowControl.Add(txb);
+            }
         }
 
         public void Load(string filename)
@@ -210,6 +135,15 @@ namespace Smop.PulseGen.Dialogs
 
         // Internal
 
+        const float PULSE_CHANNEL_MIN = 0;
+        const float PULSE_CHANNEL_MAX = 1500;
+
+        readonly List<CheckBox> _pulseChannelUseControl = new();
+        readonly List<TextBox> _pulseChannelFlowControl = new();
+
+        readonly Style? _pulseChannelFlowValid;
+        readonly Style? _pulseChannelFlowInvalid;
+
         List<SessionProps> _sessions = new ();
         int _sessionIndex = -1;
         int _pulseIndex = -1;
@@ -217,15 +151,15 @@ namespace Smop.PulseGen.Dialogs
         SessionProps? Session => _sessionIndex >= 0 ? _sessions[_sessionIndex] : null;
         PulseChannelProps[]? Channels => _sessionIndex >= 0 && _pulseIndex >= 0 ? _sessions[_sessionIndex].Pulses[_pulseIndex].Channels : null;
 
-        private void UpdateChannelFlow(int id, string value)
+        private void UpdateChannelFlow(int id, float value)
         {
-            if (Channels != null && float.TryParse(value, out float v))
+            if (Channels != null)
             {
                 for (int i = 0; i < Channels.Length; i++)
                 {
                     if (Channels[i].Id == id)
                     {
-                        Channels[i] = Channels[i] with { Flow = v };
+                        Channels[i] = Channels[i] with { Flow = value };
                         break;
                     }
                 }
@@ -243,6 +177,32 @@ namespace Smop.PulseGen.Dialogs
                         Channels[i] = Channels[i] with { Active = value };
                         break;
                     }
+                }
+            }
+        }
+
+        private void PulseChannelUse_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox chk)
+            {
+                var id = int.Parse((string)chk.Tag);
+                UpdateChannelUse(id, chk.IsChecked ?? false);
+            }
+        }
+
+        private void PulseChannelFlow_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox txb)
+            {
+                var id = int.Parse((string)txb.Tag);
+                if (float.TryParse(txb.Text, out float value) && value >= PULSE_CHANNEL_MIN && value <= PULSE_CHANNEL_MAX)
+                {
+                    txb.Style = _pulseChannelFlowValid;
+                    UpdateChannelFlow(id, value);
+                }
+                else
+                {
+                    txb.Style = _pulseChannelFlowInvalid;
                 }
             }
         }
@@ -314,17 +274,12 @@ namespace Smop.PulseGen.Dialogs
             }
             else
             {
-                session.AddPulse(new PulseProps(new PulseChannelProps[] {
-                    new PulseChannelProps(1, 10f, true),
-                    new PulseChannelProps(2, 0f, false),
-                    new PulseChannelProps(3, 0f, false),
-                    new PulseChannelProps(4, 0f, false),
-                    new PulseChannelProps(5, 0f, false),
-                    /*new PulseChannelProps(6, 0f, false),
-                    new PulseChannelProps(7, 0f, false),
-                    new PulseChannelProps(8, 0f, false),
-                    new PulseChannelProps(9, 0f, false),*/
-                }));
+                var pulseChannelProps = new List<PulseChannelProps>() { new PulseChannelProps(1, 10f, true) };
+                for (int i = 2; i <= PulseChannels.Count; i++)
+                {
+                    pulseChannelProps.Add(new PulseChannelProps(i, 0f, false));
+                }
+                session.AddPulse(new PulseProps(pulseChannelProps.ToArray()));
             }
 
             _sessions.Add(session);
@@ -407,29 +362,18 @@ namespace Smop.PulseGen.Dialogs
 
             grdPulse.IsEnabled = Session != null;
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel1Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel2Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel3Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel4Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel5Use)));
-            /*
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel6Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel7Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel8Use)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel9Use)));
-            */
+            foreach (var chk in _pulseChannelUseControl)
+            {
+                var id = int.Parse((string)chk.Tag);
+                chk.IsChecked = Channels?.FirstOrDefault(c => c.Id == id)?.Active ?? false;
+            }
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel1Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel2Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel3Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel4Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel5Flow)));
-            /*
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel6Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel7Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel8Flow)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PulseChannel9Flow)));
-            */
+            foreach (var txb in _pulseChannelFlowControl)
+            {
+                var id = int.Parse((string)txb.Tag);
+                txb.Text = Channels?.FirstOrDefault(c => c.Id == id)?.Flow.ToString("F2") ?? "";
+                txb.Style = _pulseChannelFlowValid;
+            }
         }
 
         private void Pulses_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)

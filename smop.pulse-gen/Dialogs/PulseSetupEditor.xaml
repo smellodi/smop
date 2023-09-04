@@ -42,22 +42,15 @@
         <Style x:Key="HorizontalSpacer" TargetType="{x:Type Control}">
             <Setter Property="Margin" Value="4,0"/>
         </Style>
+
+        <!-- Next two style used from code -->
         
-        <ControlTemplate x:Key="validationTemplate">
-            <DockPanel>
-                <TextBlock Foreground="Red"
-                           FontSize="20"
-                           Margin="0,0,1,0">!</TextBlock>
-                <AdornedElementPlaceholder/>
-            </DockPanel>
-        </ControlTemplate>
-        <Style x:Key="TextBoxInError" TargetType="{x:Type TextBox}">
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="true">
-                    <Setter Property="ToolTip" Value="{Binding RelativeSource={x:Static RelativeSource.Self}, Path=(Validation.Errors)[0].ErrorContent}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>        
+        <Style x:Key="TextBoxWithError" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Template" Value="{StaticResource TextBoxTemplateError}"/>
+        </Style>
+
+        <Style x:Key="TextBoxWithoutError" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+        </Style>
     </Window.Resources>
     
     <Grid>
@@ -232,136 +225,13 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" FontWeight="Bold">Channel</Label>
                     <Label Grid.Row="0" Grid.Column="1" FontWeight="Bold">Valve</Label>
                     <Label Grid.Row="0" Grid.Column="2" FontWeight="Bold">Flow, sccm</Label>
-                    
-                    <Label Grid.Row="1" Grid.Column="0">1</Label>
-                    <CheckBox x:Name="chkPulseChannel1Use" Grid.Row="1" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel1Use}"/>
-                    <TextBox x:Name="txbPulseChannel1Flow" Grid.Row="1" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel1Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
 
-                    <Label Grid.Row="2" Grid.Column="0">2</Label>
-                    <CheckBox x:Name="chkPulseChannel2Use" Grid.Row="2" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel2Use}"/>
-                    <TextBox x:Name="txbPulseChannel2Flow" Grid.Row="2" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel2Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
+                    <!-- puplated in code -->
 
-                    <Label Grid.Row="3" Grid.Column="0">3</Label>
-                    <CheckBox x:Name="chkPulseChannel3Use" Grid.Row="3" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel3Use}"/>
-                    <TextBox x:Name="txbPulseChannel3Flow" Grid.Row="3" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel3Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
-
-                    <Label Grid.Row="4" Grid.Column="0">4</Label>
-                    <CheckBox x:Name="chkPulseChannel4Use" Grid.Row="4" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel4Use}"/>
-                    <TextBox x:Name="txbPulseChannel4Flow" Grid.Row="4" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel4Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
-
-                    <Label Grid.Row="5" Grid.Column="0">5</Label>
-                    <CheckBox x:Name="chkPulseChannel5Use" Grid.Row="5" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel5Use}"/>
-                    <TextBox x:Name="txbPulseChannel5Flow" Grid.Row="5" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel5Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
-
-                    <!--Label Grid.Row="6" Grid.Column="0">6</Label>
-                    <CheckBox x:Name="chkPulseChannel6Use" Grid.Row="6" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel6Use}"/>
-                    <TextBox x:Name="txbPulseChannel6Flow" Grid.Row="6" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel6Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
-
-                    <Label Grid.Row="7" Grid.Column="0">7</Label>
-                    <CheckBox x:Name="chkPulseChannel7Use" Grid.Row="7" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel7Use}"/>
-                    <TextBox x:Name="txbPulseChannel7Flow" Grid.Row="7" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel7Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
-
-                    <Label Grid.Row="8" Grid.Column="0">8</Label>
-                    <CheckBox x:Name="chkPulseChannel8Use" Grid.Row="8" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel8Use}"/>
-                    <TextBox x:Name="txbPulseChannel8Flow" Grid.Row="8" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel8Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox>
-
-                    <Label Grid.Row="9" Grid.Column="0">9</Label>
-                    <CheckBox x:Name="chkPulseChannel9Use" Grid.Row="9" Grid.Column="1"
-                              IsChecked="{Binding PulseChannel9Use}"/>
-                    <TextBox x:Name="txbPulseChannel9Flow" Grid.Row="9" Grid.Column="2">
-                        <TextBox.Text>
-                            <Binding Path="PulseChannel9Flow" UpdateSourceTrigger="PropertyChanged">
-                                <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="1500"/>
-                                </Binding.ValidationRules>
-                            </Binding>
-                        </TextBox.Text>
-                    </TextBox-->
                 </Grid>
             </Grid>
         </Grid>

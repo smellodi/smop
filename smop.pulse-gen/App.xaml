@@ -302,6 +302,48 @@
             </Style>
             
             <!-- TextBox -->
+            <ControlTemplate x:Key="TextBoxTemplateNormal" TargetType="{x:Type TextBox}">
+                <Border x:Name="Border"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}"
+                                    SnapsToDevicePixels="True">
+                    <ScrollViewer x:Name="PART_ContentHost"
+                                              Focusable="false"
+                                              HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Opacity" TargetName="Border" Value="0.56"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="true">
+                        <Setter Property="BorderBrush" TargetName="Border" Value="{StaticResource BrushBorder}"/>
+                    </Trigger>
+                    <Trigger Property="IsFocused" Value="true">
+                        <Setter Property="BorderBrush" TargetName="Border" Value="{StaticResource BrushBorderFocused}"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
+            <ControlTemplate x:Key="TextBoxTemplateError" TargetType="{x:Type TextBox}">
+                <Border x:Name="Border"
+                                    BorderBrush="Red"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Background="{TemplateBinding Background}"
+                                    SnapsToDevicePixels="True">
+                    <ScrollViewer x:Name="PART_ContentHost"
+                                              Focusable="false"
+                                              HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Opacity" TargetName="Border" Value="0.56"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
             <Style TargetType="{x:Type TextBox}">
                 <Setter Property="VerticalContentAlignment" Value="Center" />
                 <Setter Property="Padding" Value="4,4"/>
@@ -312,33 +354,8 @@
                 <Setter Property="SelectionBrush" Value="{StaticResource BrushBorder}"/>
                 <Setter Property="CaretBrush" Value="{StaticResource BrushFontDark}"/>
                 <Setter Property="FocusVisualStyle" Value="{StaticResource InputFocus}"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type TextBox}">
-                            <Border x:Name="Border"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Background="{TemplateBinding Background}"
-                                    SnapsToDevicePixels="True">
-                                <ScrollViewer x:Name="PART_ContentHost"
-                                              Focusable="false"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsEnabled" Value="false">
-                                    <Setter Property="Opacity" TargetName="Border" Value="0.56"/>
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="true">
-                                    <Setter Property="BorderBrush" TargetName="Border" Value="{StaticResource BrushBorder}"/>
-                                </Trigger>
-                                <Trigger Property="IsFocused" Value="true">
-                                    <Setter Property="BorderBrush" TargetName="Border" Value="{StaticResource BrushBorderFocused}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
+                <Setter Property="Template" Value="{StaticResource TextBoxTemplateNormal}"/>
+
                 <Style.Triggers>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter Property="Foreground" Value="{StaticResource BrushFontDarkDisabled}"/>

@@ -7,10 +7,15 @@ using System.Linq;
 
 namespace Smop.PulseGen.Generator;
 
+public static class PulseChannels
+{
+    public static int Count => 5;
+}
+
 /// <summary>
 /// One odor channel properties
 /// </summary>
-/// <param name="Id">Channel ID, 1..9</param>
+/// <param name="Id">Channel ID, 1..<see cref="PulseChannels.Count"/></param>
 /// <param name="Flow">Flow in ccm</param>
 /// <param name="Active">Set to true for the channel to be opened during the pulse</param>
 public record class PulseChannelProps(int Id, float Flow, bool Active);
@@ -40,7 +45,7 @@ public record class PulseIntervals(float InitialPause, float Pulse, float DmsDel
 public class SessionProps
 {
     /// <summary>
-    /// 0..1
+    /// 0..100
     /// </summary>
     public float Humidity { get; set; }
     public PulseIntervals Intervals { get; set; }

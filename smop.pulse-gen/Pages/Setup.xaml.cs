@@ -416,7 +416,13 @@ public partial class Setup : Page, IPage<PulseSetup>
 
         if (ofd.ShowDialog() ?? false)
         {
-            LoadPulseSetup(ofd.FileName);
+            var filename = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, ofd.FileName);
+            if (filename.StartsWith(".."))
+            {
+                filename = ofd.FileName;
+            }
+
+            LoadPulseSetup(filename);
         }
     }
 

@@ -380,19 +380,24 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     private void ChooseIonVisionSetupFile_Click(object? sender, RoutedEventArgs e)
     {
-        string appBaseDir = AppDomain.CurrentDomain.BaseDirectory;
-        string ionVisionSetupPath = Path.Combine(appBaseDir, IonVisionSetupFilename);
-
         var ofd = new Microsoft.Win32.OpenFileDialog
         {
             Filter = "JSON files|*.json",
-            FileName = Path.GetFileName(ionVisionSetupPath),
-            InitialDirectory = Path.GetDirectoryName(ionVisionSetupPath)
+            FileName = Path.GetFileName(IonVisionSetupFilename),
+            InitialDirectory = Path.GetDirectoryName(IonVisionSetupFilename)
         };
 
         if (ofd.ShowDialog() ?? false)
         {
-            IonVisionSetupFilename = ofd.FileName;
+            var filename = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, ofd.FileName);
+            if (filename.StartsWith(".."))
+            {
+                IonVisionSetupFilename = ofd.FileName;
+            }
+            else
+            {
+                IonVisionSetupFilename = filename;
+            }
 
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
             txbIonVisionIP.Text = ivSettings.IP;

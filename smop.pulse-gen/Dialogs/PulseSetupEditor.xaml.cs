@@ -65,6 +65,30 @@ namespace Smop.PulseGen.Dialogs
             }
         }
 
+        public bool UseSessionDMS
+        {
+            get => Session?.Intervals.DmsDelay >= 0;
+            set
+            {
+                if (_sessionIndex >= 0)
+                {
+                    if (value)
+                    {
+                        if (_sessions[_sessionIndex].Intervals.DmsDelay < 0)
+                        {
+                            _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { DmsDelay = _lastDmsDelay };
+                        }
+                    }
+                    else
+                    {
+                        _lastDmsDelay = _sessions[_sessionIndex].Intervals.DmsDelay >= 0 ? _sessions[_sessionIndex].Intervals.DmsDelay : 5f;
+                        _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { DmsDelay = -1 };
+                    }
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionDMSDelay)));
+                }
+            }
+        }
+
         public string SessionFinalPause
         {
             get => Session?.Intervals.FinalPause.ToString("F1") ?? "";
@@ -159,6 +183,7 @@ namespace Smop.PulseGen.Dialogs
         List<SessionProps> _sessions = new ();
         int _sessionIndex = -1;
         int _pulseIndex = -1;
+        float _lastDmsDelay = 5f;
 
         SessionProps? Session => _sessionIndex >= 0 ? _sessions[_sessionIndex] : null;
         PulseChannelProps[]? Channels => _sessionIndex >= 0 && _pulseIndex >= 0 ? _sessions[_sessionIndex].Pulses[_pulseIndex].Channels : null;
@@ -332,6 +357,7 @@ namespace Smop.PulseGen.Dialogs
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionInitialPause)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionPulseDuration)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionDMSDelay)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseSessionDMS)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionFinalPause)));
 
             lsvPulses.Items.Clear();

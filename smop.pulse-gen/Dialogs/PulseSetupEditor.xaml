@@ -186,7 +186,8 @@
                     
                     <Label Grid.Row="3" Grid.Column="0">DMS start delay, seconds</Label>
                     <TextBox x:Name="txbSessionDMSDelay" Grid.Row="3" Grid.Column="1"
-                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}"
+                             IsEnabled="{Binding IsChecked, ElementName=chkUseDMS}">
                         <TextBox.Text>
                             <Binding Path="SessionDMSDelay" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
@@ -195,7 +196,12 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
-                    
+                    <CheckBox x:Name="chkUseDMS" Grid.Row="3" Grid.Column="1"
+                              Height="24"
+                              Margin="0,0,-6,0"
+                              HorizontalAlignment="Right"
+                              IsChecked="{Binding UseSessionDMS}"/>
+
                     <Label Grid.Row="4" Grid.Column="0">Final pause, seconds</Label>
                     <TextBox x:Name="txbSessionFinalPause" Grid.Row="4" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">

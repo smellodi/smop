@@ -43,6 +43,12 @@
             <Setter Property="Margin" Value="4,0"/>
         </Style>
 
+        <ControlTemplate x:Key="TextBoxValidationTemplate">
+            <Border BorderBrush="Red" BorderThickness="0,1">
+                <AdornedElementPlaceholder x:Name="TextBoxWithError"/>
+            </Border>
+        </ControlTemplate>
+
         <!-- Next two style used from code -->
         
         <Style x:Key="TextBoxWithError" TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
@@ -143,7 +149,8 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0">Humidity, %</Label>
-                    <TextBox x:Name="txbSessionHumidity" Grid.Row="0" Grid.Column="1">
+                    <TextBox x:Name="txbSessionHumidity" Grid.Row="0" Grid.Column="1"
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionHumidity" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
@@ -154,7 +161,8 @@
                     </TextBox>
                     
                     <Label Grid.Row="1" Grid.Column="0">Initial pause, seconds</Label>
-                    <TextBox x:Name="txbSessionInitialPause" Grid.Row="1" Grid.Column="1">
+                    <TextBox x:Name="txbSessionInitialPause" Grid.Row="1" Grid.Column="1"
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionInitialPause" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
@@ -165,7 +173,8 @@
                     </TextBox>
 
                     <Label Grid.Row="2" Grid.Column="0">Pulse duration, seconds</Label>
-                    <TextBox x:Name="txbSessionPulseDuration" Grid.Row="2" Grid.Column="1">
+                    <TextBox x:Name="txbSessionPulseDuration" Grid.Row="2" Grid.Column="1"
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionPulseDuration" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
@@ -176,7 +185,8 @@
                     </TextBox>
                     
                     <Label Grid.Row="3" Grid.Column="0">DMS start delay, seconds</Label>
-                    <TextBox x:Name="txbSessionDMSDelay" Grid.Row="3" Grid.Column="1">
+                    <TextBox x:Name="txbSessionDMSDelay" Grid.Row="3" Grid.Column="1"
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionDMSDelay" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
@@ -187,7 +197,8 @@
                     </TextBox>
                     
                     <Label Grid.Row="4" Grid.Column="0">Final pause, seconds</Label>
-                    <TextBox x:Name="txbSessionFinalPause" Grid.Row="4" Grid.Column="1">
+                    <TextBox x:Name="txbSessionFinalPause" Grid.Row="4" Grid.Column="1"
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionFinalPause" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>

@@ -20,18 +20,30 @@ namespace Smop.PulseGen.Dialogs
         public string SessionHumidity
         {
             get => Session?.Humidity.ToString("F1") ?? "";
-            set { if (_sessionIndex >= 0 && float.TryParse(value, out float v)) _sessions[_sessionIndex].Humidity = v; }
+            set 
+            {
+                if (_sessionIndex >= 0 && float.TryParse(value, out float v))
+                    _sessions[_sessionIndex].Humidity = v; 
+            }
         }
         public string SessionInitialPause
         {
             get => Session?.Intervals.InitialPause.ToString("F1") ?? "";
-            set { if (_sessionIndex >= 0 && float.TryParse(value, out float v)) _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { InitialPause = v }; }
+            set 
+            {
+                if (_sessionIndex >= 0 && float.TryParse(value, out float v))
+                    _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { InitialPause = v };
+            }
         }
 
         public string SessionPulseDuration
         {
             get => Session?.Intervals.Pulse.ToString("F1") ?? "";
-            set { if (_sessionIndex >= 0 && float.TryParse(value, out float v)) _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { Pulse = v }; }
+            set
+            {
+                if (_sessionIndex >= 0 && float.TryParse(value, out float v)) 
+                    _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { Pulse = v };
+            }
         }
 
         public string SessionDMSDelay

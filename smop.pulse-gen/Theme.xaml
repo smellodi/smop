@@ -1,0 +1,41 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Theme colors -->
+    <Color x:Key="ColorLight">#FFEBDA</Color>
+    <Color x:Key="ColorLightDarker">#D49A6A</Color>
+    <Color x:Key="ColorDarkLighter">#AA6C39</Color>
+    <Color x:Key="ColorDark">#804515</Color>
+    <Color x:Key="ColorDarkDarker">#553600</Color>
+
+    <Color x:Key="ColorDisabledLight">#E0E0E0</Color>
+    <Color x:Key="ColorDisabledLightDarker">#959595</Color>
+    <Color x:Key="ColorDisabledDarkLighter">#7F7F7F</Color>
+    <Color x:Key="ColorDisabledDark">#696969</Color>
+    <Color x:Key="ColorDisabledDarkDarker">#606060</Color>
+
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="BrushFont" Color="{StaticResource ColorLight}" />
+    <SolidColorBrush x:Key="BrushFontDisabled" Color="{StaticResource ColorDisabledLight}" />
+    <SolidColorBrush x:Key="BrushFontDark" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushFontDarkDisabled" Color="{StaticResource ColorDisabledDark}" />
+    <SolidColorBrush x:Key="BrushInput" Color="{StaticResource ColorLight}" />
+    <SolidColorBrush x:Key="BrushButton" Color="{StaticResource ColorDarkLighter}" />
+    <SolidColorBrush x:Key="BrushButtonHover" Color="{StaticResource ColorLightDarker}" />
+    <SolidColorBrush x:Key="BrushButtonPressed" Color="{StaticResource ColorDarkDarker}" />
+    <SolidColorBrush x:Key="BrushButtonFocused" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushButtonDisabled" Color="{StaticResource ColorDisabledLightDarker}" />
+    <SolidColorBrush x:Key="BrushBorder" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushBorderFocused" Color="{StaticResource ColorDarkDarker}" />
+    <SolidColorBrush x:Key="BrushBorderLight" Color="{StaticResource ColorDarkLighter}" />
+    <SolidColorBrush x:Key="BrushBorderDisabled" Color="{StaticResource ColorDisabledDarkDarker}" />
+    <SolidColorBrush x:Key="BrushBorderLightDisabled" Color="{StaticResource ColorDisabledDarkLighter}" />
+    <SolidColorBrush x:Key="BrushHeaderBackground" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushHeaderBackgroundDisabled" Color="{StaticResource ColorDisabledDark}" />
+    <SolidColorBrush x:Key="BrushPanel" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushPanelLight" Color="{StaticResource ColorLightDarker}" />
+    <SolidColorBrush x:Key="BrushPanelLightest" Color="{StaticResource ColorLight}" />
+    <SolidColorBrush x:Key="BrushPanelDisabled" Color="{StaticResource ColorDisabledDark}" />
+    <SolidColorBrush x:Key="BrushPanelDisabledLight" Color="{StaticResource ColorDisabledLightDarker}" />
+
+</ResourceDictionary>

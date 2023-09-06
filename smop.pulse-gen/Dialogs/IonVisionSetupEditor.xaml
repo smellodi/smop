@@ -37,8 +37,8 @@
             <Setter Property="Margin" Value="4,0"/>
         </Style>
     </Window.Resources>
-    
-    <Grid Margin="8">
+
+    <Grid Margin="8,8,8,0">
         <Grid.LayoutTransform>
             <ScaleTransform x:Name="sctScale"/>
         </Grid.LayoutTransform>
@@ -94,21 +94,14 @@
                    Width="64"/>
         </Border>
 
-        <WrapPanel Grid.Row="2"
-                   HorizontalAlignment="Center"
-                   Margin="0,8">
-            <WrapPanel.Resources>
-                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
-                    <Setter Property="Margin" Value="8,0,0,0" />
-                    <Setter Property="MinWidth" Value="56" />
-                </Style>
-            </WrapPanel.Resources>
-            <Button x:Name="btnSave"
+        <WrapPanel Grid.Row="2" HorizontalAlignment="Center">
+            <Button x:Name="btnSave" Style="{StaticResource Next}"
                     Content="Save"
                     IsEnabled="False"
                     Click="Save_Click"/>
             <Control Style="{StaticResource HorizontalSpacer}"/>
-            <Button Content="Cancel"
+            <Button Style="{StaticResource Next}" 
+                    Content="Cancel"
                     IsCancel="True"/>
         </WrapPanel>
     </Grid>

@@ -16,7 +16,7 @@
         <utils:ObjectToBoolConverter x:Key="obj2bool"/>
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="8,0,0,0" />
-            <Setter Property="MinHeight" Value="25" />
+            <Setter Property="Width" Value="{Binding ActualHeight, RelativeSource={x:Static RelativeSource.Self}}"/>
         </Style>
     </Page.Resources>
 
@@ -117,6 +117,7 @@
 
             <Button x:Name="btnConnect" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"
                 Margin="0,12,0,0"
+                Width="Auto"
                 IsEnabled="{Binding HasNecessaryConnections, Mode=OneWay}"
                 Content="Continue"
                 Click="Continue_Click"/>

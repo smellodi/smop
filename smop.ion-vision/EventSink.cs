@@ -12,13 +12,26 @@ namespace Smop.IonVision;
 /// </summary>
 public class EventSink : IDisposable
 {
+    #region Event args
+
+    public record class Message(string Type, long Time, object Body)
+    {
+        static JsonSerializerOptions _jso = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+        public T As<T>() => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(Body), _jso)!;
+    }
+
     /// <summary>
     /// Arguments of an event without a payload (message "body" field is empty)
     /// </summary>
     public class TimedEventArgs : EventArgs
     {
+        public string Type { get; init; }
         public long Timestamp { get; init; }
-        public TimedEventArgs(long timestamp) => Timestamp = timestamp;
+        public TimedEventArgs(Message msg)
+        {
+            Type = msg.Type;
+            Timestamp = msg.Time;
+        }
     }
 
     /// <summary>
@@ -32,12 +45,33 @@ public class EventSink : IDisposable
         /// Body / payload
         /// </summary>
         public T Data { get; init; }
-        public TimedEventArgs(long timestamp, T data) : base(timestamp)
+        public TimedEventArgs(Message msg) : base(msg)
         {
-            Timestamp = timestamp;
-            Data = data;
+            Data = msg.As<T>();
         }
     }
+
+    /// <summary>
+    /// Arguments of an event with a payload in the message "body" field
+    /// as an array of key-value pairs,
+    /// exposed in this class as "Data"
+    /// </summary>
+    /// <typeparam name="T">Type of values</typeparam>
+    public class TimedArrayEventArgs<T> : TimedEventArgs
+    {
+        /// <summary>
+        /// Body / payload
+        /// </summary>
+        public KeyValuePair<string,T>[] Data { get; init; }
+        public TimedArrayEventArgs(Message msg) : base(msg)
+        {
+            Data = msg.Body.GetType().GetProperties()
+                .Select(prop => new KeyValuePair<string, T>(prop.Name, (T)prop.GetValue(msg.Body, null)!))
+                .ToArray();
+        }
+    }
+
+    #endregion
 
     #region Message body payloads
 
@@ -71,11 +105,12 @@ public class EventSink : IDisposable
             bool SensorPumpOn
     );
     public record class SensorSample(float Temperature, float HeaterTemperature, float Pressure, float Flow, float Humidity);
+    public record class Ambient(float Temperature, float Pressure, float Humidity);
     public record class ControllersStatus(
         Status Status,
         SensorSample Sample,
         SensorSample Sensor,
-        Detector Ambient);
+        Ambient Ambient);
     public record class Error(string Code);
     public record class ErrorLimits(
         bool AmbientPressureUnderMin,
@@ -151,7 +186,7 @@ public class EventSink : IDisposable
     /// <summary>
     /// The comments object of an ongoing or next scan has changed. The new comments object is passed as the body of this message.
     /// </summary>
-    public event EventHandler<TimedEventArgs<KeyValuePair<string, string>[]>>? ScanCommentsChanged;
+    public event EventHandler<TimedArrayEventArgs<string>>? ScanCommentsChanged;
     /// <summary>
     /// The device has moved to scope mode. Scope mode will now continue until stopped from the HTTP API.
     /// </summary>
@@ -231,7 +266,7 @@ public class EventSink : IDisposable
     /// <summary>
     /// A error or warning message from the back-end.
     /// </summary>
-    public event EventHandler<TimedEventArgs<Error>>? ErrorCode;
+    public event EventHandler<TimedEventArgs<Error>>? ErrorReceived;
     /// <summary>
     /// An user set or safety limit has been crossed. The message always contains every possible limit error and whether they are off (false) or on (true).
     /// </summary>
@@ -322,8 +357,6 @@ public class EventSink : IDisposable
 
     // Internal
 
-    private record class Message(string Type, long Time, object? Body);
-
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly string _ip;
 
@@ -348,13 +381,13 @@ public class EventSink : IDisposable
 
     private void OnDisconnected(DisconnectionInfo info)
     {
-        System.Diagnostics.Debug.WriteLine("[WS-C] Disconnected");
+        System.Diagnostics.Debug.WriteLine("[IV-WS-C] Disconnected");
         DispatchOnce.Do(3, CreateWebSocketClient);
     }
 
     private void OnConnected(ReconnectionInfo info)
     {
-        System.Diagnostics.Debug.WriteLine("[WS-C] Connected");
+        System.Diagnostics.Debug.WriteLine("[IV-WS-C] Connected");
     }
 
     private void OnMessage(ResponseMessage msg)
@@ -365,145 +398,98 @@ public class EventSink : IDisposable
             return;
         }
 
+        System.Diagnostics.Debug.WriteLine(msg);
+
         try
         {
             if (message.Type == "scan.started")
-                ScanStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                ScanStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scan.stopped")
-                ScanStopped?.Invoke(this, new TimedEventArgs(message.Time));
+                ScanStopped?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scan.finished")
-                ScanStopped?.Invoke(this, new TimedEventArgs(message.Time));
+                ScanFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scan.resultsProcessed")
-                ScanResultsProcessed?.Invoke(this, new TimedEventArgs(message.Time));
+                ScanResultsProcessed?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scan.progress")
-            {
-                var data = JsonSerializer.Deserialize<ProcessProgress>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ScanProgressChanged?.Invoke(this, new TimedEventArgs<ProcessProgress>(message.Time, data!));
-            }
+                ScanProgressChanged?.Invoke(this, new TimedEventArgs<ProcessProgress>(message));
             else if (message.Type == "scan.usernameChanged")
-            {
-                var data = JsonSerializer.Deserialize<ScanUserName>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ScanUserNameChanged?.Invoke(this, new TimedEventArgs<ScanUserName>(message.Time, data!));
-            }
+                ScanUserNameChanged?.Invoke(this, new TimedEventArgs<ScanUserName>(message));
             else if (message.Type == "scan.commentsChanged")
-            {
-                var data = message.Body!.GetType().GetProperties().Select(prop =>
-                    new KeyValuePair<string, string>(prop.Name, (string)prop.GetValue(message.Body, null)!)).ToArray();
-                ScanCommentsChanged?.Invoke(this, new TimedEventArgs<KeyValuePair<string, string>[]>(message.Time, data));
-            }
+                ScanCommentsChanged?.Invoke(this, new TimedArrayEventArgs<string>(message));
             else if (message.Type == "scope.started")
-                ScopeStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                ScopeStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scope.stopped")
-                ScopeStopped?.Invoke(this, new TimedEventArgs(message.Time));
+                ScopeStopped?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scope.data")
-            {
-                var data = JsonSerializer.Deserialize<ScopeData>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ScopeDataReceived?.Invoke(this, new TimedEventArgs<ScopeData>(message.Time, data!));
-            }
+                ScopeDataReceived?.Invoke(this, new TimedEventArgs<ScopeData>(message));
             else if (message.Type == "scope.parametersChanged")
-            {
-                var data = JsonSerializer.Deserialize<ScopeParameters>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ScopeParametersChanged?.Invoke(this, new TimedEventArgs<ScopeParameters>(message.Time, data!));
-            }
+                ScopeParametersChanged?.Invoke(this, new TimedEventArgs<ScopeParameters>(message));
             else if (message.Type == "parameter.currentChanged")
-            {
-                var data = JsonSerializer.Deserialize<CurrentParameter>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                CurrentParameterChanged?.Invoke(this, new TimedEventArgs<CurrentParameter>(message.Time, data!));
-            }
+                CurrentParameterChanged?.Invoke(this, new TimedEventArgs<CurrentParameter>(message));
             else if (message.Type == "parameter.setupCurrentStarted")
-                ParameterSetupStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                ParameterSetupStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "parameter.setupCurrentFinished")
-                ParameterSetupFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                ParameterSetupFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "parameter.preloadStarted")
-                ParameterPreloadStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                ParameterPreloadStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "parameter.preloadFinished")
-                ParameterPreloadFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                ParameterPreloadFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "parameter.edited")
-            {
-                var data = JsonSerializer.Deserialize<Parameter>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ParameterEdited?.Invoke(this, new TimedEventArgs<Parameter>(message.Time, data!));
-            }
+                ParameterEdited?.Invoke(this, new TimedEventArgs<Parameter>(message));
             else if (message.Type == "parameter.listChanged")
-                ParameterListChanged?.Invoke(this, new TimedEventArgs(message.Time));
+                ParameterListChanged?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "project.currentChanged")
-            {
-                var data = JsonSerializer.Deserialize<CurrentProject>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                CurrentProjectChanged?.Invoke(this, new TimedEventArgs<CurrentProject>(message.Time, data!));
-            }
+                CurrentProjectChanged?.Invoke(this, new TimedEventArgs<CurrentProject>(message));
             else if (message.Type == "project.setupCurrentStarted")
-                ProjectSetupStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                ProjectSetupStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "project.setupCurrentFinished")
-                ProjectSetupFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                ProjectSetupFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "project.edited")
-            {
-                var data = JsonSerializer.Deserialize<ProjectEdit>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ProjectEdited?.Invoke(this, new TimedEventArgs<ProjectEdit>(message.Time, data!));
-            }
+                ProjectEdited?.Invoke(this, new TimedEventArgs<ProjectEdit>(message));
             else if (message.Type == "project.listChanged")
-                ProjectListChanged?.Invoke(this, new TimedEventArgs(message.Time));
+                ProjectListChanged?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "controllers.status")
-            {
-                var data = JsonSerializer.Deserialize<ControllersStatus>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ControllersStatusTimer?.Invoke(this, new TimedEventArgs<ControllersStatus>(message.Time, data!));
-            }
+                ControllersStatusTimer?.Invoke(this, new TimedEventArgs<ControllersStatus>(message));
             else if (message.Type == "device.standbyButtonPressed")
-                StandbyButtonPressed?.Invoke(this, new TimedEventArgs(message.Time));
+                StandbyButtonPressed?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "device.shutdown")
-                StandbyButtonPressed?.Invoke(this, new TimedEventArgs(message.Time));
+                Shutdown?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "message.error")
-            {
-                var data = JsonSerializer.Deserialize<Error>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ErrorCode?.Invoke(this, new TimedEventArgs<Error>(message.Time, data!));
-            }
+                ErrorReceived?.Invoke(this, new TimedEventArgs<Error>(message));
             else if (message.Type == "message.limitError")
-            {
-                var data = JsonSerializer.Deserialize<ErrorLimits>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                ErrorLimitsViolated?.Invoke(this, new TimedEventArgs<ErrorLimits>(message.Time, data!));
-            }
+                ErrorLimitsViolated?.Invoke(this, new TimedEventArgs<ErrorLimits>(message));
             else if (message.Type == "message.timeChanged")
-            {
-                var data = JsonSerializer.Deserialize<Timestamp>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                TimeChanged?.Invoke(this, new TimedEventArgs<Timestamp>(message.Time, data!));
-            }
+                TimeChanged?.Invoke(this, new TimedEventArgs<Timestamp>(message));
             else if (message.Type == "backup.started")
-                BackupStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                BackupStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "backup.finished")
-                BackupFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                BackupFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "backup.progress")
-            {
-                var data = JsonSerializer.Deserialize<ProcessProgress>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                BackupProgress?.Invoke(this, new TimedEventArgs<ProcessProgress>(message.Time, data!));
-            }
+                BackupProgress?.Invoke(this, new TimedEventArgs<ProcessProgress>(message));
             else if (message.Type == "restore.started")
-                RestoreStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                RestoreStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "restore.finished")
-                RestoreFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                RestoreFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "restore.progress")
-            {
-                var data = JsonSerializer.Deserialize<ProcessProgress>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                RestoreProgress?.Invoke(this, new TimedEventArgs<ProcessProgress>(message.Time, data!));
-            }
+                RestoreProgress?.Invoke(this, new TimedEventArgs<ProcessProgress>(message));
             else if (message.Type == "reset.started")
-                RestoreStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                ResetStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "reset.finished")
-                RestoreFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                ResetFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "update.started")
-                UpdateStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                UpdateStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "update.finished")
-                UpdateFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                UpdateFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "update.progress")
-            {
-                var data = JsonSerializer.Deserialize<ProcessProgress>(JsonSerializer.Serialize(message.Body), _jsonSerializerOptions);
-                UpdateProgress?.Invoke(this, new TimedEventArgs<ProcessProgress>(message.Time, data!));
-            }
+                UpdateProgress?.Invoke(this, new TimedEventArgs<ProcessProgress>(message));
             else if (message.Type == "cloud.sessionStart")
-                CloudSessionStarted?.Invoke(this, new TimedEventArgs(message.Time));
+                CloudSessionStarted?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "cloud.sessionEnd")
-                CloudSessionFinished?.Invoke(this, new TimedEventArgs(message.Time));
+                CloudSessionFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "cloud.connectionError")
-                CloudConnectionError?.Invoke(this, new TimedEventArgs(message.Time));
+                CloudConnectionError?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "cloud.connectionRestored")
-                CloudConnectionRestored?.Invoke(this, new TimedEventArgs(message.Time));
+                CloudConnectionRestored?.Invoke(this, new TimedEventArgs(message));
         }
         catch (TaskCanceledException)
         {
@@ -515,4 +501,6 @@ public class EventSink : IDisposable
             System.Diagnostics.Debug.WriteLine(ex);
         }
     }
+
+    private T As<T>(object body) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(body), _jsonSerializerOptions)!;
 }

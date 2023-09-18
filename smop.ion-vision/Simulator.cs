@@ -22,12 +22,12 @@ internal class Simulator : IMinimalAPI
         {
             socket.OnOpen = () =>
             {
-                Debug.WriteLine($"[WS-S] Opened from {socket.ConnectionInfo.ClientIpAddress}");
+                Debug.WriteLine($"[IV-WS-S] Opened from {socket.ConnectionInfo.ClientIpAddress}");
                 _sockets.Add(socket);
             };
             socket.OnClose = () =>
             {
-                Debug.WriteLine("[WS-S] Closed");
+                Debug.WriteLine("[IV-WS-S] Closed");
                 _sockets.Remove(socket);
             };
             // socket.OnMessage = message => { ignore messages };

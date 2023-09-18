@@ -19,12 +19,12 @@ if (!await Connect(ionVision))
 
 await Task.Delay(1);
 EventSink events = new(isSimulating ? "127.0.0.1" : ionVision.Settings.IP);
-events.ScanStarted += (s, e) => PrintEvent("scan started");
-events.ScanProgressChanged += (s, e) => PrintEvent($"scan progress = {e.Data.Progress} %");
-events.ScanFinished += (s, e) => PrintEvent("scan finished");
-events.ScanResultsProcessed += (s, e) => PrintEvent("scan results are available now");
-events.CurrentProjectChanged += (s, e) => PrintEvent($"project = {e.Data.NewProject}");
-events.CurrentParameterChanged += (s, e) => PrintEvent($"param = {e.Data.NewParameter.Name}");
+events.ScanStarted += (s, e) => PrintEvent(e.Type, "scan started");
+events.ScanProgressChanged += (s, e) => PrintEvent(e.Type, $"scan progress = {e.Data.Progress} %");
+events.ScanFinished += (s, e) => PrintEvent(e.Type, "scan finished");
+events.ScanResultsProcessed += (s, e) => PrintEvent(e.Type, "scan results are available now");
+events.CurrentProjectChanged += (s, e) => PrintEvent(e.Type, $"project = {e.Data.NewProject}");
+events.CurrentParameterChanged += (s, e) => PrintEvent(e.Type, $"param = {e.Data.NewParameter.Name}");
 
 (string, string)[] listOfCommands = Array.Empty<(string, string)>();
 var commands = new Dictionary<string, (string, Func<Task>)>()
@@ -126,10 +126,10 @@ static void PrintHelp((string, string)[] help)
     }
 }
 
-static void PrintEvent(string msg)
+static void PrintEvent(string type, string msg)
 {
     Console.CursorLeft = 0;
-    Console.Write($"EVENT: {msg}\nCommand: ");
+    Console.Write($"[EVT]: {type} : {msg}\nCommand: ");
 }
 
 const int MAX_CHARS_TO_PRINT = 700;

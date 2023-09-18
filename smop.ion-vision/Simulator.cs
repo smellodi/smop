@@ -1,9 +1,13 @@
-﻿using System;
+﻿using Fleck;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
 using static Smop.IonVision.API;
+using static Smop.IonVision.EventReporter;
 
 namespace Smop.IonVision;
 
@@ -13,18 +17,47 @@ internal class Simulator : IMinimalAPI
 
     public Simulator()
     {
-        _timer.AutoReset = false;
-        _timer.Interval = SCAN_DURATION;
-        _timer.Elapsed += (s, e) =>
+        _wsServer = new WebSocketServer("ws://0.0.0.0:80");
+        _wsServer.ListenerSocket.NoDelay = true;
+        _wsServer.Start(socket =>
         {
+            socket.OnOpen = () =>
+            {
+                Debug.WriteLine($"[WS-S] Opened from {socket.ConnectionInfo.ClientIpAddress}");
+                _sockets.Add(socket);
+            };
+            socket.OnClose = () =>
+            {
+                Debug.WriteLine("[WS-S] Closed");
+                _sockets.Remove(socket);
+            };
+            // socket.OnMessage = message => { ignore messages };
+        });
+
+        _scanTimer.AutoReset = false;
+        _scanTimer.Interval = SCAN_DURATION;
+        _scanTimer.Elapsed += (s, e) =>
+        {
+            _scanProgressTimer.Stop();
             _stopwatch.Stop();
             _latestResult = SimulatedData.ScanResult;
+            Notify("scan.finished");
+            DispatchOnce.Do(1, () => Notify("scan.resultsProcessed"));
+        };
+
+        _scanProgressTimer.AutoReset = true;
+        _scanProgressTimer.Interval = SCAN_PROGRESS_STEP_DURATION;
+        _scanProgressTimer.Elapsed += (s, e) =>
+        {
+            int progress = (int)(_stopwatch.Elapsed.TotalMilliseconds / SCAN_DURATION * 100);
+            Notify("scan.progress", new ProcessProgress(progress));
         };
     }
 
     public void Dispose()
     {
-        _timer.Dispose();
+        _scanTimer.Dispose();
+        _scanProgressTimer.Dispose();
         GC.SuppressFinalize(this);
     }
 
@@ -37,13 +70,14 @@ internal class Simulator : IMinimalAPI
         ), null));
     }
     public Task<Response<SystemInfo>> GetSystemInfo() =>
-        Task.FromResult(new Response<SystemInfo>(new SystemInfo("1.5", null, new SystemVersion[] { }), null));
+        Task.FromResult(new Response<SystemInfo>(new SystemInfo(Version, null, Array.Empty<SystemVersion>()), null));
     public Task<Response<User>> GetUser() =>
         Task.FromResult(new Response<User>(SimulatedData.User, null));
 
     public Task<Response<Confirm>> SetUser(User user)
     {
         SimulatedData.User = user;
+        Notify("scan.usernameChanged", new ScanUserName(user.Name));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -81,6 +115,7 @@ internal class Simulator : IMinimalAPI
         }
 
         _currentProject = result;
+        Notify("project.currentChanged", new CurrentProject(project.Project));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -104,6 +139,7 @@ internal class Simulator : IMinimalAPI
         }
 
         _currentParameter = result;
+        Notify("parameter.currentChanged", new CurrentParameter(result));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -134,8 +170,10 @@ internal class Simulator : IMinimalAPI
 
         _stopwatch.Reset();
         _stopwatch.Start();
-        _timer.Start();
+        _scanTimer.Start();
+        _scanProgressTimer.Start();
 
+        Notify("scan.started");
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -158,6 +196,11 @@ internal class Simulator : IMinimalAPI
         }
         */
         _comments = comment;
+
+        var data = _comments.GetType().GetProperties().Select(prop =>
+            new KeyValuePair<string, string>(prop.Name, (string)prop.GetValue(_comments, null)!)).ToArray();
+        Notify("scan.commentsChanged", data);
+
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -200,15 +243,21 @@ internal class Simulator : IMinimalAPI
 
     public Task<Response<Confirm>> SetClock(ClockToSet clock)
     {
+        Notify("message.timeChanged", new Timestamp((long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalMilliseconds));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
     // Internal
 
     const double SCAN_DURATION = 10000;
+    const double SCAN_PROGRESS_STEP_DURATION = 1000;
+
+    readonly WebSocketServer _wsServer;
+    readonly List<IWebSocketConnection> _sockets = new();
 
     readonly Stopwatch _stopwatch = new();
-    readonly Timer _timer = new();
+    readonly Timer _scanTimer = new();
+    readonly Timer _scanProgressTimer = new();
 
     readonly Project[] _projects = new Project[] {
             SimulatedData.Project,
@@ -223,4 +272,17 @@ internal class Simulator : IMinimalAPI
     Parameter? _currentParameter = null;
     ScanResult? _latestResult = null;
     object? _comments = null;
+
+    private void Notify(string type, object? obj = null)
+    {
+        foreach (var socket in _sockets)
+        {
+            var msg = new {
+                type,
+                time = (long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalMilliseconds,
+                body = obj ?? new object()
+            };
+            socket.Send(JsonSerializer.Serialize(msg));
+        }
+    }
 }

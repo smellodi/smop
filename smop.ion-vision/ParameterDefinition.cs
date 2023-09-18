@@ -57,8 +57,8 @@ public record class SteppingControl(
     RangeStep Usv,
     RangeStep Ucv,
     RangeStep Vb,
-    int PP,
-    int PW,
+    float PP,
+    float PW,
     int NForSampleAverages,
     int Layers
 );

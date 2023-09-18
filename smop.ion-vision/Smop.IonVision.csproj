@@ -12,7 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fleck" Version="1.2.0" />
     <PackageReference Include="RestSharp" Version="110.1.0" />
+    <PackageReference Include="Websocket.Client" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

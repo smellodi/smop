@@ -17,6 +17,15 @@ var ionVision = new Communicator(null, isSimulating);
 if (!await Connect(ionVision))
     return;
 
+await Task.Delay(1);
+EventReporter events = new(isSimulating ? "127.0.0.1" : ionVision.Settings.IP);
+events.ScanStarted += (s, e) => Console.WriteLine($"EVENT: scan started");
+events.ScanProgressChanged += (s, e) => Console.WriteLine($"EVENT: scan progress = {e.Data.Progress} %");
+events.ScanFinished += (s, e) => Console.WriteLine($"EVENT: scan finished");
+events.ScanResultsProcessed += (s, e) => Console.WriteLine($"EVENT: scan results are available now");
+events.CurrentProjectChanged += (s, e) => Console.WriteLine($"EVENT: project = {e.Data.NewProject}");
+events.CurrentParameterChanged += (s, e) => Console.WriteLine($"EVENT: param = {e.Data.NewParameter.Name}");
+
 (string, string)[] listOfCommands = Array.Empty<(string, string)>();
 var commands = new Dictionary<string, (string, Func<Task>)>()
 {

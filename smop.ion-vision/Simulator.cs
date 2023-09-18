@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
 using static Smop.IonVision.API;
-using static Smop.IonVision.EventReporter;
 
 namespace Smop.IonVision;
 
@@ -50,7 +49,7 @@ internal class Simulator : IMinimalAPI
         _scanProgressTimer.Elapsed += (s, e) =>
         {
             int progress = (int)(_stopwatch.Elapsed.TotalMilliseconds / SCAN_DURATION * 100);
-            Notify("scan.progress", new ProcessProgress(progress));
+            Notify("scan.progress", new EventSink.ProcessProgress(progress));
         };
     }
 
@@ -77,7 +76,7 @@ internal class Simulator : IMinimalAPI
     public Task<Response<Confirm>> SetUser(User user)
     {
         SimulatedData.User = user;
-        Notify("scan.usernameChanged", new ScanUserName(user.Name));
+        Notify("scan.usernameChanged", new EventSink.ScanUserName(user.Name));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -115,7 +114,7 @@ internal class Simulator : IMinimalAPI
         }
 
         _currentProject = result;
-        Notify("project.currentChanged", new CurrentProject(project.Project));
+        Notify("project.currentChanged", new EventSink.CurrentProject(project.Project));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -139,7 +138,7 @@ internal class Simulator : IMinimalAPI
         }
 
         _currentParameter = result;
-        Notify("parameter.currentChanged", new CurrentParameter(result));
+        Notify("parameter.currentChanged", new EventSink.CurrentParameter(result));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -243,7 +242,7 @@ internal class Simulator : IMinimalAPI
 
     public Task<Response<Confirm>> SetClock(ClockToSet clock)
     {
-        Notify("message.timeChanged", new Timestamp((long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalMilliseconds));
+        Notify("message.timeChanged", new EventSink.Timestamp((long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalMilliseconds));
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 

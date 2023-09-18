@@ -18,7 +18,7 @@ if (!await Connect(ionVision))
     return;
 
 await Task.Delay(1);
-EventReporter events = new(isSimulating ? "127.0.0.1" : ionVision.Settings.IP);
+EventSink events = new(isSimulating ? "127.0.0.1" : ionVision.Settings.IP);
 events.ScanStarted += (s, e) => PrintEvent("scan started");
 events.ScanProgressChanged += (s, e) => PrintEvent($"scan progress = {e.Data.Progress} %");
 events.ScanFinished += (s, e) => PrintEvent("scan finished");

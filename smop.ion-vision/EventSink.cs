@@ -10,7 +10,7 @@ namespace Smop.IonVision;
 /// <summary>
 /// Implements WebSocket API
 /// </summary>
-public class EventReporter : IDisposable
+public class EventSink : IDisposable
 {
     /// <summary>
     /// Arguments of an event without a payload (message "body" field is empty)
@@ -307,7 +307,7 @@ public class EventReporter : IDisposable
     /// Constructor. Immediately connects to the IonVision WebSocket server
     /// </summary>
     /// <param name="ip">IonVision IP address</param>
-    public EventReporter(string ip)
+    public EventSink(string ip)
     {
         _ip = ip;
         CreateWebSocketClient();

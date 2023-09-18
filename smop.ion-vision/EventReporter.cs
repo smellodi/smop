@@ -7,16 +7,30 @@ using Websocket.Client;
 
 namespace Smop.IonVision;
 
+/// <summary>
+/// Implements WebSocket API
+/// </summary>
 public class EventReporter : IDisposable
 {
+    /// <summary>
+    /// Arguments of an event without a payload (message "body" field is empty)
+    /// </summary>
     public class TimedEventArgs : EventArgs
     {
         public long Timestamp { get; init; }
         public TimedEventArgs(long timestamp) => Timestamp = timestamp;
     }
 
+    /// <summary>
+    /// Arguments of an event with a payload in the message "body" field,
+    /// exposed in this class as "Data"
+    /// </summary>
+    /// <typeparam name="T">Payload (body) type</typeparam>
     public class TimedEventArgs<T> : TimedEventArgs
     {
+        /// <summary>
+        /// Body / payload
+        /// </summary>
         public T Data { get; init; }
         public TimedEventArgs(long timestamp, T data) : base(timestamp)
         {
@@ -289,6 +303,10 @@ public class EventReporter : IDisposable
 
     #endregion
 
+    /// <summary>
+    /// Constructor. Immediately connects to the IonVision WebSocket server
+    /// </summary>
+    /// <param name="ip">IonVision IP address</param>
     public EventReporter(string ip)
     {
         _ip = ip;
@@ -493,6 +511,7 @@ public class EventReporter : IDisposable
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine("! Exception in EventReported !");
             System.Diagnostics.Debug.WriteLine(ex);
         }
     }

@@ -5,12 +5,15 @@ using System.Data;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Test.IonVision;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
 bool isSimulating = GetMode();
 bool isRunning = true;
+
+ParameterDefinition? _paramDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
 
 var ionVision = new Communicator(null, isSimulating);
 
@@ -29,24 +32,24 @@ events.CurrentParameterChanged += (s, e) => PrintEvent(e.Type, $"param = {e.Data
 (string, string)[] listOfCommands = Array.Empty<(string, string)>();
 var commands = new Dictionary<string, (string, Func<Task>)>()
 {
-{ "sys", ("retrieves system params", async () => Print(await ionVision.GetSystemStatus())) },
-{ "info", ("retrieves system info", async () => Print(await ionVision.GetSystemInfo())) },
-{ "gclock", ("retrieves clock", async () => Print(await ionVision.GetClock())) },
-{ "sclock", ("sets clock", async () => Print(await ionVision.SetClock())) },
-{ "user", ("retrieves user", async () => Print(await ionVision.GetUser())) },
-{ "projs", ("retrieves projects", async () => Print(await ionVision.GetProjects())) },
-{ "params", ("retrieves parameters", async () => Print(await ionVision.GetParameters())) },
-{ "gcpj", ("retrieves the current project", async () => Print(await ionVision.GetProject())) },
-{ "scpj", ("sets the current project", async () => Print(await ionVision.SetProjectAndWait())) },
-{ "gcpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
-{ "gcpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
-{ "scpm", ("sets the current parameter", async () => Print(await ionVision.SetParameterAndPreload())) },
-{ "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new { _quickcomment = new string[] { "my comment" } } ))) },
-{ "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
-{ "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
-{ "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
-{ "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
-{ "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
+    { "sys", ("retrieves system params", async () => Print(await ionVision.GetSystemStatus())) },
+    { "info", ("retrieves system info", async () => Print(await ionVision.GetSystemInfo())) },
+    { "gclock", ("retrieves clock", async () => Print(await ionVision.GetClock())) },
+    { "sclock", ("sets clock", async () => Print(await ionVision.SetClock())) },
+    { "user", ("retrieves user", async () => Print(await ionVision.GetUser())) },
+    { "projs", ("retrieves projects", async () => Print(await ionVision.GetProjects())) },
+    { "params", ("retrieves parameters", async () => Print(await ionVision.GetParameters())) },
+    { "gcpj", ("retrieves the current project", async () => Print(await ionVision.GetProject())) },
+    { "scpj", ("sets the current project", async () => Print(await ionVision.SetProjectAndWait())) },
+    { "gcpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
+    { "gcpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
+    { "scpm", ("sets the current parameter", async () => Print(await ionVision.SetParameterAndPreload())) },
+    { "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new { _quickcomment = new string[] { "my comment" } } ))) },
+    { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
+    { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
+    { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
+    { "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
+    { "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
 };
 
 listOfCommands = commands.Select(c => (c.Key, c.Value.Item1)).ToArray();
@@ -134,7 +137,7 @@ static void PrintEvent(string type, string msg)
 
 const int MAX_CHARS_TO_PRINT = 700;
 
-static void Print<T>(API.Response<T> response)
+void Print<T>(API.Response<T> response)
 {
     if (response.Success)
     {
@@ -144,9 +147,22 @@ static void Print<T>(API.Response<T> response)
         });
         Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}... and {text.Length - MAX_CHARS_TO_PRINT} chars more.");
 
-        if (response.Value is ScanResult result)
+        if (response.Value is ParameterDefinition paramDefinition)
+        {
+            _paramDefinition = paramDefinition;
+            Console.WriteLine($"COLS x ROWS = {paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps} x {paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps}");
+        }
+        else if (response.Value is ScanResult result)
         {
             Console.WriteLine($"{result.MeasurementData.DataPoints} data points");
+            if (_paramDefinition is not null)
+            {
+                DataPlot.Show(
+                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                        result.MeasurementData.IntensityTop
+                    );
+            }
         }
     }
     else

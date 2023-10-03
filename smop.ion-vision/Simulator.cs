@@ -39,7 +39,7 @@ internal class Simulator : IMinimalAPI
         {
             _scanProgressTimer.Stop();
             _stopwatch.Stop();
-            _latestResult = SimulatedData.ScanResult;
+            _latestResult = RandomizeScanData(SimulatedData.ScanResult);
             Notify("scan.finished");
             DispatchOnce.Do(1, () => Notify("scan.resultsProcessed"));
         };
@@ -258,6 +258,8 @@ internal class Simulator : IMinimalAPI
     readonly Timer _scanTimer = new();
     readonly Timer _scanProgressTimer = new();
 
+    readonly Random _rnd = new();
+
     readonly Project[] _projects = new Project[] {
             SimulatedData.Project,
             SimulatedData.Project2
@@ -283,5 +285,18 @@ internal class Simulator : IMinimalAPI
             };
             socket.Send(JsonSerializer.Serialize(msg));
         }
+    }
+
+    private ScanResult RandomizeScanData(ScanResult data)
+    {
+        var mdata = data.MeasurementData;
+        return data with
+        {
+            MeasurementData = mdata with
+            {
+                IntensityTop = mdata.IntensityTop.Select(value => value + (float)(2 * _rnd.NextDouble() - 1)).ToArray(),
+                IntensityBottom = mdata.IntensityBottom.Select(value => value + (float)(2 * _rnd.NextDouble() - 1)).ToArray()
+            }
+        };
     }
 }

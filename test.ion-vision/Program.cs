@@ -13,6 +13,7 @@ Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 bool isSimulating = GetMode();
 bool isRunning = true;
 
+List<MeasurementData> _data = new();
 ParameterDefinition? _paramDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
 
 var ionVision = new Communicator(null, isSimulating);
@@ -154,13 +155,16 @@ void Print<T>(API.Response<T> response)
         }
         else if (response.Value is ScanResult result)
         {
+            _data.Add(result.MeasurementData);
             Console.WriteLine($"{result.MeasurementData.DataPoints} data points");
+
             if (_paramDefinition is not null)
             {
                 DataPlot.Show(
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                        result.MeasurementData.IntensityTop
+                        result.MeasurementData.IntensityTop,
+                        _data.Count > 1 ? _data[^2].IntensityTop : null
                     );
             }
         }

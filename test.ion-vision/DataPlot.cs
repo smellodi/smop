@@ -94,7 +94,7 @@ namespace Test.IonVision
             {
                 for (int col = 0; col < cols; col++)
                 {
-                    var value = values[row * cols + col];
+                    var value = values[row * cols + col] - minValue;
                     var pixel = new Rectangle()
                     {
                         Width = colSize,

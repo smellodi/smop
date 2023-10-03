@@ -146,7 +146,7 @@ void Print<T>(API.Response<T> response)
         {
             WriteIndented = true,
         });
-        Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}... and {text.Length - MAX_CHARS_TO_PRINT} chars more.");
+        Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}...\nand {text.Length - MAX_CHARS_TO_PRINT} chars more.");
 
         if (response.Value is ParameterDefinition paramDefinition)
         {

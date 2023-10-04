@@ -23,12 +23,13 @@ var rnd = new Random();
 for (int y = 0; y < sizeY; y++)
     for (int x = 0; x < sizeX; x++)
     {
-        data1[y * sizeX + x] = (float)(12f - 0.03*x - 0.03*y + 0.05 * rnd.NextDouble());
-        data2[y * sizeX + x] = (float)(12 * Math.Exp(-0.0001 * (Math.Pow(y - sizeY / 2, 2) + Math.Pow(x - sizeX / 2, 2))));
+        data1[y * sizeX + x] = (float)(12f - 0.03 * x - 0.031 * y + 0.05 * rnd.NextDouble());
+        data2[y * sizeX + x] = (float)(12f - 0.031 * x - 0.03 * y + 0.05 * rnd.NextDouble());
+        //data2[y * sizeX + x] = (float)(12 * Math.Exp(-0.0001 * (Math.Pow(y - sizeY / 2, 2) + Math.Pow(x - sizeX / 2, 2))));
     }
-DataPlot.OperationWith2Sets = DataPlot.ComparisonOperation.Difference;
-DataPlot.Show(sizeX, sizeY, data1);
-DataPlot.Show(sizeX, sizeY, data2);
+//DataPlot.OperationWith2Sets = DataPlot.ComparisonOperation.Difference;
+//DataPlot.Show(sizeX, sizeY, data1);
+//DataPlot.Show(sizeX, sizeY, data2);
 DataPlot.Show(sizeX, sizeY, data1, data2);
 */
 

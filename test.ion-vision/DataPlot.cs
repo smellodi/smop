@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LinqStatistics;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -126,6 +127,41 @@ internal static class DataPlot
         }
     }
 
+    private static void CreateStdLinesY(Canvas canvas, float[] values)
+    {
+        double width = canvas.ActualWidth;
+        double height = canvas.ActualHeight;
+
+        var minValue = values.Min();
+        var maxValue = values.Max();
+        var range = maxValue - minValue;
+
+        var mean = values.Average();
+        var std = values.StandardDeviation();
+
+        var upperStd = new Line()
+        {
+            X1 = 0,
+            Y1 = height * ((mean - 1.96 * std - minValue) / range),
+            X2 = width,
+            Y2 = height * ((mean - 1.96 * std - minValue) / range),
+            Stroke = Brushes.Red,
+            StrokeDashArray = new() { 5, 5 }
+        };
+        canvas.Children.Add(upperStd);
+
+        var lowerStd = new Line()
+        {
+            X1 = 0,
+            Y1 = height * ((mean + 1.96 * std - minValue) / range),
+            X2 = width,
+            Y2 = height * ((mean + 1.96 * std - minValue) / range),
+            Stroke = Brushes.Red,
+            StrokeDashArray = new() { 5, 5 }
+        };
+        canvas.Children.Add(lowerStd);
+    }
+
     private static Rect DrawPlot(Canvas canvas, int cols, int rows, float[] values)
     {
         double width = canvas.ActualWidth;
@@ -230,6 +266,8 @@ internal static class DataPlot
             Canvas.SetLeft(dot, x);
             Canvas.SetTop(dot, y);
         }
+
+        CreateStdLinesY(canvas, valuesY);
 
         return new Rect(new Point(minValueX, minValueY), new Point(maxValueX, maxValueY));
     }

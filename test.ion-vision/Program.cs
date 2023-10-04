@@ -10,6 +10,25 @@ using Test.IonVision;
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
+// tests the Bland-Altman plot
+/*
+int sizeX = 150;
+int sizeY = 100;
+int length = sizeX * sizeY;
+float[] data1 = new float[length];
+float[] data2 = new float[length];
+var rnd = new Random();
+for (int i = 0; i < sizeY; i++)
+    for (int j = 0; j < sizeX; j++)
+    {
+        data1[i * sizeX + j] = (float)(12f - 0.1*j - 0.1*i + 0 * rnd.NextDouble());
+        data2[i * sizeX + j] = (float)(12 * Math.Exp(-0.0001 * (Math.Pow(i - sizeY / 2, 2) + Math.Pow(j - sizeX / 2, 2))));
+    }
+DataPlot.Show(sizeX, sizeY, data1, data2);
+*/
+
+// Initialization
+
 bool isSimulating = GetMode();
 bool isRunning = true;
 

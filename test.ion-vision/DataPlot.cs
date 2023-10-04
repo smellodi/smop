@@ -20,18 +20,22 @@ namespace Test.IonVision
                     Width = 1200,
                     Height = 750,
                 };
+                var canvas = new Canvas()
+                {
+                    Background = Brushes.Gray
+                };
+
+                plot.Content = canvas;
                 plot.Loaded += (s, e) =>
                 {
-                    var canvas = new Canvas()
-                    {
-                        Background = Brushes.Gray
-                    };
 
-                    plot.Content = canvas;
+                    Rect rc = new Rect();
                     if (values2 is null)
-                        DrawPlot(canvas, plot.ActualWidth, plot.ActualHeight, cols, rows, values1);
+                        rc = DrawPlot(canvas, cols, rows, values1);
                     else if (values1.Length == values2.Length)
-                        DrawDiff(canvas, plot.ActualWidth, plot.ActualHeight, cols, rows, values1, values2);
+                        rc = DrawBlandAltman(canvas, values1, values2);
+
+                    CreateAxis(canvas, rc);
                 };
 
                 plot.Show();
@@ -46,10 +50,60 @@ namespace Test.IonVision
 
         // Internal
 
-        private static void DrawPlot(Canvas canvas, double width, double height, int cols, int rows, float[] values)
+        private static void CreateAxis(Canvas canvas, Rect rc)
         {
-            double colSize = width / cols;
-            double rowSize = height / rows;
+            int offset = 2;
+            int lbOffset = 25;
+            double width = canvas.ActualWidth;
+            double height = canvas.ActualHeight;
+
+            var xMin = new Label() { Content = rc.Left.ToString("F2") };
+            canvas.Children.Add(xMin);
+            Canvas.SetLeft(xMin, offset + lbOffset);
+            Canvas.SetTop(xMin, height - offset - 20);
+
+            var xMax = new Label() { Content = rc.Right.ToString("F2") };
+            canvas.Children.Add(xMax);
+            Canvas.SetLeft(xMax, width - offset - 40 );
+            Canvas.SetTop(xMax, height - offset - 20);
+
+            var yMin = new Label() { Content = rc.Top.ToString("F2") };
+            canvas.Children.Add(yMin);
+            Canvas.SetLeft(yMin, offset);
+            Canvas.SetTop(yMin, height - offset - lbOffset - 20);
+
+            var yMax = new Label() { Content = rc.Bottom.ToString("F2") };
+            canvas.Children.Add(yMax);
+            Canvas.SetLeft(yMax, offset);
+            Canvas.SetTop(yMax, offset);
+
+            var xAxe = new Line()
+            {
+                X1 = 0,
+                Y1 = height * rc.Bottom / rc.Height,
+                X2 = width,
+                Y2 = height * rc.Bottom / rc.Height,
+                Stroke = Brushes.Black,
+                StrokeThickness = 2
+            };
+            canvas.Children.Add(xAxe);
+
+            var yAxe = new Line()
+            {
+                X1 = width * -rc.Left / rc.Width,
+                Y1 = 0,
+                X2 = width * -rc.Left / rc.Width,
+                Y2 = height,
+                Stroke = Brushes.Black,
+                StrokeThickness = 2
+            };
+            canvas.Children.Add(yAxe);
+        }
+
+        private static Rect DrawPlot(Canvas canvas, int cols, int rows, float[] values)
+        {
+            double colSize = canvas.ActualWidth / cols;
+            double rowSize = canvas.ActualHeight / rows;
 
             var minValue = values.Min();
             var maxValue = values.Max();
@@ -75,12 +129,14 @@ namespace Test.IonVision
                     Canvas.SetTop(pixel, row * rowSize);
                 }
             }
+
+            return new Rect(new Point(0, 0), new Point(cols, rows));
         }
 
-        private static void DrawDiff(Canvas canvas, double width, double height, int cols, int rows, float[] values1, float[] values2)
+        private static Rect DrawDiff(Canvas canvas, int cols, int rows, float[] values1, float[] values2)
         {
-            double colSize = width / cols;
-            double rowSize = height / rows;
+            double colSize = canvas.ActualWidth / cols;
+            double rowSize = canvas.ActualHeight / rows;
 
             float[] values = new float[values1.Length];
             for (int i = 0; i < values1.Length; i++)
@@ -106,10 +162,48 @@ namespace Test.IonVision
                         ))
                     };
                     canvas.Children.Add(pixel);
-                    Canvas.SetLeft(pixel, col * colSize);
-                    Canvas.SetTop(pixel, row * rowSize);
+                    Canvas.SetLeft(pixel, col * cols);
+                    Canvas.SetTop(pixel, row * rows);
                 }
             }
+
+            return new Rect(new Point(0, 0), new Point(colSize, rowSize));
+        }
+
+        private static Rect DrawBlandAltman(Canvas canvas, float[] values1, float[] values2)
+        {
+            float[] valuesX = new float[values1.Length];
+            float[] valuesY = new float[values1.Length];
+            for (int i = 0; i < values1.Length; i++)
+            {
+                valuesX[i] = (values1[i] + values2[i]) / 2;
+                valuesY[i] = values1[i] - values2[i];
+            }
+
+            var minValueX = valuesX.Min();
+            var maxValueX = valuesX.Max();
+            var valueRangeX = maxValueX - minValueX;
+
+            var minValueY = valuesY.Min();
+            var maxValueY = valuesY.Max();
+            var valueRangeY = maxValueY - minValueY;
+
+            for (int i = 0; i < values1.Length; i++)
+            {
+                var x = (valuesX[i] - minValueX) * canvas.ActualWidth / valueRangeX;
+                var y = (valuesY[i] - minValueY) * canvas.ActualHeight / valueRangeY;
+                var dot = new Ellipse()
+                {
+                    Width = 3,
+                    Height = 3,
+                    Fill = Brushes.Blue
+                };
+                canvas.Children.Add(dot);
+                Canvas.SetLeft(dot, x);
+                Canvas.SetTop(dot, y);
+            }
+
+            return new Rect(new Point(minValueX, minValueY), new Point(maxValueX, maxValueY));
         }
     }
 }

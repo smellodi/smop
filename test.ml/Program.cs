@@ -60,7 +60,8 @@ await Task.Delay(300);
 var commands = new Dictionary<string, (string, Action?)>()
 {
     { "check", ("checks the connection status", () => Print(ml.IsConnected)) },
-    { "data", ("send data to ML", () => ml.Publish(Smop.IonVision.SimulatedData.ScanResult) ) },
+    { "dms", ("send DMS data to ML", () => ml.Publish(Smop.IonVision.SimulatedData.ScanResult) ) },
+    { "snt", ("send SNT data to ML", () => ml.Publish(Smop.SmellInsp.SerialPortEmulator.GenerateData() ) ) },
     { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },
 };

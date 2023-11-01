@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.OdorDisplay.Packets;
+using System;
 using System.Linq;
 using System.Threading;
 
@@ -42,7 +43,15 @@ public class SerialPortEmulator : ISerialPort, IDisposable
             if (_hasDataToSend)
             {
                 _hasDataToSend = false;
-                return GenerateData();
+                var data = GenerateData();
+                return string.Join(SEPARATOR,
+                    new string[] {
+                        "start",
+                        string.Join(SEPARATOR, data.Resistances.Select(v => v.ToString("F1"))),
+                        data.Temperature.ToString("F1"),
+                        data.Humidity.ToString("F1")
+                    }
+                );
             }
             else if (_hasInfoToSend)
             {
@@ -67,40 +76,32 @@ public class SerialPortEmulator : ISerialPort, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    // Internal
-
-    readonly char SEPARATOR = ';';
-    readonly string VERSION = "1.0.0";
-    readonly string ADDRESS = "A1:5F:53:C7:31:0B";
-
-    bool _isOpen = false;
-    bool _timerAutoStop = false;
-    bool _hasDataToSend = false;
-    bool _hasInfoToSend = false;
-
-    System.Timers.Timer _dataTimer = new((int)(ISerialPort.Interval * 1000));
-
-    private string GenerateData()
+    public static Data GenerateData()
     {
         var resistance = new float[64];
         for (int i = 0; i < resistance.Length; i++)
         {
             resistance[i] = 4.6f + Random.Range(0.3f);
         }
-        var data = new Data(
+        return new Data(
             resistance,
             24.6f + Random.Range(0.1f),
             47.1f + Random.Range(0.1f)
         );
-        return string.Join(SEPARATOR,
-            new string[] {
-                "start",
-                string.Join(SEPARATOR, data.Resistances.Select(v => v.ToString("F1"))),
-                data.Temperature.ToString("F1"),
-                data.Humidity.ToString("F1")
-            }
-        );
     }
+
+    // Internal
+
+    readonly static char SEPARATOR = ';';
+    readonly static string VERSION = "1.0.0";
+    readonly static string ADDRESS = "A1:5F:53:C7:31:0B";
+
+    bool _isOpen = false;
+    bool _timerAutoStop = false;
+    bool _hasDataToSend = false;
+    bool _hasInfoToSend = false;
+
+    readonly System.Timers.Timer _dataTimer = new((int)(ISerialPort.Interval * 1000));
 
     private static class Random
     {

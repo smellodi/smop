@@ -1,5 +1,4 @@
-﻿using Smop.IonVision;
-using System;
+﻿using System;
 
 namespace Smop.ML;
 
@@ -11,7 +10,7 @@ public class Communicator : IDisposable
         File
     }
 
-    public ParameterDefinition? Parameter { get; set; } = null;
+    public IonVision.ParameterDefinition? Parameter { get; set; } = null;
 
     public event EventHandler<Recipe>? RecipeReceived;
 
@@ -34,7 +33,7 @@ public class Communicator : IDisposable
         await _server.SendAsync(new Packet(PacketType.Config, new Config(source, new Printer(channels))));
     }
 
-    public async void Publish(ScanResult scan)
+    public async void Publish(IonVision.ScanResult scan)
     {
         if (Parameter == null)
         {
@@ -42,6 +41,12 @@ public class Communicator : IDisposable
         }
 
         var packet = new Packet(PacketType.Measurement, DmsMeasurement.From(scan, Parameter));
+        await _server.SendAsync(packet);
+    }
+
+    public async void Publish(SmellInsp.Data data)
+    {
+        var packet = new Packet(PacketType.Measurement, SntMeasurement.From(data));
         await _server.SendAsync(packet);
     }
 

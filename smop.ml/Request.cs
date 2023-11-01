@@ -28,4 +28,7 @@ public record class Recipe(string Name, ChannelRecipe[]? Channels, float? Diluti
 
 // DMS measurement is defined in DmsMeasurement.cs
 
-public record class SntMeasurement(string Source, float[] Resistors, float Temperature, float Humidity);
+public record class SntMeasurement(string Source, SmellInsp.Data Data)
+{
+    public static SntMeasurement From(SmellInsp.Data data) => new(ML.Source.SNT, data);
+}

@@ -48,7 +48,7 @@ namespace Smop.PulseGen.Dialogs
 
         public string SessionDMSDelay
         {
-            get => Session?.Intervals.DmsDelay >= 0 ? Session?.Intervals.DmsDelay.ToString("F1") ?? "" : "";
+            get => Session?.Intervals.DmsDelay >= 0 ? Session.Intervals.DmsDelay.ToString("F1") : "";
             set
             {
                 if (_sessionIndex >= 0)

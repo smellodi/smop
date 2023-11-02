@@ -55,6 +55,7 @@ internal class Simulator : IMinimalAPI
 
     public void Dispose()
     {
+        _wsServer.Dispose();
         _scanTimer.Dispose();
         _scanProgressTimer.Dispose();
         GC.SuppressFinalize(this);

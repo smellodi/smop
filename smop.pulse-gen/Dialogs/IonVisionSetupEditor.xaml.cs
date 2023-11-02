@@ -1,4 +1,5 @@
 ﻿using Smop.PulseGen.Utils;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +7,7 @@ using System.Windows;
 
 namespace Smop.PulseGen.Dialogs
 {
-    public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged
+    public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDisposable
     {
         public string? IP { get; private set; }
 
@@ -45,6 +46,12 @@ namespace Smop.PulseGen.Dialogs
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(User)));
 
             DispatchOnce.Do(0.5, () => Dispatcher.Invoke(async () => await Connect()));
+        }
+
+        public void Dispose()
+        {
+            _ivAPI?.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         // Internal
@@ -91,7 +98,7 @@ namespace Smop.PulseGen.Dialogs
                     if (projects?.Success == true && projects.Value?.Length > 0)
                     {
                         cmbProjects.IsEnabled = true;
-                        Projects = projects.Value ?? Projects;
+                        Projects = projects.Value;
                         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Projects)));
                     }
                     else

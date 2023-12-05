@@ -39,13 +39,13 @@ internal abstract class Simulator : IDisposable
             {
                 json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
                 var config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
-                _channelIDs = config.Printer.Channels.Select(c => c.Slot).ToArray();
+                _channelIDs = config.Printer.Channels.Select(c => c.Id).ToArray();
             }
             else if (packet.Type == PacketType.Measurement)
             {
                 await Task.Delay(2000);
 
-                var recipe = new Recipe("Recipe for you!", _channelIDs.Select(c => new ChannelRecipe(c, 10, 25, 0)).ToArray());
+                var recipe = new Recipe("Recipe for you!", 0, 0.2f, _channelIDs.Select(c => new ChannelRecipe(c, 10, 25, 0)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 Console.WriteLine("[CLIENT] recipe sent");
                 await SendData(json);

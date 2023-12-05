@@ -28,9 +28,9 @@ public class Communicator : IDisposable
         }
     }
 
-    public async void Config(string source, ChannelProps[] channels)
+    public async void Config(string[] sources, ChannelProps[] channels)
     {
-        await _server.SendAsync(new Packet(PacketType.Config, new Config(source, new Printer(channels))));
+        await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels))));
     }
 
     public async void Publish(IonVision.ScanResult scan)
@@ -47,6 +47,12 @@ public class Communicator : IDisposable
     public async void Publish(SmellInsp.Data data)
     {
         var packet = new Packet(PacketType.Measurement, SntMeasurement.From(data));
+        await _server.SendAsync(packet);
+    }
+
+    public async void Publish(float pid)
+    {
+        var packet = new Packet(PacketType.Measurement, PIDMeasurement.From(pid));
         await _server.SendAsync(packet);
     }
 

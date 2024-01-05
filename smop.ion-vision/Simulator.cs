@@ -1,4 +1,5 @@
 ﻿using Fleck;
+using Smop.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,12 +23,12 @@ internal class Simulator : IMinimalAPI
         {
             socket.OnOpen = () =>
             {
-                Debug.WriteLine($"[IV-WS-S] Opened from {socket.ConnectionInfo.ClientIpAddress}");
+                ScreenLogger.Print($"[IV-WS-S] Opened from {socket.ConnectionInfo.ClientIpAddress}");
                 _sockets.Add(socket);
             };
             socket.OnClose = () =>
             {
-                Debug.WriteLine("[IV-WS-S] Closed");
+                ScreenLogger.Print("[IV-WS-S] Closed");
                 _sockets.Remove(socket);
             };
             // socket.OnMessage = message => { ignore messages };

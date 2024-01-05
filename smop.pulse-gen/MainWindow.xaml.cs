@@ -20,6 +20,7 @@ public partial class MainWindow : Window
         _connectPage.Next += Page_Next;
         _setupPage.Next += SetupPage_Next;
         _pulsePage.Next += Page_Next;
+        _reproductionPage.Next += Page_Next;
         _finishedPage.Next += Page_Next;
         _finishedPage.RequestSaving += FinishedPage_RequestSaving;
 
@@ -46,6 +47,7 @@ public partial class MainWindow : Window
     readonly Connect _connectPage = new();
     readonly Setup _setupPage = new();
     readonly Pulse _pulsePage = new();
+    readonly Reproduction _reproductionPage = new();
     readonly Finished _finishedPage = new();
 
     readonly Storage _storage = Storage.Instance;
@@ -105,12 +107,22 @@ public partial class MainWindow : Window
 
     // Events handlers
 
-    private void SetupPage_Next(object? sender, Generator.PulseSetup setup)
+    private void SetupPage_Next(object? sender, object? param)
     {
-        _nlog.Info("Navigate to {Target}", Navigation.Generator);
+        if (param is Generator.PulseSetup pulseSetup)
+        {
+            _nlog.Info("Navigate to {Target}", Navigation.PulseGenerator);
 
-        Content = _pulsePage;
-        _pulsePage.Start(setup);
+            Content = _pulsePage;
+            _pulsePage.Start(pulseSetup);
+        }
+        else if (param is ML.Communicator ml)
+        {
+            _nlog.Info("Navigate to {Target}", Navigation.OdorReproduction);
+
+            Content = _reproductionPage;
+            _reproductionPage.Start(ml);
+        }
     }
 
     private void Page_Next(object? sender, Navigation next)
@@ -132,11 +144,15 @@ public partial class MainWindow : Window
 
             DispatchOnce.Do(0.1, () => Dispatcher.Invoke(SaveData, true));  // let the page to change, then try to save data
         }
-        else if (next == Navigation.Setup)
+        else if (next == Navigation.PulseGeneratorSetup ||
+                 next == Navigation.OdorReproductionSetup)
         {
             OdorDisplayLogger.Instance.Clear();
             EventLogger.Instance.Clear();
             IonVisionLogger.Instance.Clear();
+
+            _storage.SetupPage = next;
+            _setupPage.Init(_storage.SetupType);
 
             Content = _setupPage;
         }

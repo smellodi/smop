@@ -24,10 +24,13 @@ public static class Source
 public record class ChannelProps(int Id, string Gas, Dictionary<string, string> Props);
 
 public record class Printer(ChannelProps[] Channels);
-public record class Config(string[] Sources, Printer Printer, int MaxIterationNumber = 0, float Threshold = 0);
+public record class Config(string[] Sources, Printer Printer, int MaxIterationNumber, float Threshold);
 
 public record class ChannelRecipe(int Id, float Flow, float Duration, float? Temperature = null);
-public record class Recipe(string Name, int IsFinal, float MinRMSE, ChannelRecipe[]? Channels);
+public record class Recipe(string Name, int IsFinal, float MinRMSE, ChannelRecipe[]? Channels)
+{
+    public bool Finished => IsFinal != 0;
+}
 
 // DMS measurement is defined in DmsMeasurement.cs
 

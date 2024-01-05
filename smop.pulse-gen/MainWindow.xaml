@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="SMOP: Pulse Generator"
+        Title="SMOP: Control App"
         Icon="/Assets/icons/main.png"
         Height="750" Width="1200"
         MinHeight="700" MinWidth="700"

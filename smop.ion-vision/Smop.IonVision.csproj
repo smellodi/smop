@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Smop.Common\Smop.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="IonVision.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using Smop.Common;
 using System.Text;
 using System.Threading.Tasks;
 using WatsonTcp;
@@ -40,12 +40,12 @@ internal class TcpSimulator : Simulator
 
     private void ServerConnected(object? sender, ConnectionEventArgs args)
     {
-        Console.WriteLine("[CLIENT] connected");
+        ScreenLogger.Print("[CLIENT] connected");
     }
 
     private void ServerDisconnected(object? sender, DisconnectionEventArgs args)
     {
-        Console.WriteLine("[CLIENT] disconnected");
+        ScreenLogger.Print("[CLIENT] disconnected");
     }
 
     private SyncResponse SyncRequestReceived(SyncRequest req)

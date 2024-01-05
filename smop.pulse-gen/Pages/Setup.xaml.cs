@@ -1,11 +1,10 @@
-﻿using Microsoft.Win32;
-using Smop.OdorDisplay.Packets;
+﻿using Smop.OdorDisplay.Packets;
 using Smop.PulseGen.Controls;
 using Smop.PulseGen.Generator;
-using Smop.PulseGen.Utils;
+using Smop.PulseGen.Reproducer;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,17 +12,39 @@ using System.Windows.Input;
 
 namespace Smop.PulseGen.Pages;
 
-public partial class Setup : Page, IPage<PulseSetup>
+public partial class Setup : Page, IPage<object?>
 {
-    public event EventHandler<PulseSetup>? Next;
+    public enum Type { Undefined, PulseGenerator, OdorReproduction }
+
+    public event EventHandler<object?>? Next;
 
     public Setup()
     {
         InitializeComponent();
 
+        pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
+
         DataContext = this;
 
         Application.Current.Exit += (s, e) => Close();
+    }
+
+    public void Init(Type type)
+    {
+        pulseGeneratorSettings.Visibility = type == Type.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
+        odorReproductionSettings.Visibility = type == Type.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
+        stpMLStatus.Visibility = odorReproductionSettings.Visibility;
+
+        if (type == Type.OdorReproduction && App.ML == null)
+        {
+            App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.IsDebugging);
+            App.ML.StatusChanged += ML_StatusChanged;
+
+            var channelIDs = GetAvailableChannelIDs();
+            _gases = new Gases(channelIDs);
+
+            CreateGasControls(_gases);
+        }
     }
 
     // Internal
@@ -39,11 +60,17 @@ public partial class Setup : Page, IPage<PulseSetup>
 
     bool _isInitilized = false;
     bool _ionVisionIsReady = false;
-    string? _setupFileName = null;
-    PulseSetup? _setup = null;
 
     ChannelIndicator? _currentIndicator = null;
     int _smellInspResistor = 0;
+
+    List<string> _ionVisionLog = new();
+
+    // Odor Reproduction
+    bool _mlIsConnected = false;
+    IonVision.ScanResult? _sampleScan = null;
+    IonVision.ParameterDefinition? _paramDefinition = null;
+    Gases? _gases = null;
 
     private void ClearIndicators()
     {
@@ -160,42 +187,25 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
     }
 
-    private void LoadPulseSetup(string filename)
-    {
-        _setupFileName = null;
-
-        if (string.IsNullOrEmpty(filename))
-        {
-            DispatchOnce.Do(0.5, () => Dispatcher.Invoke(() => EditPulseSetup_Click(this, new RoutedEventArgs())));
-            return;
-        }
-
-        if (!File.Exists(filename))
-        {
-            return;
-        }
-
-        _setup = PulseSetup.Load(filename);
-        if (_setup == null)
-        {
-            return;
-        }
-
-        _setupFileName = filename;
-
-        txbSetupFile.Text = _setupFileName;
-        txbSetupFile.ScrollToHorizontalOffset(double.MaxValue);
-
-        UpdateUI();
-
-        var settings = Properties.Settings.Default;
-        settings.Pulses_SetupFilename = _setupFileName;
-        settings.Save();
-    }
-
     private void UpdateUI()
     {
-        btnStart.IsEnabled = _setupFileName != null && (App.IonVision == null || _ionVisionIsReady);
+        if (_storage.SetupType == Type.PulseGenerator)
+        {
+            btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) && pulseGeneratorSettings.Setup != null;
+        }
+        else if (_storage.SetupType == Type.OdorReproduction)
+        {
+            btnStart.IsEnabled = _sampleScan != null && _paramDefinition != null && _mlIsConnected;
+            tblMLStatus.Text = _mlIsConnected ? "connected" : "not connected";
+        }
+    }
+
+    private void CreateGasControls(Gases gases)
+    {
+        foreach (var gas in gases.Items)
+        {
+            odorReproductionSettings.AddGas(gas);
+        }
     }
 
     private async Task InitializeIonVision(IonVision.Communicator ionVision)
@@ -203,8 +213,8 @@ public partial class Setup : Page, IPage<PulseSetup>
         HandleIonVisionError(await ionVision.SetClock(), "SetClock");
 
         await Task.Delay(300);
-        List<string> completedSteps = new() { "Current clock set", $"Loading '{ionVision.Settings.Project}' project..." };
-        tblDmsStatus.Text = string.Join('\n', completedSteps);
+        AddToIonVisionLog("Current clock set");
+        AddToIonVisionLog($"Loading '{ionVision.Settings.Project}' project...");
 
         var response = HandleIonVisionError(await ionVision.GetProject(), "GetProject");
         if (response.Value?.Project != ionVision.Settings.Project)
@@ -232,14 +242,11 @@ public partial class Setup : Page, IPage<PulseSetup>
             }
         }
 
-        completedSteps.RemoveAt(completedSteps.Count - 1);
-        completedSteps.Add($"Project '{ionVision.Settings.Project}' is loaded.");
-        tblDmsStatus.Text = string.Join('\n', completedSteps);
+        AddToIonVisionLog($"Project '{ionVision.Settings.Project}' is loaded.", true);
 
         await Task.Delay(500);
 
-        completedSteps.Add($"Loading '{ionVision.Settings.ParameterName}' parameter...");
-        tblDmsStatus.Text = string.Join('\n', completedSteps);
+        AddToIonVisionLog($"Loading '{ionVision.Settings.ParameterName}' parameter...");
 
         var getParameterResponse = await ionVision.GetParameter();
         bool hasParameterLoaded = getParameterResponse.Value?.Parameter.Id == ionVision.Settings.ParameterId;
@@ -248,22 +255,80 @@ public partial class Setup : Page, IPage<PulseSetup>
             await Task.Delay(300);
             HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
 
-            completedSteps.RemoveAt(completedSteps.Count - 1);
-            completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...");
-            tblDmsStatus.Text = string.Join('\n', completedSteps);
-
+            AddToIonVisionLog($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...", true);
             await Task.Delay(1000);
         }
 
-        completedSteps.RemoveAt(completedSteps.Count - 1);
-        completedSteps.Add($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.");
-        tblDmsStatus.Text = string.Join('\n', completedSteps);
+        AddToIonVisionLog($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true);
+
+        AddToIonVisionLog($"Retrieving the parameter...");
+        var paramDefinition = HandleIonVisionError(await ionVision.GetParameterDefinition(), "GetParameterDefinition");
+        _paramDefinition = paramDefinition.Value;
 
         await Task.Delay(500);
-        completedSteps.Add("Done!");
-        tblDmsStatus.Text = string.Join('\n', completedSteps);
+        AddToIonVisionLog("The parameter was retrieved.", true);
 
         _ionVisionIsReady = true;
+
+        if (_storage.SetupType == Type.OdorReproduction)
+        {
+            btnMeasureSample.Visibility = Visibility.Visible;
+            if (App.ML != null)
+            {
+                App.ML.Parameter = _paramDefinition;
+            }
+        }
+
+        UpdateUI();
+    }
+
+    public OdorDisplay.Device.ID[] GetAvailableChannelIDs()
+    {
+        var ids = new List<OdorDisplay.Device.ID>();
+        var result = _odorDisplay.Request(new QueryDevices(), out Ack? ack, out Response? response);
+
+        if (result.Error == OdorDisplay.Error.Success && response != null)
+        {
+            var devices = Devices.From(response);
+            if (devices != null)
+            {
+                for (int i = 0; i < Devices.MaxOdorModuleCount; i++)
+                {
+                    if (devices.HasOdorModule(i))
+                    {
+                        ids.Add((OdorDisplay.Device.ID)(i + 1));
+                    }
+                }
+            }
+        }
+
+        return ids.ToArray();
+    }
+
+    private async Task ConfigureML()
+    {
+        if (App.ML == null || _paramDefinition == null || _sampleScan == null)
+            return;
+
+        var dataSources = new List<string>() { ML.Source.DMS };
+        if (SmellInsp.CommPort.Instance.IsOpen)
+        {
+            dataSources.Add(ML.Source.SNT);
+        }
+
+        App.ML.Parameter = _paramDefinition;
+
+        var settings = Properties.Settings.Default;
+        await App.ML.Config(dataSources.ToArray(),
+            _gases.Items.Select(gas => new ML.ChannelProps((int)gas.ChannelID, gas.Name, gas.Propeties)).ToArray(),
+            settings.Reproduction_MaxIterations,
+            settings.Reproduction_Threshold
+        );
+
+        await Task.Delay(500);
+
+        await App.ML.Publish(_sampleScan);
+
         UpdateUI();
     }
 
@@ -278,8 +343,65 @@ public partial class Setup : Page, IPage<PulseSetup>
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
-        _nlog.Info($"{action}: {error}");
+        _nlog.Error($"{action}: {error}");
         return response;
+    }
+
+    private async Task MakeSampleScan(IonVision.Communicator ionVision)
+    {
+        _sampleScan = null;
+        UpdateUI();
+
+        var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
+        if (!resp.Success)
+        {
+            tblDmsStatus.Text += "\nFailed to start sample scan.";
+            return;
+        }
+
+        AddToIonVisionLog("Scanning...");
+
+        var waitForScanProgress = true;
+
+        do
+        {
+            await Task.Delay(1000);
+            var progress = HandleIonVisionError(await ionVision.GetScanProgress(), "GetScanProgress");
+            var value = progress?.Value?.Progress ?? -1;
+
+            if (value >= 0)
+            {
+                waitForScanProgress = false;
+                AddToIonVisionLog($"Scanning... {value} %", true);
+            }
+            else if (waitForScanProgress)
+            {
+                continue;
+            }
+            else
+            {
+                AddToIonVisionLog($"Scanning finished.", true);
+                break;
+            }
+
+        } while (true);
+
+        await Task.Delay(300);
+        _sampleScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
+        AddToIonVisionLog(_sampleScan != null ? "Scanning result retrieved." : "Failed to retrieve the scanning result");
+
+        UpdateUI();
+    }
+
+    private void AddToIonVisionLog(string line, bool replaceLast = false)
+    {
+        if (replaceLast)
+        {
+            _ionVisionLog.RemoveAt(_ionVisionLog.Count - 1);
+        }
+        _ionVisionLog.Add(line);
+        tblDmsStatus.Text = string.Join('\n', _ionVisionLog);
+        scvDmsStatus.ScrollToBottom();
     }
 
     private void Close()
@@ -314,6 +436,12 @@ public partial class Setup : Page, IPage<PulseSetup>
         catch (TaskCanceledException) { }
     }
 
+    private void ML_StatusChanged(object? sender, ML.Status e)
+    {
+        _mlIsConnected = e == ML.Status.Connected;
+        Dispatcher.Invoke(UpdateUI);
+    }
+
     // UI events
 
     private async void Page_Loaded(object? sender, RoutedEventArgs e)
@@ -327,11 +455,6 @@ public partial class Setup : Page, IPage<PulseSetup>
         _smellInsp.Data += SmellInsp_Data;
 
         ClearIndicators();
-
-        var settings = Properties.Settings.Default;
-        chkRandomize.IsChecked = settings.Pulses_Randomize;
-
-        LoadPulseSetup(settings.Pulses_SetupFilename.Trim());
 
         if (Focusable)
         {
@@ -353,7 +476,7 @@ public partial class Setup : Page, IPage<PulseSetup>
         await CreateIndicators();
 
         var odController = new OdorDisplayController();
-        HandleOdorDisplayError(odController.Init(), "initilize");
+        HandleOdorDisplayError(odController.Init(), "initialize");
 
         System.Threading.Thread.Sleep(100);
         HandleOdorDisplayError(odController.Start(), "start measurements");
@@ -387,6 +510,16 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
     }
 
+    private async void MeasureSample_Click(object sender, RoutedEventArgs e)
+    {
+        if (App.IonVision != null)
+        {
+            btnMeasureSample.IsEnabled = false;
+            await MakeSampleScan(App.IonVision);
+            btnMeasureSample.IsEnabled = true;
+        }
+    }
+
     private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
     {
         var chi = sender as ChannelIndicator;
@@ -404,71 +537,31 @@ public partial class Setup : Page, IPage<PulseSetup>
         }
     }
 
-    private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-        var ofd = new OpenFileDialog
-        {
-            Filter = "Any file|*",
-            FileName = Path.GetFileName(settings.Pulses_SetupFilename.Trim()),
-            InitialDirectory = Path.GetDirectoryName(settings.Pulses_SetupFilename.Trim()) ?? AppDomain.CurrentDomain.BaseDirectory
-        };
 
-        if (ofd.ShowDialog() ?? false)
+    private async void Start_Click(object sender, RoutedEventArgs e)
+    {
+        if (_storage.SetupType == Type.OdorReproduction)
         {
-            var filename = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, ofd.FileName);
-            if (filename.StartsWith(".."))
+            _gases?.Save();
+
+            if (_mlIsConnected && App.ML != null)
             {
-                filename = ofd.FileName;
+                btnStart.IsEnabled = false;
+                await ConfigureML();
+                btnStart.IsEnabled = true;
+
+                Next?.Invoke(this, App.ML);
             }
-
-            LoadPulseSetup(filename);
         }
-    }
-
-    private void EditPulseSetup_Click(object? sender, RoutedEventArgs e)
-    {
-        var editor = new Dialogs.PulseSetupEditor();
-
-        var settings = Properties.Settings.Default;
-        if (string.IsNullOrEmpty(settings.Pulses_SetupFilename.Trim()) || !File.Exists(settings.Pulses_SetupFilename.Trim()))
+        else if (_storage.SetupType == Type.PulseGenerator)
         {
-            settings.Pulses_SetupFilename = "Properties/setup.txt";
-        }
+            var pulseGenSetup = pulseGeneratorSettings.Setup;
 
-        editor.Load(settings.Pulses_SetupFilename.Trim());
-
-        if (editor.ShowDialog() == true)
-        {
-            var filename = editor.Filename ?? settings.Pulses_SetupFilename.Trim();
-
-            var setup = new PulseSetup() { Sessions = editor.Sessions };
-            setup.Save(filename);
-
-            LoadPulseSetup(filename);
-        }
-
-        return;
-    }
-
-    private void Start_Click(object sender, RoutedEventArgs e)
-    {
-        if (_setup != null)
-        {
-            if (chkRandomize.IsChecked == true)
+            if (pulseGenSetup != null)
             {
-                _setup.Randomize();
+                Next?.Invoke(this, pulseGenSetup);
             }
-
-            Next?.Invoke(this, _setup);
         }
-    }
-
-    private void Randomize_CheckedChanged(object sender, RoutedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-        settings.Pulses_Randomize = chkRandomize.IsChecked == true;
-        settings.Save();
     }
 
     private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)

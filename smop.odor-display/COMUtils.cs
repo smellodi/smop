@@ -1,4 +1,5 @@
 ﻿using FTD2XX_NET;
+using Smop.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -82,7 +83,7 @@ public class COMUtils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("USB ERROR: " + ex.Message);
+                ScreenLogger.Print("USB ERROR: " + ex.Message);
             }
 
             if (port != null)
@@ -185,7 +186,7 @@ public class COMUtils
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine("USB ERROR: " + ex.Message);
+            ScreenLogger.Print("USB ERROR: " + ex.Message);
         }
 
         return ports?.ToArray() ?? new Port[] { };
@@ -224,12 +225,12 @@ public class COMUtils
     /*
     static COMUtils()
     {
-        Console.WriteLine("==== PnP devices ===");
+        ScreenLogger.Print("==== PnP devices ===");
         using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' OR Caption LIKE '%Smellodi%'");
         var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
         foreach (var rec in records)
             PrintProperties(rec.Properties);
-        Console.WriteLine("====================");
+        ScreenLogger.Print("====================");
     }*/
 
     static void PrintProperties(PropertyDataCollection props)
@@ -247,30 +248,30 @@ public class COMUtils
             //    continue;
             if (p.IsArray)
             {
-                Console.WriteLine($"{indent}{p.Name}: ({p.Type})");
+                ScreenLogger.Print($"{indent}{p.Name}: ({p.Type})");
                 if (p.Value != null)
                 {
                     if (p.Value is string[] strings)
-                        Console.WriteLine($"{indent}{indent}{string.Join($"\n{indent}{indent}", strings)}");
+                        ScreenLogger.Print($"{indent}{indent}{string.Join($"\n{indent}{indent}", strings)}");
                     else if (p.Value is ushort[] words)
-                        Console.WriteLine($"{indent}{indent}{string.Join($"\n{indent}{indent}", words)}");
+                        ScreenLogger.Print($"{indent}{indent}{string.Join($"\n{indent}{indent}", words)}");
                     else if (p.Value is uint[] dwords)
-                        Console.WriteLine($"{indent}{indent}{string.Join($"\n{indent}{indent}", dwords)}");
+                        ScreenLogger.Print($"{indent}{indent}{string.Join($"\n{indent}{indent}", dwords)}");
                     else if (p.Value is ulong[] qwords)
-                        Console.WriteLine($"{indent}{indent}{string.Join($"\n{indent}{indent}", qwords)}");
+                        ScreenLogger.Print($"{indent}{indent}{string.Join($"\n{indent}{indent}", qwords)}");
                     else
-                        Console.WriteLine($"{indent}{indent}{string.Join($"\n{indent}{indent}", (IEnumerable)p.Value)}");
+                        ScreenLogger.Print($"{indent}{indent}{string.Join($"\n{indent}{indent}", (IEnumerable)p.Value)}");
                 }
                 else
                 {
-                    Console.WriteLine($"{indent}{indent}none");
+                    ScreenLogger.Print($"{indent}{indent}none");
                 }
             }
             else
             {
-                Console.WriteLine($"{indent}{p.Name} = {p.Value?.ToString()} ({p.Type})");
+                ScreenLogger.Print($"{indent}{p.Name} = {p.Value?.ToString()} ({p.Type})");
             }
         }
-        Console.WriteLine();
+        ScreenLogger.Print();
     }
 }

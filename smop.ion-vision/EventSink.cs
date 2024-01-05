@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -381,13 +382,13 @@ public class EventSink : IDisposable
 
     private void OnDisconnected(DisconnectionInfo info)
     {
-        System.Diagnostics.Debug.WriteLine("[IV-WS-C] Disconnected");
+        ScreenLogger.Print("[IV-WS-C] Disconnected");
         DispatchOnce.Do(3, CreateWebSocketClient);
     }
 
     private void OnConnected(ReconnectionInfo info)
     {
-        System.Diagnostics.Debug.WriteLine("[IV-WS-C] Connected");
+        ScreenLogger.Print("[IV-WS-C] Connected");
     }
 
     private void OnMessage(ResponseMessage msg)
@@ -398,7 +399,7 @@ public class EventSink : IDisposable
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine(msg);
+        ScreenLogger.Print(msg.ToString());
 
         try
         {
@@ -497,8 +498,8 @@ public class EventSink : IDisposable
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine("! Exception in EventReported !");
-            System.Diagnostics.Debug.WriteLine(ex);
+            ScreenLogger.Print("! Exception in EventReported !");
+            ScreenLogger.Print(ex.Message);
         }
     }
 

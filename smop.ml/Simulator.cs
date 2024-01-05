@@ -1,5 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using Smop.Common;
+using System;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -20,12 +20,17 @@ internal abstract class Simulator : IDisposable
     };
 
     int[] _channelIDs = new int[1] { 0 };
+    float _threshold = 0;
+    int _maxSteps = 10;
+    int _step = 0;
+
+    const float RMSQ = 0.2f;
 
     protected abstract Task SendData(string data);
 
     protected async void ParseJson(string json)
     {
-        Console.WriteLine("[CLIENT] received: " + json.Max(700));
+        ScreenLogger.Print("[CLIENT] received: " + json.Max(700));
 
         try
         {
@@ -40,24 +45,31 @@ internal abstract class Simulator : IDisposable
                 json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
                 var config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
                 _channelIDs = config.Printer.Channels.Select(c => c.Id).ToArray();
+                _step = 0;
+                _maxSteps = config.MaxIterationNumber;
+                _threshold = config.Threshold;
             }
             else if (packet.Type == PacketType.Measurement)
             {
                 await Task.Delay(2000);
 
-                var recipe = new Recipe("Recipe for you!", 0, 0.2f, _channelIDs.Select(c => new ChannelRecipe(c, 10, 25, 0)).ToArray());
+                _step++;
+                var rmsq = RMSQ / _step;
+                bool isFinished = rmsq < _threshold || _step >= _maxSteps;
+
+                var recipe = new Recipe("Recipe for you!", isFinished ? 1 : 0, rmsq, _channelIDs.Select(c => new ChannelRecipe(c, 10, 25)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
-                Console.WriteLine("[CLIENT] recipe sent");
+                ScreenLogger.Print("[CLIENT] recipe sent");
                 await SendData(json);
             }
             else
             {
-                Console.WriteLine($"[CLIENT] unknown packet type: {packet.Type}");
+                ScreenLogger.Print($"[CLIENT] unknown packet type: {packet.Type}");
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex);
+            ScreenLogger.Print(ex.Message);
         }
     }
 }

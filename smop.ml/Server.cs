@@ -1,5 +1,5 @@
+using Smop.Common;
 using System;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -18,7 +18,7 @@ internal abstract class Server : IDisposable
         if (IsClientConnected)
         {
             var data = JsonSerializer.Serialize(packet, _serializerOptions);
-            Console.WriteLine("[SERVER] sent: " + data.Max(700));
+            ScreenLogger.Print("[SERVER] sent: " + data.Max(700));
             await SendTextAsync(data);
         }
     }
@@ -35,7 +35,7 @@ internal abstract class Server : IDisposable
 
     protected void ParseJson(string json)
     {
-        Console.WriteLine("[SERVER] received: " + json.Max(700));
+        ScreenLogger.Print("[SERVER] received: " + json.Max(700));
 
         try
         {
@@ -53,7 +53,7 @@ internal abstract class Server : IDisposable
         }
         catch (Exception ex)
         {
-            Debug.WriteLine(ex);
+            ScreenLogger.Print(ex.Message);
         }
     }
 }

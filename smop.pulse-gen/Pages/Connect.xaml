@@ -115,12 +115,21 @@
             <Label x:Name="lblIonVisionInfo" Grid.Row="4" Grid.Column="3"
                 VerticalAlignment="Center"/>
 
-            <Button x:Name="btnConnect" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"
-                Margin="0,12,0,0"
-                Width="Auto"
-                IsEnabled="{Binding HasNecessaryConnections, Mode=OneWay}"
-                Content="Continue"
-                Click="Continue_Click"/>
+            <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"
+                        Margin="0,16,0,0">
+                <Button x:Name="btnGeneratePulses" 
+                    Margin="0,4"
+                    Width="Auto"
+                    IsEnabled="{Binding HasOutputConnection, Mode=OneWay}"
+                    Content="Generate pulses"
+                    Click="GeneratePulses_Click"/>
+                <Button x:Name="btnReproduceOdor"
+                    Margin="0,4"
+                    Width="Auto"
+                    IsEnabled="{Binding HasOutputAndInputConnections, Mode=OneWay}"
+                    Content="Reproduce odor"
+                    Click="ReproduceOdor_Click"/>
+            </StackPanel>
         </Grid>
 
         <Label x:Name="lblZoom" Style="{StaticResource ZoomIndicator}"/>

@@ -12,7 +12,7 @@ namespace Smop.PulseGen.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.6.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.7.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -187,6 +187,42 @@ namespace Smop.PulseGen.Properties {
             }
             set {
                 this["Comm_IonVision_IgnoreVersionWarning"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
+        public float Reproduction_Threshold {
+            get {
+                return ((float)(this["Reproduction_Threshold"]));
+            }
+            set {
+                this["Reproduction_Threshold"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6")]
+        public int Reproduction_MaxIterations {
+            get {
+                return ((int)(this["Reproduction_MaxIterations"]));
+            }
+            set {
+                this["Reproduction_MaxIterations"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Reproduction_Odors {
+            get {
+                return ((string)(this["Reproduction_Odors"]));
+            }
+            set {
+                this["Reproduction_Odors"] = value;
             }
         }
     }

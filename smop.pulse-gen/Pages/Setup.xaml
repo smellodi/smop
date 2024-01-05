@@ -12,35 +12,6 @@
       Loaded="Page_Loaded"
       Unloaded="Page_Unloaded">
 
-    <Page.Resources>
-        <Style x:Key="Section" TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
-            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
-            <Setter Property="FontSize" Value="16"/>
-        </Style>
-        
-        <Style x:Key="SettingHeader" TargetType="{x:Type TextBlock}">
-            <Setter Property="Width" Value="130"/>
-            <Setter Property="DockPanel.Dock" Value="Left"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="Margin" Value="8,6,8,8"/>
-        </Style>
-        
-        <Style x:Key="Setting" TargetType="UserControl">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="UserControl">
-                        <DockPanel>
-                            <TextBlock Style="{DynamicResource SettingHeader}"
-                                           Text="{TemplateBinding Tag}"/>
-                            <ContentPresenter Margin="0,0,8,0"/>
-                        </DockPanel>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Page.Resources>
-    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -74,55 +45,53 @@
                         <RowDefinition/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
-                    
-                    <StackPanel Grid.Row="0">
-                        <Label Content="Setup file:"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txbSetupFile" Grid.Column="0"
-                                IsReadOnly="True">
-                            </TextBox>
-                            <Button Grid.Column="1"
-                                    Content="..."
-                                    Width="32"
-                                    Height="32"
-                                    Click="ChoosePulseSetupFile_Click"/>
-                            <Button Grid.Column="2"
-                                    Margin="2,0,0,0"
-                                    Width="32"
-                                    Height="32"
-                                    Click="EditPulseSetup_Click">
-                                <Image Source="/Assets/images/edit.png"/>
-                            </Button>
-                        </Grid>
-                    </StackPanel>
 
-                    <UserControl x:Name="uscRandomize" Grid.Row="1"
-                                 Style="{StaticResource Setting}"
-                                 Tag="Randomize">
-                        <CheckBox x:Name="chkRandomize"
-                                  FontSize="16"
-                                  VerticalAlignment="Center"
-                                  HorizontalAlignment="Right"
-                                  Margin="0,0,-20,0"
-                                  Checked="Randomize_CheckedChanged"
-                                  Unchecked="Randomize_CheckedChanged"/>
-                    </UserControl>
+                    <local:PulseGeneratorSettings x:Name="pulseGeneratorSettings" Grid.Row="0"/>
 
-                    <StackPanel Grid.Row="2">
+                    <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
+
+                    <StackPanel x:Name="stpMLStatus" Grid.Row="2">
                         <Separator/>
                         <Label Style="{StaticResource Section}"
-                            Content="DMS status:"/>
-                        <TextBlock Name="tblDmsStatus"
-                            TextWrapping="Wrap"
-                            Padding="6,0,0,0">
-                            <Run Text="Initializing..."/>
-                        </TextBlock>
+                               Content="ML Status:"/>
+                        <TextBlock x:Name="tblMLStatus"
+                                   VerticalAlignment="Center"
+                                   Margin="4"
+                                   Text="not connected"/>
                     </StackPanel>
+
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="101*"/>
+                            <ColumnDefinition Width="139*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <Separator Grid.Row="0" Grid.ColumnSpan="2" Margin="0,2,0,2"/>
+                        <Label Style="{StaticResource Section}" Grid.Row="1"
+                               Content="DMS status:" Grid.ColumnSpan="2"/>
+                        <ScrollViewer x:Name="scvDmsStatus" Grid.Row="1"
+                                      Padding="0,2"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      HorizontalScrollBarVisibility="Disabled" Grid.ColumnSpan="2" Margin="0,31,0,0" Grid.RowSpan="2">
+                            <TextBlock Name="tblDmsStatus"
+                                       TextWrapping="Wrap"
+                                       Padding="6,0,0,0">
+                                <Run Text="Initializing..."/>
+                            </TextBlock>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <Button x:Name="btnMeasureSample" Grid.Row="4"
+                            Visibility="Collapsed"
+                            Margin="0,8,0,0"
+                            VerticalAlignment="Bottom"
+                            Content="Measure sample"
+                            Click="MeasureSample_Click"/>
                 </Grid>
             </Border>
 
@@ -163,7 +132,7 @@
                     Margin="0,12,0,0"/>
             </Grid>
         </Grid>
-        
+
         <WrapPanel Grid.Row="2"
                    HorizontalAlignment="Center">
             <Button x:Name="btnStart"

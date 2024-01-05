@@ -79,7 +79,7 @@ public partial class Finished : Page, IPage<Navigation>
     {
         if (HasDecisionAboutData())
         {
-            Next?.Invoke(this, Navigation.Setup);
+            Next?.Invoke(this, Storage.Instance.SetupPage);
         }
     }
 

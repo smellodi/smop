@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Smop.Common;
 
 namespace Smop.IonVision;
 
@@ -725,7 +726,7 @@ internal static class RestResponseExtension
             data = data[..maxDataLengthToPrint] + "...";
         }
 
-        Console.WriteLine($"[API] {(int)response.StatusCode} ({response.StatusDescription}), {data} ({response.ContentLength} bytes)");
+        ScreenLogger.Print($"[API] {(int)response.StatusCode} ({response.StatusDescription}), {data} ({response.ContentLength} bytes)");
 
         if (response.IsSuccessful)
         {

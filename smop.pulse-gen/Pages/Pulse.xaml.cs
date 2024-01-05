@@ -364,6 +364,6 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     private void Interrupt_Click(object sender, RoutedEventArgs e)
     {
         CleanUp();
-        Next?.Invoke(this, Navigation.Setup);
+        Next?.Invoke(this, Storage.Instance.SetupPage);
     }
 }

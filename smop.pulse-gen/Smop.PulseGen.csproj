@@ -158,6 +158,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\smop.ml\Smop.ML.csproj" />
     <ProjectReference Include="..\smop.odor-display\Smop.OdorDisplay.csproj" />
     <ProjectReference Include="..\smop.smell-insp\Smop.SmellInsp.csproj" />
     <ProjectReference Include="..\test.ion-vision\Test.IonVision.csproj" />

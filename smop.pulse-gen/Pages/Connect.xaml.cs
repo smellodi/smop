@@ -18,7 +18,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     public event EventHandler<Navigation>? Next;
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public bool HasNecessaryConnections => _odorDisplay.IsOpen;
+    public bool HasOutputConnection => _odorDisplay.IsOpen;
+    public bool HasOutputAndInputConnections => _odorDisplay.IsOpen && _ionVision != null;
 
     public Connect()
     {
@@ -119,7 +120,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
                 //_odorDisplay.Debug += Comm_DebugAsync;
 
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
             }
         }
     }
@@ -143,7 +145,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
                 //_smellInsp.Debug += Comm_DebugAsync;
 
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
             }
         }
     }
@@ -167,8 +169,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         }
         else
         {
-            btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage }; ;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasNecessaryConnections)));
+            btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage };
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
 
             var status = HandleIonVisionError(await _ionVision.GetSystemStatus(), "GetSystemStatus");
             if (status.Success)
@@ -423,9 +425,15 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         }
     }
 
-    private void Continue_Click(object? sender, RoutedEventArgs e)
+    private void GeneratePulses_Click(object? sender, RoutedEventArgs e)
     {
         SaveSettings();
-        Next?.Invoke(this, Navigation.Setup);
+        Next?.Invoke(this, Navigation.PulseGeneratorSetup);
+    }
+
+    private void ReproduceOdor_Click(object? sender, RoutedEventArgs e)
+    {
+        SaveSettings();
+        Next?.Invoke(this, Navigation.OdorReproductionSetup);
     }
 }

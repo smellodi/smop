@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Smop.ML;
 
@@ -12,6 +13,7 @@ public class Communicator : IDisposable
 
     public IonVision.ParameterDefinition? Parameter { get; set; } = null;
 
+    public event EventHandler<Status>? StatusChanged;
     public event EventHandler<Recipe>? RecipeReceived;
 
     public bool IsConnected => _server.IsClientConnected;
@@ -22,18 +24,26 @@ public class Communicator : IDisposable
         _server = type == Type.Tcp ? new TcpServer() : new FileServer();
         _server.RecipeReceived += Server_RecipeReceived;
 
+        if (_server is TcpServer tcpServer)
+        {
+            tcpServer.StatusChanged += (s, e) => StatusChanged?.Invoke(this, e);
+        }
+
         if (isSimulating)
         {
-            _simulator = type == Type.Tcp ? new TcpSimulator() : new FileSimulator();
+            IonVision.DispatchOnce.Do(1, () =>
+            {
+                _simulator = type == Type.Tcp ? new TcpSimulator() : new FileSimulator();
+            });
         }
     }
 
-    public async void Config(string[] sources, ChannelProps[] channels)
+    public async Task Config(string[] sources, ChannelProps[] channels, int maxInteractions = 0, float threshold = 0)
     {
-        await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels))));
+        await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels), maxInteractions, threshold)));
     }
 
-    public async void Publish(IonVision.ScanResult scan)
+    public async Task Publish(IonVision.ScanResult scan)
     {
         if (Parameter == null)
         {
@@ -44,13 +54,13 @@ public class Communicator : IDisposable
         await _server.SendAsync(packet);
     }
 
-    public async void Publish(SmellInsp.Data data)
+    public async Task Publish(SmellInsp.Data data)
     {
         var packet = new Packet(PacketType.Measurement, SntMeasurement.From(data));
         await _server.SendAsync(packet);
     }
 
-    public async void Publish(float pid)
+    public async Task Publish(float pid)
     {
         var packet = new Packet(PacketType.Measurement, PIDMeasurement.From(pid));
         await _server.SendAsync(packet);
@@ -64,8 +74,9 @@ public class Communicator : IDisposable
 
     // Internal
 
-    readonly Simulator? _simulator = null;
     readonly Server _server;
+
+    Simulator? _simulator = null;
 
     private void Server_RecipeReceived(object? sender, Recipe e)
     {

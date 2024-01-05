@@ -1,4 +1,5 @@
-﻿using Smop.PulseGen.Utils.Extensions;
+﻿using Smop.PulseGen.Pages;
+using Smop.PulseGen.Utils.Extensions;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,36 @@ public class Storage : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     // Variables
+
+    public Setup.Type SetupType
+    {
+        get => _setupType;
+        set
+        {
+            _setupType = value;
+            _setupPage = _setupType switch
+            {
+                Setup.Type.OdorReproduction => Navigation.OdorReproductionSetup,
+                Setup.Type.PulseGenerator => Navigation.PulseGeneratorSetup,
+                _ => throw new System.Exception($"Setup type {_setupType} is not supported")
+            };
+        }
+    }
+
+    public Navigation SetupPage
+    {
+        get => _setupPage;
+        set
+        {
+            _setupPage = value;
+            _setupType = _setupPage switch
+            {
+                Navigation.OdorReproductionSetup => Setup.Type.OdorReproduction,
+                Navigation.PulseGeneratorSetup => Setup.Type.PulseGenerator,
+                _ => throw new System.Exception($"Setup type {_setupPage} is not supported")
+            };
+        }
+    }
 
     public bool IsDebugging
     {
@@ -126,6 +157,9 @@ public class Storage : INotifyPropertyChanged
     const double ZOOM_MIN = 0.8;
     const double ZOOM_MAX = 3.0;
     const double ZOOM_STEP = 0.1;
+
+    Setup.Type _setupType = Setup.Type.Undefined;
+    Navigation _setupPage = Navigation.Exit;
 
     bool _isDebugging = false;
     double _zoomLevel;

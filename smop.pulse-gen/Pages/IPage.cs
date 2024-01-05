@@ -10,7 +10,9 @@ internal interface IPage<T>
 public enum Navigation
 {
     Exit,
-    Setup,
-    Generator,
+    PulseGeneratorSetup,
+    OdorReproductionSetup,
+    PulseGenerator,
+    OdorReproduction,
     Finished,
 }

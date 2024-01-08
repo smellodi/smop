@@ -11,18 +11,18 @@
     
     <StackPanel>
         <Label Style="{StaticResource Section}"
-               Content="Odor Reproduction settings:"/>
+               Content="ML settings:"/>
 
         <UserControl x:Name="uscMaxIterationNumber"
                      Style="{StaticResource Setting}"
-                     Tag="ML max iterations">
-            <TextBox x:Name="txbMaxIteractionNumber"
+                     Tag="Max iterations">
+            <TextBox x:Name="txbMaxIterations"
                      FontSize="14"
-                     TextChanged="MaxIteractionNumber_TextChanged"/>
+                     TextChanged="MaxIterations_TextChanged"/>
         </UserControl>
         <UserControl x:Name="uscThreshold"
                      Style="{StaticResource Setting}"
-                     Tag="ML threshold">
+                     Tag="Threshold">
             <TextBox x:Name="txbThreshold"
                      FontSize="14"
                      TextChanged="Threshold_TextChanged"/>

@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:gif="http://wpfanimatedgif.codeplex.com"
       xmlns:local="clr-namespace:Smop.PulseGen.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="450"
@@ -13,10 +14,17 @@
 
     <Page.Resources>
         <Style x:Key="Channel" TargetType="TextBlock">
-            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+        <Style x:Key="Element" TargetType="Border">
+            <Setter Property="BorderThickness" Value="3"/>
+            <Setter Property="BorderBrush" Value="#FFD4D4D4"/>
+        </Style>
+        <Style x:Key="ActiveElement" TargetType="Border" BasedOn="{StaticResource Element}">
+            <Setter Property="BorderBrush" Value="#FF16A4FF"/>
         </Style>
     </Page.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -30,7 +38,7 @@
 
         <TextBlock Grid.Row="0" Style="{StaticResource PageTitle}"
                    Text="Odor reproduction"/>
-        <StackPanel Grid.Row="1"
+        <!--StackPanel Grid.Row="1"
                     VerticalAlignment="Center">
             <TextBlock x:Name="tblRecipeName"
                        Foreground="{StaticResource BrushFontDark}"
@@ -47,15 +55,6 @@
                        TextAlignment="Center"/>
             <Grid x:Name="grdChannels"
                   Margin="8">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <!-- filled in code -->
             </Grid>
         </StackPanel>
 
@@ -69,8 +68,94 @@
                        Margin="8"
                        TextAlignment="Center"
                        Text="-"/>
+        </StackPanel-->
+
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <TextBlock x:Name="tblRecipeState"
+                       Margin="0,0,0,12"
+                       Foreground="{StaticResource BrushFontDark}"
+                       TextAlignment="Center"
+                       FontSize="14"/>
+            <StackPanel Orientation="Horizontal">
+                <Border x:Name="brdOdorDisplay"
+                        VerticalAlignment="Center">
+                    <StackPanel MinWidth="180">
+                        <Image Width="100"
+                               Margin="4"
+                               Source="/Assets/images/od.png"/>
+                        <Grid x:Name="grdChannels1"
+                              HorizontalAlignment="Center"
+                              Margin="4,0">
+                            <!-- filled in code -->
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                <Image x:Name="imgGas"
+                       Width="100"
+                       gif:ImageBehavior.AnimatedSource="/Assets/images/gas.gif"
+                       Visibility="Hidden"
+                       RenderTransformOrigin="0.5,0.5">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="90"/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+                <Grid>
+                    <Image Width="128"
+                           gif:ImageBehavior.AnimatedSource="/Assets/images/dms.png"/>
+                    <ProgressBar x:Name="prbDmsProgress"
+                                 VerticalAlignment="Bottom"
+                                 Margin="4,0,4,10"
+                                 Height="3.5"
+                                 Value="0"/>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Width="60"/>
+                <Image Width="100"
+                       VerticalAlignment="Top"
+                       Source="/Assets/images/conn-ml-od.png"/>
+
+                <StackPanel>
+                    <Border x:Name="brdML"
+                            BorderThickness="3"
+                            HorizontalAlignment="Center"
+                            Margin="4">
+                        <Grid>
+                            <Image x:Name="imgDmsActive"
+                                   Width="79"
+                                   Visibility="Hidden"
+                                   gif:ImageBehavior.AnimatedSource="/Assets/images/processing.gif"/>
+                            <Image x:Name="imgDmsPassive"
+                                   Width="79"
+                                   Source="/Assets/images/processing.png"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <Image Width="100"
+                       VerticalAlignment="Top"
+                       Source="/Assets/images/conn-dms-ml.png"/>
+            </StackPanel>
+
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock x:Name="tblRecipeName"
+                           Foreground="{StaticResource BrushFontDark}"
+                           FontSize="14"
+                           TextAlignment="Center"
+                           Margin="0,0,0,8"/>
+                <TextBlock x:Name="tblRMSQ"
+                           FontStyle="Italic"
+                           TextAlignment="Center"/>
+            </StackPanel>
         </StackPanel>
-        
+
         <StackPanel Grid.Row="3"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">

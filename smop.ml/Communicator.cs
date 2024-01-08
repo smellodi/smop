@@ -17,12 +17,15 @@ public class Communicator : IDisposable
     public event EventHandler<Recipe>? RecipeReceived;
 
     public bool IsConnected => _server.IsClientConnected;
+    public string ConnectionMean { get; }
 
 
     public Communicator(Type type, bool isSimulating)
     {
         _server = type == Type.Tcp ? new TcpServer() : new FileServer();
         _server.RecipeReceived += Server_RecipeReceived;
+
+        ConnectionMean = type == Type.Tcp ? $"port {TcpServer.Port}" : $"files {FileServer.MLInput}/{FileServer.MLOutput}";
 
         if (_server is TcpServer tcpServer)
         {

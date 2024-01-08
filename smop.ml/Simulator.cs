@@ -57,7 +57,7 @@ internal abstract class Simulator : IDisposable
                 var rmsq = RMSQ / _step;
                 bool isFinished = rmsq < _threshold || _step >= _maxSteps;
 
-                var recipe = new Recipe("Recipe for you!", isFinished ? 1 : 0, rmsq, _channelIDs.Select(c => new ChannelRecipe(c, 10, 25)).ToArray());
+                var recipe = new Recipe("Normal reproduction", isFinished ? 1 : 0, rmsq, _channelIDs.Select(c => new ChannelRecipe(c, 10, 25)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 ScreenLogger.Print("[CLIENT] recipe sent");
                 await SendData(json);

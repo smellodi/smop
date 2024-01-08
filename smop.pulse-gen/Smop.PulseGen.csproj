@@ -41,7 +41,15 @@
   <ItemGroup>
     <None Remove="Assets\images\button-green.png" />
     <None Remove="Assets\images\button-red.png" />
+    <None Remove="Assets\images\conn-dms-ml.png" />
+    <None Remove="Assets\images\conn-ml-od.png" />
+    <None Remove="Assets\images\dms.png" />
     <None Remove="Assets\images\edit.png" />
+    <None Remove="Assets\images\gas.gif" />
+    <None Remove="Assets\images\od.png" />
+    <None Remove="Assets\images\processing.gif" />
+    <None Remove="Assets\images\processing.png" />
+    <None Remove="Assets\images\wait-small.gif" />
     <None Remove="Assets\images\wait.gif" />
   </ItemGroup>
 
@@ -55,11 +63,19 @@
     <Resource Include="Assets\icons\main.png" />
     <Resource Include="Assets\images\button-green.png" />
     <Resource Include="Assets\images\button-red.png" />
+    <Resource Include="Assets\images\conn-dms-ml.png" />
+    <Resource Include="Assets\images\conn-ml-od.png" />
+    <Resource Include="Assets\images\dms.png" />
     <Resource Include="Assets\images\edit.png" />
     <Resource Include="Assets\images\error.png" />
     <Resource Include="Assets\images\exclamation.png" />
+    <Resource Include="Assets\images\gas.gif" />
     <Resource Include="Assets\images\information.png" />
+    <Resource Include="Assets\images\od.png" />
+    <Resource Include="Assets\images\processing.gif" />
+    <Resource Include="Assets\images\processing.png" />
     <Resource Include="Assets\images\question.png" />
+    <Resource Include="Assets\images\wait-small.gif" />
     <Resource Include="Assets\images\wait.gif" />
   </ItemGroup>
 

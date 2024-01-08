@@ -43,7 +43,10 @@ public partial class Setup : Page, IPage<object?>
             var channelIDs = GetAvailableChannelIDs();
             _gases = new Gases(channelIDs);
 
-            CreateGasControls(_gases);
+            foreach (var gas in _gases.Items)
+            {
+                odorReproductionSettings.AddGas(gas);
+            }
         }
     }
 
@@ -71,6 +74,8 @@ public partial class Setup : Page, IPage<object?>
     IonVision.ScanResult? _sampleScan = null;
     IonVision.ParameterDefinition? _paramDefinition = null;
     Gases? _gases = null;
+
+    #region Indicators
 
     private void ClearIndicators()
     {
@@ -108,14 +113,14 @@ public partial class Setup : Page, IPage<object?>
 
     private async Task CreateIndicators()
     {
-        await IndicatorGenerator.OdorDisplay(indicator => Dispatcher.Invoke(() =>
+        await IndicatorFactory.OdorDisplay(indicator => Dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpOdorDisplayIndicators.Children.Add(indicator);
             _indicators.Add(indicator.Source, indicator);
         }));
 
-        await IndicatorGenerator.SmellInsp(indicator => Dispatcher.Invoke(() =>
+        await IndicatorFactory.SmellInsp(indicator => Dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpSmellInspIndicators.Children.Add(indicator);
@@ -153,7 +158,7 @@ public partial class Setup : Page, IPage<object?>
                     _ => 0
                 };
 
-                var source = IndicatorGenerator.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
+                var source = IndicatorFactory.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
                 UpdateIndicator(source, value);
             }
         }
@@ -162,13 +167,13 @@ public partial class Setup : Page, IPage<object?>
     private void UpdateIndicators(SmellInsp.Data data)
     {
         var value = data.Resistances[_smellInspResistor];
-        var source = IndicatorGenerator.GetSourceId(IndicatorGenerator.SmellInspChannels[0].Type);
+        var source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[0].Type);
         UpdateIndicator(source, value);
 
-        source = IndicatorGenerator.GetSourceId(IndicatorGenerator.SmellInspChannels[1].Type);
+        source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[1].Type);
         UpdateIndicator(source, data.Temperature);
 
-        source = IndicatorGenerator.GetSourceId(IndicatorGenerator.SmellInspChannels[2].Type);
+        source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[2].Type);
         UpdateIndicator(source, data.Humidity);
     }
 
@@ -187,6 +192,8 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
+    #endregion
+
     private void UpdateUI()
     {
         if (_storage.SetupType == Type.PulseGenerator)
@@ -196,15 +203,7 @@ public partial class Setup : Page, IPage<object?>
         else if (_storage.SetupType == Type.OdorReproduction)
         {
             btnStart.IsEnabled = _sampleScan != null && _paramDefinition != null && _mlIsConnected;
-            tblMLStatus.Text = _mlIsConnected ? "connected" : "not connected";
-        }
-    }
-
-    private void CreateGasControls(Gases gases)
-    {
-        foreach (var gas in gases.Items)
-        {
-            odorReproductionSettings.AddGas(gas);
+            tblMLStatus.Text = App.ML != null && _mlIsConnected ? $"connected via {App.ML.ConnectionMean}" : "not connected";
         }
     }
 
@@ -307,7 +306,7 @@ public partial class Setup : Page, IPage<object?>
 
     private async Task ConfigureML()
     {
-        if (App.ML == null || _paramDefinition == null || _sampleScan == null)
+        if (App.ML == null || _paramDefinition == null || _sampleScan == null || _gases == null)
             return;
 
         var dataSources = new List<string>() { ML.Source.DMS };
@@ -355,7 +354,7 @@ public partial class Setup : Page, IPage<object?>
         var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
         if (!resp.Success)
         {
-            tblDmsStatus.Text += "\nFailed to start sample scan.";
+            AddToIonVisionLog("Failed to start sample scan.");
             return;
         }
 

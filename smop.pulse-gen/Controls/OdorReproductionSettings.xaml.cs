@@ -2,72 +2,71 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Smop.PulseGen.Controls
+namespace Smop.PulseGen.Controls;
+
+public partial class OdorReproductionSettings : UserControl
 {
-    public partial class OdorReproductionSettings : UserControl
+    public OdorReproductionSettings()
     {
-        public OdorReproductionSettings()
+        InitializeComponent();
+    }
+
+    public void AddGas(Gas gas)
+    {
+        var txb = new TextBox()
         {
-            InitializeComponent();
+            FontSize = 14,
+            Text = gas.Name
+        };
+        txb.TextChanged += (s, e) => gas.Name = txb.Text;
+
+        var style = FindResource("Setting") as Style;
+        var uc = new UserControl()
+        {
+            Style = style,
+            Tag = "#" + gas.ChannelID.ToString()[^1],
+            Content = txb
+        };
+
+        stpGases.Children.Add(uc);
+    }
+
+    // Internal
+
+    private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+        txbMaxIterations.Text = settings.Reproduction_MaxIterations.ToString();
+        txbThreshold.Text = settings.Reproduction_Threshold.ToString("F4");
+    }
+
+    private void MaxIterations_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+
+        if (int.TryParse(txbMaxIterations.Text, out int value) && value >= 0 && value < 100)
+        {
+            settings.Reproduction_MaxIterations = value;
+            settings.Save();
         }
-
-        public void AddGas(Gas gas)
+        else
         {
-            var txb = new TextBox()
-            {
-                FontSize = 14,
-                Text = gas.Name
-            };
-            txb.TextChanged += (s, e) => gas.Name = txb.Text;
-
-            var style = FindResource("Setting") as Style;
-            var uc = new UserControl()
-            {
-                Style = style,
-                Tag = gas.ChannelID.ToString(),
-                Content = txb
-            };
-
-            stpGases.Children.Add(uc);
+            txbMaxIterations.Text = settings.Reproduction_MaxIterations.ToString();
         }
+    }
 
-        // Internal
+    private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var settings = Properties.Settings.Default;
 
-        private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        if (float.TryParse(txbThreshold.Text, out float value) && value >= 0)
         {
-            var settings = Properties.Settings.Default;
-            txbMaxIteractionNumber.Text = settings.Reproduction_MaxIterations.ToString();
+            settings.Reproduction_Threshold = value;
+            settings.Save();
+        }
+        else
+        {
             txbThreshold.Text = settings.Reproduction_Threshold.ToString("F4");
-        }
-
-        private void MaxIteractionNumber_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var settings = Properties.Settings.Default;
-
-            if (int.TryParse(txbMaxIteractionNumber.Text, out int value) && value >= 0 && value < 100)
-            {
-                settings.Reproduction_MaxIterations = value;
-                settings.Save();
-            }
-            else
-            {
-                txbMaxIteractionNumber.Text = settings.Reproduction_MaxIterations.ToString();
-            }
-        }
-
-        private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var settings = Properties.Settings.Default;
-
-            if (float.TryParse(txbThreshold.Text, out float value) && value >= 0)
-            {
-                settings.Reproduction_Threshold = value;
-                settings.Save();
-            }
-            else
-            {
-                txbThreshold.Text = settings.Reproduction_Threshold.ToString("F4");
-            }
         }
     }
 }

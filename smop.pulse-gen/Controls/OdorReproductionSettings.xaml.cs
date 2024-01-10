@@ -13,22 +13,58 @@ public partial class OdorReproductionSettings : UserControl
 
     public void AddGas(Gas gas)
     {
-        var txb = new TextBox()
+        var lblID = new Label()
+        {
+            Content = "#" + gas.ChannelID.ToString()[4..]
+        };
+
+        var txbName = new TextBox()
         {
             FontSize = 14,
-            Text = gas.Name
+            Text = gas.Name,
+            Margin = new Thickness(4, 0, 4, 0)
         };
-        txb.TextChanged += (s, e) => gas.Name = txb.Text;
+        txbName.TextChanged += (s, e) => gas.Name = txbName.Text;
 
-        var style = FindResource("Setting") as Style;
+        var txbFlow = new TextBox()
+        {
+            FontSize = 14,
+            Text = gas.Flow.ToString("0.#")
+        };
+        txbFlow.TextChanged += (s, e) =>
+        {
+            if (float.TryParse(txbFlow.Text, out float flow) && flow >= 0)
+            {
+                gas.Flow = flow;
+            }
+        };
+
+        /*
+        var ucStyle = FindResource("Setting") as Style;
         var uc = new UserControl()
         {
-            Style = style,
+            Style = ucStyle,
             Tag = "#" + gas.ChannelID.ToString()[^1],
-            Content = txb
+            Content = txbName
         };
 
         stpGases.Children.Add(uc);
+        */
+
+        var container = new Grid();
+        container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
+        container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+        container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
+
+        Grid.SetColumn(lblID, 0);
+        Grid.SetColumn(txbName, 1);
+        Grid.SetColumn(txbFlow, 2);
+
+        container.Children.Add(lblID);
+        container.Children.Add(txbName);
+        container.Children.Add(txbFlow);
+
+        stpGases.Children.Add(container);
     }
 
     // Internal
@@ -37,7 +73,7 @@ public partial class OdorReproductionSettings : UserControl
     {
         var settings = Properties.Settings.Default;
         txbMaxIterations.Text = settings.Reproduction_MaxIterations.ToString();
-        txbThreshold.Text = settings.Reproduction_Threshold.ToString("F4");
+        txbThreshold.Text = settings.Reproduction_Threshold.ToString("0.####");
         chkSendPID.IsChecked = settings.Reproduction_UsePID;
         txbSniffingDelay.Text = settings.Reproduction_SniffingDelay.ToString();
     }
@@ -68,7 +104,7 @@ public partial class OdorReproductionSettings : UserControl
         }
         else
         {
-            txbThreshold.Text = settings.Reproduction_Threshold.ToString("F4");
+            txbThreshold.Text = settings.Reproduction_Threshold.ToString("0.####");
         }
     }
 

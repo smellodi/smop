@@ -1,5 +1,6 @@
 ﻿using Smop.PulseGen.Pages;
 using Smop.PulseGen.Utils.Extensions;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,6 +8,17 @@ using System.Windows.Data;
 using System.Windows.Media;
 
 namespace Smop.PulseGen;
+
+[Flags]
+public enum SimulationTarget
+{
+    Nothing = 0,
+    OdorDisplay = 1,
+    SmellInspector = 2,
+    IonVision = 4,
+    ML = 8,
+    All = 15
+}
 
 /// <summary>
 /// Cross-app storage, mainly used to share the app state
@@ -29,7 +41,7 @@ public class Storage : INotifyPropertyChanged
             {
                 Setup.Type.OdorReproduction => Navigation.OdorReproductionSetup,
                 Setup.Type.PulseGenerator => Navigation.PulseGeneratorSetup,
-                _ => throw new System.Exception($"Setup type {_setupType} is not supported")
+                _ => throw new Exception($"Setup type {_setupType} is not supported")
             };
         }
     }
@@ -44,22 +56,19 @@ public class Storage : INotifyPropertyChanged
             {
                 Navigation.OdorReproductionSetup => Setup.Type.OdorReproduction,
                 Navigation.PulseGeneratorSetup => Setup.Type.PulseGenerator,
-                _ => throw new System.Exception($"Setup type {_setupPage} is not supported")
+                _ => throw new Exception($"Setup type {_setupPage} is not supported")
             };
         }
     }
 
-    public bool IsDebugging
+    public SimulationTarget Simulating
     {
-        get => _isDebugging;
-        set
-        {
-            if (_isDebugging != value)
-            {
-                _isDebugging = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDebugging)));
-            }
-        }
+        get => _simulating;
+    }
+
+    public bool HasSimulatingComponents
+    {
+        get => _simulating != SimulationTarget.Nothing;
     }
 
     public double ZoomLevel
@@ -88,11 +97,20 @@ public class Storage : INotifyPropertyChanged
         ZoomLevel = MathExt.Limit(_zoomLevel - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
     }
 
+    public void AddSimulatingTarget(SimulationTarget target)
+    {
+        if (!_simulating.HasFlag(target))
+        {
+            _simulating |= target;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSimulatingComponents)));
+        }
+    }
+
     // Helpers
 
     public Storage BindVisibilityToDebug(DependencyObject obj)
     {
-        var isDebuggingBinding = new Binding(nameof(IsDebugging))
+        var isDebuggingBinding = new Binding(nameof(HasSimulatingComponents))
         {
             Source = this,
             Converter = new BooleanToVisibilityConverter()
@@ -161,7 +179,7 @@ public class Storage : INotifyPropertyChanged
     Setup.Type _setupType = Setup.Type.Undefined;
     Navigation _setupPage = Navigation.Exit;
 
-    bool _isDebugging = false;
+    SimulationTarget _simulating = SimulationTarget.Nothing;
     double _zoomLevel;
 
     private Storage()

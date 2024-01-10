@@ -172,7 +172,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
         }
 
-        btnQuit.Content = recipe.Finished ? "Finish" : "Interrupt";
+        btnQuit.Content = recipe.Finished ? "Return" : "Interrupt";
     }
 
 

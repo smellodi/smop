@@ -37,7 +37,7 @@ public partial class Setup : Page, IPage<object?>
 
         if (type == Type.OdorReproduction && App.ML == null)
         {
-            App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.IsDebugging);
+            App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
             App.ML.StatusChanged += ML_StatusChanged;
 
             var channelIDs = GetAvailableChannelIDs();
@@ -49,27 +49,28 @@ public partial class Setup : Page, IPage<object?>
             }
         }
 
-        /* This logic requires both SNT and DMS to be scanned if both were connected
         if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 2)
             grdStatuses.RowDefinitions.RemoveAt(0);
+
+        grdDmsStatus.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
+
+        /* BOTH ENOSES
         if (!_smellInsp.IsOpen && grdStatuses.RowDefinitions.Count == 2)
             grdStatuses.RowDefinitions.RemoveAt(1);
 
-        grdDmsStatus.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
         grdSntStatus.Visibility = _smellInsp.IsOpen ? Visibility.Visible : Visibility.Collapsed;
         */
 
-        // This logic prefers DMS over SNT if both were connected
-        if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 2)
-            grdStatuses.RowDefinitions.RemoveAt(0);
+        // SINGLE ENOSE
         if ((App.IonVision != null || !_smellInsp.IsOpen) && grdStatuses.RowDefinitions.Count == 2)
             grdStatuses.RowDefinitions.RemoveAt(1);
 
-        grdDmsStatus.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
         grdSntStatus.Visibility = App.IonVision == null && _smellInsp.IsOpen ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // Internal
+
+    enum LogType { DMS, SNT }
 
     const int SNT_MAX_DATA_COUNT = 10;
 
@@ -96,7 +97,7 @@ public partial class Setup : Page, IPage<object?>
     bool _mlIsConnected = false;
     IonVision.ScanResult? _sampleScan = null;
     IonVision.ParameterDefinition? _paramDefinition = null;
-    Gases? _gases = null;
+    Gases _gases = new Gases();
 
     #region Indicators
 
@@ -124,7 +125,10 @@ public partial class Setup : Page, IPage<object?>
         }
         else if (chi.Source.StartsWith("od"))
         {
-            interval = (double)(_storage.IsDebugging ? OdorDisplay.SerialPortEmulator.SamplingFrequency : OdorDisplay.Device.DataMeasurementInterval) / 1000;
+            interval = (double)(_storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? 
+                OdorDisplay.SerialPortEmulator.SamplingFrequency : 
+                OdorDisplay.Device.DataMeasurementInterval)
+                / 1000;
         }
         else if (chi.Source.StartsWith("snt"))
         {
@@ -225,15 +229,15 @@ public partial class Setup : Page, IPage<object?>
         }
         else if (_storage.SetupType == Type.OdorReproduction)
         {
-            /* This logic requires both SNT and DMS to be scanned if both were connected
+            /* BOTH ENOSES
             bool isDmsReady = (_sampleScan != null && _paramDefinition != null) || App.IonVision == null;
             bool isSntReady = !_smellInsp.IsOpen || _sntSamples.Count >= SNT_MAX_DATA_COUNT;
             btnStart.IsEnabled = isDmsReady && isSntReady && _mlIsConnected;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
             */
 
-        // This logic prefers DMS over SNT if both were connected
-        bool isDmsReady = (_sampleScan != null && _paramDefinition != null) || App.IonVision == null;
+            // SINGLE ENOSE
+            bool isDmsReady = (_sampleScan != null && _paramDefinition != null) || App.IonVision == null;
             bool isSntReady = isDmsReady || _sntSamples.Count >= SNT_MAX_DATA_COUNT;
             btnStart.IsEnabled = isDmsReady && isSntReady && _mlIsConnected;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
@@ -247,8 +251,8 @@ public partial class Setup : Page, IPage<object?>
         HandleIonVisionError(await ionVision.SetClock(), "SetClock");
 
         await Task.Delay(300);
-        AddToIonVisionLog("Current clock set");
-        AddToIonVisionLog($"Loading '{ionVision.Settings.Project}' project...");
+        AddToLog(LogType.DMS, "Current clock set");
+        AddToLog(LogType.DMS, $"Loading '{ionVision.Settings.Project}' project...");
 
         var response = HandleIonVisionError(await ionVision.GetProject(), "GetProject");
         if (response.Value?.Project != ionVision.Settings.Project)
@@ -276,11 +280,11 @@ public partial class Setup : Page, IPage<object?>
             }
         }
 
-        AddToIonVisionLog($"Project '{ionVision.Settings.Project}' is loaded.", true);
+        AddToLog(LogType.DMS, $"Project '{ionVision.Settings.Project}' is loaded.", true);
 
         await Task.Delay(500);
 
-        AddToIonVisionLog($"Loading '{ionVision.Settings.ParameterName}' parameter...");
+        AddToLog(LogType.DMS, $"Loading '{ionVision.Settings.ParameterName}' parameter...");
 
         var getParameterResponse = await ionVision.GetParameter();
         bool hasParameterLoaded = getParameterResponse.Value?.Parameter.Id == ionVision.Settings.ParameterId;
@@ -289,20 +293,20 @@ public partial class Setup : Page, IPage<object?>
             await Task.Delay(300);
             HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
 
-            AddToIonVisionLog($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...", true);
+            AddToLog(LogType.DMS, $"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...", true);
             await Task.Delay(1000);
         }
 
-        AddToIonVisionLog($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true);
+        AddToLog(LogType.DMS, $"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true);
 
         if (App.ML != null)
         {
-            AddToIonVisionLog($"Retrieving the parameter...");
+            AddToLog(LogType.DMS, $"Retrieving the parameter...");
             var paramDefinition = HandleIonVisionError(await ionVision.GetParameterDefinition(), "GetParameterDefinition");
             _paramDefinition = paramDefinition.Value;
 
             await Task.Delay(500);
-            AddToIonVisionLog("Ready for scanning the target odor.", true);
+            AddToLog(LogType.DMS, "Ready for scanning the target odor.", true);
 
             App.ML.Parameter = _paramDefinition;
         }
@@ -315,9 +319,9 @@ public partial class Setup : Page, IPage<object?>
     public OdorDisplay.Device.ID[] GetAvailableChannelIDs()
     {
         var ids = new List<OdorDisplay.Device.ID>();
-        var result = _odorDisplay.Request(new QueryDevices(), out Ack? ack, out Response? response);
+        var response = SendOdorDisplayRequest(new QueryDevices());
 
-        if (result.Error == OdorDisplay.Error.Success && response != null)
+        if (response != null)
         {
             var devices = Devices.From(response);
             if (devices != null)
@@ -337,7 +341,7 @@ public partial class Setup : Page, IPage<object?>
 
     private async Task ConfigureML()
     {
-        if (App.ML == null || _gases == null)
+        if (App.ML == null)
             return;
 
         var dataSources = new List<string>();
@@ -406,11 +410,11 @@ public partial class Setup : Page, IPage<object?>
         var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
         if (!resp.Success)
         {
-            AddToIonVisionLog("Failed to start sample scan.");
+            AddToLog(LogType.DMS, "Failed to start sample scan.");
             return;
         }
 
-        AddToIonVisionLog("Scanning...");
+        AddToLog(LogType.DMS, "Scanning...");
 
         var waitForScanProgress = true;
 
@@ -423,7 +427,7 @@ public partial class Setup : Page, IPage<object?>
             if (value >= 0)
             {
                 waitForScanProgress = false;
-                AddToIonVisionLog($"Scanning... {value} %", true);
+                AddToLog(LogType.DMS, $"Scanning... {value} %", true);
             }
             else if (waitForScanProgress)
             {
@@ -431,7 +435,7 @@ public partial class Setup : Page, IPage<object?>
             }
             else
             {
-                AddToIonVisionLog($"Scanning finished.", true);
+                AddToLog(LogType.DMS, $"Scanning finished.", true);
                 break;
             }
 
@@ -440,52 +444,60 @@ public partial class Setup : Page, IPage<object?>
         await Task.Delay(300);
         _sampleScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
 
-        AddToIonVisionLog(_sampleScan != null ? "Ready to start." : "Failed to retrieve the scanning result");
+        AddToLog(LogType.DMS, _sampleScan != null ? "Ready to start." : "Failed to retrieve the scanning result");
 
         UpdateUI();
     }
 
     private async Task WaitForSntSamples()
     {
-        AddToSmellInspLog($"Collecting SNT samples...");
+        AddToLog(LogType.SNT, $"Collecting SNT samples...");
 
         while (_sntSamples.Count < SNT_MAX_DATA_COUNT)
         {
             await Task.Delay(1000);
-            AddToSmellInspLog($"Collected {_sntSamples.Count} samples...", true);
+            AddToLog(LogType.SNT, $"Collected {_sntSamples.Count} samples...", true);
         }
 
-        AddToSmellInspLog($"Ready to start.", true);
+        AddToLog(LogType.SNT, $"Ready to start.", true);
 
         UpdateUI();
     }
 
-    private void AddToIonVisionLog(string line, bool replaceLast = false)
+    private void AddToLog(LogType destination, string line, bool replaceLast = false)
     {
+        var lines = destination == LogType.DMS ? _ionVisionLog : _smellInspLog;
+        var tbl = destination == LogType.DMS ? tblDmsStatus : tblSntStatus;
+        var scv = destination == LogType.DMS ? scvDmsStatus : scvSntStatus;
+
         if (replaceLast)
         {
-            _ionVisionLog.RemoveAt(_ionVisionLog.Count - 1);
+            lines.RemoveAt(_ionVisionLog.Count - 1);
         }
-        _ionVisionLog.Add(line);
-        tblDmsStatus.Text = string.Join('\n', _ionVisionLog);
-        scvDmsStatus.ScrollToBottom();
+        lines.Add(line);
+        tbl.Text = string.Join('\n', lines);
+        scv.ScrollToBottom();
     }
 
-    private void AddToSmellInspLog(string line, bool replaceLast = false)
+    private Response? SendOdorDisplayRequest(Request request)
     {
-        if (replaceLast)
-        {
-            _smellInspLog.RemoveAt(_smellInspLog.Count - 1);
-        }
-        _smellInspLog.Add(line);
-        tblSntStatus.Text = string.Join('\n', _smellInspLog);
-        scvSntStatus.ScrollToBottom();
+        _nlog.Info($"Sent: {request}");
+
+        var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
+        HandleOdorDisplayError(result, $"send the '{request.Type}' request");
+
+        if (ack != null)
+            _nlog.Info($"Received: {ack}");
+        if (result.Error == OdorDisplay.Error.Success && response != null)
+            _nlog.Info($"Received: {response}");
+
+        return response;
     }
 
     private void Close()
     {
         var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Stop);
-        _odorDisplay.Request(queryMeasurements, out _, out Response? _);
+        SendOdorDisplayRequest(queryMeasurements);
     }
 
     // Event handlers
@@ -588,31 +600,22 @@ public partial class Setup : Page, IPage<object?>
 
     private void Page_KeyDown(object? sender, KeyEventArgs e)
     {
+        if (e.Key == Key.F2)
+        {
+            _storage.AddSimulatingTarget(SimulationTarget.ML);
+
+            if (App.ML != null)
+            {
+                App.ML.Dispose();
+
+                App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
+                App.ML.StatusChanged += ML_StatusChanged;
+            }
+        }
         if (e.Key == Key.F4)
         {
             Start_Click(this, new RoutedEventArgs());
         }
-    }
-
-    private async void MeasureSample_Click(object sender, RoutedEventArgs e)
-    {
-        btnMeasureSample.IsEnabled = false;
-        _smellInsp.Data += SmellInsp_TargetData;
-
-        List<Task> scans = new();
-        if (App.IonVision != null)
-        {
-            scans.Add(MakeSampleScan(App.IonVision));
-        }
-        else if (_smellInsp.IsOpen)
-        {
-            scans.Add(WaitForSntSamples());
-        }
-
-        await Task.WhenAll(scans);
-
-        _smellInsp.Data -= SmellInsp_TargetData;
-        btnMeasureSample.IsEnabled = true;
     }
 
     private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
@@ -632,12 +635,55 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
+    private async void MeasureSample_Click(object sender, RoutedEventArgs e)
+    {
+        btnMeasureSample.IsEnabled = false;
+
+        var actuators = _gases.Items
+            .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, gas.Flow),
+                gas.Flow > 0 ? ActuatorCapabilities.OdorantValveOpenPermanently : ActuatorCapabilities.OdorantValveClose
+            )));
+        SendOdorDisplayRequest(new SetActuators(actuators.ToArray()));
+
+        var logType = App.IonVision != null ? LogType.DMS : LogType.SNT;
+        AddToLog(logType, "Odors were released, waiting for the mixture to stabilize...");
+        await Task.Delay((int)(1000 * Properties.Settings.Default.Reproduction_SniffingDelay));
+        AddToLog(logType, "Odor mixturing process has finished", true);
+
+        _smellInsp.Data += SmellInsp_TargetData;
+
+        List<Task> scans = new();
+        if (App.IonVision != null)
+        {
+            scans.Add(MakeSampleScan(App.IonVision));
+        }
+        else if (_smellInsp.IsOpen)     // remove "else" to measure from BOTH ENOSES
+        {
+            scans.Add(WaitForSntSamples());
+        }
+
+        await Task.WhenAll(scans);
+
+        _smellInsp.Data -= SmellInsp_TargetData;
+
+        actuators = _gases.Items
+            .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f),
+                ActuatorCapabilities.OdorantValveClose
+            )));
+        SendOdorDisplayRequest(new SetActuators(actuators.ToArray()));
+
+        await Task.Delay(300);
+
+        btnMeasureSample.IsEnabled = true;
+    }
 
     private async void Start_Click(object sender, RoutedEventArgs e)
     {
         if (_storage.SetupType == Type.OdorReproduction)
         {
-            _gases?.Save();
+            _gases.Save();
 
             if (_mlIsConnected && App.ML != null)
             {

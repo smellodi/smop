@@ -71,6 +71,7 @@ public class Communicator : IDisposable
 
     public void Dispose()
     {
+        _server.Dispose();
         _simulator?.Dispose();
         GC.SuppressFinalize(this);
     }

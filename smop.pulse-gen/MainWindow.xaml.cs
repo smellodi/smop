@@ -186,7 +186,7 @@ public partial class MainWindow : Window
                 "CONNECTION page\n" +
                 "F2 - starts simulator\n\n" +
                 "SETUP page\n" +
-                "F4 - starts Odor Pulses procedure\n\n" +
+                "F4 - starts the procedure\n\n" +
                 "PULSES page\n" +
                 "F2 - forces the test to finish\n\n" +
                 "Any page\n" +

@@ -10,6 +10,8 @@ public class Gas
     public OdorDisplay.Device.ID ChannelID { get; }
     public Dictionary<string, string> Propeties { get; } = new() { { "maxFlow", "80" } };
 
+    public float Flow { get; set; } = 0;
+
     public Gas(OdorDisplay.Device.ID channelID, string name, params KeyValuePair<string, string>[] props)
     {
         ChannelID = channelID;
@@ -41,15 +43,17 @@ public class Gases
         {
             foreach (var id in ids)
             {
-                var name = odors.ContainsKey(id) ? odors[id] : $"{id}";
-                _items.Add(new Gas(id, name));
+                var props = odors.ContainsKey(id) ? odors[id] : $"{id}";
+                var p = props.Split(SEPARATOR_VALUES);
+                _items.Add(new Gas(id, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 });
             }
         }
         else
         {
             foreach (var odor in odors)
             {
-                _items.Add(new Gas(odor.Key, odor.Value));
+                var p = odor.Value.Split(SEPARATOR_VALUES);
+                _items.Add(new Gas(odor.Key, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 });
             }
         }
     }
@@ -59,7 +63,7 @@ public class Gases
         var defs = new List<string>();
         foreach (var gas in Items)
         {
-            defs.Add($"{gas.ChannelID}{SEPARATOR_KV}{gas.Name}");
+            defs.Add($"{gas.ChannelID}{SEPARATOR_KV}{gas.Name}{SEPARATOR_VALUES}{gas.Flow}");
         }
 
         var settings = Properties.Settings.Default;
@@ -71,6 +75,7 @@ public class Gases
 
     readonly char SEPARATOR_GAS = ';';
     readonly char SEPARATOR_KV = '=';
+    readonly char SEPARATOR_VALUES = ',';
 
     readonly List<Gas> _items = new();
 }

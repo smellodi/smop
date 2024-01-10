@@ -29,7 +29,7 @@
         </UserControl>
         <UserControl x:Name="uscSendPID"
                      Style="{StaticResource Setting}"
-                     Tag="Send PID">
+                     Tag="Send PID values">
             <CheckBox x:Name="chkSendPID"
                       Click="SendPID_Click"/>
         </UserControl>
@@ -37,17 +37,27 @@
         <Label Style="{StaticResource Section}"
                Content="Gases:"/>
         <StackPanel x:Name="stpGases">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0">ID</Label>
+                <Label Grid.Column="1">Name</Label>
+                <Label Grid.Column="2" HorizontalContentAlignment="Right">Initial flow, ml/min</Label>
+            </Grid>
             <!-- to be filled in code -->
         </StackPanel>
 
         <Label Style="{StaticResource Section}"
                Content="Procedure settings:"/>
         <UserControl x:Name="uscSniffingDelay"
-                     Style="{StaticResource Setting}"
-                     Tag="Sniffing delay, s">
-            <TextBox x:Name="txbSniffingDelay"
-                     FontSize="14"
-                     TextChanged="SniffingDelay_TextChanged"/>
+                    Style="{StaticResource Setting}"
+                    Tag="eNose sniffing delay, s">
+            <TextBox x:Name="txbSniffingDelay" Grid.Column="0"
+                    FontSize="14"
+                    TextChanged="SniffingDelay_TextChanged"/>
         </UserControl>
 
     </StackPanel>

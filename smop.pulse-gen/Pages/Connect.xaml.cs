@@ -157,7 +157,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             return;
         }
 
-        _ionVision = new IonVision.Communicator(IonVisionSetupFilename, _storage.IsDebugging);
+        _ionVision = new IonVision.Communicator(IonVisionSetupFilename, _storage.Simulating.HasFlag(SimulationTarget.IonVision));
 
         btnConnectToIonVision.IsEnabled = false;
         var isConnected = await CheckIonVisionSettings(_ionVision);
@@ -328,18 +328,34 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     {
         if (e.Key == Key.F2)
         {
-            cmbOdorDisplayCommPort.Items.Clear();
-            cmbOdorDisplayCommPort.Items.Add("simulator");
-            cmbOdorDisplayCommPort.SelectedIndex = 0;
+            if (e.Source == this || e.Source == cmbOdorDisplayCommPort)
+            {
+                cmbOdorDisplayCommPort.Items.Clear();
+                cmbOdorDisplayCommPort.Items.Add("simulator");
+                cmbOdorDisplayCommPort.SelectedIndex = 0;
+                _storage.AddSimulatingTarget(SimulationTarget.OdorDisplay);
+            }
 
-            cmbSmellInspCommPort.Items.Clear();
-            cmbSmellInspCommPort.Items.Add("simulator");
-            cmbSmellInspCommPort.SelectedIndex = 0;
+            if (e.Source == this || e.Source == cmbSmellInspCommPort)
+            {
+                cmbSmellInspCommPort.Items.Clear();
+                cmbSmellInspCommPort.Items.Add("simulator");
+                cmbSmellInspCommPort.SelectedIndex = 0;
+                _storage.AddSimulatingTarget(SimulationTarget.SmellInspector);
+            }
 
-            txbIonVisionIP.Text = "simulator";
+            if (e.Source == this || e.Source == txbIonVisionIP)
+            {
+                txbIonVisionIP.Text = "simulator";
+                _storage.AddSimulatingTarget(SimulationTarget.IonVision);
+            }
 
-            _storage.IsDebugging = true;
-            lblDebug.Visibility = Visibility.Visible;
+            if (e.Source == this)
+            {
+                _storage.AddSimulatingTarget(SimulationTarget.All);
+            }
+
+            //lblDebug.Visibility = Visibility.Visible;
         }
         else if (e.Key == Key.Enter)
         {
@@ -357,13 +373,13 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     private void ConnectToOdorDisplay_Click(object? sender, RoutedEventArgs e)
     {
-        ConnectToOdorDispay(_storage.IsDebugging ? null : (string)cmbOdorDisplayCommPort.SelectedItem);
+        ConnectToOdorDispay(_storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? null : (string)cmbOdorDisplayCommPort.SelectedItem);
         UpdateUI();
     }
 
     private void ConnectToSmellInsp_Click(object? sender, RoutedEventArgs e)
     {
-        ConnectToSmellInsp(_storage.IsDebugging ? null : (string)cmbSmellInspCommPort.SelectedItem);
+        ConnectToSmellInsp(_storage.Simulating.HasFlag(SimulationTarget.SmellInspector) ? null : (string)cmbSmellInspCommPort.SelectedItem);
         UpdateUI();
     }
 

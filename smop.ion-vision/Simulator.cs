@@ -23,12 +23,12 @@ internal class Simulator : IMinimalAPI
         {
             socket.OnOpen = () =>
             {
-                ScreenLogger.Print($"[IV-WS-S] Opened from {socket.ConnectionInfo.ClientIpAddress}");
+                ScreenLogger.Print($"[IvWsServer] Opened from {socket.ConnectionInfo.ClientIpAddress}");
                 _sockets.Add(socket);
             };
             socket.OnClose = () =>
             {
-                ScreenLogger.Print("[IV-WS-S] Closed");
+                ScreenLogger.Print("[IvWsServer] Closed");
                 _sockets.Remove(socket);
             };
             // socket.OnMessage = message => { ignore messages };

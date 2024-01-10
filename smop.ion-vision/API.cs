@@ -726,7 +726,7 @@ internal static class RestResponseExtension
             data = data[..maxDataLengthToPrint] + "...";
         }
 
-        ScreenLogger.Print($"[API] {(int)response.StatusCode} ({response.StatusDescription}), {data} ({response.ContentLength} bytes)");
+        ScreenLogger.Print($"[IvAPI] {(int)response.StatusCode} ({response.StatusDescription}), {data} ({response.ContentLength} bytes)");
 
         if (response.IsSuccessful)
         {

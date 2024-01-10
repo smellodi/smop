@@ -382,13 +382,13 @@ public class EventSink : IDisposable
 
     private void OnDisconnected(DisconnectionInfo info)
     {
-        ScreenLogger.Print("[IV-WS-C] Disconnected");
+        ScreenLogger.Print("[IvWsClient] Disconnected");
         DispatchOnce.Do(3, CreateWebSocketClient);
     }
 
     private void OnConnected(ReconnectionInfo info)
     {
-        ScreenLogger.Print("[IV-WS-C] Connected");
+        ScreenLogger.Print("[IvWsClient] Connected");
     }
 
     private void OnMessage(ResponseMessage msg)
@@ -399,7 +399,7 @@ public class EventSink : IDisposable
             return;
         }
 
-        ScreenLogger.Print(msg.ToString());
+        ScreenLogger.Print("[IvWsC] " + msg.ToString());
 
         try
         {
@@ -498,8 +498,8 @@ public class EventSink : IDisposable
         }
         catch (Exception ex)
         {
-            ScreenLogger.Print("! Exception in EventReported !");
-            ScreenLogger.Print(ex.Message);
+            ScreenLogger.Print("[IvWsC] Exception in EventReported");
+            ScreenLogger.Print($"[IvWsC] {ex.Message}");
         }
     }
 

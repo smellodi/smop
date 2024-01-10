@@ -41,7 +41,7 @@ public class Settings
 
         try
         {
-            ScreenLogger.Print($"[IonVis] settings from: {_filename}");
+            ScreenLogger.Print($"[IvSettings] settings from: {_filename}");
 
             using System.IO.StreamReader reader = new(_filename);
             string jsonString = reader.ReadToEnd();
@@ -60,7 +60,7 @@ public class Settings
         }
         catch (Exception ex)
         {
-            ScreenLogger.Print(ex.Message);
+            ScreenLogger.Print($"[IvSettings] {ex.Message}");
         }
     }
 

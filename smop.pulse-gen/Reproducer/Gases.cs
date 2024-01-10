@@ -54,8 +54,6 @@ public class Gases
         }
     }
 
-    public Gas? Get(OdorDisplay.Device.ID id) => Items.FirstOrDefault(gas => gas.ChannelID == id);
-
     public void Save()
     {
         var defs = new List<string>();

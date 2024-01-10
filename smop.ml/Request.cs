@@ -32,14 +32,16 @@ public record class Recipe(string Name, int IsFinal, float MinRMSE, ChannelRecip
     public bool Finished => IsFinal != 0;
 }
 
+public record class Content(string Source);
+
 // DMS measurement is defined in DmsMeasurement.cs
 
-public record class SntMeasurement(string Source, SmellInsp.Data Data)
+public record class SntMeasurement(SmellInsp.Data Data) : Content(ML.Source.SNT)
 {
-    public static SntMeasurement From(SmellInsp.Data data) => new(ML.Source.SNT, data);
+    public static SntMeasurement From(SmellInsp.Data data) => new(data);
 }
 
-public record class PIDMeasurement(string Source, float Data)
+public record class PIDMeasurement(float Data) : Content(ML.Source.PID)
 {
-    public static PIDMeasurement From(float data) => new(ML.Source.PID, data);
+    public static PIDMeasurement From(float data) => new(data);
 }

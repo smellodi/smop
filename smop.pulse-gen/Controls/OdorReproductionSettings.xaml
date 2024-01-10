@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Smop.PulseGen.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="150"
+             d:DesignHeight="300"
              d:DesignWidth="300"
              Loaded="UserControl_Loaded">
     
@@ -27,11 +27,28 @@
                      FontSize="14"
                      TextChanged="Threshold_TextChanged"/>
         </UserControl>
+        <UserControl x:Name="uscSendPID"
+                     Style="{StaticResource Setting}"
+                     Tag="Send PID">
+            <CheckBox x:Name="chkSendPID"
+                      Click="SendPID_Click"/>
+        </UserControl>
 
         <Label Style="{StaticResource Section}"
                Content="Gases:"/>
         <StackPanel x:Name="stpGases">
             <!-- to be filled in code -->
         </StackPanel>
+
+        <Label Style="{StaticResource Section}"
+               Content="Procedure settings:"/>
+        <UserControl x:Name="uscSniffingDelay"
+                     Style="{StaticResource Setting}"
+                     Tag="Sniffing delay, s">
+            <TextBox x:Name="txbSniffingDelay"
+                     FontSize="14"
+                     TextChanged="SniffingDelay_TextChanged"/>
+        </UserControl>
+
     </StackPanel>
 </UserControl>

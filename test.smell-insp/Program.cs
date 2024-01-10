@@ -110,7 +110,7 @@ bool HandleCommand(string cmd)
     var request = requestDesc.Item2;
     if (request == null)
     {
-        if (cmd == "help")
+        if (cmd == "h")
         {
             PrintHelp();
             return true;

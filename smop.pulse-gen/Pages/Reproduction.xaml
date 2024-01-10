@@ -80,6 +80,7 @@
                        FontSize="14"/>
             <StackPanel Orientation="Horizontal">
                 <Border x:Name="brdOdorDisplay"
+                        Style="{StaticResource Element}"
                         VerticalAlignment="Center">
                     <StackPanel MinWidth="180">
                         <Image Width="100"
@@ -105,12 +106,20 @@
                         </TransformGroup>
                     </Image.RenderTransform>
                 </Image>
-                <Grid>
-                    <Image Width="128"
-                           gif:ImageBehavior.AnimatedSource="/Assets/images/dms.png"/>
-                    <ProgressBar x:Name="prbDmsProgress"
+                <Grid VerticalAlignment="Center">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Image x:Name="imgSnt" Grid.Row="0"
+                           Width="128"
+                           Source="/Assets/images/snt.png"/>
+                    <Image x:Name="imgDms" Grid.Row="1"
+                           Width="128"
+                           Source="/Assets/images/dms.png"/>
+                    <ProgressBar x:Name="prbDmsProgress" Grid.RowSpan="2"
                                  VerticalAlignment="Bottom"
-                                 Margin="4,0,4,10"
+                                 Margin="4,0,4,5"
                                  Height="3.5"
                                  Value="0"/>
                 </Grid>
@@ -124,7 +133,7 @@
 
                 <StackPanel>
                     <Border x:Name="brdML"
-                            BorderThickness="3"
+                            Style="{StaticResource Element}"
                             HorizontalAlignment="Center"
                             Margin="4">
                         <Grid>

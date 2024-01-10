@@ -1,12 +1,8 @@
-﻿using Smop.OdorDisplay.Packets;
-using Smop.PulseGen.Reproducer;
-using Smop.PulseGen.Utils;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace Smop.PulseGen.Pages;
 
@@ -23,12 +19,18 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     public void Start(ML.Communicator ml)
     {
-        _step = 0;
+        _proc = new Reproducer.Procedure(ml);
+        _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
+        _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
+        _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbDmsProgress.Value = e);
 
-        _ml = ml;
         ml.RecipeReceived += HandleRecipe;
 
-        _ionVision = App.IonVision!;
+        //imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
+        //imgSnt.Visibility = SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+
+        imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
+        imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
 
         tblRecipeName.Text = "";
         tblRMSQ.Text = "";
@@ -41,7 +43,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             grdChannels1.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
         }
 
-        DisplayRecipeInfo(new ML.Recipe("", 0, 0, _gases.Items.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
+        DisplayRecipeInfo(new ML.Recipe("", 0, 0, _proc.Gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
 
         //tblDmsStatus.Text = "-";
 
@@ -56,17 +58,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         None = 0,
         ML = 1,
         OdorDisplay = 2,
-        DMS = 4
+        ENose = 4
     }
 
-    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(Reproduction) + "Page");
-    static readonly Gases _gases = new();
+    Reproducer.Procedure? _proc;
 
-    readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
-    ML.Communicator? _ml;
-    IonVision.Communicator? _ionVision;
-
-    int _step = 0;
     ActiveElement _activeElement = ActiveElement.None;
 
     private void SetActiveElement(ActiveElement el)
@@ -101,9 +97,9 @@ public partial class Reproduction : Page, IPage<Navigation>
             imgGas.Visibility = Visibility.Hidden;
         }
 
-        if (_activeElement.HasFlag(ActiveElement.DMS))
+        if (_activeElement.HasFlag(ActiveElement.ENose))
         {
-            tblRecipeState.Text = "Scanning the produced odor";
+            tblRecipeState.Text = "Sniffing the produced odor with eNose";
 
             prbDmsProgress.Visibility = Visibility.Visible;
         }
@@ -120,70 +116,17 @@ public partial class Reproduction : Page, IPage<Navigation>
             imgGas.Visibility = Visibility.Visible;
         }
 
-        tblRMSQ.Visibility = _activeElement == ActiveElement.OdorDisplay ? Visibility.Hidden : Visibility.Visible;
+        tblRMSQ.Visibility = _activeElement == ActiveElement.OdorDisplay || _activeElement == ActiveElement.None ? Visibility.Visible : Visibility.Hidden;
     }
 
     private void HandleRecipe(object? sender, ML.Recipe recipe)
     {
         Dispatcher.Invoke(() =>
         {
-            _step++;
-            _nlog.Info(recipe.ToString());
-
             DisplayRecipeInfo(recipe);
+            _proc?.ExecuteRecipe(recipe);
 
-            // send command to OD
-            if (recipe.Channels != null)
-            {
-                var actuators = new List<Actuator>();
-                foreach (var channel in recipe.Channels)
-                {
-                    var valveCap = channel.Duration switch
-                    {
-                        >0 => KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantValve, channel.Duration * 1000),
-                        0 => ActuatorCapabilities.OdorantValveClose,
-                        _ => ActuatorCapabilities.OutputValveOpenPermanently,
-                    };
-                    var caps = new ActuatorCapabilities(
-                        valveCap,
-                        KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, channel.Flow)
-                    );
-                    if (channel.Temperature != null)
-                    {
-                        caps.Add(OdorDisplay.Device.Controller.ChassisTemperature, (float)channel.Temperature);
-                    }
-
-                    var actuator = new Actuator((OdorDisplay.Device.ID)channel.Id, caps);
-                    actuators.Add(actuator);
-                }
-
-                HandleOdorDisplayError(SendOdorDisplayRequest(new SetActuators(actuators.ToArray())), "send channel command");
-            }
-
-            SetActiveElement(ActiveElement.OdorDisplay);
-
-            // schedule new scan
-            if (!recipe.Finished)
-            {
-                DispatchOnce.Do(3, ScanAndSendToML);
-            }
-            else
-            {
-                SetActiveElement(ActiveElement.None);
-            }
-        });
-    }
-
-    private void ScanAndSendToML()
-    {
-        Task.Run(async () =>
-        {
-            var scan = await ScanGas();
-            if (scan != null)
-            {
-                _ml?.Publish(scan);
-                Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
-            }
+            SetActiveElement(recipe.Finished ? ActiveElement.None : ActiveElement.OdorDisplay);
         });
     }
 
@@ -193,7 +136,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         {
             tblRecipeName.Text = recipe.Name;
         }
-        tblRecipeState.Text = recipe.Finished ? $"Finished in {_step} steps" : $"In progress (step #{_step})";
+        tblRecipeState.Text = recipe.Finished ? $"Finished in {_proc?.CurrentStep} steps" : $"In progress (step #{_proc?.CurrentStep})";
         tblRMSQ.Text = $"r = {recipe.MinRMSE:N4}";
 
         grdChannels1.Children.Clear();
@@ -203,7 +146,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             foreach (var channel in recipe.Channels)
             {
                 var id = (OdorDisplay.Device.ID)channel.Id;
-                var str = _gases.Get(id)?.Name ?? id.ToString();
+                var str = _proc?.Gases.FirstOrDefault(gas => gas.ChannelID == id)?.Name ?? id.ToString();
                 if (channel.Flow >= 0)
                 {
                     str += $", {channel.Flow} ml/min";
@@ -229,101 +172,17 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
         }
 
-        btnQuit.Content = recipe.Finished ? "Continue" : "Interrupt";
+        btnQuit.Content = recipe.Finished ? "Finish" : "Interrupt";
     }
 
-    private async Task<IonVision.ScanResult?> ScanGas()
-    {
-        if (_ionVision == null)
-            return null;
-
-        Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.DMS));
-
-        var resp = HandleIonVisionError(await _ionVision.StartScan(), "StartScan");
-        if (!resp.Success)
-        {
-            DisplayDmsStatus("Failed to start scan.");
-            return null;
-        }
-
-        DisplayDmsStatus("Scanning...");
-
-        var waitForScanProgress = true;
-
-        do
-        {
-            await Task.Delay(1000);
-            var progress = HandleIonVisionError(await _ionVision.GetScanProgress(), "GetScanProgress");
-            var value = progress?.Value?.Progress ?? -1;
-
-            if (value >= 0)
-            {
-                waitForScanProgress = false;
-                DisplayDmsStatus($"Scanning... {value} %");
-                Dispatcher.Invoke(() => prbDmsProgress.Value = value);
-            }
-            else if (waitForScanProgress)
-            {
-                continue;
-            }
-            else
-            {
-                Dispatcher.Invoke(() => prbDmsProgress.Value = 100);
-                DisplayDmsStatus($"Scanning finished.");
-                break;
-            }
-
-        } while (true);
-
-        await Task.Delay(300);
-        var scan = HandleIonVisionError(await _ionVision.GetScanResult(), "GetScanResult").Value;
-        if (scan == null)
-        {
-            DisplayDmsStatus("Failed to retrieve the scanning result.");
-        }
-
-        return scan;
-    }
-
-    private void DisplayDmsStatus(string line)
-    {
-        //Dispatcher.Invoke(() => tblDmsStatus.Text = line);
-    }
-
-    private OdorDisplay.Result SendOdorDisplayRequest(Request request)
-    {
-        _nlog.Info($"Sent: {request}");
-
-        var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
-
-        if (ack != null)
-            _nlog.Info($"Received: {ack}");
-        if (result.Error == OdorDisplay.Error.Success && response != null)
-            _nlog.Info($"Received: {response}");
-
-        return result;
-    }
-
-    private void HandleOdorDisplayError(OdorDisplay.Result odorDisplayResult, string action)
-    {
-        if (odorDisplayResult.Error != OdorDisplay.Error.Success)
-        {
-            Dialogs.MsgBox.Error(Title, $"Odor Display: Cannot {action}:\n{odorDisplayResult.Reason}");
-        }
-    }
-
-    private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
-    {
-        var error = !response.Success ? response.Error : "OK";
-        _nlog.Error($"{action}: {error}");
-        return response;
-    }
 
     private void CleanUp()
     {
-        if (_ml != null)
+        _proc?.ShutDownFlows();
+
+        if (App.ML != null)
         {
-            _ml.RecipeReceived -= HandleRecipe;
+            App.ML.RecipeReceived -= HandleRecipe;
         }
     }
 

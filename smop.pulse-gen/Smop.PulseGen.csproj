@@ -49,6 +49,7 @@
     <None Remove="Assets\images\od.png" />
     <None Remove="Assets\images\processing.gif" />
     <None Remove="Assets\images\processing.png" />
+    <None Remove="Assets\images\snt.png" />
     <None Remove="Assets\images\wait-small.gif" />
     <None Remove="Assets\images\wait.gif" />
   </ItemGroup>
@@ -75,6 +76,7 @@
     <Resource Include="Assets\images\processing.gif" />
     <Resource Include="Assets\images\processing.png" />
     <Resource Include="Assets\images\question.png" />
+    <Resource Include="Assets\images\snt.png" />
     <Resource Include="Assets\images\wait-small.gif" />
     <Resource Include="Assets\images\wait.gif" />
   </ItemGroup>

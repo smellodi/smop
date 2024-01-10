@@ -40,12 +40,12 @@ internal class TcpSimulator : Simulator
 
     private void ServerConnected(object? sender, ConnectionEventArgs args)
     {
-        ScreenLogger.Print("[CLIENT] connected");
+        ScreenLogger.Print("[MlSimul] connected");
     }
 
     private void ServerDisconnected(object? sender, DisconnectionEventArgs args)
     {
-        ScreenLogger.Print("[CLIENT] disconnected");
+        ScreenLogger.Print("[MlSimul] disconnected");
     }
 
     private SyncResponse SyncRequestReceived(SyncRequest req)

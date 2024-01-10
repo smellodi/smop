@@ -225,5 +225,29 @@ namespace Smop.PulseGen.Properties {
                 this["Reproduction_Odors"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool Reproduction_UsePID {
+            get {
+                return ((bool)(this["Reproduction_UsePID"]));
+            }
+            set {
+                this["Reproduction_UsePID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public float Reproduction_SniffingDelay {
+            get {
+                return ((float)(this["Reproduction_SniffingDelay"]));
+            }
+            set {
+                this["Reproduction_SniffingDelay"] = value;
+            }
+        }
     }
 }

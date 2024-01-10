@@ -47,14 +47,14 @@ internal class TcpServer : Server
     private void ClientConnected(object? sender, ConnectionEventArgs args)
     {
         _client = args.Client.Guid;
-        ScreenLogger.Print("[SERVER] connected: " + args.Client.ToString());
+        ScreenLogger.Print("[MlServer] connected: " + args.Client.ToString());
         StatusChanged?.Invoke(this, Status.Connected);
     }
 
     private void ClientDisconnected(object? sender, DisconnectionEventArgs args)
     {
         _client = Guid.Empty;
-        ScreenLogger.Print("[SERVER] disconnected: " + args.Client.ToString() + ": " + args.Reason.ToString());
+        ScreenLogger.Print("[MlServer] disconnected: " + args.Client.ToString() + ": " + args.Reason.ToString());
         StatusChanged?.Invoke(this, Status.Disconnected);
     }
 

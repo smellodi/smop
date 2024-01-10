@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Smop.OdorDisplay.Packets;
 
 namespace Smop.PulseGen;
 
@@ -232,6 +233,11 @@ public partial class MainWindow : Window
         settings.Save();
 
         _pulsePage.Dispose();
+
+        if (OdorDisplay.CommPort.Instance.IsOpen)
+        {
+            OdorDisplay.CommPort.Instance.Request(new SetMeasurements(SetMeasurements.Command.Stop), out Ack? _, out Response? _);
+        }
 
         NLog.LogManager.Shutdown();
 

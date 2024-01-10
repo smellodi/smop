@@ -19,7 +19,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public bool HasOutputConnection => _odorDisplay.IsOpen;
-    public bool HasOutputAndInputConnections => _odorDisplay.IsOpen && _ionVision != null;
+    public bool HasOutputAndInputConnections => _odorDisplay.IsOpen && (_ionVision != null || _smellInsp.IsOpen);
 
     public Connect()
     {

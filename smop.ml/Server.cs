@@ -18,7 +18,7 @@ internal abstract class Server : IDisposable
         if (IsClientConnected)
         {
             var data = JsonSerializer.Serialize(packet, _serializerOptions);
-            ScreenLogger.Print("[SERVER] sent: " + data.Max(700));
+            ScreenLogger.Print("[MlServer] sent: " + data.Max(700));
             await SendTextAsync(data);
         }
     }
@@ -35,7 +35,7 @@ internal abstract class Server : IDisposable
 
     protected void ParseJson(string json)
     {
-        ScreenLogger.Print("[SERVER] received: " + json.Max(700));
+        ScreenLogger.Print("[MlServer] received: " + json.Max(700));
 
         try
         {
@@ -48,7 +48,7 @@ internal abstract class Server : IDisposable
             }
             else
             {
-                throw new Exception($"[SERVER] unknown packet type: {packet?.Type}");
+                throw new Exception($"[MlServer] unknown packet type: {packet?.Type}");
             }
         }
         catch (Exception ex)

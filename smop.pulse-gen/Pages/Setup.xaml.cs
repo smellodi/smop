@@ -232,14 +232,14 @@ public partial class Setup : Page, IPage<object?>
 
     private async void Start_Click(object sender, RoutedEventArgs e)
     {
-        _procedure.Finalize();
-
         if (_storage.SetupType == SetupType.OdorReproduction)
         {
             if (_mlIsConnected && App.ML != null)
             {
                 btnStart.IsEnabled = false;
+
                 await _procedure.ConfigureML();
+                _procedure.Finalize();
 
                 UpdateUI();
 

@@ -1,9 +1,15 @@
-# SMELLODI odor printer (SMOP): Pulse generator
+# SMELLODI odor printer (SMOP): Main App
+
+Implements the following procedures:
+- Pulse generator
+- Odor reproduction using ML
 
 ## Dependencies
 
 NuGet packages:
 - ScottPlot.WPF
+- NLog
+- WpfAnimatedGif 
 
 ## Connecting to devices
 
@@ -11,6 +17,11 @@ NuGet packages:
 
 Connection to the odor display device is obligatory. The software may suggest a COM port to connect to, 
 but it is user's responsibility to figure out what COM port is the correct one.
+
+### Smell Inspector
+
+Users must select the proper COM port. Note that it is not necessary to connect to Smell Inspector 
+to proceed to the next step.
 
 ### IonVision
 
@@ -27,16 +38,24 @@ running the app for the the first time. The parameters are:
 Users can load any other JSON file containing these fields using the `...` button on the Connection page.
 Note that it is not necessary to connect to IonVision to proceed to the next step.
 
-### Smell Inspector
-
-Users must select the proper COM port. Note that it is not necessary to connect to Smell Inspector 
-to proceed to the next step.
-
 ## Testing without real devices connected
 
-Press F2 on the Connection page to start the simulation mode.
+Press F2 on the Connection page to start the simulation mode for all modules. To specify the simulation mode 
+for a single device, click on the device selection control and press F2. The Machine Learning module can be 
+simulated if F2 is pressed on the Setup page.
 
-## Setup file
+## Pulse Generator
+
+IonVision device is automatically initialized when proceeding to the *Setup* page.
+
+**NOTE** IonVision initialization may end up with the parameter not being loaded. In this case, please load the 
+parameter manually from the IonVision device interface.
+
+A file with pulse generation settings must be either created or loaded from a file before continuing. 
+The corresponding buttons can be found next to the current setup file name. The order of pulses will be randomized
+if the "Randomize pulse order" checkox is checked.
+
+### Setup file
 
 The setup file (plain text format) containing generator parameters can be selected in the Setup page.
 The file must contain description of pulses grouped into sessions.
@@ -79,14 +98,29 @@ Here, the valves of channels `1` and `4` will be opened when the pulse starts, a
 70 nccm and 50 nccm respectively. All other channels will be inactive, except the channel `2` that will remain 
 closed, but its MFC will be programmed to blow with 60 nccm into the waste.
 
-## Logged data
+### Logged data
 
-After the pulse generating script finishes its work, all log files will be saved to a folder with the current 
+After the app finishes its work, all log files will be saved to a folder with the current 
 timestamp set as its name, like `2023-07-26 14-27-12Z`.
 The parent folder is `Documents` by default, but users can change it when prompted to save data.
 
 List of timestamped events (actions, like valve opened and closed) will be recorded into `events.txt` file.
 Data from the odor display will be stored in `odor_display.txt` file.
+
 If IonVision was connected, then `dms.json` file will contain an array of DMS measurements with the comment 
 set to the pulse channels description. If Smell Inspector was connected, then `snt.json` file will contain 
 an array of SNT measurements, 66 values per measurement.
+
+## Odor Reproductor
+
+Either IonVision or Smell Inspestor will be used as eNose to stream measurement data to the Machine Learning module.
+Note that if both devices were connected on the *Connection* page, then Smell Inspector will be ignored.
+
+Odor names and their initial flow rates should be specified on the *Setup* page before measuring the target odor.
+Once this is done, the taget odor measurement can be started upon clicking the "Measure the target odor" button 
+that becomes visible after IonVision is initialized with the project and its parameter.
+
+**NOTE** IonVision initialization may end up with the parameter not being loaded. In this case, please load the 
+parameter manually from the IonVision device interface.
+
+Click the "Start" button to feed the measured odor tothe Machine Learning module and start the odor reproduction loop.

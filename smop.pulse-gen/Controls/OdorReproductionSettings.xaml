@@ -36,7 +36,17 @@
         </UserControl>
 
         <Label Style="{StaticResource Section}"
-               Content="Gases:"/>
+               Content="eNose settings:"/>
+        <UserControl x:Name="uscSniffingDelay"
+                    Style="{StaticResource Setting}"
+                    Tag="Sniffing delay, seconds">
+            <TextBox x:Name="txbSniffingDelay" Grid.Column="0"
+                    FontSize="14"
+                    TextChanged="SniffingDelay_TextChanged"/>
+        </UserControl>
+
+        <Label Style="{StaticResource Section}"
+               Content="Odors:"/>
         <StackPanel x:Name="stpGases">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -46,20 +56,10 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Column="0">ID</Label>
                 <Label Grid.Column="1">Name</Label>
-                <Label Grid.Column="2" HorizontalContentAlignment="Right">Initial flow, ml/min</Label>
+                <Label Grid.Column="2" HorizontalContentAlignment="Right">Target flow, ml/min</Label>
             </Grid>
             <!-- to be filled in code -->
         </StackPanel>
-
-        <Label Style="{StaticResource Section}"
-               Content="Procedure settings:"/>
-        <UserControl x:Name="uscSniffingDelay"
-                    Style="{StaticResource Setting}"
-                    Tag="eNose sniffing delay, s">
-            <TextBox x:Name="txbSniffingDelay" Grid.Column="0"
-                    FontSize="14"
-                    TextChanged="SniffingDelay_TextChanged"/>
-        </UserControl>
 
     </StackPanel>
 </UserControl>

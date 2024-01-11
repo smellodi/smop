@@ -117,7 +117,7 @@
                         Visibility="Collapsed"
                         Margin="0,8,0,0"
                         VerticalAlignment="Bottom"
-                        Content="Scan the target odor"
+                        Content="Measure the target odor"
                         Click="MeasureSample_Click"/>
                 </Grid>
             </Border>

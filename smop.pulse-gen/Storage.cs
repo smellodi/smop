@@ -20,6 +20,8 @@ public enum SimulationTarget
     All = 15
 }
 
+public enum SetupType { Undefined, PulseGenerator, OdorReproduction }
+
 /// <summary>
 /// Cross-app storage, mainly used to share the app state
 /// </summary>
@@ -31,7 +33,7 @@ public class Storage : INotifyPropertyChanged
 
     // Variables
 
-    public Setup.Type SetupType
+    public SetupType SetupType
     {
         get => _setupType;
         set
@@ -39,8 +41,8 @@ public class Storage : INotifyPropertyChanged
             _setupType = value;
             _setupPage = _setupType switch
             {
-                Setup.Type.OdorReproduction => Navigation.OdorReproductionSetup,
-                Setup.Type.PulseGenerator => Navigation.PulseGeneratorSetup,
+                SetupType.OdorReproduction => Navigation.OdorReproductionSetup,
+                SetupType.PulseGenerator => Navigation.PulseGeneratorSetup,
                 _ => throw new Exception($"Setup type {_setupType} is not supported")
             };
         }
@@ -54,8 +56,8 @@ public class Storage : INotifyPropertyChanged
             _setupPage = value;
             _setupType = _setupPage switch
             {
-                Navigation.OdorReproductionSetup => Setup.Type.OdorReproduction,
-                Navigation.PulseGeneratorSetup => Setup.Type.PulseGenerator,
+                Navigation.OdorReproductionSetup => SetupType.OdorReproduction,
+                Navigation.PulseGeneratorSetup => SetupType.PulseGenerator,
                 _ => throw new Exception($"Setup type {_setupPage} is not supported")
             };
         }
@@ -176,7 +178,7 @@ public class Storage : INotifyPropertyChanged
     const double ZOOM_MAX = 3.0;
     const double ZOOM_STEP = 0.1;
 
-    Setup.Type _setupType = Setup.Type.Undefined;
+    SetupType _setupType = SetupType.Undefined;
     Navigation _setupPage = Navigation.Exit;
 
     SimulationTarget _simulating = SimulationTarget.Nothing;

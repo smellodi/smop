@@ -4,9 +4,9 @@ using Smop.PulseGen.Controls;
 using System;
 using System.Threading.Tasks;
 
-namespace Smop.PulseGen.Pages;
+namespace Smop.PulseGen.Indicators;
 
-internal static class IndicatorFactory
+internal static class Factory
 {
     public record class SmellInspChannel(string Type, string Units, int Count);
     public static SmellInspChannel[] SmellInspChannels => new SmellInspChannel[] {

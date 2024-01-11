@@ -14,13 +14,13 @@ namespace Smop.PulseGen.Pages;
 
 public partial class Setup : Page, IPage<object?>
 {
-    public enum Type { Undefined, PulseGenerator, OdorReproduction }
-
     public event EventHandler<object?>? Next;
 
     public Setup()
     {
         InitializeComponent();
+
+        _indicatorController = new Indicators.Controller(lmsGraph);
 
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
 
@@ -29,13 +29,13 @@ public partial class Setup : Page, IPage<object?>
         Application.Current.Exit += (s, e) => Close();
     }
 
-    public void Init(Type type)
+    public void Init(SetupType type)
     {
-        pulseGeneratorSettings.Visibility = type == Type.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
-        odorReproductionSettings.Visibility = type == Type.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
+        pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
+        odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
         stpMLStatus.Visibility = odorReproductionSettings.Visibility;
 
-        if (type == Type.OdorReproduction && App.ML == null)
+        if (type == SetupType.OdorReproduction && App.ML == null)
         {
             App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
             App.ML.StatusChanged += ML_StatusChanged;
@@ -81,13 +81,15 @@ public partial class Setup : Page, IPage<object?>
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-    readonly Dictionary<string, ChannelIndicator> _indicators = new();
+    readonly Indicators.Controller _indicatorController;
+
+    //IND readonly Dictionary<string, ChannelIndicator> _indicators = new();
 
     bool _isInitilized = false;
     bool _ionVisionIsReady = false;
 
-    ChannelIndicator? _currentIndicator = null;
-    int _smellInspResistor = 0;
+    //IND ChannelIndicator? _currentIndicator = null;
+    //IND int _smellInspResistor = 0;
     List<SmellInsp.Data> _sntSamples = new();
 
     List<string> _ionVisionLog = new();
@@ -100,7 +102,7 @@ public partial class Setup : Page, IPage<object?>
     Gases _gases = new Gases();
 
     #region Indicators
-
+    /*IND
     private void ClearIndicators()
     {
         foreach (var chi in _indicators.Values)
@@ -218,16 +220,16 @@ public partial class Setup : Page, IPage<object?>
             }
         }
     }
-
+    */
     #endregion
 
     private void UpdateUI()
     {
-        if (_storage.SetupType == Type.PulseGenerator)
+        if (_storage.SetupType == SetupType.PulseGenerator)
         {
             btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) && pulseGeneratorSettings.Setup != null;
         }
-        else if (_storage.SetupType == Type.OdorReproduction)
+        else if (_storage.SetupType == SetupType.OdorReproduction)
         {
             /* BOTH ENOSES
             bool isDmsReady = (_sampleScan != null && _paramDefinition != null) || App.IonVision == null;
@@ -508,7 +510,7 @@ public partial class Setup : Page, IPage<object?>
         {
             await Task.Run(() => Dispatcher.Invoke(() =>
             {
-                UpdateIndicators(data);
+                _indicatorController.Update(data);
             }));
         }
         catch (TaskCanceledException) { }
@@ -520,7 +522,7 @@ public partial class Setup : Page, IPage<object?>
         {
             await Task.Run(() => Dispatcher.Invoke(() =>
             {
-                UpdateIndicators(data);
+                _indicatorController.Update(data);
             }));
         }
         catch (TaskCanceledException) { }
@@ -552,7 +554,7 @@ public partial class Setup : Page, IPage<object?>
         _odorDisplay.Data += OdorDisplay_Data;
         _smellInsp.Data += SmellInsp_Data;
 
-        ClearIndicators();
+        _indicatorController.Clear();
 
         if (Focusable)
         {
@@ -573,7 +575,7 @@ public partial class Setup : Page, IPage<object?>
         tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
         tabIonVision.IsEnabled = App.IonVision != null;
 
-        await CreateIndicators();
+        await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 
         var odController = new OdorDisplayController();
         HandleOdorDisplayError(odController.Init(), "initialize");
@@ -615,23 +617,6 @@ public partial class Setup : Page, IPage<object?>
         if (e.Key == Key.F4)
         {
             Start_Click(this, new RoutedEventArgs());
-        }
-    }
-
-    private void ChannelIndicator_MouseDown(object? sender, MouseButtonEventArgs e)
-    {
-        var chi = sender as ChannelIndicator;
-        if (!chi?.IsActive ?? false)
-        {
-            if (_currentIndicator != null)
-            {
-                _currentIndicator.IsActive = false;
-            }
-
-            _currentIndicator = chi;
-            _currentIndicator!.IsActive = true;
-
-            ResetGraph(chi);
         }
     }
 
@@ -681,7 +666,7 @@ public partial class Setup : Page, IPage<object?>
 
     private async void Start_Click(object sender, RoutedEventArgs e)
     {
-        if (_storage.SetupType == Type.OdorReproduction)
+        if (_storage.SetupType == SetupType.OdorReproduction)
         {
             _gases.Save();
 
@@ -694,7 +679,7 @@ public partial class Setup : Page, IPage<object?>
                 Next?.Invoke(this, App.ML);
             }
         }
-        else if (_storage.SetupType == Type.PulseGenerator)
+        else if (_storage.SetupType == SetupType.PulseGenerator)
         {
             var pulseGenSetup = pulseGeneratorSettings.Setup;
 

@@ -46,8 +46,6 @@
             <CheckBox x:Name="chkRandomize"
                       FontSize="16"
                       VerticalAlignment="Center"
-                      HorizontalAlignment="Right"
-                      Margin="0,0,-16,0"
                       Checked="Randomize_CheckedChanged"
                       Unchecked="Randomize_CheckedChanged"/>
         </UserControl>

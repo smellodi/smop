@@ -142,7 +142,7 @@ do
 
     Console.WriteLine($"Result: {openResult}\n");
 
-    if (openResult.Error == Error.Success)
+    if (openResult.Error == Smop.Comm.Error.Success)
         break;
 
 } while (true);
@@ -182,7 +182,7 @@ while (true)
     Console.WriteLine($"Result:   {result}");
     if (ack != null)
         Console.WriteLine($"Received: {ack}");
-    if (result.Error == Error.Success && response != null)
+    if (result.Error == Smop.Comm.Error.Success && response != null)
         Console.WriteLine("  " + response);
 
 #if !SHOW_PORT_DEBUG

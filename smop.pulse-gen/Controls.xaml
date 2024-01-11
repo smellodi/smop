@@ -190,6 +190,8 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Padding" Value="8"/>
+        <Setter Property="ToolTipService.VerticalOffset" Value="-48"/>
+        <Setter Property="ToolTipService.HorizontalOffset" Value="-12"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">

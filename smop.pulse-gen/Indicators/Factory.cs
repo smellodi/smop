@@ -19,7 +19,7 @@ internal static class Factory
     {
         var queryDevices = new QueryDevices();
         var queryResult = CommPort.Instance.Request(queryDevices, out Ack? ack, out Response? response);
-        if (queryResult.Error == Error.Success)
+        if (queryResult.Error == Comm.Error.Success)
         {
             await CreateIndicators(response as Devices, callback);
         }
@@ -77,7 +77,7 @@ internal static class Factory
         // Read the capabilities
         var query = new QueryCapabilities(deviceID);
         var result = CommPort.Instance.Request(query, out Ack? _, out Response? response);
-        if (result.Error != Error.Success || response is not Capabilities caps)
+        if (result.Error != Comm.Error.Success || response is not Capabilities caps)
         {
             return;
         }

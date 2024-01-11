@@ -6,17 +6,17 @@ namespace Smop.PulseGen.Generator;
 
 internal class OdorDisplayController
 {
-    public OdorDisplay.Result Init()
+    public Comm.Result Init()
     {
         return Send(new SetSystem(true, true));
     }
 
-    public OdorDisplay.Result Start()
+    public Comm.Result Start()
     {
         return Send(new SetMeasurements(SetMeasurements.Command.Start));
     }
 
-    public OdorDisplay.Result SetHumidity(float value)
+    public Comm.Result SetHumidity(float value)
     {
         var humidifierFlow = Device.MaxBaseAirFlowRate * value / 100; // l/min
         var dilutionAirFlow = Device.MaxBaseAirFlowRate - humidifierFlow;  // l/min
@@ -31,7 +31,7 @@ internal class OdorDisplayController
         }));
     }
 
-    public OdorDisplay.Result SetFlows(PulseChannelProps[] channels)
+    public Comm.Result SetFlows(PulseChannelProps[] channels)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -45,7 +45,7 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public OdorDisplay.Result OpenChannels(PulseChannelProps[] channels, float durationSec)
+    public Comm.Result OpenChannels(PulseChannelProps[] channels, float durationSec)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -62,7 +62,7 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public OdorDisplay.Result CloseChannels(PulseChannelProps[] channels)
+    public Comm.Result CloseChannels(PulseChannelProps[] channels)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -82,7 +82,7 @@ internal class OdorDisplayController
 
     readonly CommPort _odorDisplay = CommPort.Instance;
 
-    private OdorDisplay.Result Send(Request request)
+    private Comm.Result Send(Request request)
     {
         _nlog.Info($"Sent: {request}");
 
@@ -90,7 +90,7 @@ internal class OdorDisplayController
 
         if (ack != null)
             _nlog.Info($"Received: {ack}");
-        if (result.Error == Error.Success && response != null)
+        if (result.Error == Comm.Error.Success && response != null)
             _nlog.Info($"Received: {response}");
 
         return result;

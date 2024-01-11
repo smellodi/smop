@@ -53,41 +53,43 @@
             </Grid.RowDefinitions>
 
             <Label Grid.Row="0" Grid.Column="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Right"
-                Content="Odor Display"/>
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Content="Odor Display"/>
             <ComboBox x:Name="cmbOdorDisplayCommPort" Grid.Row="0" Grid.Column="1"
-                VerticalContentAlignment="Center"
-                HorizontalContentAlignment="Center"
-                SelectionChanged="Port_SelectionChanged"/>
+                      VerticalContentAlignment="Center"
+                      HorizontalContentAlignment="Center"
+                      SelectionChanged="Port_SelectionChanged"/>
             <Button x:Name="btnConnectToOdorDisplay" Grid.Row="0" Grid.Column="2"
-                IsEnabled="{Binding SelectedItem, Converter={StaticResource obj2bool}, ElementName=cmbOdorDisplayCommPort}"
-                Click="ConnectToOdorDisplay_Click">
+                    ToolTip="Connect to Odor Display"
+                    IsEnabled="{Binding SelectedItem, Converter={StaticResource obj2bool}, ElementName=cmbOdorDisplayCommPort}"
+                    Click="ConnectToOdorDisplay_Click">
                 <Image Source="/Assets/images/button-red.png"/>
             </Button>
             <Label x:Name="lblOdorDisplayInfo" Grid.Row="0" Grid.Column="3"
-                VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"/>
 
             <Label Grid.Row="2" Grid.Column="0"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Right"
-                Content="Smell Inspector"/>
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Content="Smell Inspector"/>
             <ComboBox x:Name="cmbSmellInspCommPort" Grid.Row="2" Grid.Column="1"
-                VerticalContentAlignment="Center"
-                HorizontalContentAlignment="Center"
-                SelectionChanged="Port_SelectionChanged"/>
+                      VerticalContentAlignment="Center"
+                      HorizontalContentAlignment="Center"
+                      SelectionChanged="Port_SelectionChanged"/>
             <Button x:Name="btnConnectToSmellInsp" Grid.Row="2" Grid.Column="2"
-                IsEnabled="{Binding SelectedItem, Converter={StaticResource obj2bool}, ElementName=cmbSmellInspCommPort}"
-                Click="ConnectToSmellInsp_Click">
+                    ToolTip="Connect to Smell Inspector"
+                    IsEnabled="{Binding SelectedItem, Converter={StaticResource obj2bool}, ElementName=cmbSmellInspCommPort}"
+                    Click="ConnectToSmellInsp_Click">
                 <Image Source="/Assets/images/button-red.png"/>
             </Button>
             <Label x:Name="lblSmellInspInfo" Grid.Row="2" Grid.Column="3"
-                VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"/>
 
             <Label Grid.Row="4" Grid.Column="0" 
-                VerticalAlignment="Center"
-                HorizontalAlignment="Right"
-                Content="Ion Vision"/>
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Content="Ion Vision"/>
             <Grid Grid.Row="4" Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -95,40 +97,43 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBox x:Name="txbIonVisionIP" Grid.Column="0"
-                    IsReadOnly="True"/>
+                         IsReadOnly="True"/>
                 <Button x:Name="btnChooseIonVisionSetupFile" Grid.Column="1"
-                    Margin="0"
-                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-                    Click="ChooseIonVisionSetupFile_Click"
-                    Content="..."/>
+                        Margin="0"
+                        ToolTip="Select an IonVision settings file"
+                        Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
+                        Click="ChooseIonVisionSetupFile_Click"
+                        Content="..."/>
                 <Button x:Name="btnEditIonVisionSetup" Grid.Column="2"
-                    Margin="2,0,0,0"
-                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-                    Click="EditIonVisionSetup_Click">
+                        Margin="2,0,0,0"
+                        ToolTip="Edit the IonVision settings file"
+                        Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
+                        Click="EditIonVisionSetup_Click">
                     <Image Source="/Assets/images/edit.png"/>
                 </Button>
             </Grid>
             <Button x:Name="btnConnectToIonVision" Grid.Row="4" Grid.Column="2"
-                Click="ConnectToIonVision_Click">
+                    ToolTip="Connect to IonVision"
+                    Click="ConnectToIonVision_Click">
                 <Image Source="/Assets/images/button-red.png"/>
             </Button>
             <Label x:Name="lblIonVisionInfo" Grid.Row="4" Grid.Column="3"
-                VerticalAlignment="Center"/>
+                   VerticalAlignment="Center"/>
 
             <StackPanel Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2"
                         Margin="0,16,0,0">
                 <Button x:Name="btnGeneratePulses" 
-                    Margin="0,4"
-                    Width="Auto"
-                    IsEnabled="{Binding HasOutputConnection, Mode=OneWay}"
-                    Content="Generate pulses"
-                    Click="GeneratePulses_Click"/>
+                        Margin="0,4"
+                        Width="Auto"
+                        IsEnabled="{Binding HasOutputConnection, Mode=OneWay}"
+                        Content="Generate pulses"
+                        Click="GeneratePulses_Click"/>
                 <Button x:Name="btnReproduceOdor"
-                    Margin="0,4"
-                    Width="Auto"
-                    IsEnabled="{Binding HasOutputAndInputConnections, Mode=OneWay}"
-                    Content="Reproduce odor"
-                    Click="ReproduceOdor_Click"/>
+                        Margin="0,4"
+                        Width="Auto"
+                        IsEnabled="{Binding HasOutputAndInputConnections, Mode=OneWay}"
+                        Content="Reproduce odor"
+                        Click="ReproduceOdor_Click"/>
             </StackPanel>
         </Grid>
 

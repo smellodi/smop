@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Error = Smop.Comm.Error;
+using Result = Smop.Comm.Result;
 
 namespace Smop.OdorDisplay;
 

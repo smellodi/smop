@@ -261,7 +261,7 @@ public class SetupProcedure
 
         if (ack != null)
             _nlog.Info($"Received: {ack}");
-        if (result.Error == OdorDisplay.Error.Success && response != null)
+        if (result.Error == Comm.Error.Success && response != null)
             _nlog.Info($"Received: {response}");
 
         return response;
@@ -327,9 +327,9 @@ public class SetupProcedure
         LogSnt?.Invoke(this, new LogHanddlerArgs($"Ready to start."));
     }
 
-    private void HandleOdorDisplayError(OdorDisplay.Result odorDisplayResult, string action)
+    private void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
     {
-        if (odorDisplayResult.Error != OdorDisplay.Error.Success)
+        if (odorDisplayResult.Error != Comm.Error.Success)
         {
             Dialogs.MsgBox.Error("Odor Display", $"Cannot {action}:\n{odorDisplayResult.Reason}");
         }

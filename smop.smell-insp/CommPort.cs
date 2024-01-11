@@ -3,14 +3,14 @@ using System.IO.Ports;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Error = Smop.OdorDisplay.Error;
-using Result = Smop.OdorDisplay.Result;
+using Error = Smop.Comm.Error;
+using Result = Smop.Comm.Result;
 
 namespace Smop.SmellInsp;
 
 /// <summary>
 /// Communication over COM port with Smell Inpspector device
-/// Note that this is a simpliefied version of <see cref="Smop.OdorDisplay.CommPort"/>
+/// Note that this is a simpliefied version of <see cref="OdorDisplay.CommPort"/>
 /// </summary>
 public class CommPort
 {

@@ -71,7 +71,7 @@ do
 
     Console.WriteLine($"Result: {openResult}\n");
 
-    if (openResult.Error == Smop.OdorDisplay.Error.Success)
+    if (openResult.Error == Smop.Comm.Error.Success)
         break;
 
 } while (true);

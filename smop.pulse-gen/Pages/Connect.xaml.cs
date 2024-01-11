@@ -100,62 +100,60 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     private void ConnectToOdorDispay(string? address)
     {
-        if (!_odorDisplay.IsOpen)
+        if (_odorDisplay.IsOpen)
+            return;
+
+        Comm.Result result = _odorDisplay.Open(address);
+
+        if (result.Error != Comm.Error.Success)
         {
-            OdorDisplay.Result result = _odorDisplay.Open(address);
+            MsgBox.Error(Title, "Cannot open the port");
+        }
+        else
+        {
+            btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
 
-            if (result.Error != OdorDisplay.Error.Success)
+            var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
+            if (queryResult.Error == Comm.Error.Success && response is OdorDisplay.Packets.Version version)
             {
-                MsgBox.Error(Title, "Cannot open the port");
+                lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
             }
-            else
-            {
-                btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
 
-                var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
-                if (queryResult.Error == OdorDisplay.Error.Success && response is OdorDisplay.Packets.Version version)
-                {
-                    lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
-                }
+            //_odorDisplay.Debug += Comm_DebugAsync;
 
-                //_odorDisplay.Debug += Comm_DebugAsync;
-
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
         }
     }
 
     private void ConnectToSmellInsp(string? address)
     {
-        if (!_smellInsp.IsOpen)
+        if (_smellInsp.IsOpen)
+            return;
+
+        var result = _smellInsp.Open(address);
+
+        if (result.Error != Comm.Error.Success)
         {
-            var result = _smellInsp.Open(address);
+            MsgBox.Error(Title, "Cannot open the port");
+        }
+        else
+        {
+            btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
 
-            if (result.Error != Smop.OdorDisplay.Error.Success)
-            {
-                MsgBox.Error(Title, "Cannot open the port");
-            }
-            else
-            {
-                btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
+            var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
+            lblSmellInspInfo.Content = $"Status: {queryResult.Reason}";
 
-                var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
-                lblSmellInspInfo.Content = $"Status: {queryResult.Reason}";
+            //_smellInsp.Debug += Comm_DebugAsync;
 
-                //_smellInsp.Debug += Comm_DebugAsync;
-
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
         }
     }
 
     private async Task ConnectToIonVisionAsync()
     {
         if (_ionVision != null)
-        {
             return;
-        }
 
         _ionVision = new IonVision.Communicator(IonVisionSetupFilename, _storage.Simulating.HasFlag(SimulationTarget.IonVision));
 

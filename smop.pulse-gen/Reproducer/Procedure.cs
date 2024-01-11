@@ -36,11 +36,14 @@ public class Procedure
 
     public void ShutDownFlows()
     {
-        var actuators = Gases.Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
-            ActuatorCapabilities.OdorantValveClose,
-            KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0.0f)
-        )));
-        SendOdorDisplayRequest(new SetActuators(actuators.ToArray()));
+        if (_odorDisplay.IsOpen)
+        {
+            var actuators = Gases.Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
+                ActuatorCapabilities.OdorantValveClose,
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0.0f)
+            )));
+            SendOdorDisplayRequest(new SetActuators(actuators.ToArray()));
+        }
 
         if (Properties.Settings.Default.Reproduction_UsePID)
         {

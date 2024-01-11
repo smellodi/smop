@@ -175,7 +175,6 @@ public partial class Reproduction : Page, IPage<Navigation>
         btnQuit.Content = recipe.Finished ? "Return" : "Interrupt";
     }
 
-
     private void CleanUp()
     {
         _proc?.ShutDownFlows();

@@ -48,8 +48,11 @@ public class SetupProcedure
 
     public void ShutDown()
     {
-        var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Stop);
-        SendOdorDisplayRequest(queryMeasurements);
+        if (_odorDisplay.IsOpen)
+        {
+            var queryMeasurements = new SetMeasurements(SetMeasurements.Command.Stop);
+            SendOdorDisplayRequest(queryMeasurements);
+        }
     }
 
     public void InitializeOdorPrinter()

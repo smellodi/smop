@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="Smop.MainApp.Controls.WaitingInstruction"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Smop.MainApp.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="250">
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="lblInstruction" Grid.Row="0"
+                   Margin="0,8"
+                   FontSize="16"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"
+                   Text="{Binding Text}"/>
+        <ProgressBar x:Name="prbProgress" Grid.Row="1"
+                     Height="2"
+                     BorderBrush="{StaticResource BrushInput}"
+                     Foreground="{StaticResource BrushPanel}"
+                     Visibility="Hidden"/>
+        <!--StackPanel HorizontalAlignment="Center">
+            <TextBlock x:Name="lblInstruction"
+                       Margin="0,8"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       Text="{Binding Text}"/>
+            <ProgressBar x:Name="prbProgress"
+                         Height="2"
+                         MinWidth="100"
+                         BorderBrush="{StaticResource BrushInput}"
+                         Foreground="{StaticResource BrushPanel}"
+                         Visibility="Hidden"/>
+        </StackPanel-->
+    </Grid>
+</UserControl>

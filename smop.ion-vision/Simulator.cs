@@ -263,11 +263,11 @@ internal class Simulator : IMinimalAPI
     readonly Random _rnd = new();
 
     readonly Project[] _projects = new Project[] {
-            SimulatedData.Project,
+            SimulatedData.Project1,
             SimulatedData.Project2
         };
     readonly Parameter[] _parameters = new Parameter[] {
-            SimulatedData.Parameter,
+            SimulatedData.Parameter1,
             SimulatedData.Parameter2,
         };
 

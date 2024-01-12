@@ -19,9 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.SmellInsp", "smop.smel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.SmellInsp", "test.smell-insp\Test.SmellInsp.csproj", "{5C58AF44-B605-4B77-B354-78CEF28D9180}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.PulseGen", "smop.pulse-gen\Smop.PulseGen.csproj", "{7FF484CC-CCA5-43DD-AEB3-D531ECDF1F71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smop.MainApp", "smop.main-app\Smop.MainApp.csproj", "{7FF484CC-CCA5-43DD-AEB3-D531ECDF1F71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smop.Common", "Smop.Common\Smop.Common.csproj", "{092ACA22-3757-46C9-9AF9-EDCD5D736C73}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smop.Common", "smop.common\Smop.Common.csproj", "{092ACA22-3757-46C9-9AF9-EDCD5D736C73}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

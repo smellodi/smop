@@ -17,4 +17,10 @@
     <ProjectReference Include="..\smop.ion-vision\Smop.IonVision.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="IonVision.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

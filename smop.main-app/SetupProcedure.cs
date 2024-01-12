@@ -143,7 +143,10 @@ public class SetupProcedure
         await Task.Delay((int)(1000 * Properties.Settings.Default.Reproduction_SniffingDelay));
         Log?.Invoke(this, new LogHanddlerArgs("Odor mixturing process has finished", true));
 
-        _smellInsp.Data += SmellInsp_TargetData;
+        _pidSamples.Clear();
+
+        _odorDisplay.Data += OdorDisplay_Data;
+        _smellInsp.Data += SmellInsp_Data;
 
         List<Task> scans = new();
         if (App.IonVision != null)
@@ -157,7 +160,8 @@ public class SetupProcedure
 
         await Task.WhenAll(scans);
 
-        _smellInsp.Data -= SmellInsp_TargetData;
+        _odorDisplay.Data -= OdorDisplay_Data;
+        _smellInsp.Data -= SmellInsp_Data;
 
         actuators = _gases.Items
             .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
@@ -213,12 +217,21 @@ public class SetupProcedure
                 await App.ML.Publish(sample);
             }
         }
+
+        if (settings.Reproduction_UsePID)
+        {
+            foreach (var sample in _pidSamples)
+            {
+                await App.ML.Publish(sample);
+            }
+        }
     }
 
 
     // Internal
 
     const int SNT_MAX_DATA_COUNT = 10;
+    const int PID_MAX_DATA_COUNT = 30;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(SetupProcedure));
 
@@ -228,6 +241,7 @@ public class SetupProcedure
 
     Gases _gases = new Gases();
     List<SmellInsp.Data> _sntSamples = new();
+    List<float> _pidSamples = new();
 
     private OdorDisplay.Device.ID[] GetAvailableChannelIDs()
     {
@@ -341,12 +355,30 @@ public class SetupProcedure
         _nlog.Error($"{action}: {error}");
         return response;
     }
+    private void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
+    {
+        if (_pidSamples.Count < PID_MAX_DATA_COUNT)
+        {
+            foreach (var measurement in data.Measurements)
+            {
+                if (measurement.Device == OdorDisplay.Device.ID.Base)
+                {
+                    var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as PIDValue;
+                    if (pid != null)
+                    {
+                        _pidSamples.Add(pid.Volts);
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
-    private void SmellInsp_TargetData(object? sender, SmellInsp.Data e)
+    private void SmellInsp_Data(object? sender, SmellInsp.Data data)
     {
         if (_sntSamples.Count < SNT_MAX_DATA_COUNT)
         {
-            _sntSamples.Add(e);
+            _sntSamples.Add(data);
         }
     }
 }

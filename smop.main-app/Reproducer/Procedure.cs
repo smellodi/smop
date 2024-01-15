@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using ODPackets = Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp.Reproducer;
@@ -67,7 +66,7 @@ public class Procedure
                 {
                     > 0 => KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantValve, channel.Duration * 1000),
                     0 => ODPackets.ActuatorCapabilities.OdorantValveClose,
-                    _ => ODPackets.ActuatorCapabilities.OutputValveOpenPermanently,
+                    _ => ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently,
                 };
                 var caps = new ODPackets.ActuatorCapabilities(
                     valveCap,

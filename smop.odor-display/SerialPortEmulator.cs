@@ -167,7 +167,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
 
     private void MakeResponse(Request req)
     {
-        Packets.Result result = Packets.Result.OK;
+        Result result = Result.OK;
 
         lock (_responses)
         {
@@ -178,11 +178,11 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
             else if (req.Type == Type.QueryDevices)
             {
                 _responses.Enqueue(new Devices(new bool[] {
-                true,
-                true, true,
-                false, false, false, false, false, false, false,
-                true
-            }).ToArray());
+                    true,
+                    true, true,
+                    false, false, false, false, false, false, false,
+                    true
+                }).ToArray());
             }
             else if (req.Type == Type.QueryCapabilities)
             {
@@ -218,11 +218,11 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
                     {
                         if ((cap.Key == Device.Controller.OdorantFlow || cap.Key == Device.Controller.DilutionAirFlow) &&
                             (cap.Value < 0 || cap.Value > maxFlowRate))
-                            result = Packets.Result.InvalidValue;
+                            result = Result.InvalidValue;
                         else if (cap.Key == Device.Controller.ChassisTemperature && (cap.Value < 0 || cap.Value > 50f))
-                            result = Packets.Result.InvalidValue;
+                            result = Result.InvalidValue;
                         else if ((cap.Key == Device.Controller.OutputValve || cap.Key == Device.Controller.OdorantValve) && (cap.Value < -1f || cap.Value > 3600_000f))
-                            result = Packets.Result.InvalidValue;
+                            result = Result.InvalidValue;
                     }
                 }
             }

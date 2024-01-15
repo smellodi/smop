@@ -27,6 +27,7 @@ internal abstract class Simulator : IDisposable
     int _step = 0;
     int _sntSampleCount = 0;
 
+    const float FLOW_DURATION_ENDLESS = -1;
     const float RMSQ = 0.2f;
     const int SNT_SAMPLE_MAX_COUNT = 10;
 
@@ -85,7 +86,7 @@ internal abstract class Simulator : IDisposable
                     var rmsq = RMSQ / _step;
                     bool isFinished = rmsq < _threshold || _step >= _maxSteps;
 
-                    var recipe = new Recipe("Normal reproduction", isFinished ? 1 : 0, rmsq, _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, 25 - _step * 1)).ToArray());
+                    var recipe = new Recipe("Normal reproduction", isFinished ? 1 : 0, rmsq, _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
                     json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                     ScreenLogger.Print("[MlSimul] recipe sent");
                     await SendData(json);

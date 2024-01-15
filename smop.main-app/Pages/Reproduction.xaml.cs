@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,6 +15,13 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         InitializeComponent();
 
+        _activeElementStyle = FindResource("ActiveElement") as Style;
+        _inactiveElementStyle = FindResource("Element") as Style;
+        _recipeChannelStyle = FindResource("RecipeChannel") as Style;
+        _recipeChannelLabelStyle = FindResource("RecipeChannelLabel") as Style;
+        _odChannelStyle = FindResource("OdorDisplayMeasurement") as Style;
+        _odChannelLabelStyle = FindResource("OdorDisplayMeasurementLabel") as Style;
+
         Application.Current.Exit += (s, e) => CleanUp();
     }
 
@@ -23,29 +31,21 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbDmsProgress.Value = e);
+        _proc.OdorDisplayData += (s, e) => Dispatcher.Invoke(() => DisplayODState(e));
 
-        ml.RecipeReceived += HandleRecipe;
-
-        //imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
-        //imgSnt.Visibility = SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+        _ml = ml;
+        _ml.RecipeReceived += HandleRecipe;
 
         imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
         imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
 
         tblRecipeName.Text = "";
-        tblRMSQ.Text = "";
+        tblRecipeRMSQ.Text = "";
 
-        grdChannels1.Children.Clear();
-
-        grdChannels1.RowDefinitions.Clear();
-        for (int i = 0; i < Enum.GetNames(typeof(OdorDisplay.Device.ID)).Length; i++)
-        {
-            grdChannels1.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-        }
+        ConfigureChannelTable(grdODChannels, _odChannelLabelStyle, _odChannelStyle);
+        ConfigureChannelTable(grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle);
 
         DisplayRecipeInfo(new ML.Recipe("", 0, 0, _proc.Gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
-
-        //tblDmsStatus.Text = "-";
 
         SetActiveElement(ActiveElement.ML);
     }
@@ -62,61 +62,102 @@ public partial class Reproduction : Page, IPage<Navigation>
     }
 
     Reproducer.Procedure? _proc;
+    ML.Communicator? _ml = null;
 
     ActiveElement _activeElement = ActiveElement.None;
+
+    readonly Style? _activeElementStyle;
+    readonly Style? _inactiveElementStyle;
+    readonly Style? _recipeChannelStyle;
+    readonly Style? _recipeChannelLabelStyle;
+    readonly Style? _odChannelStyle;
+    readonly Style? _odChannelLabelStyle;
+
+    private Visibility BoolToVisible(bool isVisible) => isVisible ? Visibility.Visible : Visibility.Hidden;
+    private Style? BoolToStyle(bool isActive) => isActive ? _activeElementStyle : _inactiveElementStyle;
+
+    private void ConfigureChannelTable(Grid grid, Style? labelStyle, Style? valueStyle)
+    {
+        var deviceIdNames = Enum.GetNames(typeof(OdorDisplay.Device.ID));
+        for (int i = 0; i < deviceIdNames.Length; i++)
+        {
+            var id = (OdorDisplay.Device.ID)i;
+            var gasName = _proc?.Gases.FirstOrDefault(gas => gas.ChannelID == id)?.Name;
+
+            if (gasName == null)
+                continue;
+
+            grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+            var lbl = new Label()
+            {
+                Content = gasName,
+                Style = labelStyle,
+            };
+            Grid.SetRow(lbl, grid.RowDefinitions.Count - 1);
+            Grid.SetColumn(lbl, 0);
+            grid.Children.Add(lbl);
+
+            var tbl = new TextBlock()
+            {
+                Style = valueStyle,
+            };
+            Grid.SetRow(tbl, grid.RowDefinitions.Count - 1);
+            Grid.SetColumn(tbl, 1);
+            grid.Children.Add(tbl);
+        }
+    }
+
+    private UIElement? GetElementInGrid(Grid grid, int row, int column)
+    {
+        foreach (UIElement element in grid.Children)
+        {
+            if (Grid.GetColumn(element) == column && Grid.GetRow(element) == row)
+                return element;
+        }
+
+        return null;
+    }
 
     private void SetActiveElement(ActiveElement el)
     {
         _activeElement = el;
 
-        if (_activeElement.HasFlag(ActiveElement.ML))
-        {
-            tblRecipeState.Text = "Creating a recipe";
+        bool isActiveML = _activeElement.HasFlag(ActiveElement.ML);
+        bool isActiveOD = _activeElement.HasFlag(ActiveElement.OdorDisplay);
+        bool isActiveENose = _activeElement.HasFlag(ActiveElement.ENose);
+        bool hasNoActiveElement = _activeElement == ActiveElement.None;
 
-            brdML.Style = FindResource("ActiveElement") as Style;
-            imgDmsActive.Visibility = Visibility.Visible;
-            imgDmsPassive.Visibility = Visibility.Hidden;
-        }
-        else
-        {
-            brdML.Style = FindResource("Element") as Style;
-            imgDmsActive.Visibility = Visibility.Hidden;
-            imgDmsPassive.Visibility = Visibility.Visible;
-        }
+        imgMLActive.Visibility = BoolToVisible(isActiveML);
+        imgMLPassive.Visibility = BoolToVisible(!isActiveML);
+        brdML.Style = BoolToStyle(isActiveML);
 
-        if (_activeElement.HasFlag(ActiveElement.OdorDisplay))
-        {
-            tblRecipeState.Text = "Mixing the chemicals to produce the odor";
+        brdOdorDisplay.Style = BoolToStyle(isActiveOD);
+        imgGas.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
+        tblRecipeName.Visibility = BoolToVisible(!isActiveML);
+        grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);
+        tblRecipeRMSQ.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
 
-            brdOdorDisplay.Style = FindResource("ActiveElement") as Style;
-            imgGas.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            brdOdorDisplay.Style = FindResource("Element") as Style;
-            imgGas.Visibility = Visibility.Hidden;
-        }
+        prbDmsProgress.Visibility = BoolToVisible(isActiveENose);
+        prbDmsProgress.Value = 0;
 
-        if (_activeElement.HasFlag(ActiveElement.ENose))
-        {
-            tblRecipeState.Text = "Sniffing the produced odor with eNose";
-
-            prbDmsProgress.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            prbDmsProgress.Visibility = Visibility.Hidden;
-            prbDmsProgress.Value = 0;
-        }
-
-        if (_activeElement == ActiveElement.None)
+        if (hasNoActiveElement)
         {
             tblRecipeState.Text = "Finished";
             tblRecipeName.Text = "";
-            imgGas.Visibility = Visibility.Visible;
         }
-
-        tblRMSQ.Visibility = _activeElement == ActiveElement.OdorDisplay || _activeElement == ActiveElement.None ? Visibility.Visible : Visibility.Hidden;
+        else if (isActiveML)
+        {
+            tblRecipeState.Text = "Creating a recipe";
+        }
+        else if (isActiveOD)
+        {
+            tblRecipeState.Text = "Mixing the chemicals to produce the odor";
+        }
+        else if (isActiveENose)
+        {
+            tblRecipeState.Text = "Sniffing the produced odor with eNose";
+        }
     }
 
     private void HandleRecipe(object? sender, ML.Recipe recipe)
@@ -130,6 +171,34 @@ public partial class Reproduction : Page, IPage<Navigation>
         });
     }
 
+    private void DisplayODState(OdorDisplay.Packets.Data data)
+    {
+        foreach (var m in data.Measurements)
+        {
+            if (m.Device == OdorDisplay.Device.ID.Base)
+            {
+                var value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == OdorDisplay.Device.Sensor.PID);
+                if (value != null && value is OdorDisplay.Packets.PIDValue pid)
+                {
+                    var pidEl = GetElementInGrid(grdODChannels, 0, 1) as TextBlock;
+                    if (pidEl != null)
+                        pidEl.Text = (pid.Volts * 1000).ToString("0.0") + " mV";
+                }
+            }
+            else
+            {
+                var row = (int)m.Device;
+                var value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == OdorDisplay.Device.Sensor.OdorantFlowSensor);
+                if (value != null && value is OdorDisplay.Packets.GasValue gas)
+                {
+                    var flowEl = GetElementInGrid(grdODChannels, row, 1) as TextBlock;
+                    if (flowEl != null)
+                        flowEl.Text = (gas.SLPM * 1000).ToString("0.0") + " ml/min";
+                }
+            }
+        }
+    }
+
     private void DisplayRecipeInfo(ML.Recipe recipe)
     {
         if (!string.IsNullOrEmpty(recipe.Name))
@@ -137,36 +206,49 @@ public partial class Reproduction : Page, IPage<Navigation>
             tblRecipeName.Text = recipe.Name;
         }
         tblRecipeState.Text = recipe.Finished ? $"Finished in {_proc?.CurrentStep} steps" : $"In progress (step #{_proc?.CurrentStep})";
-        tblRMSQ.Text = $"r = {recipe.MinRMSE:N4}";
+        tblRecipeRMSQ.Text = $"r = {recipe.MinRMSE:N4}";
 
-        grdChannels1.Children.Clear();
+        grdRecipeChannels.Children.Clear();
         if (recipe.Channels != null)
         {
             int rowIndex = 0;
             foreach (var channel in recipe.Channels)
             {
                 var id = (OdorDisplay.Device.ID)channel.Id;
-                var str = _proc?.Gases.FirstOrDefault(gas => gas.ChannelID == id)?.Name ?? id.ToString();
+                var lbl = new Label()
+                {
+                    Content = _proc?.Gases.FirstOrDefault(gas => gas.ChannelID == id)?.Name ?? id.ToString(),
+                    Style = _recipeChannelLabelStyle,
+                };
+                Grid.SetRow(lbl, rowIndex);
+                Grid.SetColumn(lbl, 0);
+                grdRecipeChannels.Children.Add(lbl);
+
+                var value = new List<string>();
                 if (channel.Flow >= 0)
                 {
-                    str += $", {channel.Flow} ml/min";
+                    value.Add($"{channel.Flow} ml/min");
                 }
                 if (channel.Duration > 0)
                 {
-                    str += $", {channel.Duration:N2} sec.";
+                    value.Add($"{channel.Duration:F2} sec.");
                 }
                 if (channel.Temperature != null)
                 {
-                    str += $", {channel.Temperature:N1}°";
+                    value.Add($"{channel.Temperature:F1}°");
                 }
 
-                var tbl = new TextBlock()
+                if (value.Count > 0)
                 {
-                    Text = str,
-                    Style = FindResource("Channel") as Style,
-                };
-                Grid.SetRow(tbl, rowIndex);
-                grdChannels1.Children.Add(tbl);
+                    var tbl = new TextBlock()
+                    {
+                        Text = string.Join(", ", value),
+                        Style = _recipeChannelStyle,
+                    };
+                    Grid.SetRow(tbl, rowIndex);
+                    Grid.SetColumn(tbl, 1);
+                    grdRecipeChannels.Children.Add(tbl);
+                }
 
                 rowIndex++;
             }
@@ -179,10 +261,12 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         _proc?.ShutDownFlows();
 
-        if (App.ML != null)
+        if (_ml != null)
         {
-            App.ML.RecipeReceived -= HandleRecipe;
+            _ml.RecipeReceived -= HandleRecipe;
         }
+
+        _ml = null;
     }
 
     // UI

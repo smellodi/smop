@@ -1,9 +1,10 @@
-﻿using Smop.OdorDisplay.Packets;
-using Smop.MainApp.Utils;
+﻿using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Threading;
+using ODPackets = Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp.Reproducer;
 
@@ -15,6 +16,7 @@ public class Procedure
     public event EventHandler? MlComputationStarted;
     public event EventHandler? ENoseStarted;
     public event EventHandler<double>? ENoseProgressChanged;
+    public event EventHandler<ODPackets.Data>? OdorDisplayData;
 
     public Procedure(ML.Communicator ml)
     {
@@ -23,10 +25,10 @@ public class Procedure
         var settings = Properties.Settings.Default;
         _scanDelay = settings.Reproduction_SniffingDelay;
 
-        if (settings.Reproduction_UsePID)
-        {
-            _odorDisplay.Data += OdorDisplay_Data;
-        }
+        //if (settings.Reproduction_UsePID)
+        //{
+        _odorDisplay.Data += OdorDisplay_Data;
+        //}
 
         if (App.IonVision == null && _smellInsp.IsOpen)
         {
@@ -38,17 +40,17 @@ public class Procedure
     {
         if (_odorDisplay.IsOpen)
         {
-            var actuators = Gases.Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
-                ActuatorCapabilities.OdorantValveClose,
+            var actuators = Gases.Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
+                ODPackets.ActuatorCapabilities.OdorantValveClose,
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0.0f)
             )));
-            SendOdorDisplayRequest(new SetActuators(actuators.ToArray()));
+            SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
         }
 
-        if (Properties.Settings.Default.Reproduction_UsePID)
-        {
-            _odorDisplay.Data -= OdorDisplay_Data;
-        }
+        //if (Properties.Settings.Default.Reproduction_UsePID)
+        //{
+        _odorDisplay.Data -= OdorDisplay_Data;
+        //}
 
         if (App.IonVision == null && _smellInsp.IsOpen)
         {
@@ -64,16 +66,16 @@ public class Procedure
         // send command to OD
         if (recipe.Channels != null)
         {
-            var actuators = new List<Actuator>();
+            var actuators = new List<ODPackets.Actuator>();
             foreach (var channel in recipe.Channels)
             {
                 var valveCap = channel.Duration switch
                 {
                     > 0 => KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantValve, channel.Duration * 1000),
-                    0 => ActuatorCapabilities.OdorantValveClose,
-                    _ => ActuatorCapabilities.OutputValveOpenPermanently,
+                    0 => ODPackets.ActuatorCapabilities.OdorantValveClose,
+                    _ => ODPackets.ActuatorCapabilities.OutputValveOpenPermanently,
                 };
-                var caps = new ActuatorCapabilities(
+                var caps = new ODPackets.ActuatorCapabilities(
                     valveCap,
                     KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, channel.Flow)
                 );
@@ -82,11 +84,11 @@ public class Procedure
                     caps.Add(OdorDisplay.Device.Controller.ChassisTemperature, (float)channel.Temperature);
                 }
 
-                var actuator = new Actuator((OdorDisplay.Device.ID)channel.Id, caps);
+                var actuator = new ODPackets.Actuator((OdorDisplay.Device.ID)channel.Id, caps);
                 actuators.Add(actuator);
             }
 
-            SendOdorDisplayRequest(new SetActuators(actuators.ToArray()));
+            SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
         }
 
         // schedule new scan
@@ -159,11 +161,8 @@ public class Procedure
         var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
         if (!resp.Success)
         {
-            DisplayDmsStatus("Failed to start scan.");
             return null;
         }
-
-        DisplayDmsStatus("Scanning...");
 
         var waitForScanProgress = true;
 
@@ -176,7 +175,6 @@ public class Procedure
             if (value >= 0)
             {
                 waitForScanProgress = false;
-                DisplayDmsStatus($"Scanning... {value} %");
                 ENoseProgressChanged?.Invoke(this, value);
             }
             else if (waitForScanProgress)
@@ -185,7 +183,6 @@ public class Procedure
             }
             else
             {
-                DisplayDmsStatus($"Scanning finished.");
                 ENoseProgressChanged?.Invoke(this, 100);
                 break;
             }
@@ -194,19 +191,15 @@ public class Procedure
 
         await Task.Delay(300);
         var scan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
-        if (scan == null)
-        {
-            DisplayDmsStatus("Failed to retrieve the scanning result.");
-        }
 
         return scan;
     }
 
-    private Comm.Result SendOdorDisplayRequest(Request request)
+    private Comm.Result SendOdorDisplayRequest(ODPackets.Request request)
     {
         _nlog.Info($"Sent: {request}");
 
-        var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
+        var result = _odorDisplay.Request(request, out ODPackets.Ack? ack, out ODPackets.Response? response);
         HandleOdorDisplayError(result, $"send the '{request.Type}' request");
 
         if (ack != null)
@@ -232,36 +225,47 @@ public class Procedure
         return response;
     }
 
-    private void DisplayDmsStatus(string line)
+    private async void OdorDisplay_Data(object? sender, ODPackets.Data e)
     {
-        //Dispatcher.Invoke(() => tblDmsStatus.Text = line);
-    }
-
-    private void OdorDisplay_Data(object? sender, Data e)
-    {
-        if (!_canSendFrequentData)
-            return;
-
-        foreach (var measurement in e.Measurements)
+        try
         {
-            if (measurement.Device == OdorDisplay.Device.ID.Base)
+            await Task.Run(() => 
             {
-                var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as PIDValue;
-                if (pid != null)
+                OdorDisplayData?.Invoke(this, e);
+
+                if (!_canSendFrequentData || !Properties.Settings.Default.Reproduction_UsePID)
+                    return;
+
+                foreach (var measurement in e.Measurements)
                 {
-                    _ = _ml.Publish(pid.Volts);
-                    break;
+                    if (measurement.Device == OdorDisplay.Device.ID.Base)
+                    {
+                        var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
+                        if (pid != null)
+                        {
+                            _ = _ml.Publish(pid.Volts);
+                            break;
+                        }
+                    }
                 }
-            }
+            });
         }
+        catch (TaskCanceledException) { }
     }
 
-    private void SmellInsp_Data(object? sender, SmellInsp.Data e)
+    private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
     {
-        if (_canSendFrequentData)
+        try
         {
-            _sntSamplesCount++;
-            _ = _ml.Publish(e);
+            await Task.Run(() =>
+            {
+                if (_canSendFrequentData)
+                {
+                    _sntSamplesCount++;
+                    _ = _ml.Publish(e);
+                }
+            });
         }
+        catch (TaskCanceledException) { }
     }
 }

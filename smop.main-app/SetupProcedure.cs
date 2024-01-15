@@ -1,5 +1,6 @@
 ﻿using Smop.MainApp.Generator;
 using Smop.MainApp.Reproducer;
+using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -358,42 +359,34 @@ public class SetupProcedure
     }
     private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
     {
-        try
+        await CommPortEventHandler.Do(() =>
         {
-            await Task.Run(() => 
+            if (_pidSamples.Count < PID_MAX_DATA_COUNT)
             {
-                if (_pidSamples.Count < PID_MAX_DATA_COUNT)
+                foreach (var measurement in data.Measurements)
                 {
-                    foreach (var measurement in data.Measurements)
+                    if (measurement.Device == OdorDisplay.Device.ID.Base)
                     {
-                        if (measurement.Device == OdorDisplay.Device.ID.Base)
+                        var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
+                        if (pid != null)
                         {
-                            var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
-                            if (pid != null)
-                            {
-                                _pidSamples.Add(pid.Volts);
-                                break;
-                            }
+                            _pidSamples.Add(pid.Volts);
+                            break;
                         }
                     }
                 }
-            });
-        }
-        catch (TaskCanceledException) { }
+            }
+        });
     }
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
     {
-        try
+        await CommPortEventHandler.Do(() =>
         {
-            await Task.Run(() =>
+            if (_sntSamples.Count < SNT_MAX_DATA_COUNT)
             {
-                if (_sntSamples.Count < SNT_MAX_DATA_COUNT)
-                {
-                    _sntSamples.Add(data);
-                }
-            });
-        }
-        catch (TaskCanceledException) { }
+                _sntSamples.Add(data);
+            }
+        });
     }
 }

@@ -28,7 +28,7 @@
         </Style>
         <Style x:Key="Element" TargetType="Border">
             <Setter Property="BorderThickness" Value="3"/>
-            <Setter Property="BorderBrush" Value="#FFD4D4D4"/>
+            <Setter Property="BorderBrush" Value="#FFA4A4A4"/>
         </Style>
         <Style x:Key="ActiveElement" TargetType="Border" BasedOn="{StaticResource Element}">
             <Setter Property="BorderBrush" Value="#FF16A4FF"/>
@@ -70,7 +70,7 @@
             <StackPanel Grid.Row="1" Grid.Column="0">
                 <Grid x:Name="grdODChannels"
                       HorizontalAlignment="Right"
-                      Margin="0,52,4,0">
+                      Margin="0,38,4,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
@@ -108,77 +108,83 @@
                         </StackPanel>
                     </Border>
                     <Image x:Name="imgGas"
-                       Width="140"
-                       gif:ImageBehavior.AnimatedSource="/Assets/images/gas.gif"
-                       Visibility="Hidden"
-                       RenderTransformOrigin="0.5,0.5">
+                           Width="72"
+                           gif:ImageBehavior.AnimatedSource="/Assets/images/gas.gif"
+                           Margin="30,-30"
+                           RenderTransformOrigin="0.5,0.5">
                         <Image.RenderTransform>
                             <TransformGroup>
-                                <ScaleTransform/>
-                                <SkewTransform/>
                                 <RotateTransform Angle="90"/>
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image>
-                    <Grid VerticalAlignment="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Image x:Name="imgSnt" Grid.Row="0"
-                           Visibility="Collapsed"
-                           Width="128"
-                           Source="/Assets/images/snt.png"/>
-                        <Image x:Name="imgDms" Grid.Row="1"
-                           Width="128"
-                           Source="/Assets/images/dms.png"/>
-                        <ProgressBar x:Name="prbDmsProgress" Grid.RowSpan="2"
-                                 VerticalAlignment="Bottom"
-                                 Margin="4,0,4,5"
-                                 Height="3.5"
-                                 Value="0"/>
-                    </Grid>
+                    <Border x:Name="brdENoses"
+                            Style="{StaticResource Element}">
+                        <Grid VerticalAlignment="Center">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Image x:Name="imgSnt" Grid.Row="0"
+                                   Width="128"
+                                   Source="/Assets/images/snt.png"/>
+                            <Image x:Name="imgDms" Grid.Row="1"
+                                   Visibility="Collapsed"
+                                   Width="128"
+                                   Source="/Assets/images/dms.png"/>
+                            <TextBlock Grid.RowSpan="2"
+                                       Style="{StaticResource DeviceName}"
+                                       Text="eNose"
+                                       Margin="12,4,0,0"
+                                       TextAlignment="Center"/>
+                            <ProgressBar x:Name="prbENoseProgress" Grid.RowSpan="2"
+                                         VerticalAlignment="Bottom"
+                                         Margin="4,0,4,2"
+                                         Height="3.5"
+                                         Value="0"/>
+                        </Grid>
+                    </Border>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Width="50"/>
                     <Image Width="100"
-                       VerticalAlignment="Top"
-                       Source="/Assets/images/conn-ml-od.png"/>
+                           VerticalAlignment="Top"
+                           Source="/Assets/images/conn-ml-od.png"/>
 
                     <StackPanel>
                         <Border x:Name="brdML"
-                            Style="{StaticResource Element}"
-                            HorizontalAlignment="Center"
-                            Margin="4">
+                                Style="{StaticResource Element}"
+                                HorizontalAlignment="Center"
+                                Margin="4">
                             <Grid>
                                 <Image x:Name="imgMLActive"
-                                   Width="79"
-                                   Visibility="Hidden"
-                                   gif:ImageBehavior.AnimatedSource="/Assets/images/processing.gif"/>
+                                       Width="79"
+                                       Visibility="Hidden"
+                                       gif:ImageBehavior.AnimatedSource="/Assets/images/processing.gif"/>
                                 <Image x:Name="imgMLPassive"
-                                   Width="79"
-                                   Source="/Assets/images/processing.png"/>
+                                       Width="79"
+                                       Source="/Assets/images/processing.png"/>
                                 <TextBlock Style="{StaticResource DeviceName}"
-                                       Text="ML"/>
+                                           Text="ML"/>
                             </Grid>
                         </Border>
                     </StackPanel>
 
                     <Image Width="100"
-                       VerticalAlignment="Top"
-                       Source="/Assets/images/conn-dms-ml.png"/>
+                           VerticalAlignment="Top"
+                           Source="/Assets/images/conn-dms-ml.png"/>
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Center">
                     <TextBlock x:Name="tblRecipeName"
-                           Foreground="{StaticResource BrushFontDark}"
-                           FontSize="14"
-                           TextAlignment="Center"
-                           Margin="0,0,0,8"/>
+                               Foreground="{StaticResource BrushFontDark}"
+                               FontSize="14"
+                               TextAlignment="Center"
+                               Margin="0,0,0,8"/>
                     <Grid x:Name="grdRecipeChannels"
-                              HorizontalAlignment="Center"
-                              Margin="4,0">
+                          HorizontalAlignment="Center"
+                          Margin="4,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
@@ -186,9 +192,9 @@
                         <!-- filled in code -->
                     </Grid>
                     <TextBlock x:Name="tblRecipeRMSQ"
-                           FontStyle="Italic"
-                           TextAlignment="Center"
-                           Margin="8"/>
+                               FontStyle="Italic"
+                               TextAlignment="Center"
+                               Margin="8"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

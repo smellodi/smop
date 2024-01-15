@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.MainApp.Utils;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
@@ -119,26 +120,18 @@ public partial class Setup : Page, IPage<object?>
 
     private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
     {
-        try
+        await CommPortEventHandler.Do(Dispatcher, () =>
         {
-            await Task.Run(() => Dispatcher.Invoke(() =>
-            {
-                _indicatorController.Update(data);
-            }));
-        }
-        catch (TaskCanceledException) { }
+            _indicatorController.Update(data);
+        });
     }
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
     {
-        try
+        await CommPortEventHandler.Do(Dispatcher, () =>
         {
-            await Task.Run(() => Dispatcher.Invoke(() =>
-            {
-                _indicatorController.Update(data);
-            }));
-        }
-        catch (TaskCanceledException) { }
+            _indicatorController.Update(data);
+        });
     }
 
     private void ML_StatusChanged(object? sender, ML.Status e)

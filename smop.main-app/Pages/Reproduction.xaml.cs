@@ -30,7 +30,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc = new Reproducer.Procedure(ml);
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
-        _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbDmsProgress.Value = e);
+        _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbENoseProgress.Value = e);
         _proc.OdorDisplayData += (s, e) => Dispatcher.Invoke(() => DisplayODState(e));
 
         _ml = ml;
@@ -128,18 +128,21 @@ public partial class Reproduction : Page, IPage<Navigation>
         bool isActiveENose = _activeElement.HasFlag(ActiveElement.ENose);
         bool hasNoActiveElement = _activeElement == ActiveElement.None;
 
+        brdML.Style = BoolToStyle(isActiveML);
         imgMLActive.Visibility = BoolToVisible(isActiveML);
         imgMLPassive.Visibility = BoolToVisible(!isActiveML);
-        brdML.Style = BoolToStyle(isActiveML);
 
         brdOdorDisplay.Style = BoolToStyle(isActiveOD);
+
         imgGas.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
+
+        brdENoses.Style = BoolToStyle(isActiveENose);
+        prbENoseProgress.Visibility = BoolToVisible(isActiveENose);
+        prbENoseProgress.Value = 0;
+
         tblRecipeName.Visibility = BoolToVisible(!isActiveML);
         grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);
         tblRecipeRMSQ.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
-
-        prbDmsProgress.Visibility = BoolToVisible(isActiveENose);
-        prbDmsProgress.Value = 0;
 
         if (hasNoActiveElement)
         {

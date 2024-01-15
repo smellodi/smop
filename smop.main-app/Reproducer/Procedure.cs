@@ -25,10 +25,7 @@ public class Procedure
         var settings = Properties.Settings.Default;
         _scanDelay = settings.Reproduction_SniffingDelay;
 
-        //if (settings.Reproduction_UsePID)
-        //{
         _odorDisplay.Data += OdorDisplay_Data;
-        //}
 
         if (App.IonVision == null && _smellInsp.IsOpen)
         {
@@ -47,10 +44,7 @@ public class Procedure
             SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
         }
 
-        //if (Properties.Settings.Default.Reproduction_UsePID)
-        //{
         _odorDisplay.Data -= OdorDisplay_Data;
-        //}
 
         if (App.IonVision == null && _smellInsp.IsOpen)
         {
@@ -227,45 +221,37 @@ public class Procedure
 
     private async void OdorDisplay_Data(object? sender, ODPackets.Data e)
     {
-        try
+        await CommPortEventHandler.Do(() =>
         {
-            await Task.Run(() => 
+            OdorDisplayData?.Invoke(this, e);
+
+            if (!_canSendFrequentData || !Properties.Settings.Default.Reproduction_UsePID)
+                return;
+
+            foreach (var measurement in e.Measurements)
             {
-                OdorDisplayData?.Invoke(this, e);
-
-                if (!_canSendFrequentData || !Properties.Settings.Default.Reproduction_UsePID)
-                    return;
-
-                foreach (var measurement in e.Measurements)
+                if (measurement.Device == OdorDisplay.Device.ID.Base)
                 {
-                    if (measurement.Device == OdorDisplay.Device.ID.Base)
+                    var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
+                    if (pid != null)
                     {
-                        var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
-                        if (pid != null)
-                        {
-                            _ = _ml.Publish(pid.Volts);
-                            break;
-                        }
+                        _ = _ml.Publish(pid.Volts);
+                        break;
                     }
                 }
-            });
-        }
-        catch (TaskCanceledException) { }
+            }
+        });
     }
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
     {
-        try
+        await CommPortEventHandler.Do(() =>
         {
-            await Task.Run(() =>
+            if (_canSendFrequentData)
             {
-                if (_canSendFrequentData)
-                {
-                    _sntSamplesCount++;
-                    _ = _ml.Publish(e);
-                }
-            });
-        }
-        catch (TaskCanceledException) { }
+                _sntSamplesCount++;
+                _ = _ml.Publish(e);
+            }
+        });
     }
 }

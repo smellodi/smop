@@ -265,11 +265,19 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
 
         var baseCaps = _state[Device.ID.Base].Capabilities;
 
+        var totalOdorFlow = _state
+            .Where(state => state.Key != Device.ID.Base)
+            .Select(state => state.Value.Capabilities)
+            .Where(caps => caps.ContainsKey(Device.Controller.OdorantValve) && caps.ContainsKey(Device.Controller.OdorantFlow))
+            .Where(caps => caps[Device.Controller.OdorantValve] != 0 && caps[Device.Controller.OdorantFlow] > 0)
+            .Select(caps => caps[Device.Controller.OdorantFlow])    // normalized value!
+            .Sum();
+
         var measurements = new List<Measurement>
         {
             new Measurement(Device.ID.Base, new SensorValue[]
             {
-                new PIDValue(0.06f + Random.Range(0.001f)),
+                new PIDValue(0.06f + totalOdorFlow * Device.MaxOdoredAirFlowRate * 2 / 1000 + Random.Range(0.001f)),
                 //new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
                 new ThermometerValue(Device.Sensor.ChassisThermometer, baseCaps[Device.Controller.ChassisTemperature] + Random.Range(0.1f)),
                 new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),

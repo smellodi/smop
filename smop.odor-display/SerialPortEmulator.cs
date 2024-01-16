@@ -105,6 +105,14 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
     bool _isOpen = false;
     bool _timerAutoStop = false;
 
+    const float BASE_PID = 0.06f;
+
+    // Internals (what the state should be like very soon)
+    float _desiredPID = BASE_PID;  // Volts
+
+    // Variables (what the state is like right now)
+    float _currentPID = BASE_PID;  // Volts
+
     readonly Dictionary<Device.ID, Actuator> _state = new()
     {
         { Device.ID.Base,
@@ -162,6 +170,8 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
                     }
                 }
             }
+
+            UpdateSystemInternals();
         }
     }
 
@@ -262,22 +272,15 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
     private Data GenerateData()
     {
         UpdateClosedValves();
+        UpdateSystemVariables();
 
         var baseCaps = _state[Device.ID.Base].Capabilities;
-
-        var totalOdorFlow = _state
-            .Where(state => state.Key != Device.ID.Base)
-            .Select(state => state.Value.Capabilities)
-            .Where(caps => caps.ContainsKey(Device.Controller.OdorantValve) && caps.ContainsKey(Device.Controller.OdorantFlow))
-            .Where(caps => caps[Device.Controller.OdorantValve] != 0 && caps[Device.Controller.OdorantFlow] > 0)
-            .Select(caps => caps[Device.Controller.OdorantFlow])    // normalized value!
-            .Sum();
 
         var measurements = new List<Measurement>
         {
             new Measurement(Device.ID.Base, new SensorValue[]
             {
-                new PIDValue(0.06f + totalOdorFlow * Device.MaxOdoredAirFlowRate * 2 / 1000 + Random.Range(0.001f)),
+                new PIDValue(_currentPID + Random.Range(0.001f)),
                 //new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
                 new ThermometerValue(Device.Sensor.ChassisThermometer, baseCaps[Device.Controller.ChassisTemperature] + Random.Range(0.1f)),
                 new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
@@ -316,6 +319,24 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
         }
 
         _valveCloseEvents.RemoveWhere(ev => ev.Item1 <= ts);
+    }
+
+    private void UpdateSystemInternals()
+    {
+        var totalOdorFlow = _state
+            .Where(state => state.Key != Device.ID.Base)
+            .Select(state => state.Value.Capabilities)
+            .Where(caps => caps.ContainsKey(Device.Controller.OdorantValve) && caps.ContainsKey(Device.Controller.OdorantFlow))
+            .Where(caps => caps[Device.Controller.OdorantValve] != 0 && caps[Device.Controller.OdorantFlow] > 0)
+            .Select(caps => caps[Device.Controller.OdorantFlow])    // normalized value!
+            .Sum();
+
+        _desiredPID = BASE_PID + totalOdorFlow * Device.MaxOdoredAirFlowRate * 2 / 1000;
+    }
+
+    private void UpdateSystemVariables()
+    {
+        _currentPID += (_desiredPID - _currentPID) * 0.1f;
     }
 
     private static class Random

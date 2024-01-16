@@ -17,8 +17,8 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         InitializeComponent();
 
-        _activeElementStyle = FindResource("ActiveElement") as Style;
         _inactiveElementStyle = FindResource("Element") as Style;
+        _activeElementStyle = FindResource("ActiveElement") as Style;
         _recipeChannelStyle = FindResource("RecipeChannel") as Style;
         _recipeChannelLabelStyle = FindResource("RecipeChannelLabel") as Style;
         _odChannelStyle = FindResource("OdorDisplayMeasurement") as Style;
@@ -44,8 +44,12 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeName.Text = "";
         tblRecipeRMSQ.Text = "";
 
-        ConfigureChannelTable(grdODChannels, _odChannelLabelStyle, _odChannelStyle);
-        ConfigureChannelTable(grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle);
+        var gases = _proc?.Gases;
+        if (gases != null)
+        {
+            ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, 1);
+            ConfigureChannelTable(gases, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle);
+        }
 
         DisplayRecipeInfo(new ML.Recipe("", 0, 0, _proc.Gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
 
@@ -104,11 +108,26 @@ public partial class Reproduction : Page, IPage<Navigation>
         return result;
     }
 
-    private void ConfigureChannelTable(Grid grid, Style? labelStyle, Style? valueStyle)
+    private static void ConfigureChannelTable(Reproducer.Gas[] gases, Grid grid, Style? labelStyle, Style? valueStyle, int constantRowCount = 0)
     {
-        var gases = _proc?.Gases;
-        if (gases == null)
-            return;
+        var elementsToRemove = new List<UIElement>();
+        foreach (UIElement el in grid.Children)
+        {
+            if (Grid.GetRow(el) >= constantRowCount)
+            {
+                elementsToRemove.Add(el);
+            }
+        }
+
+        foreach (var el in elementsToRemove)
+        {
+            grid.Children.Remove(el);
+        }
+
+        if (grid.RowDefinitions.Count > constantRowCount)
+        {
+            grid.RowDefinitions.RemoveRange(constantRowCount, grid.RowDefinitions.Count - constantRowCount);
+        }
 
         foreach (var gas in gases)
         {
@@ -161,7 +180,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         if (hasNoActiveElement)
         {
             tblRecipeState.Text = "Finished";
-            tblRecipeName.Text = "";
+            tblRecipeName.Text = "Final recipe:";
         }
         else if (isActiveML)
         {
@@ -226,7 +245,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         if (!string.IsNullOrEmpty(recipe.Name))
         {
-            tblRecipeName.Text = recipe.Name;
+            tblRecipeName.Text = recipe.Name + ":";
         }
         tblRecipeState.Text = recipe.Finished ? $"Finished in {_proc?.CurrentStep} steps" : $"In progress (step #{_proc?.CurrentStep})";
         tblRecipeRMSQ.Text = "r = " + recipe.MinRMSE.ToString("0.####");
@@ -283,6 +302,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     private void CleanUp()
     {
         _proc?.ShutDownFlows();
+        _proc?.CleanUp();
 
         if (_ml != null)
         {

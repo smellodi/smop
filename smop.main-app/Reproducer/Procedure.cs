@@ -44,7 +44,10 @@ public class Procedure
                 )));
             SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
         }
+    }
 
+    public void CleanUp()
+    {
         _odorDisplay.Data -= OdorDisplay_Data;
 
         if (App.IonVision == null && _smellInsp.IsOpen)
@@ -143,6 +146,8 @@ public class Procedure
 
             _canSendFrequentData = false;
             _sntSamplesCount = 0;
+
+            ShutDownFlows();
         });
     }
 

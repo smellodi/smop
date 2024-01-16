@@ -24,6 +24,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style x:Key="OdorDisplayMeasurementLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
             <Setter Property="Padding" Value="0,0,8,0"/>
         </Style>
         <Style x:Key="Element" TargetType="Border">
@@ -85,6 +86,7 @@
                     <TextBlock Grid.Row="0" Grid.Column="1"
                                Style="{StaticResource OdorDisplayMeasurement}"
                                Text="0"/>
+                    <!-- filled in code -->
                 </Grid>
             </StackPanel>
             
@@ -129,7 +131,6 @@
                                    Width="128"
                                    Source="/Assets/images/snt.png"/>
                             <Image x:Name="imgDms" Grid.Row="1"
-                                   Visibility="Collapsed"
                                    Width="128"
                                    Source="/Assets/images/dms.png"/>
                             <TextBlock Grid.RowSpan="2"

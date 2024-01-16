@@ -7,7 +7,7 @@
         Title="Smellodi Odor Printer"
         Icon="/Assets/icons/main.png"
         Height="750" Width="1200"
-        MinHeight="700" MinWidth="700"
+        MinHeight="700" MinWidth="720"
         Loaded="Window_Loaded"
         PreviewKeyDown="Window_PreviewKeyDown"
         PreviewMouseWheel="Window_PreviewMouseWheel" 

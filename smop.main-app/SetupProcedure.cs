@@ -134,6 +134,7 @@ public class SetupProcedure
     public async Task MeasureSample()
     {
         var actuators = _gases.Items
+            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
             .Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, gas.Flow),
                 gas.Flow > 0 ? ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently : ODPackets.ActuatorCapabilities.OdorantValveClose
@@ -165,6 +166,7 @@ public class SetupProcedure
         _smellInsp.Data -= SmellInsp_Data;
 
         actuators = _gases.Items
+            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
             .Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f),
                 ODPackets.ActuatorCapabilities.OdorantValveClose
@@ -200,7 +202,9 @@ public class SetupProcedure
 
         var settings = Properties.Settings.Default;
         await App.ML.Config(dataSources.ToArray(),
-            _gases.Items.Select(gas => new ML.ChannelProps((int)gas.ChannelID, gas.Name, gas.Propeties)).ToArray(),
+            _gases.Items
+                .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
+                .Select(gas => new ML.ChannelProps((int)gas.ChannelID, gas.Name, gas.Propeties)).ToArray(),
             settings.Reproduction_MaxIterations,
             settings.Reproduction_Threshold
         );

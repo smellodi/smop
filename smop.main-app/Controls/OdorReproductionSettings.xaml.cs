@@ -1,14 +1,74 @@
 ﻿using Smop.MainApp.Reproducer;
+using System.Globalization;
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace Smop.MainApp.Controls;
 
+[ValueConversion(typeof(string), typeof(bool))]
+public class StringToBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        string str = (string)value;
+        return !string.IsNullOrWhiteSpace(str);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 public partial class OdorReproductionSettings : UserControl
 {
+    public int MaxIterations
+    {
+        get => Properties.Settings.Default.Reproduction_MaxIterations;
+        set
+        {
+            Properties.Settings.Default.Reproduction_MaxIterations = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public float Threshold
+    {
+        get => Properties.Settings.Default.Reproduction_Threshold;
+        set
+        {
+            Properties.Settings.Default.Reproduction_Threshold = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public bool SendPID
+    {
+        get => Properties.Settings.Default.Reproduction_UsePID;
+        set
+        {
+            Properties.Settings.Default.Reproduction_UsePID = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public float SniffingDelay
+    {
+        get => Properties.Settings.Default.Reproduction_SniffingDelay;
+        set
+        {
+            Properties.Settings.Default.Reproduction_SniffingDelay = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
     public OdorReproductionSettings()
     {
         InitializeComponent();
+
+        DataContext = this;
     }
 
     public void AddGas(Gas gas)
@@ -20,36 +80,37 @@ public partial class OdorReproductionSettings : UserControl
 
         var txbName = new TextBox()
         {
-            FontSize = 14,
-            Text = gas.Name,
-            Margin = new Thickness(4, 0, 4, 0)
+            Style = FindResource("GasName") as Style
         };
-        txbName.TextChanged += (s, e) => gas.Name = txbName.Text;
 
         var txbFlow = new TextBox()
         {
-            FontSize = 14,
-            Text = gas.Flow.ToString("0.#")
-        };
-        txbFlow.TextChanged += (s, e) =>
-        {
-            if (float.TryParse(txbFlow.Text, out float flow) && flow >= 0)
-            {
-                gas.Flow = flow;
-            }
+            Style = FindResource("Value") as Style
         };
 
-        /*
-        var ucStyle = FindResource("Setting") as Style;
-        var uc = new UserControl()
-        {
-            Style = ucStyle,
-            Tag = "#" + gas.ChannelID.ToString()[^1],
-            Content = txbName
-        };
 
-        stpGases.Children.Add(uc);
-        */
+        var nameBinding = new Binding("Name")
+        {
+            Source = gas,
+            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+        };
+        BindingOperations.SetBinding(txbName, TextBox.TextProperty, nameBinding);
+
+        var nameToBoolBinding = new Binding("Name")
+        {
+            Source = gas,
+            Converter = new StringToBoolConverter()
+        };
+        BindingOperations.SetBinding(txbFlow, IsEnabledProperty, nameToBoolBinding);
+
+        var nameBinding2 = new Binding("Flow")
+        {
+            Source = gas,
+            StringFormat = "0.#"
+        };
+        nameBinding2.ValidationRules.Add(new Validators.RangeRule() { Min = 0, IsInteger = false });
+        BindingOperations.SetBinding(txbFlow, TextBox.TextProperty, nameBinding2);
+
 
         var container = new Grid();
         container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
@@ -65,68 +126,5 @@ public partial class OdorReproductionSettings : UserControl
         container.Children.Add(txbFlow);
 
         stpGases.Children.Add(container);
-    }
-
-    // Internal
-
-    private void UserControl_Loaded(object sender, RoutedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-        txbMaxIterations.Text = settings.Reproduction_MaxIterations.ToString();
-        txbThreshold.Text = settings.Reproduction_Threshold.ToString("0.####");
-        chkSendPID.IsChecked = settings.Reproduction_UsePID;
-        txbSniffingDelay.Text = settings.Reproduction_SniffingDelay.ToString();
-    }
-
-    private void MaxIterations_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-
-        if (int.TryParse(txbMaxIterations.Text, out int value) && value >= 0 && value < 100)
-        {
-            settings.Reproduction_MaxIterations = value;
-            settings.Save();
-        }
-        else
-        {
-            txbMaxIterations.Text = settings.Reproduction_MaxIterations.ToString();
-        }
-    }
-
-    private void Threshold_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-
-        if (float.TryParse(txbThreshold.Text, out float value) && value >= 0)
-        {
-            settings.Reproduction_Threshold = value;
-            settings.Save();
-        }
-        else
-        {
-            txbThreshold.Text = settings.Reproduction_Threshold.ToString("0.####");
-        }
-    }
-
-    private void SendPID_Click(object sender, RoutedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-        settings.Reproduction_UsePID = chkSendPID.IsChecked ?? false;
-        settings.Save();
-    }
-
-    private void SniffingDelay_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-
-        if (float.TryParse(txbSniffingDelay.Text, out float value) && value > 0)
-        {
-            settings.Reproduction_SniffingDelay = value;
-            settings.Save();
-        }
-        else
-        {
-            txbThreshold.Text = settings.Reproduction_SniffingDelay.ToString();
-        }
     }
 }

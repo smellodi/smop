@@ -1,26 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Smop.MainApp.Reproducer;
 
-public class Gas
+public class Gas : INotifyPropertyChanged
 {
-    public string Name { get; set; }
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            _name = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+        }
+    }
+
+    public float Flow
+    {
+        get => _flow;
+        set
+        {
+            _flow = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Flow)));
+        }
+    }
+
     public OdorDisplay.Device.ID ChannelID { get; }
     public Dictionary<string, string> Propeties { get; } = new() { { "maxFlow", "80" } };
 
-    public float Flow { get; set; } = 0;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public Gas(OdorDisplay.Device.ID channelID, string name, params KeyValuePair<string, string>[] props)
     {
         ChannelID = channelID;
-        Name = name;
+        _name = name;
+
         foreach (var prop in props)
         {
             Propeties.Add(prop.Key, prop.Value);
         }
     }
+
+    // Internal
+
+    string _name;
+    float _flow = 0;
 }
 
 public class Gases

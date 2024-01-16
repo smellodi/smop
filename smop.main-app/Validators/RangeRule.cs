@@ -6,8 +6,8 @@ namespace Smop.MainApp.Validators;
 
 public class RangeRule : ValidationRule
 {
-    public float Min { get; set; }
-    public float Max { get; set; }
+    public float Min { get; set; } = float.MinValue;
+    public float Max { get; set; } = float.MaxValue;
     public bool IsInteger { get; set; } = false;
     public bool CanBeEmpty { get; set; } = false;
 

@@ -36,10 +36,12 @@ public class Procedure
     {
         if (_odorDisplay.IsOpen)
         {
-            var actuators = Gases.Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
-                ODPackets.ActuatorCapabilities.OdorantValveClose,
-                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0.0f)
-            )));
+            var actuators = _gases.Items
+                .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
+                .Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
+                    ODPackets.ActuatorCapabilities.OdorantValveClose,
+                    KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0.0f)
+                )));
             SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
         }
 

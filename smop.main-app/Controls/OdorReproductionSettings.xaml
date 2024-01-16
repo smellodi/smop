@@ -3,11 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Smop.MainApp.Controls"
+             xmlns:v="clr-namespace:Smop.MainApp.Validators"
              mc:Ignorable="d" 
              d:DesignHeight="300"
-             d:DesignWidth="300"
-             Loaded="UserControl_Loaded">
+             d:DesignWidth="300">
+    
+    <UserControl.Resources>
+        <v:RangeRule x:Key="maxInterationsValidator" Min="0" Max="100" IsInteger="True"/>
+        <v:RangeRule x:Key="thresholdValidator" Min="0" IsInteger="False"/>
+        <v:RangeRule x:Key="sniffingDelayValidator" Min="0" IsInteger="False"/>
+        
+        <Style x:Key="GasName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="4, 0"/>
+        </Style>
+        <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </UserControl.Resources>
     
     <StackPanel>
         <Label Style="{StaticResource Section}"
@@ -17,32 +30,53 @@
                      Style="{StaticResource Setting}"
                      Tag="Max iterations">
             <TextBox x:Name="txbMaxIterations"
-                     FontSize="14"
-                     TextChanged="MaxIterations_TextChanged"/>
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="MaxIterations" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <v:RangeRule Min="0" Max="100" IsInteger="True"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </UserControl>
         <UserControl x:Name="uscThreshold"
                      Style="{StaticResource Setting}"
                      Tag="Threshold">
             <TextBox x:Name="txbThreshold"
-                     FontSize="14"
-                     TextChanged="Threshold_TextChanged"/>
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="Threshold" UpdateSourceTrigger="PropertyChanged" StringFormat="0.####">
+                        <Binding.ValidationRules>
+                            <v:RangeRule Min="0" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </UserControl>
         <UserControl x:Name="uscSendPID"
                      Style="{StaticResource Setting}"
                      Tag="Send PID values">
             <CheckBox x:Name="chkSendPID"
-                      VerticalAlignment="Center"
-                      Click="SendPID_Click"/>
+                      IsChecked="{Binding SendPID}"
+                      VerticalAlignment="Center"/>
         </UserControl>
 
         <Label Style="{StaticResource Section}"
                Content="eNose settings:"/>
         <UserControl x:Name="uscSniffingDelay"
-                    Style="{StaticResource Setting}"
-                    Tag="Sniffing delay, seconds">
+                     Style="{StaticResource Setting}"
+                     Tag="Sniffing delay, seconds">
             <TextBox x:Name="txbSniffingDelay" Grid.Column="0"
-                    FontSize="14"
-                    TextChanged="SniffingDelay_TextChanged"/>
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="SniffingDelay" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <v:RangeRule Min="0" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </UserControl>
 
         <Label Style="{StaticResource Section}"

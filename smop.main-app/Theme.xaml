@@ -6,7 +6,7 @@
     <Color x:Key="ColorLightDarker">#D49A6A</Color>
     <Color x:Key="ColorDarkLighter">#AA6C39</Color>
     <Color x:Key="ColorDark">#804515</Color>
-    <Color x:Key="ColorDarkDarker">#553600</Color>
+    <Color x:Key="ColorDarkDarker">#4B2506</Color>
 
     <Color x:Key="ColorDisabledLight">#E0E0E0</Color>
     <Color x:Key="ColorDisabledLightDarker">#959595</Color>
@@ -18,16 +18,20 @@
     <SolidColorBrush x:Key="BrushFont" Color="{StaticResource ColorLight}" />
     <SolidColorBrush x:Key="BrushFontDisabled" Color="{StaticResource ColorDisabledLight}" />
     <SolidColorBrush x:Key="BrushFontDark" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushFontFocused" Color="{StaticResource ColorDarkDarker}" />
     <SolidColorBrush x:Key="BrushFontDarkDisabled" Color="{StaticResource ColorDisabledDark}" />
     <SolidColorBrush x:Key="BrushInput" Color="{StaticResource ColorLight}" />
-    <SolidColorBrush x:Key="BrushButton" Color="{StaticResource ColorDarkLighter}" />
+    <SolidColorBrush x:Key="BrushInputDark" Color="{StaticResource ColorLightDarker}" />
+    <SolidColorBrush x:Key="BrushButton" Color="{StaticResource ColorDarkDarker}" />
+    <SolidColorBrush x:Key="BrushButtonLight" Color="{StaticResource ColorDark}" />
     <SolidColorBrush x:Key="BrushButtonHover" Color="{StaticResource ColorLightDarker}" />
-    <SolidColorBrush x:Key="BrushButtonPressed" Color="{StaticResource ColorDarkDarker}" />
+    <SolidColorBrush x:Key="BrushButtonPressed" Color="{StaticResource ColorDarkLighter}" />
     <SolidColorBrush x:Key="BrushButtonFocused" Color="{StaticResource ColorDark}" />
     <SolidColorBrush x:Key="BrushButtonDisabled" Color="{StaticResource ColorDisabledLightDarker}" />
     <SolidColorBrush x:Key="BrushBorder" Color="{StaticResource ColorDark}" />
-    <SolidColorBrush x:Key="BrushBorderFocused" Color="{StaticResource ColorDarkDarker}" />
+    <SolidColorBrush x:Key="BrushBorderDark" Color="{StaticResource ColorDarkDarker}" />
     <SolidColorBrush x:Key="BrushBorderLight" Color="{StaticResource ColorDarkLighter}" />
+    <SolidColorBrush x:Key="BrushBorderFocused" Color="{StaticResource ColorDarkDarker}" />
     <SolidColorBrush x:Key="BrushBorderDisabled" Color="{StaticResource ColorDisabledDarkDarker}" />
     <SolidColorBrush x:Key="BrushBorderLightDisabled" Color="{StaticResource ColorDisabledDarkLighter}" />
     <SolidColorBrush x:Key="BrushHeaderBackground" Color="{StaticResource ColorDark}" />

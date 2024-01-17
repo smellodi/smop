@@ -23,8 +23,8 @@
             <Border x:Name="Border" 
                     Grid.ColumnSpan="2"
                     CornerRadius="0"
-                    Background="{StaticResource BrushButton}" 
-                    BorderBrush="{StaticResource BrushBorder}"
+                    Background="{StaticResource BrushBorder}" 
+                    BorderBrush="{StaticResource BrushBorderDark}"
                     BorderThickness="1" />
             <Border Grid.Column="0"
                     CornerRadius="0" 
@@ -61,7 +61,7 @@
         <Setter Property="OverridesDefaultStyle" Value="true"/>
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
-        <Setter Property="Background" Value="{StaticResource BrushButton}"/>
+        <Setter Property="Background" Value="{StaticResource BrushBorderLight}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ComboBoxItem}">
@@ -139,7 +139,7 @@
                                   MinWidth="{TemplateBinding ActualWidth}"
                                   MaxHeight="{TemplateBinding MaxDropDownHeight}">
                                 <Border x:Name="DropDownBorder"
-                                        Background="{StaticResource BrushButton}"
+                                        Background="{StaticResource BrushBorderLight}"
                                         BorderThickness="1"
                                         BorderBrush="{StaticResource BrushBorder}"/>
                                 <ScrollViewer Margin="0" SnapsToDevicePixels="True">
@@ -314,14 +314,14 @@
     <!-- TextBox -->
     <ControlTemplate x:Key="TextBoxTemplateNormal" TargetType="{x:Type TextBox}">
         <Border x:Name="Border"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Background="{TemplateBinding Background}"
-                                    SnapsToDevicePixels="True">
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                SnapsToDevicePixels="True">
             <ScrollViewer x:Name="PART_ContentHost"
-                                              Focusable="false"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden"/>
+                          Focusable="false"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Hidden"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsEnabled" Value="false">
@@ -338,14 +338,14 @@
 
     <ControlTemplate x:Key="TextBoxTemplateError" TargetType="{x:Type TextBox}">
         <Border x:Name="Border"
-                                    BorderBrush="Red"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Background="{TemplateBinding Background}"
-                                    SnapsToDevicePixels="True">
+                BorderBrush="Red"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                Background="{TemplateBinding Background}"
+                SnapsToDevicePixels="True">
             <ScrollViewer x:Name="PART_ContentHost"
-                                              Focusable="false"
-                                              HorizontalScrollBarVisibility="Hidden"
-                                              VerticalScrollBarVisibility="Hidden"/>
+                          Focusable="false"
+                          HorizontalScrollBarVisibility="Hidden"
+                          VerticalScrollBarVisibility="Hidden"/>
         </Border>
         <ControlTemplate.Triggers>
             <Trigger Property="IsEnabled" Value="false">
@@ -369,6 +369,11 @@
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Foreground" Value="{StaticResource BrushFontDarkDisabled}"/>
                 <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDisabled}"/>
+            </Trigger>
+            <Trigger Property="IsFocused" Value="true">
+                <Setter Property="Background" Value="{StaticResource BrushInputDark}"/>
+                <Setter Property="Foreground" Value="{StaticResource BrushFontFocused}"/>
+                <Setter Property="CaretBrush" Value="{StaticResource BrushFontFocused}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -476,7 +481,7 @@
         <Setter Property="SnapsToDevicePixels" Value="true" />
         <!--Setter Property="OverridesDefaultStyle" Value="true"/-->
         <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
-        <Setter Property="Background" Value="{StaticResource BrushButton}"/>
+        <Setter Property="Background" Value="{StaticResource BrushButtonPressed}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
@@ -516,7 +521,7 @@
                 <ControlTemplate TargetType="ListView">
                     <Border Name="Border"
                             BorderThickness="1"
-                            BorderBrush="{StaticResource BrushBorder}"
+                            BorderBrush="{StaticResource BrushBorderDark}"
                             Background="{StaticResource BrushPanelLightest}">
                         <ScrollViewer>
                             <ItemsPresenter/>
@@ -540,8 +545,8 @@
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="OverridesDefaultStyle" Value="true" />
         <Setter Property="Focusable" Value="false" />
-        <Setter Property="Background" Value="{StaticResource BrushButton}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}" />
+        <Setter Property="Background" Value="{StaticResource BrushButtonLight}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDark}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Template">
             <Setter.Value>
@@ -600,7 +605,7 @@
                 <ControlTemplate TargetType="{x:Type Thumb}">
                     <Border Name="Border" 
                             BorderThickness="1"
-                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderBrush="{StaticResource BrushBorderDark}"
                             Background="{TemplateBinding Background}"/>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -638,7 +643,7 @@
                     <Thumb Style="{StaticResource ScrollBarThumb}"
                            Margin="0"
                            BorderBrush="{StaticResource BrushBorder}"
-                           Background="{StaticResource BrushButton}"/>
+                           Background="{StaticResource BrushBorder}"/>
                 </Track.Thumb>
                 <Track.IncreaseRepeatButton>
                     <RepeatButton Style="{StaticResource ScrollBarPageButton}"

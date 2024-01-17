@@ -210,7 +210,7 @@ public class Procedure
         return result;
     }
 
-    private void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
+    private static void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
     {
         if (odorDisplayResult.Error != Comm.Error.Success)
         {
@@ -238,8 +238,7 @@ public class Procedure
             {
                 if (measurement.Device == OdorDisplay.Device.ID.Base)
                 {
-                    var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
-                    if (pid != null)
+                    if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
                     {
                         _ = _ml.Publish(pid.Volts);
                         break;

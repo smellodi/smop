@@ -360,7 +360,7 @@ public class SetupProcedure
         _nlog.Error($"{action}: {error}");
         return response;
     }
-    private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
+    private async void OdorDisplay_Data(object? sender, ODPackets.Data data)
     {
         await CommPortEventHandler.Do(() =>
         {

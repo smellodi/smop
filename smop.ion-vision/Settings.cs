@@ -6,7 +6,7 @@ namespace Smop.IonVision;
 
 public class Settings
 {
-    public static string DefaultFilename => "IonVision.json";
+    public static string DefaultFilename { get; set; } = "IonVision.json";
     public string IP
     {
         get => _properties.IP;

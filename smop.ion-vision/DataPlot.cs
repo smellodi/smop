@@ -9,14 +9,15 @@ using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-namespace Test.IonVision;
+namespace Smop.IonVision;
 
-internal static class DataPlot
+public static class DataPlot
 {
     public enum ComparisonOperation { None, Difference, BlandAltman }
-    public static ComparisonOperation OperationWith2Sets { get; set; } = ComparisonOperation.BlandAltman;
-    public static bool LogInBlandAltman { get; set; } = true;
-    public static void Show(int cols, int rows, float[] values1, float[]? values2 = null)
+
+    public static bool UseLogarithmicScaleInBlandAltman { get; set; } = true;
+    
+    public static void Show(int cols, int rows, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
     {
         var thread = new Thread(() => {
             var plot = new Window()
@@ -32,28 +33,9 @@ internal static class DataPlot
             plot.Content = canvas;
             plot.Loaded += (s, e) =>
             {
-
-                Rect rc = new Rect();
-                if (values2 is null)
-                {
-                    rc = DrawPlot(canvas, cols, rows, values1);
-                    plot.Title = "Data plot";
-                }
-                else if (values1.Length == values2.Length)
-                {
-                    if (OperationWith2Sets == ComparisonOperation.BlandAltman)
-                    {
-                        rc = DrawBlandAltman(canvas, values1, values2);
-                        plot.Title = "Bland-Altman plot";
-                    }
-                    else if (OperationWith2Sets == ComparisonOperation.Difference)
-                    {
-                        rc = DrawDiff(canvas, cols, rows, values1, values2);
-                        plot.Title = "Data difference plot";
-                    }
-                }
-
-                CreateAxis(canvas, rc);
+                Create(canvas, cols, rows, values1, values2, compOp);
+                plot.Title = values2 is null ? "Single scan" :
+                    (compOp == ComparisonOperation.BlandAltman ? "Bland-Altman" : "Difference between two scans");
             };
 
             plot.Show();
@@ -64,6 +46,30 @@ internal static class DataPlot
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
         thread.Join();
+    }
+
+    public static void Create(Canvas canvas, int cols, int rows, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
+    {
+        canvas.Children.Clear();
+
+        var rc = new Rect();
+        if (values2 is null)
+        {
+            rc = DrawPlot(canvas, cols, rows, values1);
+        }
+        else if (values1.Length == values2.Length)
+        {
+            if (compOp == ComparisonOperation.BlandAltman)
+            {
+                rc = DrawBlandAltman(canvas, values1, values2);
+            }
+            else if (compOp == ComparisonOperation.Difference)
+            {
+                rc = DrawDiff(canvas, cols, rows, values1, values2);
+            }
+        }
+
+        CreateAxis(canvas, rc);
     }
 
     // Internal
@@ -234,7 +240,7 @@ internal static class DataPlot
     {
         float[] valuesX = new float[values1.Length];
         float[] valuesY = new float[values1.Length];
-        bool useLog = LogInBlandAltman && values1.Min() > 0 && values2.Min() > 0;
+        bool useLog = UseLogarithmicScaleInBlandAltman && values1.Min() > 0 && values2.Min() > 0;
 
         for (int i = 0; i < values1.Length; i++)
         {

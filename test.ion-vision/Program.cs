@@ -5,12 +5,11 @@ using System.Data;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Test.IonVision;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
-DataPlot.LogInBlandAltman = false;
+DataPlot.UseLogarithmicScaleInBlandAltman = false;
 
 // tests the Bland-Altman plot
 /*
@@ -180,13 +179,13 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
             break;
         case DataPlot.ComparisonOperation.Difference:
         case DataPlot.ComparisonOperation.BlandAltman:
-            DataPlot.OperationWith2Sets = operation;
             if (_data.Count > 1)
                 DataPlot.Show(
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                         _data[^1].IntensityTop,
-                        _data[^2].IntensityTop
+                        _data[^2].IntensityTop,
+                        operation
                     );
             else
                 Console.Write($"At least 2 scan results must be retrieved (use 'scan' and 'result' commands)");

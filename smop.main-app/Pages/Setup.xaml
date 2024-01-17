@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
+      xmlns:dms="clr-namespace:Smop.IonVision;assembly=Smop.IonVision"
       mc:Ignorable="d" 
       d:DesignHeight="750" d:DesignWidth="1000"
       Title="Setup"
@@ -152,7 +153,26 @@
                             </StackPanel>
                         </ScrollViewer>
                     </TabItem>
-                    <TabItem x:Name="tabIonVision" Header="Ion Vision"/>
+                    <TabItem x:Name="tabIonVision" Header="Ion Vision">
+                        <StackPanel>
+                            <WrapPanel Margin="8">
+                                <RadioButton x:Name="rdbDmsPlotTypeSingle"
+                                             Content="Single plot"
+                                             Margin="0,0,20,0"
+                                             Click="DmsPlotType_Click"/>
+                                <RadioButton x:Name="rdbDmsPlotTypeDiff"
+                                             Content="Difference"
+                                             Margin="0,0,20,0"
+                                             Click="DmsPlotType_Click"/>
+                                <RadioButton x:Name="rdbDmsPlotTypeBlandAltman"
+                                             Content="Bland-Altman"
+                                             Click="DmsPlotType_Click"/>
+                            </WrapPanel>
+                            <Canvas x:Name="cctDmsScan"
+                                    Background="#eee"
+                                    Height="400"/>
+                        </StackPanel>
+                    </TabItem>
                 </TabControl>
 
                 <local:LiveData x:Name="lmsGraph" Grid.Row="1"

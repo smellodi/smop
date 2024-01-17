@@ -27,9 +27,14 @@ public class SetupProcedure
     public event EventHandler<LogHanddlerArgs>? LogSnt;
 
     public IonVision.ParameterDefinition? ParamDefinition { get; private set; } = null;
-    public IonVision.ScanResult? SampleScan { get; private set; } = null;
+    public IonVision.ScanResult? DmsScan { get; private set; } = null;
 
     public bool IsSntScanComplete => _sntSamples.Count >= SNT_MAX_DATA_COUNT;
+
+    public SetupProcedure()
+    {
+        IonVision.DataPlot.UseLogarithmicScaleInBlandAltman = false;
+    }
 
     public void EnumGases(Action<Gas> callback)
     {
@@ -153,11 +158,11 @@ public class SetupProcedure
         List<Task> scans = new();
         if (App.IonVision != null)
         {
-            scans.Add(MakeSampleScan(App.IonVision));
+            scans.Add(MakeDmsScan(App.IonVision));
         }
         else if (_smellInsp.IsOpen)     // remove "else" to measure from BOTH ENOSES
         {
-            scans.Add(WaitForSntSamples());
+            scans.Add(CollectSntSamples());
         }
 
         await Task.WhenAll(scans);
@@ -211,9 +216,9 @@ public class SetupProcedure
 
         await Task.Delay(500);
 
-        if (SampleScan != null)
+        if (DmsScan != null)
         {
-            await App.ML.Publish(SampleScan);
+            await App.ML.Publish(DmsScan);
         }
         else if (_sntSamples.Count > 0)
         {
@@ -244,9 +249,10 @@ public class SetupProcedure
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-    Gases _gases = new Gases();
-    List<SmellInsp.Data> _sntSamples = new();
-    List<float> _pidSamples = new();
+    readonly List<SmellInsp.Data> _sntSamples = new();
+    readonly List<float> _pidSamples = new();
+
+    Gases _gases = new();
 
     private OdorDisplay.Device.ID[] GetAvailableChannelIDs()
     {
@@ -286,9 +292,9 @@ public class SetupProcedure
         return response;
     }
 
-    private async Task MakeSampleScan(IonVision.Communicator ionVision)
+    private async Task MakeDmsScan(IonVision.Communicator ionVision)
     {
-        SampleScan = null;
+        DmsScan = null;
 
         var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
         if (!resp.Success)
@@ -325,12 +331,12 @@ public class SetupProcedure
         } while (true);
 
         await Task.Delay(300);
-        SampleScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
+        DmsScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
 
-        LogDms?.Invoke(this, new LogHanddlerArgs(SampleScan != null ? "Ready to start." : "Failed to retrieve the scanning result"));
+        LogDms?.Invoke(this, new LogHanddlerArgs(DmsScan != null ? "Ready to start." : "Failed to retrieve the scanning result"));
     }
 
-    private async Task WaitForSntSamples()
+    private async Task CollectSntSamples()
     {
         _sntSamples.Clear();
 

@@ -1,4 +1,6 @@
-﻿using Smop.MainApp.Utils;
+﻿using Smop.IonVision;
+using Smop.MainApp.Dialogs;
+using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -14,6 +16,13 @@ public partial class Setup : Page, IPage<object?>
     public Setup()
     {
         InitializeComponent();
+
+        _dmsPlotTypes = new RadioButton[] { rdbDmsPlotTypeSingle, rdbDmsPlotTypeDiff, rdbDmsPlotTypeBlandAltman };
+        foreach (int plotType in Enum.GetValues(typeof(DataPlot.ComparisonOperation)))
+        {
+            _dmsPlotTypes[plotType].Tag = plotType;
+            _dmsPlotTypes[plotType].IsEnabled = false;
+        }
 
         _indicatorController = new Indicators.Controller(lmsGraph);
 
@@ -38,6 +47,8 @@ public partial class Setup : Page, IPage<object?>
 
             _procedure.EnumGases(odorReproductionSettings.AddGas);
         }
+
+        cctDmsScan.Children.Clear();
 
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
@@ -74,11 +85,16 @@ public partial class Setup : Page, IPage<object?>
     readonly Indicators.Controller _indicatorController;
     readonly SetupProcedure _procedure;
 
+    readonly List<string> _ionVisionLog = new();
+    readonly List<string> _smellInspLog = new();
+
+    readonly List<MeasurementData> _dmsScans = new();
+    readonly RadioButton[] _dmsPlotTypes;
+
     bool _isInitilized = false;
     bool _ionVisionIsReady = false;
 
-    List<string> _ionVisionLog = new();
-    List<string> _smellInspLog = new();
+    DataPlot.ComparisonOperation _dmsPlotType = DataPlot.ComparisonOperation.None;
 
     // Odor Reproduction
     bool _mlIsConnected = false;
@@ -91,13 +107,19 @@ public partial class Setup : Page, IPage<object?>
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
         {
-            bool isDmsReady = _procedure.SampleScan != null && _procedure.ParamDefinition != null;
+            bool isDmsReady = _procedure.DmsScan != null && _procedure.ParamDefinition != null;
             bool isSntReady = _procedure.IsSntScanComplete || isDmsReady;
             btnStart.IsEnabled = (isDmsReady || App.IonVision == null) && (isSntReady || !_smellInsp.IsOpen) && _mlIsConnected;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
 
             tblMLStatus.Text = App.ML != null && _mlIsConnected ? $"connected via {App.ML.ConnectionMean}" : "not connected";
         }
+
+        _dmsPlotTypes[(int)DataPlot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
+        _dmsPlotTypes[(int)DataPlot.ComparisonOperation.Difference].IsEnabled = _dmsScans.Count > 1;
+        _dmsPlotTypes[(int)DataPlot.ComparisonOperation.BlandAltman].IsEnabled = _dmsScans.Count > 1;
+
+        _dmsPlotTypes[(int)_dmsPlotType].SetValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
     }
 
     private void AddToLog(LogType destination, string line, bool replaceLast = false)
@@ -113,6 +135,51 @@ public partial class Setup : Page, IPage<object?>
         lines.Add(line);
         tbl.Text = string.Join('\n', lines);
         scv.ScrollToBottom();
+    }
+
+    private void ShowDmsPlot()
+    {
+        try
+        {
+            ShowPlot(_dmsPlotType);
+        }
+        catch (Exception ex)
+        {
+            MsgBox.Error("DMS scan", ex.Message);
+        }
+    }
+
+    private void ShowPlot(DataPlot.ComparisonOperation compOp)
+    {
+        if (_procedure.ParamDefinition == null)
+            return;
+
+        if (compOp == DataPlot.ComparisonOperation.None)
+        {
+            if (_dmsScans.Count > 0)
+                DataPlot.Create(
+                    cctDmsScan,
+                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    _dmsScans[^1].IntensityTop
+                );
+            else
+                throw new Exception($"No DMS scan performed yet");
+        }
+        else
+        {
+            if (_dmsScans.Count > 1)
+                DataPlot.Create(
+                    cctDmsScan,
+                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    _dmsScans[^1].IntensityTop,
+                    _dmsScans[^2].IntensityTop,
+                    compOp
+                );
+            else
+                throw new Exception($"At least 2 DMS scans must be performed to display this plot");
+        }
     }
 
     // Event handlers
@@ -152,33 +219,31 @@ public partial class Setup : Page, IPage<object?>
         _smellInsp.Data += SmellInsp_Data;
 
         _indicatorController.Clear();
+        _dmsScans.Clear();
 
         if (Focusable)
         {
             Focus();
         }
 
-        if (_isInitilized)
+        if (!_isInitilized)
         {
-            return;
+            _isInitilized = true;
+
+            tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
+            tabIonVision.IsEnabled = App.IonVision != null;
+
+            await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
+
+            _procedure.InitializeOdorPrinter();
+
+            if (App.IonVision != null)
+            {
+                _ionVisionIsReady = await _procedure.InitializeIonVision(App.IonVision);
+            }
         }
 
-        // Next code is called only once
-
-        _isInitilized = true;
-
-        tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
-        tabIonVision.IsEnabled = App.IonVision != null;
-
-        await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
-
-        _procedure.InitializeOdorPrinter();
-
-        if (App.IonVision != null)
-        {
-            _ionVisionIsReady = await _procedure.InitializeIonVision(App.IonVision);
-            UpdateUI();
-        }
+        UpdateUI();
     }
 
     private void Page_Unloaded(object? sender, RoutedEventArgs e)
@@ -217,6 +282,17 @@ public partial class Setup : Page, IPage<object?>
         btnMeasureSample.IsEnabled = false;
 
         await _procedure.MeasureSample();
+
+        if (_procedure.DmsScan != null)
+        {
+            _dmsScans.Add(_procedure.DmsScan.MeasurementData);
+
+            if (_dmsPlotType == DataPlot.ComparisonOperation.None || _dmsScans.Count > 1)
+            {
+                ShowDmsPlot();
+            }
+        }
+
         UpdateUI();
 
         btnMeasureSample.IsEnabled = true;
@@ -252,5 +328,11 @@ public partial class Setup : Page, IPage<object?>
     private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         lmsGraph.Visibility = tabOdorDisplay.IsSelected ? Visibility.Visible : Visibility.Hidden;
+    }
+
+    private void DmsPlotType_Click(object sender, RoutedEventArgs e)
+    {
+        _dmsPlotType = (DataPlot.ComparisonOperation)Enum.Parse(typeof(DataPlot.ComparisonOperation), (sender as RadioButton)!.Tag.ToString() ?? "0");
+        ShowDmsPlot();
     }
 }

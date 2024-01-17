@@ -9,17 +9,17 @@ namespace Smop.MainApp.Dialogs
 {
     public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDisposable
     {
-        public string? IP { get; private set; }
+        public string IP { get; private set; } = "";
 
         public string? User { get; private set; }
 
-        public string[] Projects { get; private set; } = System.Array.Empty<string>();
+        public string[] Projects { get; private set; } = Array.Empty<string>();
 
         public string[] Parameters => _parameters.Select(p => p.Name).ToArray();
 
-        public string? Project => cmbProjects.SelectedItem?.ToString();
-        public string? ParameterName => cmbParameters.SelectedIndex >= 0 ? _parameters[cmbParameters.SelectedIndex].Name : null;
-        public string? ParameterId => cmbParameters.SelectedIndex >= 0 ? _parameters[cmbParameters.SelectedIndex].Id : null;
+        public string Project => cmbProjects.SelectedItem?.ToString() ?? "";
+        public string ParameterName => cmbParameters.SelectedIndex >= 0 ? _parameters[cmbParameters.SelectedIndex].Name : "";
+        public string ParameterId => cmbParameters.SelectedIndex >= 0 ? _parameters[cmbParameters.SelectedIndex].Id : "";
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -58,7 +58,7 @@ namespace Smop.MainApp.Dialogs
 
         IonVision.API? _ivAPI;
         IonVision.Settings? _ivSettings;
-        IonVision.Parameter[] _parameters = System.Array.Empty<IonVision.Parameter>();
+        IonVision.Parameter[] _parameters = Array.Empty<IonVision.Parameter>();
 
         private async Task Connect()
         {
@@ -66,7 +66,7 @@ namespace Smop.MainApp.Dialogs
             {
                 bdrWait.Visibility = Visibility.Visible;
 
-                IP = InputBox.Show(Title, "Please connect IonVision device with USB cable, then type its IP address and click 'OK'.", IP);
+                IP = InputBox.Show(Title, "Please connect IonVision device with USB cable, then type its IP address and click 'OK'.", IP) ?? "";
                 if (string.IsNullOrEmpty(IP))
                 {
                     Close();

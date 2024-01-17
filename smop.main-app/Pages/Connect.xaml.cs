@@ -187,19 +187,19 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         var info = HandleIonVisionError(await ionVision.GetSystemInfo(), "GetSystemInfo");
         btnConnectToIonVision.IsEnabled = true;
 
-        if (!info.Success)
+        if (!info.Success || info.Value == null)
         {
             MsgBox.Error(Title, "Cannot connect to the device");
             return false;
         }
-        else if (!info.Value!.CurrentVersion.StartsWith(ionVision.SupportedVersion))
+        else if (!info.Value.CurrentVersion.StartsWith(ionVision.SupportedVersion))
         {
             var settings = Properties.Settings.Default;
             var ignoredVersions = settings.Comm_IonVision_IgnoreVersionWarning ?? new System.Collections.Specialized.StringCollection();
 
-            if (!ignoredVersions.Contains(info.Value!.CurrentVersion))
+            if (!ignoredVersions.Contains(info.Value.CurrentVersion))
             {
-                var msg = $"Version mismatch: this software targets the version {ionVision.SupportedVersion}, but the device is operating the version {info.Value!.CurrentVersion}. Continue?";
+                var msg = $"Version mismatch: this software targets the version {ionVision.SupportedVersion}, but the device is operating the version {info.Value.CurrentVersion}. Continue?";
                 var reply = MsgBox.Custom(Title, msg, MsgBox.MsgIcon.Warning,
                     "ignore warnings for this version", null, MsgBox.Button.Yes, MsgBox.Button.No);
                 if (reply.Button == MsgBox.Button.No)
@@ -208,7 +208,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 }
                 else if (reply.IsOptionAccepted)
                 {
-                    ignoredVersions.Add(info.Value!.CurrentVersion);
+                    ignoredVersions.Add(info.Value.CurrentVersion);
                     settings.Comm_IonVision_IgnoreVersionWarning = ignoredVersions;
                     settings.Save();
                 }
@@ -220,7 +220,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         if (!projects.Value?.Contains(ionVision.Settings.Project) ?? false)
         {
-            string projectList = string.Join("\n", projects.Value!);
+            string projectList = string.Join("\n", projects.Value ?? Array.Empty<string>());
             if (_storage.Simulating.HasFlag(SimulationTarget.IonVision))
             {
                 projectList += "\n\nNote that even in the simulation mode the project names and parameters";
@@ -435,11 +435,13 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         setupDialog.Load(IonVisionSetupFilename);
         if (setupDialog.ShowDialog() == true)
         {
-            var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
-            ivSettings.IP = setupDialog.IP!;
-            ivSettings.Project = setupDialog.Project!;
-            ivSettings.ParameterName = setupDialog.ParameterName!;
-            ivSettings.ParameterId = setupDialog.ParameterId!;
+            var ivSettings = new IonVision.Settings(IonVisionSetupFilename)
+            {
+                IP = setupDialog.IP,
+                Project = setupDialog.Project,
+                ParameterName = setupDialog.ParameterName,
+                ParameterId = setupDialog.ParameterId
+            };
             ivSettings.Save();
         }
     }

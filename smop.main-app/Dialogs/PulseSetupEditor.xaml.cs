@@ -186,34 +186,28 @@ namespace Smop.MainApp.Dialogs
         float _lastDmsDelay = 5f;
 
         SessionProps? Session => _sessionIndex >= 0 ? _sessions[_sessionIndex] : null;
-        PulseChannelProps[]? Channels => _sessionIndex >= 0 && _pulseIndex >= 0 ? _sessions[_sessionIndex].Pulses[_pulseIndex].Channels : null;
+        PulseChannelProps[] Channels => _sessionIndex >= 0 && _pulseIndex >= 0 ? _sessions[_sessionIndex].Pulses[_pulseIndex].Channels : Array.Empty<PulseChannelProps>();
 
         private void UpdateChannelFlow(int id, float value)
         {
-            if (Channels != null)
+            for (int i = 0; i < Channels.Length; i++)
             {
-                for (int i = 0; i < Channels.Length; i++)
+                if (Channels[i].Id == id)
                 {
-                    if (Channels[i].Id == id)
-                    {
-                        Channels[i] = Channels[i] with { Flow = value };
-                        break;
-                    }
+                    Channels[i] = Channels[i] with { Flow = value };
+                    break;
                 }
             }
         }
 
         private void UpdateChannelUse(int id, bool value)
         {
-            if (Channels != null)
+            for (int i = 0; i < Channels.Length; i++)
             {
-                for (int i = 0; i < Channels.Length; i++)
+                if (Channels[i].Id == id)
                 {
-                    if (Channels[i].Id == id)
-                    {
-                        Channels[i] = Channels[i] with { Active = value };
-                        break;
-                    }
+                    Channels[i] = Channels[i] with { Active = value };
+                    break;
                 }
             }
         }
@@ -333,16 +327,19 @@ namespace Smop.MainApp.Dialogs
         {
             var channels = new List<PulseChannelProps>();
 
-            foreach (var channel in Channels!)
+            foreach (var channel in Channels)
             {
                 channels.Add(new PulseChannelProps(channel.Id, channel.Flow, channel.Active));
             }
 
-            Session!.AddPulse(new PulseProps(channels.ToArray()));
-            _pulseIndex = Session!.Pulses.Length - 1;
+            if (Session != null)
+            {
+                Session.AddPulse(new PulseProps(channels.ToArray()));
+                _pulseIndex = Session.Pulses.Length - 1;
 
-            lsvPulses.Items.Add($"#{Session!.Pulses.Length}");
-            lsvPulses.SelectedIndex = _pulseIndex;
+                lsvPulses.Items.Add($"#{Session.Pulses.Length}");
+                lsvPulses.SelectedIndex = _pulseIndex;
+            }
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)
@@ -352,6 +349,9 @@ namespace Smop.MainApp.Dialogs
 
         private void Sessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (Session == null)
+                return;
+
             _sessionIndex = lsvSessions.SelectedIndex;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionHumidity)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionInitialPause)));
@@ -366,7 +366,7 @@ namespace Smop.MainApp.Dialogs
             {
                 _pulseIndex = 0;
                 int i = 0;
-                foreach (var pulse in Session!.Pulses)
+                foreach (var pulse in Session.Pulses)
                 {
                     lsvPulses.Items.Add($"#{i+1}");
                     i++;
@@ -403,13 +403,13 @@ namespace Smop.MainApp.Dialogs
             foreach (var chk in _pulseChannelUseControl)
             {
                 var id = int.Parse((string)chk.Tag);
-                chk.IsChecked = Channels?.FirstOrDefault(c => c.Id == id)?.Active ?? false;
+                chk.IsChecked = Channels.FirstOrDefault(c => c.Id == id)?.Active ?? false;
             }
 
             foreach (var txb in _pulseChannelFlowControl)
             {
                 var id = int.Parse((string)txb.Tag);
-                txb.Text = Channels?.FirstOrDefault(c => c.Id == id)?.Flow.ToString("F2") ?? "";
+                txb.Text = Channels.FirstOrDefault(c => c.Id == id)?.Flow.ToString("F2") ?? "";
                 txb.Style = _pulseChannelFlowValid;
             }
         }

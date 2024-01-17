@@ -722,8 +722,8 @@
     <Style TargetType="TabItem">
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
-        <Setter Property="Background" Value="{StaticResource BrushButton}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+        <Setter Property="Background" Value="{StaticResource BrushBorder}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDark}"/>
 
         <Setter Property="Template">
             <Setter.Value>

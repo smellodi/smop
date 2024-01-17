@@ -250,9 +250,9 @@ internal class PulseController : IDisposable
         if (_ionVision != null && session.Intervals.HasDms)
         {
             var scan = HandleIonVisionError(await _ionVision.GetScanResult(), "GetScanResult");
-            if (scan?.Success ?? false)
+            if ((scan?.Success ?? false) && (scan.Value != null))
             {
-                _ionVisionLogger.Add(scan.Value!);
+                _ionVisionLogger.Add(scan.Value);
             }
         }
     }

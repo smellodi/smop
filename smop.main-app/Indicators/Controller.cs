@@ -155,7 +155,11 @@ public class Controller
             }
 
             _currentIndicator = chi;
-            _currentIndicator!.IsActive = true;
+
+            if (_currentIndicator != null)
+            {
+                _currentIndicator.IsActive = true;
+            }
 
             ResetGraph(chi);
         }

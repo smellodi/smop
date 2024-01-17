@@ -1,13 +1,12 @@
 ﻿using Smop.Common;
 using System;
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace Smop.IonVision;
 
 public class Settings
 {
-    public static string DefaultFilename = "IonVision.json";
+    public static string DefaultFilename => "IonVision.json";
     public string IP
     {
         get => _properties.IP;
@@ -55,6 +54,7 @@ public class Settings
             _properties = JsonSerializer.Deserialize<Properties>(jsonString, serializerOptions)!;
             if (_properties == null)
             {
+                _properties = DEFAULT_PROPERTIES with { };
                 throw new Exception("Cannot convert the string to a json list of key-value pairs");
             }
         }
@@ -82,6 +82,9 @@ public class Settings
 
     record class Properties(string IP, string Project, string ParameterId, string ParameterName, string? User);
 
-    Properties _properties = new("localhost", "Smellodi", "GUID", "Default", null);
+    readonly static Properties DEFAULT_PROPERTIES = new("localhost", "Smellodi", "GUID", "Default", null);
+
     readonly string _filename;
+
+    Properties _properties = DEFAULT_PROPERTIES with { };   // copying
 }

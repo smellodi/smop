@@ -80,7 +80,7 @@
         </UserControl>
 
         <Label Style="{StaticResource Section}"
-               Content="Odors:"/>
+               Content="Loaded odors:"/>
         <StackPanel x:Name="stpGases">
             <Grid>
                 <Grid.ColumnDefinitions>

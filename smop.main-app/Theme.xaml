@@ -16,8 +16,8 @@
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="BrushFont" Color="{StaticResource ColorLight}" />
-    <SolidColorBrush x:Key="BrushFontDisabled" Color="{StaticResource ColorDisabledLight}" />
     <SolidColorBrush x:Key="BrushFontDark" Color="{StaticResource ColorDark}" />
+    <SolidColorBrush x:Key="BrushFontDisabled" Color="{StaticResource ColorDisabledLight}" />
     <SolidColorBrush x:Key="BrushFontFocused" Color="{StaticResource ColorDarkDarker}" />
     <SolidColorBrush x:Key="BrushFontDarkDisabled" Color="{StaticResource ColorDisabledDark}" />
     <SolidColorBrush x:Key="BrushInput" Color="{StaticResource ColorLight}" />

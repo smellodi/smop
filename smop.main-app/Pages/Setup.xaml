@@ -54,7 +54,7 @@
                     <StackPanel x:Name="stpMLStatus" Grid.Row="2">
                         <Separator/>
                         <Label Style="{StaticResource Section}"
-                               Content="ML Status:"/>
+                               Content="ML status:"/>
                         <TextBlock x:Name="tblMLStatus"
                                    VerticalAlignment="Center"
                                    Margin="4"
@@ -77,17 +77,21 @@
                             <Separator Grid.Row="0" Margin="0,2,0,2"/>
                             <Label Grid.Row="1"
                                    Style="{StaticResource Section}"
-                                   Content="DMS status:"/>
-                            <ScrollViewer x:Name="scvDmsStatus" Grid.Row="2"
-                                          Padding="0,2"
-                                          VerticalScrollBarVisibility="Auto" 
-                                          HorizontalScrollBarVisibility="Disabled">
-                                <TextBlock Name="tblDmsStatus"
-                                           TextWrapping="Wrap"
-                                           Padding="6,0,0,0">
-                                    <Run Text="Initializing..."/>
-                                </TextBlock>
-                            </ScrollViewer>
+                                   Content="DMS events:"/>
+                            <Border Grid.Row="2"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource BrushBorderLight}">
+                                <ScrollViewer x:Name="scvDmsStatus"
+                                              Padding="0,2"
+                                              VerticalScrollBarVisibility="Auto" 
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <TextBlock Name="tblDmsStatus"
+                                               TextWrapping="Wrap"
+                                               Padding="6,0,0,0">
+                                        <Run Text="Initializing..."/>
+                                    </TextBlock>
+                                </ScrollViewer>
+                            </Border>
                         </Grid>
 
                         <Grid x:Name="grdSntStatus" Grid.Row="1">
@@ -100,17 +104,21 @@
                             <Separator Grid.Row="0" Margin="0,2,0,2"/>
                             <Label Grid.Row="1"
                                    Style="{StaticResource Section}"
-                                   Content="SNT status:"/>
-                            <ScrollViewer x:Name="scvSntStatus" Grid.Row="2"
-                                          Padding="0,2"
-                                          VerticalScrollBarVisibility="Auto" 
-                                          HorizontalScrollBarVisibility="Disabled">
-                                <TextBlock Name="tblSntStatus"
-                                           TextWrapping="Wrap"
-                                           Padding="6,0,0,0">
-                                    <Run Text="ready"/>
-                                </TextBlock>
-                            </ScrollViewer>
+                                   Content="SNT events:"/>
+                            <Border Grid.Row="2"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource BrushBorderLight}">
+                                <ScrollViewer x:Name="scvSntStatus" 
+                                              Padding="0,2"
+                                              VerticalScrollBarVisibility="Auto" 
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <TextBlock Name="tblSntStatus"
+                                               TextWrapping="Wrap"
+                                               Padding="6,0,0,0">
+                                        <Run Text="ready"/>
+                                    </TextBlock>
+                                </ScrollViewer>
+                            </Border>
                         </Grid>
                     </Grid>
 
@@ -170,7 +178,7 @@
                             </WrapPanel>
                             <Canvas x:Name="cctDmsScan"
                                     Background="#eee"
-                                    Height="400"/>
+                                    Height="416"/>
                         </StackPanel>
                     </TabItem>
                 </TabControl>

@@ -23,7 +23,7 @@
             <Border x:Name="Border" 
                     Grid.ColumnSpan="2"
                     CornerRadius="0"
-                    Background="{StaticResource BrushBorder}" 
+                    Background="{StaticResource BrushButtonLight}" 
                     BorderBrush="{StaticResource BrushBorderDark}"
                     BorderThickness="1" />
             <Border Grid.Column="0"
@@ -642,8 +642,8 @@
                 <Track.Thumb >
                     <Thumb Style="{StaticResource ScrollBarThumb}"
                            Margin="0"
-                           BorderBrush="{StaticResource BrushBorder}"
-                           Background="{StaticResource BrushBorder}"/>
+                           BorderBrush="{StaticResource BrushBorderDark}"
+                           Background="{StaticResource BrushButtonLight}"/>
                 </Track.Thumb>
                 <Track.IncreaseRepeatButton>
                     <RepeatButton Style="{StaticResource ScrollBarPageButton}"
@@ -680,8 +680,8 @@
                 <Track.Thumb>
                     <Thumb Style="{StaticResource ScrollBarThumb}"
                            Margin="1,0,1,0"
-                           BorderBrush="{StaticResource BrushBorder}"
-                           Background="{StaticResource BrushBorder}"/>
+                           BorderBrush="{StaticResource BrushBorderDark}"
+                           Background="{StaticResource BrushButtonLight}"/>
                 </Track.Thumb>
                 <Track.IncreaseRepeatButton>
                     <RepeatButton Style="{StaticResource ScrollBarPageButton}"
@@ -722,7 +722,7 @@
     <Style TargetType="TabItem">
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
-        <Setter Property="Background" Value="{StaticResource BrushBorder}"/>
+        <Setter Property="Background" Value="{StaticResource BrushButtonLight}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDark}"/>
 
         <Setter Property="Template">

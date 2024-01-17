@@ -80,7 +80,8 @@ public partial class OdorReproductionSettings : UserControl
 
         var txbName = new TextBox()
         {
-            Style = FindResource("GasName") as Style
+            Style = FindResource("GasName") as Style,
+            ToolTip = "Enter a name of the odor loaded into this channel,\nor leave it blank if the channel is not used"
         };
 
         var txbFlow = new TextBox()

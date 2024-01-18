@@ -42,7 +42,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
-                        <RowDefinition Height="auto"/>
                         <RowDefinition/>
                         <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
@@ -51,17 +50,7 @@
 
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
 
-                    <StackPanel x:Name="stpMLStatus" Grid.Row="2">
-                        <Separator/>
-                        <Label Style="{StaticResource Section}"
-                               Content="ML status:"/>
-                        <TextBlock x:Name="tblMLStatus"
-                                   VerticalAlignment="Center"
-                                   Margin="4"
-                                   Text="not connected"/>
-                    </StackPanel>
-
-                    <Grid x:Name="grdStatuses" Grid.Row="3">
+                    <Grid x:Name="grdStatuses" Grid.Row="2">
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                             <RowDefinition/>
@@ -74,7 +63,7 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
 
-                            <Separator Grid.Row="0" Margin="0,2,0,2"/>
+                            <Separator Grid.Row="0" Margin="0,8,0,0"/>
                             <Label Grid.Row="1"
                                    Style="{StaticResource Section}"
                                    Content="DMS events:"/>
@@ -101,7 +90,7 @@
                                 <RowDefinition/>
                             </Grid.RowDefinitions>
 
-                            <Separator Grid.Row="0" Margin="0,2,0,2"/>
+                            <Separator Grid.Row="0" Margin="0,8,0,0"/>
                             <Label Grid.Row="1"
                                    Style="{StaticResource Section}"
                                    Content="SNT events:"/>
@@ -122,7 +111,7 @@
                         </Grid>
                     </Grid>
 
-                    <Button x:Name="btnMeasureSample" Grid.Row="4"
+                    <Button x:Name="btnMeasureSample" Grid.Row="3"
                         Visibility="Collapsed"
                         Margin="0,8,0,0"
                         VerticalAlignment="Bottom"

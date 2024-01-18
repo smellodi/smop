@@ -23,9 +23,19 @@
     </UserControl.Resources>
     
     <StackPanel>
+        <Grid>
+            <Label Style="{StaticResource Section}"
+                   Content="ML status:"/>
+            <TextBlock x:Name="tblMLStatus"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,4,0,0"
+                       Text="not connected"/>
+        </Grid>
+
+        <Separator/>
         <Label Style="{StaticResource Section}"
                Content="ML settings:"/>
-
         <UserControl x:Name="uscMaxIterationNumber"
                      Style="{StaticResource Setting}"
                      Tag="Max iterations">
@@ -62,6 +72,7 @@
                       VerticalAlignment="Center"/>
         </UserControl>
 
+        <Separator/>
         <Label Style="{StaticResource Section}"
                Content="eNose settings:"/>
         <UserControl x:Name="uscSniffingDelay"
@@ -79,8 +90,41 @@
             </TextBox>
         </UserControl>
 
-        <Label Style="{StaticResource Section}"
-               Content="Loaded odors:"/>
+        <Separator Margin="0,8,0,0"/>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0">
+                <Label Style="{StaticResource Section}"
+                    Content="Odors:"/>
+                <StackPanel x:Name="stpGases">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0">ID</Label>
+                        <Label Grid.Column="1">Name</Label>
+                    </Grid>
+                    <!-- to be filled in code -->
+                </StackPanel>
+            </StackPanel>
+            
+            <StackPanel Grid.Column="1">
+                <Label Style="{StaticResource Section}"
+                    Content="Target flows:"/>
+                <StackPanel x:Name="stpFlows">
+                    <Label Grid.Column="0">ml/min</Label>
+                    <!-- to be filled in code -->
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+        <!--Label Style="{StaticResource Section}"
+               Content="Odors:"/>
         <StackPanel x:Name="stpGases">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -92,8 +136,7 @@
                 <Label Grid.Column="1">Name</Label>
                 <Label Grid.Column="2" HorizontalContentAlignment="Right">Target flow, ml/min</Label>
             </Grid>
-            <!-- to be filled in code -->
-        </StackPanel>
+        </StackPanel-->
 
     </StackPanel>
 </UserControl>

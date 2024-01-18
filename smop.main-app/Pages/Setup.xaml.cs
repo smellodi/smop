@@ -53,7 +53,6 @@ public partial class Setup : Page, IPage<object?>
 
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
-        stpMLStatus.Visibility = odorReproductionSettings.Visibility;
 
         if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 2)
             grdStatuses.RowDefinitions.RemoveAt(0);
@@ -113,7 +112,7 @@ public partial class Setup : Page, IPage<object?>
             btnStart.IsEnabled = (isDmsReady || App.IonVision == null) && (isSntReady || !_smellInsp.IsOpen) && _mlIsConnected;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
 
-            tblMLStatus.Text = App.ML != null && _mlIsConnected ? $"connected via {App.ML.ConnectionMean}" : "not connected";
+            odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? $"connected via {App.ML.ConnectionMean}" : "not connected";
         }
 
         _dmsPlotTypes[(int)DataPlot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;

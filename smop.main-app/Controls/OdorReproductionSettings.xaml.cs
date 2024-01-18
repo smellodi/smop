@@ -24,6 +24,12 @@ public class StringToBoolConverter : IValueConverter
 
 public partial class OdorReproductionSettings : UserControl
 {
+    public string MLStatus
+    {
+        get => tblMLStatus.Text;
+        set => tblMLStatus.Text = value;
+    }
+
     public int MaxIterations
     {
         get => Properties.Settings.Default.Reproduction_MaxIterations;
@@ -116,16 +122,18 @@ public partial class OdorReproductionSettings : UserControl
         var container = new Grid();
         container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
         container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
-        container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
+        //container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
 
         Grid.SetColumn(lblID, 0);
         Grid.SetColumn(txbName, 1);
-        Grid.SetColumn(txbFlow, 2);
+        //Grid.SetColumn(txbFlow, 2);
 
         container.Children.Add(lblID);
         container.Children.Add(txbName);
-        container.Children.Add(txbFlow);
+        //container.Children.Add(txbFlow);
 
         stpGases.Children.Add(container);
+
+        stpFlows.Children.Add(txbFlow);
     }
 }

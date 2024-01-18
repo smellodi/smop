@@ -17,7 +17,7 @@ public static class DataPlot
 
     public static bool UseLogarithmicScaleInBlandAltman { get; set; } = true;
     
-    public static void Show(int cols, int rows, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
+    public static void Show(int rows, int cols, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
     {
         var thread = new Thread(() => {
             var plot = new Window()
@@ -33,7 +33,7 @@ public static class DataPlot
             plot.Content = canvas;
             plot.Loaded += (s, e) =>
             {
-                Create(canvas, cols, rows, values1, values2, compOp);
+                Create(canvas, rows, cols, values1, values2, compOp);
                 plot.Title = values2 is null ? "Single scan" :
                     (compOp == ComparisonOperation.BlandAltman ? "Bland-Altman" : "Difference between two scans");
             };
@@ -48,14 +48,14 @@ public static class DataPlot
         thread.Join();
     }
 
-    public static void Create(Canvas canvas, int cols, int rows, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
+    public static void Create(Canvas canvas, int rows, int cols, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
     {
         canvas.Children.Clear();
 
         var rc = new Rect();
         if (values2 is null)
         {
-            rc = DrawPlot(canvas, cols, rows, values1);
+            rc = DrawPlot(canvas, rows, cols, values1);
         }
         else if (values1.Length == values2.Length)
         {
@@ -65,7 +65,7 @@ public static class DataPlot
             }
             else if (compOp == ComparisonOperation.Difference)
             {
-                rc = DrawDiff(canvas, cols, rows, values1, values2);
+                rc = DrawDiff(canvas, rows, cols, values1, values2);
             }
         }
 
@@ -168,7 +168,7 @@ public static class DataPlot
         canvas.Children.Add(lowerStd);
     }
 
-    private static Rect DrawPlot(Canvas canvas, int cols, int rows, float[] values)
+    private static Rect DrawPlot(Canvas canvas, int rows, int cols, float[] values)
     {
         double width = canvas.ActualWidth;
         double height = canvas.ActualHeight;

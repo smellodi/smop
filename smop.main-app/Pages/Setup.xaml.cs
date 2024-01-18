@@ -3,6 +3,7 @@ using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -48,7 +49,7 @@ public partial class Setup : Page, IPage<object?>
             _procedure.EnumGases(odorReproductionSettings.AddGas);
         }
 
-        cctDmsScan.Children.Clear();
+        cnvDmsScan.Children.Clear();
 
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
@@ -158,7 +159,7 @@ public partial class Setup : Page, IPage<object?>
         {
             if (_dmsScans.Count > 0)
                 DataPlot.Create(
-                    cctDmsScan,
+                    cnvDmsScan,
                     (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     _dmsScans[^1].IntensityTop
@@ -170,7 +171,7 @@ public partial class Setup : Page, IPage<object?>
         {
             if (_dmsScans.Count > 1)
                 DataPlot.Create(
-                    cctDmsScan,
+                    cnvDmsScan,
                     (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     _dmsScans[^1].IntensityTop,
@@ -232,6 +233,14 @@ public partial class Setup : Page, IPage<object?>
 
             tabSmellInsp.IsEnabled = _smellInsp.IsOpen;
             tabIonVision.IsEnabled = App.IonVision != null;
+
+            if (tabIonVision.IsEnabled && !tabIonVision.IsSelected)
+            {
+                // this is needed to arrange the Canvas, so that its ActualWidth/Height is not 0 anymore
+                tabIonVision.IsSelected = true;
+                await Task.Delay(10);
+                tabOdorDisplay.IsSelected = true;
+            }
 
             await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 

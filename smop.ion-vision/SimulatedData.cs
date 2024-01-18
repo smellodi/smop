@@ -1,13 +1,22 @@
-﻿namespace Smop.IonVision;
+﻿using Smop.Comm;
+using System;
+
+namespace Smop.IonVision;
 
 public static class SimulatedData
 {
-    const int DATA_ROWS = 3;
-    const int DATA_COLS = 4;
+    const int DATA_ROWS = 30;
+    const int DATA_COLS = 40;
     const int DATA_POINT_COUNT = DATA_ROWS * DATA_COLS;
-    const int DATA_PP = 1000;
-    const int DATA_PW = 200;
+    const float DATA_PP = 1000;
+    const float DATA_PW = 200;
     const short DATA_SAMPLE_COUNT = 64;
+    const float USV_START = 200;
+    const float USV_STOP = 800;
+    const float UCV_START = -3;
+    const float UCV_STOP = 13;
+    const float VB_START = -6;
+    const float VB_STOP = -6;
 
     static readonly Settings _setting = new();
 
@@ -50,22 +59,21 @@ public static class SimulatedData
             true,
             new Delays(100000000, 300, 10000000, 3000000, 5000000000, 200000000),
             new SteppingControl(
-                new RangeStep(200, 800, DATA_COLS),
-                new RangeStep(-3, 13, DATA_ROWS),
-                new RangeStep(-6, -6, 1),
+                new RangeStep(USV_START, USV_STOP, DATA_COLS),
+                new RangeStep(UCV_START, UCV_STOP, DATA_ROWS),
+                new RangeStep(VB_START, VB_STOP, 1),
                 DATA_PP,
                 DATA_PW,
                 DATA_SAMPLE_COUNT,
                 1
             ),
             new PointConfiguration(
-                new float[DATA_POINT_COUNT] { 200, 200, 200, 400, 400, 400, 600, 600, 600, 800, 800, 800 },
-                new float[DATA_POINT_COUNT] { -3, 5, 13, -3, 5, 13, -3, 5, 13, -3, 5, 13 },
-                new float[DATA_POINT_COUNT] { -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6, -6 },
-                new float[DATA_POINT_COUNT] { DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP, DATA_PP },
-                new float[DATA_POINT_COUNT] { DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW, DATA_PW },
-                new short[DATA_POINT_COUNT] { DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT,
-                    DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT, DATA_SAMPLE_COUNT }
+                MakeArray((row, col) => USV_START + row * (USV_STOP - USV_START) / (DATA_COLS - 1)),
+                MakeArray((row, col) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_ROWS - 1)),
+                MakeArray((row, col) => VB_START),
+                MakeArray((row, col) => DATA_PP),
+                MakeArray((row, col) => DATA_PW),
+                MakeArray((row, col) => DATA_SAMPLE_COUNT)
             )
         ),
         6
@@ -119,8 +127,26 @@ public static class SimulatedData
         new MeasurementData(
             true,
             DATA_POINT_COUNT,
-            new float[DATA_POINT_COUNT] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
-            new float[DATA_POINT_COUNT] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 },
+            MakeArray((row, col) => // Imitate real data
+            {
+                float x = (float)col / (DATA_COLS - 1);
+                float y = (float)row / (DATA_ROWS - 1);
+
+                float result = 0;
+
+                // The strongests line
+                result += (100f - 30f * x) * Hyperbola(x, y, A1, B1, S1);
+
+                // Another line
+                result += (40f - 35f * y) * Hyperbola(x, y, A2, B2, S2);
+
+                // Wide line up
+                result += (100f - 90f * y) * Line(x, y, A3, B3, S3);
+
+                return result;
+            }),
+            //MakeArray((row, col) => 100 * (float)Math.Sin(Math.PI * row / (DATA_ROWS - 1))),     // row * DATA_COLS + col),
+            MakeArray<float>((row, col) => 100f * col),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Ucv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Vb,
@@ -129,4 +155,55 @@ public static class SimulatedData
             ParameterDefinition.MeasurementParameters.PointConfiguration.NForSampleAverages
         )
     );
+
+    // Internal
+    const float A1 = 0.4f;
+    const float B1 = 0.3f;
+    const float S1 = 0.1f;
+
+    const float A2 = 0.4f;
+    const float B2 = 0.5f;
+    const float S2 = 0.1f;
+
+    const float A3 = -7f;
+    const float B3 = 1.75f;
+    const float S3 = 0.6f;
+
+    const float K = 0;
+    const float H = -0.1f;
+
+    private static T[] MakeArray<T>(Func<int,int,T> callback)
+    {
+        var result = new T[DATA_POINT_COUNT];
+        for (int row = 0; row < DATA_ROWS; row++)
+            for (int col = 0; col < DATA_COLS; col++)
+                result[row * DATA_COLS + col] = callback(row, col);
+        return result;
+    }
+
+    private static float Hyperbola(float x, float y, float a, float b, float s, float h = H, float k = K)
+    {
+        var vy = Math.Max(0, (x - h) * (x - h) / a / a - 1);
+        var dy = Math.Abs(b * Math.Sqrt(vy) + k - y);
+
+        var vx = (y - k) * (y - k) / b / b + 1;
+        var dx = Math.Abs(a * Math.Sqrt(vx) + h - x);
+
+        var d = Math.Sqrt(dx * dx + dy * dy);
+
+        return (float)Math.Exp(-(d * d / s / s));
+    }
+
+    private static float Line(float x, float y, float a, float b, float s)
+    {
+        var vy = a * x + b;
+        var dy = Math.Abs(vy - y);
+
+        var vx = (y - b) / a;
+        var dx = Math.Abs(vx - x);
+
+        var d = Math.Sqrt(dx * dx + dy * dy);
+
+        return (float)Math.Exp(-(d * d / s / s));
+    }
 }

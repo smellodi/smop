@@ -176,7 +176,7 @@
                                              Content="Bland-Altman"
                                              Click="DmsPlotType_Click"/>
                             </WrapPanel>
-                            <Canvas x:Name="cctDmsScan"
+                            <Canvas x:Name="cnvDmsScan"
                                     Background="#eee"
                                     Height="416"/>
                         </StackPanel>

@@ -11,15 +11,10 @@ namespace Smop.MainApp;
 
 public class SetupProcedure
 {
-    public class LogHanddlerArgs : EventArgs
+    public class LogHanddlerArgs(string text, bool replaceLast = false) : EventArgs
     {
-        public string Text { get; }
-        public bool ReplaceLast { get; }
-        public LogHanddlerArgs(string text, bool replaceLast = false)
-        {
-            Text = text;
-            ReplaceLast = replaceLast;
-        }
+        public string Text { get; } = text;
+        public bool ReplaceLast { get; } = replaceLast;
     }
 
     public event EventHandler<LogHanddlerArgs>? Log;
@@ -352,7 +347,7 @@ public class SetupProcedure
         LogSnt?.Invoke(this, new LogHanddlerArgs($"Ready to start."));
     }
 
-    private void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
+    private static void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
     {
         if (odorDisplayResult.Error != Comm.Error.Success)
         {
@@ -376,8 +371,7 @@ public class SetupProcedure
                 {
                     if (measurement.Device == OdorDisplay.Device.ID.Base)
                     {
-                        var pid = measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) as ODPackets.PIDValue;
-                        if (pid != null)
+                        if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
                         {
                             _pidSamples.Add(pid.Volts);
                             break;

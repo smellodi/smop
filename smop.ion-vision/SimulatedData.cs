@@ -60,8 +60,8 @@ public static class SimulatedData
             true,
             new Delays(100000000, 300, 10000000, 3000000, 5000000000, 200000000),
             new SteppingControl(
-                new RangeStep(USV_START, USV_STOP, DATA_COLS),
-                new RangeStep(UCV_START, UCV_STOP, DATA_ROWS),
+                new RangeStep(USV_START, USV_STOP, DATA_ROWS),
+                new RangeStep(UCV_START, UCV_STOP, DATA_COLS),
                 new RangeStep(VB_START, VB_STOP, 1),
                 DATA_PP,
                 DATA_PW,

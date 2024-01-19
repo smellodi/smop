@@ -170,8 +170,8 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
         case DataPlot.ComparisonOperation.None:
             if (_data.Count > 0)
                 DataPlot.Show(
-                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         _data[^1].IntensityTop
                     );
             else
@@ -181,8 +181,8 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
         case DataPlot.ComparisonOperation.BlandAltman:
             if (_data.Count > 1)
                 DataPlot.Show(
-                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         _data[^1].IntensityTop,
                         _data[^2].IntensityTop,
                         operation

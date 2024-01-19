@@ -399,7 +399,10 @@ public class EventSink : IDisposable
             return;
         }
 
-        ScreenLogger.Print("[IvWsC] " + msg.ToString());
+        if (message.Type != "controllers.status")
+        {
+            ScreenLogger.Print("[IvWsC] " + msg.ToString());
+        }
 
         try
         {

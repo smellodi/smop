@@ -27,16 +27,16 @@ public partial class Reproduction : Page, IPage<Navigation>
         Application.Current.Exit += (s, e) => CleanUp();
     }
 
-    public void Start(Reproducer.ProcedureSettings settings)
+    public void Start(Reproducer.Procedure.Config config)
     {
-        _proc = new Reproducer.Procedure(settings.MLComm);
+        _proc = new Reproducer.Procedure(config.MLComm);
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbENoseProgress.Value = e);
         _proc.OdorDisplayData += (s, e) => Dispatcher.Invoke(() => DisplayODState(e));
 
-        _settings = settings;
-        _settings.MLComm.RecipeReceived += HandleRecipe;
+        _procConfig = config;
+        _procConfig.MLComm.RecipeReceived += HandleRecipe;
 
         imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
         imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
@@ -44,14 +44,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeName.Text = "";
         tblRecipeRMSQ.Text = "";
 
-        var gases = _proc?.Gases;
-        if (gases != null)
-        {
-            ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, 1);
-            ConfigureChannelTable(gases, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle);
-        }
+        var gases = _proc.Gases;
+        ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, 1);
+        ConfigureChannelTable(gases, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle, 1);
 
-        DisplayRecipeInfo(new ML.Recipe("", 0, 0, _proc.Gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
+        DisplayRecipeInfo(new ML.Recipe("", 0, 0, gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
 
         SetActiveElement(ActiveElement.ML);
     }
@@ -68,7 +65,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     }
 
     Reproducer.Procedure? _proc;
-    Reproducer.ProcedureSettings? _settings = null;
+    Reproducer.Procedure.Config? _procConfig = null;
 
     ActiveElement _activeElement = ActiveElement.None;
 
@@ -177,6 +174,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);
         tblRecipeRMSQ.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
 
+        btnQuit.IsEnabled = !isActiveENose;
+
         if (hasNoActiveElement)
         {
             tblRecipeState.Text = "Finished";
@@ -250,10 +249,20 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeState.Text = recipe.Finished ? $"Finished in {_proc?.CurrentStep} steps" : $"In progress (step #{_proc?.CurrentStep})";
         tblRecipeRMSQ.Text = "r = " + recipe.MinRMSE.ToString("0.####");
 
-        grdRecipeChannels.Children.Clear();
+        // Clear the table leaving only the header row
+        var tableElements = new UIElement[grdRecipeChannels.Children.Count];
+        grdRecipeChannels.Children.CopyTo(tableElements, 0);
+        foreach (var el in tableElements)
+        {
+            if (Grid.GetRow(el) > 0)
+            {
+                grdRecipeChannels.Children.Remove(el);
+            }
+        }
+
         if (recipe.Channels != null)
         {
-            int rowIndex = 0;
+            int rowIndex = 1;
             foreach (var channel in recipe.Channels)
             {
                 var id = (ODDevice.ID)channel.Id;
@@ -266,40 +275,11 @@ public partial class Reproduction : Page, IPage<Navigation>
                 Grid.SetColumn(lbl, 0);
                 grdRecipeChannels.Children.Add(lbl);
 
-                var value = new List<string>();
-                if (channel.Flow >= 0)
-                {
-                    value.Add($"{channel.Flow} ml/min");
-                }
-                if (channel.Duration > 0)
-                {
-                    value.Add($"{channel.Duration:F2} sec.");
-                }
-                if (channel.Temperature != null)
-                {
-                    value.Add($"{channel.Temperature:F1}°");
-                }
-
-                if (recipe.Finished)
-                {
-                    var targetFlow = _settings?.TargetFlows.FirstOrDefault(kv => kv.Key == id);
-                    if (targetFlow != null)
-                    {
-                        value.Add($"required {targetFlow.Value.Value} ml/min");
-                    }
-                }
-
-                if (value.Count > 0)
-                {
-                    var tbl = new TextBlock()
-                    {
-                        Text = string.Join(", ", value),
-                        Style = _recipeChannelStyle,
-                    };
-                    Grid.SetRow(tbl, rowIndex);
-                    Grid.SetColumn(tbl, 1);
-                    grdRecipeChannels.Children.Add(tbl);
-                }
+                AddToTable(channel.Flow >= 0 ? channel.Flow.ToString("0.#") : "-", rowIndex, 1);
+                AddToTable(channel.Duration >= 0 ? channel.Duration.ToString("0.##") : "-", rowIndex, 2);
+                AddToTable(channel.Temperature > 0 ? channel.Duration.ToString("0.##") : "-", rowIndex, 3);
+                AddToTable(_procConfig?.TargetFlows.FirstOrDefault(gasFlow => gasFlow.ID == id) is 
+                    Reproducer.Procedure.GasFlow targetFlow ? targetFlow.Flow.ToString("0.#") : "-", rowIndex, 4);
 
                 rowIndex++;
             }
@@ -313,12 +293,24 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc?.ShutDownFlows();
         _proc?.CleanUp();
 
-        if (_settings != null)
+        if (_procConfig != null)
         {
-            _settings.MLComm.RecipeReceived -= HandleRecipe;
+            _procConfig.MLComm.RecipeReceived -= HandleRecipe;
         }
 
-        _settings = null;
+        _procConfig = null;
+    }
+
+    void AddToTable(string text, int row, int column)
+    {
+        var tbl = new TextBlock()
+        {
+            Text = text,
+            Style = _recipeChannelStyle,
+        };
+        Grid.SetRow(tbl, row);
+        Grid.SetColumn(tbl, column);
+        grdRecipeChannels.Children.Add(tbl);
     }
 
     // UI

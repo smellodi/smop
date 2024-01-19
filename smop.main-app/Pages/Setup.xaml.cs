@@ -161,8 +161,8 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsScans.Count > 0)
                 DataPlot.Create(
                     cnvDmsScan,
-                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop
                 );
             else
@@ -173,8 +173,8 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsScans.Count > 1)
                 DataPlot.Create(
                     cnvDmsScan,
-                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop,
                     _dmsScans[^2].IntensityTop,
                     compOp
@@ -320,9 +320,9 @@ public partial class Setup : Page, IPage<object?>
                 _procedure.Finalize();
                 UpdateUI();
 
-                var targetFlows = new Dictionary<OdorDisplay.Device.ID, float>();
-                _procedure.EnumGases(gas => targetFlows.Add(gas.ChannelID, gas.Flow));
-                Next?.Invoke(this, new ProcedureSettings(App.ML, targetFlows.ToArray()));
+                var targetFlows = new List<Procedure.GasFlow>();
+                _procedure.EnumGases(gas => targetFlows.Add(new(gas.ChannelID, gas.Flow)));
+                Next?.Invoke(this, new Procedure.Config(App.ML, targetFlows.ToArray()));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

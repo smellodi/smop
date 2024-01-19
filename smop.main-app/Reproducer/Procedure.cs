@@ -9,6 +9,15 @@ namespace Smop.MainApp.Reproducer;
 
 public class Procedure
 {
+    public record class GasFlow(
+        OdorDisplay.Device.ID ID,
+        float Flow
+    );
+    public record class Config(
+        ML.Communicator MLComm,
+        GasFlow[] TargetFlows
+    );
+
     public Gas[] Gases => _gases.Items;
     public int CurrentStep => _step;
 

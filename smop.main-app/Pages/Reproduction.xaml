@@ -19,6 +19,10 @@
         <Style x:Key="RecipeChannelLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
             <Setter Property="Padding" Value="0,0,8,0"/>
         </Style>
+        <Style x:Key="RecipeChannelHeader" TargetType="Label" BasedOn="{StaticResource RecipeChannelLabel}">
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
         <Style x:Key="OdorDisplayMeasurement" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -188,14 +192,36 @@
                           Margin="4,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        
+                        <Label Grid.Row="0" Grid.Column="0"
+                               Style="{StaticResource RecipeChannelHeader}"
+                               Content="Odor"/>
+                        <Label Grid.Row="0" Grid.Column="1"
+                               Style="{StaticResource RecipeChannelHeader}"
+                               Content="Flow"/>
+                        <Label Grid.Row="0" Grid.Column="2"
+                               Style="{StaticResource RecipeChannelHeader}"
+                               Content="t"/>
+                        <Label Grid.Row="0" Grid.Column="3"
+                               Style="{StaticResource RecipeChannelHeader}"
+                               Content="T°"/>
+                        <Label Grid.Row="0" Grid.Column="4"
+                               Style="{StaticResource RecipeChannelHeader}"
+                               Content="Target flow"/>
                         <!-- filled in code -->
                     </Grid>
                     <TextBlock x:Name="tblRecipeRMSQ"
                                FontStyle="Italic"
                                TextAlignment="Center"
-                               Margin="8"/>
+                               Margin="0,8,0,0"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

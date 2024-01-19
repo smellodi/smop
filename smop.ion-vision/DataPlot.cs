@@ -34,8 +34,13 @@ public static class DataPlot
             plot.Loaded += (s, e) =>
             {
                 Create(canvas, rows, cols, values1, values2, compOp);
-                plot.Title = values2 is null ? "Single scan" :
-                    (compOp == ComparisonOperation.BlandAltman ? "Bland-Altman" : "Difference between two scans");
+                plot.Title = compOp switch
+                {
+                    ComparisonOperation.None => "Single scan",
+                    ComparisonOperation.BlandAltman => "Bland-Altman",
+                    ComparisonOperation.Difference => "Difference between two scans",
+                    _ => throw new Exception($"Operation '{compOp}' is not supported")
+                };
             };
 
             plot.Show();
@@ -281,7 +286,7 @@ public static class DataPlot
     const int COLOR_LEVEL_COUNT = 5;
 
     /// <summary>
-    /// Creates a color from value
+    /// Creates a plot color from a normalized value
     /// </summary>
     /// <param name="value">0..1</param>
     /// <returns>Color</returns>

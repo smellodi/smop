@@ -117,12 +117,12 @@ public partial class MainWindow : Window
             Content = _pulsePage;
             _pulsePage.Start(pulseSetup);
         }
-        else if (param is ML.Communicator ml)
+        else if (param is Reproducer.ProcedureSettings reproducerSettings)
         {
             _nlog.Info("Navigate to {Target}", Navigation.OdorReproduction);
 
             Content = _reproductionPage;
-            _reproductionPage.Start(ml);
+            _reproductionPage.Start(reproducerSettings);
         }
     }
 

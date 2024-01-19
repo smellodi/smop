@@ -27,16 +27,16 @@ public partial class Reproduction : Page, IPage<Navigation>
         Application.Current.Exit += (s, e) => CleanUp();
     }
 
-    public void Start(ML.Communicator ml)
+    public void Start(Reproducer.ProcedureSettings settings)
     {
-        _proc = new Reproducer.Procedure(ml);
+        _proc = new Reproducer.Procedure(settings.MLComm);
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbENoseProgress.Value = e);
         _proc.OdorDisplayData += (s, e) => Dispatcher.Invoke(() => DisplayODState(e));
 
-        _ml = ml;
-        _ml.RecipeReceived += HandleRecipe;
+        _settings = settings;
+        _settings.MLComm.RecipeReceived += HandleRecipe;
 
         imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
         imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
@@ -68,7 +68,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     }
 
     Reproducer.Procedure? _proc;
-    ML.Communicator? _ml = null;
+    Reproducer.ProcedureSettings? _settings = null;
 
     ActiveElement _activeElement = ActiveElement.None;
 
@@ -280,6 +280,15 @@ public partial class Reproduction : Page, IPage<Navigation>
                     value.Add($"{channel.Temperature:F1}°");
                 }
 
+                if (recipe.Finished)
+                {
+                    var targetFlow = _settings?.TargetFlows.FirstOrDefault(kv => kv.Key == id);
+                    if (targetFlow != null)
+                    {
+                        value.Add($"required {targetFlow.Value.Value} ml/min");
+                    }
+                }
+
                 if (value.Count > 0)
                 {
                     var tbl = new TextBlock()
@@ -304,12 +313,12 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc?.ShutDownFlows();
         _proc?.CleanUp();
 
-        if (_ml != null)
+        if (_settings != null)
         {
-            _ml.RecipeReceived -= HandleRecipe;
+            _settings.MLComm.RecipeReceived -= HandleRecipe;
         }
 
-        _ml = null;
+        _settings = null;
     }
 
     // UI

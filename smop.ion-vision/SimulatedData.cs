@@ -1,5 +1,6 @@
 ﻿using Smop.Comm;
 using System;
+using System.Linq;
 
 namespace Smop.IonVision;
 
@@ -89,8 +90,8 @@ public static class SimulatedData
     public static readonly ScanResult ScanResult = new(
         "07d26c66-33e9-48fa-9877-4f64156d6b75",
         User.Name,
-        "2023-04-05T14:38:58.349Z",
-        "2023-04-05T14:40:10.288Z",
+        DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
+        DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
         Parameter1.Id,
         Project1.Name,
         new(),
@@ -132,21 +133,19 @@ public static class SimulatedData
                 float x = (float)col / (DATA_COLS - 1);
                 float y = (float)row / (DATA_ROWS - 1);
 
-                float result = 0;
+                var lines = new float[]
+                {
+                    // The strongests line
+                    (100f - 30f * x) * Hyperbola(x, y, A1, B1, S1),
+                    // Another line
+                    (40f - 35f * y) * Hyperbola(x, y, A2, B2, S2),
+                    // Wide line up
+                    (100f - 90f * (float)Math.Sqrt(y)) * Line(x, y, A3, B3, S3),
+                };
 
-                // The strongests line
-                result += (100f - 30f * x) * Hyperbola(x, y, A1, B1, S1);
-
-                // Another line
-                result += (40f - 35f * y) * Hyperbola(x, y, A2, B2, S2);
-
-                // Wide line up
-                result += (100f - 90f * y) * Line(x, y, A3, B3, S3);
-
-                return result;
+                return lines.Max();
             }),
-            //MakeArray((row, col) => 100 * (float)Math.Sin(Math.PI * row / (DATA_ROWS - 1))),     // row * DATA_COLS + col),
-            MakeArray<float>((row, col) => 100f * col),
+            MakeArray((row, col) => 100f * col),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Ucv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Vb,

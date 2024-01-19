@@ -143,7 +143,7 @@ public class SetupProcedure
 
         Log?.Invoke(this, new LogHanddlerArgs("Odors were released, waiting for the mixture to stabilize..."));
         await Task.Delay((int)(1000 * Properties.Settings.Default.Reproduction_SniffingDelay));
-        Log?.Invoke(this, new LogHanddlerArgs("Odor mixturing process has finished", true));
+        Log?.Invoke(this, new LogHanddlerArgs("Odor mixturing process has finished.", true));
 
         _pidSamples.Clear();
 

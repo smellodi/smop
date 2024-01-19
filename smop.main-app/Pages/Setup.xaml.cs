@@ -1,8 +1,10 @@
 ﻿using Smop.IonVision;
 using Smop.MainApp.Dialogs;
+using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -316,10 +318,11 @@ public partial class Setup : Page, IPage<object?>
 
                 await _procedure.ConfigureML();
                 _procedure.Finalize();
-
                 UpdateUI();
 
-                Next?.Invoke(this, App.ML);
+                var targetFlows = new Dictionary<OdorDisplay.Device.ID, float>();
+                _procedure.EnumGases(gas => targetFlows.Add(gas.ChannelID, gas.Flow));
+                Next?.Invoke(this, new ProcedureSettings(App.ML, targetFlows.ToArray()));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

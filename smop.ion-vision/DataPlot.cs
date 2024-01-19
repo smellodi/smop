@@ -283,7 +283,34 @@ public static class DataPlot
         return new Rect(new Point(minValueX, minValueY), new Point(maxValueX, maxValueY));
     }
 
-    const int COLOR_LEVEL_COUNT = 5;
+    // Color scheme
+
+    static byte Min(double _) => 0;
+    static byte Max(double _) => 0xff;
+    static Func<double, byte> Up(int levelIndex)
+    {
+        var min = levelIndex <= 0 ? 0 : LEVELS[levelIndex - 1];
+        var max = levelIndex >= LEVELS.Length ? 1 : LEVELS[levelIndex];
+        return (double value) =>
+        {
+            return (byte)Math.Min(0xff, 0xff * (value - min) * (1f / (max - min)));
+        };
+    }
+    static Func<double, byte> Down(int levelIndex)
+    {
+        var min = levelIndex == 0 ? 0 : LEVELS[levelIndex - 1];
+        var max = levelIndex == LEVELS.Length ? 1 : LEVELS[levelIndex];
+        return (double value) =>
+        {
+            return (byte)Math.Min(0xff, 0xff * (max - value) * (1f / (max - min)));
+        };
+    }
+
+    static readonly double[] LEVELS = new double[4] { 0.1, 0.2, 0.4, 0.7 };
+
+    static readonly Func<double, byte>[] R = new Func<double, byte>[] { Min, Min, Up(2), Max, Max };
+    static readonly Func<double, byte>[] G = new Func<double, byte>[] { Up(0), Max, Max, Down(3), Up(4) };
+    static readonly Func<double, byte>[] B = new Func<double, byte>[] { Max, Down(1), Min, Min, Up(4) };
 
     /// <summary>
     /// Creates a plot color from a normalized value
@@ -292,30 +319,7 @@ public static class DataPlot
     /// <returns>Color</returns>
     private static Color ValueToColor(double value)
     {
-        byte r = (byte)Math.Min(0xff, value switch
-        {
-            < 0.2 => 0,
-            < 0.4 => 0,
-            < 0.6 => 0xff * (value - 0.4) * COLOR_LEVEL_COUNT,
-            < 0.8 => 0xff,
-            _ => 0xff
-        });
-        byte g = (byte)Math.Min(0xff, value switch
-        {
-            < 0.2 => 0xff * value * COLOR_LEVEL_COUNT,
-            < 0.4 => 0xff,
-            < 0.6 => 0xff,
-            < 0.8 => 0xff * (0.8 - value) * COLOR_LEVEL_COUNT,
-            _ => 0xff * (value - 0.8) * COLOR_LEVEL_COUNT
-        });
-        byte b = (byte)Math.Min(0xff, value switch
-        {
-            < 0.2 => 0xff,
-            < 0.4 => 0xff * (0.4 - value) * COLOR_LEVEL_COUNT,
-            < 0.6 => 0,
-            < 0.8 => 0,
-            _ => 0xff * (value - 0.8) * COLOR_LEVEL_COUNT
-        });
-        return Color.FromRgb(r, g, b);
+        var i = LEVELS.TakeWhile(level => value > level).Count();
+        return Color.FromRgb(R[i](value), G[i](value), B[i](value));
     }
 }

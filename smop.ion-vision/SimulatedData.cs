@@ -136,11 +136,13 @@ public static class SimulatedData
                 var lines = new float[]
                 {
                     // The strongests line
-                    (100f - 30f * x) * Hyperbola(x, y, A1, B1, S1),
+                    (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
                     // Another line
-                    (40f - 35f * y) * Hyperbola(x, y, A2, B2, S2),
+                    (40f - 40f * y) * Hyperbola(x, y, 0.4f, 0.5f, 0.1f),
                     // Wide line up
-                    (100f - 90f * (float)Math.Sqrt(y)) * Line(x, y, A3, B3, S3),
+                    (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
+                    // second wide line up
+                    (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
                 };
 
                 return lines.Max();

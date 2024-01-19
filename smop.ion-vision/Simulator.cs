@@ -296,8 +296,8 @@ internal class Simulator : IMinimalAPI
         {
             MeasurementData = mdata with
             {
-                IntensityTop = mdata.IntensityTop.Select(value => value + (float)(2 * _rnd.NextDouble() - 1)).ToArray(),
-                IntensityBottom = mdata.IntensityBottom.Select(value => value + (float)(2 * _rnd.NextDouble() - 1)).ToArray()
+                IntensityTop = mdata.IntensityTop.Select(value => value + (float)(0.5 * _rnd.NextDouble() - 1)).ToArray(),
+                IntensityBottom = mdata.IntensityBottom.Select(value => value + (float)(0.5 * _rnd.NextDouble() - 1)).ToArray()
             }
         };
     }

@@ -76,6 +76,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "plot", ("shows the last result as a plot", async () => { ShowPlot(DataPlot.ComparisonOperation.None); await Task.CompletedTask; }) },
     { "plotd", ("shows the difference plot for the two last scans", async () => { ShowPlot(DataPlot.ComparisonOperation.Difference); await Task.CompletedTask; }) },
     { "plotba", ("shows the plot Bland-Altman for the two last scans", async () => { ShowPlot(DataPlot.ComparisonOperation.BlandAltman); await Task.CompletedTask; }) },
+    { "all", ("a combnation of scpj, scpm, gcpmd, scan, result and plot", async () => await GetNewScan()) },
     { "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
     { "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
 };
@@ -154,6 +155,27 @@ static void PrintHelp((string, string)[] help)
         {
             Console.WriteLine($"    {cmd.Item1,-8} - {cmd.Item2}");
         }
+    }
+}
+
+async Task GetNewScan()
+{
+    await ionVision.SetProjectAndWait();
+    await ionVision.SetParameterAndPreload();
+    await ionVision.GetParameterDefinition();
+    await ionVision.StartScan();
+    API.Response<ScanProgress> progress;
+    do
+    {
+        await Task.Delay(1000);
+        progress = await ionVision.GetScanProgress();
+    } while (progress.Success);
+
+    var response = await ionVision.GetScanResult();
+    if (response.Value != null)
+    {
+        _data.Add(response.Value.MeasurementData);
+        ShowPlot(DataPlot.ComparisonOperation.None);
     }
 }
 

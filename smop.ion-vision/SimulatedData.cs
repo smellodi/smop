@@ -1,13 +1,12 @@
-﻿using Smop.Comm;
-using System;
+﻿using System;
 using System.Linq;
 
 namespace Smop.IonVision;
 
 public static class SimulatedData
 {
-    const int DATA_ROWS = 30;
-    const int DATA_COLS = 40;
+    const int DATA_ROWS = 3;
+    const int DATA_COLS = 4;
     const int DATA_POINT_COUNT = DATA_ROWS * DATA_COLS;
     const float DATA_PP = 1000;
     const float DATA_PW = 200;
@@ -88,7 +87,7 @@ public static class SimulatedData
     };
 
     public static readonly ScanResult ScanResult = new(
-        "07d26c66-33e9-48fa-9877-4f64156d6b75",
+        Guid.NewGuid().ToString(),
         User.Name,
         DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
         DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
@@ -128,25 +127,7 @@ public static class SimulatedData
         new MeasurementData(
             true,
             DATA_POINT_COUNT,
-            MakeArray((row, col) => // Imitate real data
-            {
-                float x = (float)col / (DATA_COLS - 1);
-                float y = (float)row / (DATA_ROWS - 1);
-
-                var lines = new float[]
-                {
-                    // The strongests line
-                    (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
-                    // Another line
-                    (40f - 40f * y) * Hyperbola(x, y, 0.4f, 0.5f, 0.1f),
-                    // Wide line up
-                    (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
-                    // second wide line up
-                    (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
-                };
-
-                return lines.Max();
-            }),
+            MakeArray(GetImitatedPixel),
             MakeArray((row, col) => 100f * col),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Ucv,
@@ -158,20 +139,6 @@ public static class SimulatedData
     );
 
     // Internal
-    const float A1 = 0.4f;
-    const float B1 = 0.3f;
-    const float S1 = 0.1f;
-
-    const float A2 = 0.4f;
-    const float B2 = 0.5f;
-    const float S2 = 0.1f;
-
-    const float A3 = -7f;
-    const float B3 = 1.75f;
-    const float S3 = 0.6f;
-
-    const float K = 0;
-    const float H = -0.1f;
 
     private static T[] MakeArray<T>(Func<int,int,T> callback)
     {
@@ -182,7 +149,7 @@ public static class SimulatedData
         return result;
     }
 
-    private static float Hyperbola(float x, float y, float a, float b, float s, float h = H, float k = K)
+    private static float Hyperbola(float x, float y, float a, float b, float s, float h = -0.1f, float k = 0)
     {
         var vy = Math.Max(0, (x - h) * (x - h) / a / a - 1);
         var dy = Math.Abs(b * Math.Sqrt(vy) + k - y);
@@ -206,5 +173,31 @@ public static class SimulatedData
         var d = Math.Sqrt(dx * dx + dy * dy);
 
         return (float)Math.Exp(-(d * d / s / s));
+    }
+
+    /// <summary>
+    /// Imitate real data
+    /// </summary>
+    /// <param name="row">Row</param>
+    /// <param name="col">Col</param>
+    /// <returns>Pixels value</returns>
+    private static float GetImitatedPixel(int row, int col)
+    {
+        float x = (float)col / (DATA_COLS - 1);
+        float y = (float)row / (DATA_ROWS - 1);
+
+        var lines = new float[]
+        {
+                    // The strongests line
+                    (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
+                    // Another line
+                    (40f - 40f * y) * Hyperbola(x, y, 0.4f, 0.5f, 0.1f),
+                    // Wide line up
+                    (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
+                    // Second wide line up
+                    (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
+        };
+
+        return lines.Max();
     }
 }

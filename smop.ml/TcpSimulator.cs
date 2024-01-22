@@ -1,12 +1,46 @@
 ﻿using Smop.Common;
 using System.Text;
 using System.Threading.Tasks;
-using WatsonTcp;
+using Tcp.NET.Client;
+using Tcp.NET.Client.Models;
+//using WatsonTcp;
 
 namespace Smop.ML;
 
 internal class TcpSimulator : Simulator
 {
+    public TcpSimulator()
+    {
+        _client = new TcpNETClient(new ParamsTcpClient("localhost", TcpServer.Port, "\n", isSSL: false));
+        _client.MessageEvent += Client_MessageEvent;
+        _client.ConnectionEvent += (s, e) => ScreenLogger.Print($"[MlSimul] {e.ConnectionEventType}");
+        _client.ErrorEvent += (s, e) => ScreenLogger.Print($"[MlSimul] error: {e.Message}"); ;
+        _client.ConnectAsync();
+    }
+
+    public override void Dispose()
+    {
+        Task.WaitAll(_client.DisconnectAsync());
+        _client.Dispose();
+    }
+
+
+    // Internal
+
+    readonly ITcpNETClient _client;
+
+    protected override async Task SendData(string data)
+    {
+        await _client.SendAsync(data);
+    }
+
+    private void Client_MessageEvent(object sender, Tcp.NET.Client.Events.Args.TcpMessageClientEventArgs args)
+    {
+        string json = Encoding.UTF8.GetString(args.Bytes);
+        ParseJson(json);
+    }
+
+    /*
     public TcpSimulator()
     {
         _client = new WatsonTcpClient("127.0.0.1", TcpServer.Port);
@@ -51,5 +85,5 @@ internal class TcpSimulator : Simulator
     private SyncResponse SyncRequestReceived(SyncRequest req)
     {
         return new SyncResponse(req, "Ack Sync");
-    }
+    }*/
 }

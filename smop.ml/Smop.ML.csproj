@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WatsonTcp" Version="5.1.1" />
+    <PackageReference Include="Tcp.NET.Client" Version="6.0.75" />
+    <PackageReference Include="Tcp.NET.Server" Version="6.0.75" />
   </ItemGroup>
 
   <ItemGroup>

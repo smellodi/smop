@@ -110,7 +110,7 @@ public class Procedure
     const int SCAN_PROGRESS_INTERVAL = 1000;    // ms
     const int SNT_MAX_DATA_COUNT = 10;
 
-    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(Procedure));
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger("Reproducer");
 
     readonly Gases _gases = new();
 

@@ -39,21 +39,42 @@ internal abstract class Server : IDisposable
 
         try
         {
-            var packet = JsonSerializer.Deserialize<Packet>(json, _serializerOptions);
-            if (packet?.Type == PacketType.Recipe)
-            {
-                json = JsonSerializer.Serialize(packet.Content);
-                var recipe = JsonSerializer.Deserialize<Recipe>(json, _serializerOptions)!;
-                RecipeReceived?.Invoke(this, recipe);
-            }
-            else
-            {
-                throw new Exception($"[MlServer] unknown packet type: {packet?.Type}");
-            }
+            Recipe recipe = Communicator.IsDemo ? CreateDemoRecipe(json) : CreateRecipe(json);
+            RecipeReceived?.Invoke(this, recipe);
         }
         catch (Exception ex)
         {
-            ScreenLogger.Print(ex.Message);
+            ScreenLogger.Print($"[MlServer] error: {ex.Message}");
+        }
+    }
+
+    private Recipe CreateDemoRecipe(string json)
+    {
+        var packet = JsonSerializer.Deserialize<float[]>(json, _serializerOptions);
+        if (packet?.Length == 3)
+        {
+            return new Recipe("Recipe", (int)packet[0], 0, new ChannelRecipe[] {
+                new ChannelRecipe(1, packet[1], -1),
+                new ChannelRecipe(2, packet[2], -1),
+            });
+        }
+        else
+        {
+            throw new Exception($"invalid packet data length");
+        }
+    }
+
+    private Recipe CreateRecipe(string json)
+    {
+        var packet = JsonSerializer.Deserialize<Packet>(json, _serializerOptions);
+        if (packet?.Type == PacketType.Recipe)
+        {
+            json = JsonSerializer.Serialize(packet.Content);
+            return JsonSerializer.Deserialize<Recipe>(json, _serializerOptions)!;
+        }
+        else
+        {
+            throw new Exception($"unknown packet type: {packet?.Type}");
         }
     }
 }

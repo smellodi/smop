@@ -1,7 +1,7 @@
 ﻿using Smop.Common;
+using Smop.OdorDisplay;
 using System;
 using System.Linq;
-using System.Printing;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -20,10 +20,11 @@ internal abstract class Simulator : IDisposable
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    int[] _channelIDs = new int[1] { 0 };
+    int[] _channelIDs = new int[2] { (int)Device.ID.Odor1, (int)Device.ID.Odor2 };
     bool _hasDmsSource = false;
-    float _threshold = 0;
-    int _maxSteps = 10;
+    float _threshold = 0.1f;
+    int _maxSteps = 3;
+
     int _step = 0;
     int _sntSampleCount = 0;
 
@@ -37,6 +38,44 @@ internal abstract class Simulator : IDisposable
     {
         ScreenLogger.Print("[MlSimul] received: " + json.Max(700));
 
+        if (Communicator.IsDemo)
+        {
+            await HandleDemoPacket(json);
+        }
+        else
+        {
+            await HandlePacket(json);
+        }
+    }
+
+    private async Task HandleDemoPacket(string json)
+    {
+        try
+        {
+            var packet = JsonSerializer.Deserialize<float[]>(json, _serializerOptions);
+            if (packet == null || packet.Length < 3 || packet.Length != (int)(2 + packet[0]* packet[1]))
+                throw new Exception("The packet should consist of a row count, column count, and 'row x col' data count");
+
+            await Task.Delay(2000);
+
+            _step++;
+            var rmsq = RMSQ / _step;
+            bool isFinished = rmsq < _threshold || _step >= _maxSteps;
+
+            var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2 };
+            json = JsonSerializer.Serialize(recipe);
+            ScreenLogger.Print("[MlSimul] recipe sent");
+            await SendData(json);
+
+        }
+        catch (Exception ex)
+        {
+            ScreenLogger.Print($"[MlSimul] {ex.Message}");
+        }
+    }
+
+    private async Task HandlePacket(string json)
+    {
         try
         {
             var packet = JsonSerializer.Deserialize<Packet>(json, _serializerOptions);

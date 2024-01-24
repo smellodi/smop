@@ -21,7 +21,7 @@ internal class TcpServer : Server
 
     public TcpServer()
     {
-        _server = new TcpNETServer(new ParamsTcpServer(Port, "\n"));
+        _server = new TcpNETServer(new ParamsTcpServer(Port, "\r\n", null, false, 0));
         _server.ConnectionEvent += Server_ConnectionEvent; ;
         _server.MessageEvent += Server_MessageEvent;
         _server.ErrorEvent += (s, e) => ScreenLogger.Print($"[MlServer] error: {e.Message}"); ;

@@ -11,7 +11,7 @@ internal class TcpSimulator : Simulator
 {
     public TcpSimulator()
     {
-        _client = new TcpNETClient(new ParamsTcpClient("localhost", TcpServer.Port, "\n", isSSL: false));
+        _client = new TcpNETClient(new ParamsTcpClient("localhost", TcpServer.Port, "\r\n", isSSL: false));
         _client.MessageEvent += Client_MessageEvent;
         _client.ConnectionEvent += (s, e) => ScreenLogger.Print($"[MlSimul] {e.ConnectionEventType}");
         _client.ErrorEvent += (s, e) => ScreenLogger.Print($"[MlSimul] error: {e.Message}"); ;
@@ -36,8 +36,11 @@ internal class TcpSimulator : Simulator
 
     private void Client_MessageEvent(object sender, Tcp.NET.Client.Events.Args.TcpMessageClientEventArgs args)
     {
-        string json = Encoding.UTF8.GetString(args.Bytes);
-        ParseJson(json);
+        if (args.MessageEventType == PHS.Networking.Enums.MessageEventType.Receive)
+        {
+            string json = Encoding.UTF8.GetString(args.Bytes);
+            ParseJson(json);
+        }
     }
 
     /*

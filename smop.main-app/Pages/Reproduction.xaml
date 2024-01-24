@@ -44,6 +44,11 @@
             <Setter Property="TextAlignment" Value="Right"/>
             <Setter Property="Margin" Value="4"/>
         </Style>
+        <Style x:Key="Status" TargetType="Ellipse">
+            <Setter Property="Fill" Value="#888"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -108,9 +113,16 @@
                             <TextBlock Style="{StaticResource DeviceName}"
                                    Text="Odor Printer"
                                    TextAlignment="Center"/>
-                            <Image Width="100"
-                               Margin="4"
-                               Source="/Assets/images/od.png"/>
+                            <Grid>
+                                <Image Width="100"
+                                       Margin="4"
+                                       Source="/Assets/images/od.png"/>
+                                <Ellipse x:Name="elpODStatus"
+                                         Style="{StaticResource Status}"
+                                         VerticalAlignment="Center"
+                                         HorizontalAlignment="Left"
+                                         Margin="30,3,0,0"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
                     <Image x:Name="imgGas"
@@ -172,6 +184,11 @@
                                        Source="/Assets/images/processing.png"/>
                                 <TextBlock Style="{StaticResource DeviceName}"
                                            Text="ML"/>
+                                <Ellipse x:Name="elpMLStatus"
+                                         Style="{StaticResource Status}"
+                                         VerticalAlignment="Bottom"
+                                         HorizontalAlignment="Right"
+                                         Margin="3"/>
                             </Grid>
                         </Border>
                     </StackPanel>
@@ -222,6 +239,9 @@
                                FontStyle="Italic"
                                TextAlignment="Center"
                                Margin="0,8,0,0"/>
+                    <TextBlock x:Name="tblRecipeIteration"
+                               FontStyle="Italic"
+                               TextAlignment="Center"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

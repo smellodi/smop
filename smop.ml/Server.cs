@@ -51,9 +51,10 @@ internal abstract class Server : IDisposable
     private Recipe CreateDemoRecipe(string json)
     {
         var packet = JsonSerializer.Deserialize<float[]>(json, _serializerOptions);
-        if (packet?.Length == 3)
+        if (packet?.Length >= 3)
         {
-            return new Recipe("Recipe", (int)packet[0], 0, new ChannelRecipe[] {
+            var rmsq = packet.Length == 4 ? packet[3] : float.NaN;
+            return new Recipe("Recipe", (int)packet[0], rmsq, new ChannelRecipe[] {
                 new ChannelRecipe(1, packet[1], -1),
                 new ChannelRecipe(2, packet[2], -1),
             });

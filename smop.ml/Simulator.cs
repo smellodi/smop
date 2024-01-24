@@ -62,7 +62,7 @@ internal abstract class Simulator : IDisposable
             var rmsq = RMSQ / _step;
             bool isFinished = rmsq < _threshold || _step >= _maxSteps;
 
-            var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2 };
+            var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmsq };
             json = JsonSerializer.Serialize(recipe);
             ScreenLogger.Print("[MlSimul] recipe sent");
             await SendData(json);

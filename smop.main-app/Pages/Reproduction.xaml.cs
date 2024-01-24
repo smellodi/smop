@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 using ODPackets = Smop.OdorDisplay.Packets;
 using ODDevice = Smop.OdorDisplay.Device;
+using System.Windows.Shapes;
 
 namespace Smop.MainApp.Pages;
 
@@ -25,10 +27,13 @@ public partial class Reproduction : Page, IPage<Navigation>
         _odChannelLabelStyle = FindResource("OdorDisplayMeasurementLabel") as Style;
 
         Application.Current.Exit += (s, e) => CleanUp();
+        OdorDisplay.CommPort.Instance.Closed += (s, e) => SetConnectionColor(elpODStatus, false);
     }
 
     public void Start(Reproducer.Procedure.Config config)
     {
+        config.MLComm.StatusChanged += (s, e) => SetConnectionColor(elpMLStatus, e == ML.Status.Connected);
+
         _proc = new Reproducer.Procedure(config.MLComm);
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
@@ -43,6 +48,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         tblRecipeName.Text = "";
         tblRecipeRMSQ.Text = "";
+        tblRecipeIteration.Text = "";
 
         var gases = _proc.Gases;
         ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, 1);
@@ -51,6 +57,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         DisplayRecipeInfo(new ML.Recipe("", 0, 0, gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
 
         SetActiveElement(ActiveElement.ML);
+        SetConnectionColor(elpMLStatus, config.MLComm.IsConnected);
+        SetConnectionColor(elpODStatus, OdorDisplay.CommPort.Instance.IsOpen);
     }
 
     // Internal
@@ -64,10 +72,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         ENose = 4
     }
 
-    Reproducer.Procedure? _proc;
-    Reproducer.Procedure.Config? _procConfig = null;
-
-    ActiveElement _activeElement = ActiveElement.None;
+    readonly Brush BRUSH_STATUS_CONNECTED = new SolidColorBrush(Color.FromRgb(32, 160, 32));
+    readonly Brush BRUSH_STATUS_DISCONNECTED = new SolidColorBrush(Color.FromRgb(128, 160, 32));
 
     readonly Style? _activeElementStyle;
     readonly Style? _inactiveElementStyle;
@@ -75,6 +81,11 @@ public partial class Reproduction : Page, IPage<Navigation>
     readonly Style? _recipeChannelLabelStyle;
     readonly Style? _odChannelStyle;
     readonly Style? _odChannelLabelStyle;
+
+    Reproducer.Procedure? _proc;
+    Reproducer.Procedure.Config? _procConfig = null;
+
+    ActiveElement _activeElement = ActiveElement.None;
 
     private Style? BoolToStyle(bool isActive) => isActive ? _activeElementStyle : _inactiveElementStyle;
 
@@ -173,6 +184,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeName.Visibility = BoolToVisible(!isActiveML);
         grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);
         tblRecipeRMSQ.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
+        tblRecipeIteration.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
 
         btnQuit.IsEnabled = !isActiveENose;
 
@@ -246,8 +258,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         {
             tblRecipeName.Text = recipe.Name + ":";
         }
-        tblRecipeState.Text = recipe.Finished ? $"Finished in {_proc?.CurrentStep} steps" : $"In progress (step #{_proc?.CurrentStep})";
         tblRecipeRMSQ.Text = "r = " + recipe.MinRMSE.ToString("0.####");
+        tblRecipeIteration.Text = $"iteration #{_proc?.CurrentStep + 1}";
 
         // Clear the table leaving only the header row
         var tableElements = new UIElement[grdRecipeChannels.Children.Count];
@@ -287,6 +299,10 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         btnQuit.Content = recipe.Finished ? "Return" : "Interrupt";
     }
+
+    private void SetConnectionColor(Ellipse elp, bool isConnected) => Dispatcher.Invoke(() => elp.Fill = isConnected ?
+                    BRUSH_STATUS_CONNECTED :
+                    BRUSH_STATUS_DISCONNECTED);
 
     private void CleanUp()
     {

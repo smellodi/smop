@@ -127,6 +127,13 @@ namespace Smop.MainApp.Dialogs
                 return;
             }
 
+            //var isProjectLoaded = false;
+            //void UpdateProjectStatus(object? s, IonVision.EventSink.TimedEventArgs e) => isProjectLoaded = true;
+
+            //IonVision.EventSink events = new IonVision.EventSink(_ivSettings.IP);
+            //events.ProjectSetupFinished += UpdateProjectStatus;
+            //events.CurrentProjectChanged += UpdateProjectStatus;
+
             var projectName = cmbProjects.SelectedItem.ToString();
             if (!string.IsNullOrEmpty(projectName))
             {
@@ -135,7 +142,13 @@ namespace Smop.MainApp.Dialogs
                 {
                     bdrWait.Visibility = Visibility.Visible;
 
-                    await Task.Delay(150);
+                    await Task.Delay(300);
+                    /*while (!isProjectLoaded)
+                    {
+                        System.Diagnostics.Debug.WriteLine("loading the project...");
+                        await Task.Delay(100);
+                    }*/
+
                     var defs = await _ivAPI.GetProjectDefinition(projectName);
 
                     if (defs?.Success == true && defs.Value?.Parameters.Length > 0)
@@ -164,6 +177,8 @@ namespace Smop.MainApp.Dialogs
                     bdrWait.Visibility = Visibility.Hidden;
                 }
             }
+
+            //events.ProjectSetupFinished -= UpdateProjectStatus;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

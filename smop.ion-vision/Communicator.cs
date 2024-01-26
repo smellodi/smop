@@ -1,3 +1,4 @@
+using Smop.Common;
 using System;
 using System.Threading.Tasks;
 
@@ -7,16 +8,27 @@ public class Communicator : IDisposable
 {
     public string SupportedVersion => _api.Version;
 
+    public event EventHandler<int>? ScanProgress;
+    public event EventHandler? ScanFinished;
+
     public Settings Settings => _settings;
 
     public Communicator(string? settingsFilename = null, bool isSimulator = false)
     {
         _settings = settingsFilename == null ? new() : new(settingsFilename);
         _api = isSimulator ? new Simulator() : new API(_settings.IP);
+        _events = new(isSimulator ? "127.0.0.1" : _settings.IP);
+        _events.ScanProgressChanged += (s, e) => ScanProgress?.Invoke(this, e.Data.Progress);
+        _events.ScanFinished += (s, e) => ScanProgress?.Invoke(this, 100);
+        _events.ScanResultsProcessed += (s, e) => ScanFinished?.Invoke(this, EventArgs.Empty);
+        _events.ProjectSetupFinished += (s, e) => _projectIsReady = true;
+        _events.ParameterSetupFinished += (s, e) => _parameterIsReady = true;
+        _events.ParameterPreloadFinished += (s, e) => _parameterWasPreloaded = true;
     }
 
     public void Dispose()
     {
+        _events.Dispose();
         _api.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -56,12 +68,17 @@ public class Communicator : IDisposable
 
     /// <summary>Sets the SMOP project as active and waiting until it is loaded</summary>
     /// <returns>Error message if the project was not set as active</returns>
-    public async Task<API.Response<Confirm>> SetProjectAndWait(int ms = 0)
+    public async Task<API.Response<Confirm>> SetProjectAndWait()
     {
+        _projectIsReady = false;
         var response = await _api.SetProject(new ProjectAsName(_settings.Project));
-        if (response.Success && ms > 0)
+        if (response.Success)
         {
-            await Task.Delay(ms);
+            while (!_projectIsReady)
+            {
+                ScreenLogger.Print("[IvComm] Waiting for the project to be loaded");
+                await Task.Delay(200);
+            }
         }
         return response;
     }
@@ -80,11 +97,25 @@ public class Communicator : IDisposable
     /// <returns>Error message if the project parameter was not set</returns>
     public async Task<API.Response<Confirm>> SetParameterAndPreload()
     {
+        _parameterIsReady = false;
+        _parameterWasPreloaded = false;
+
         var response = await _api.SetParameter(new ParameterAsId(_settings.ParameterId));
         if (response.Success)
         {
             await Task.Delay(300);
+            while (!_parameterIsReady)
+            {
+                ScreenLogger.Print("[IvComm] Waiting for the parameter to be set");
+                await Task.Delay(200);
+            }
+
             await _api.PreloadParameter();
+            while (!_parameterWasPreloaded)
+            {
+                ScreenLogger.Print("[IvComm] Waiting for the parameter to be preloaded");
+                await Task.Delay(200);
+            }
         }
         return response;
     }
@@ -126,4 +157,9 @@ public class Communicator : IDisposable
 
     readonly Settings _settings;
     readonly IMinimalAPI _api;
+    readonly EventSink _events;
+
+    bool _projectIsReady = false;
+    bool _parameterIsReady = false;
+    bool _parameterWasPreloaded = false;
 }

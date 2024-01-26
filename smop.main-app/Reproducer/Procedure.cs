@@ -107,7 +107,6 @@ public class Procedure
 
     // Internal
 
-    const int SCAN_PROGRESS_INTERVAL = 1000;    // ms
     const int SNT_MAX_DATA_COUNT = 10;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger("Reproducer");
@@ -134,7 +133,7 @@ public class Procedure
             
             if (App.IonVision != null)
             {
-                var scan = await ScanGas(App.IonVision);
+                var scan = await MakeDmsScan(App.IonVision);
                 if (scan != null)
                 {
                     _ = _ml.Publish(scan);
@@ -160,7 +159,7 @@ public class Procedure
         });
     }
 
-    private async Task<IonVision.ScanResult?> ScanGas(IonVision.Communicator ionVision)
+    private async Task<IonVision.ScanResult?> MakeDmsScan(IonVision.Communicator ionVision)
     {
         if (ionVision == null)
             return null;
@@ -173,6 +172,22 @@ public class Procedure
             return null;
         }
 
+        bool isScanFinished = false;
+
+        void FinalizeScan(object? s, EventArgs _) => isScanFinished = true;
+        void UpdateProgress(object? s, int value) =>
+            ENoseProgressChanged?.Invoke(this, value);
+
+        ionVision.ScanProgress += UpdateProgress;
+        ionVision.ScanFinished += FinalizeScan;
+
+        while (!isScanFinished)
+            await Task.Delay(100);
+
+        ionVision.ScanProgress -= UpdateProgress;
+        ionVision.ScanFinished -= FinalizeScan;
+
+        /*
         var waitForScanProgress = true;
 
         do
@@ -197,7 +212,7 @@ public class Procedure
             }
 
         } while (true);
-
+        */
         await Task.Delay(300);
         var scan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
 

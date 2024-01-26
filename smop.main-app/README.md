@@ -123,4 +123,10 @@ that becomes visible after IonVision is initialized with the project and its par
 **NOTE** IonVision initialization may end up with the parameter not being loaded. In this case, please load the 
 parameter manually from the IonVision device interface.
 
-Click the "Start" button to feed the measured odor tothe Machine Learning module and start the odor reproduction loop.
+Note that PID values will be streaming into the ML module of "Send PID value" flag is checked
+
+Click the "Start" button to feed the measured odor to the Machine Learning module and start the odor reproduction loop.
+The reproduction will be finished after the ML module sends a flag indicating a sufficiently stable level of 
+the reproduction model.
+
+**NOTE** Currently, the application is in DEMO mode meaning the data exchange protocol between SMOP and ML modules is simplified.

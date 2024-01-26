@@ -67,41 +67,33 @@ public class SetupProcedure
 
     public async Task<bool> InitializeIonVision(IonVision.Communicator ionVision)
     {
-        HandleIonVisionError(await ionVision.SetClock(), "SetClock");
+        var responseSetClock = HandleIonVisionError(await ionVision.SetClock(), "SetClock");
 
         await Task.Delay(300);
-        LogDms?.Invoke(this, new LogHanddlerArgs("Current clock is set."));
+        LogDms?.Invoke(this, new LogHanddlerArgs(responseSetClock.Success ? "Current clock is set." : "The clock was not set."));
         LogDms?.Invoke(this, new LogHanddlerArgs($"Loading '{ionVision.Settings.Project}' project..."));
 
-        var response = HandleIonVisionError(await ionVision.GetProject(), "GetProject");
-        if (response.Value?.Project != ionVision.Settings.Project)
+        var responseGetProject = HandleIonVisionError(await ionVision.GetProject(), "GetProject");
+        if (responseGetProject.Value?.Project != ionVision.Settings.Project)
         {
             await Task.Delay(300);
-            HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
-
-            bool isProjectLoaded = false;
-            while (!isProjectLoaded)
+            var responseSetProject = HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
+            if (responseSetProject.Success)
             {
-                await Task.Delay(1000);
-                response = await ionVision.GetProject();
-                if (response.Success)
-                {
-                    isProjectLoaded = true;
-                }
-                else if (response.Error?.StartsWith("Request failed") ?? false)
-                {
-                    _nlog.Info("loading a project...");
-                }
-                else
-                {
-                    // impossible if the project exists
-                }
+                LogDms?.Invoke(this, new LogHanddlerArgs($"Project '{ionVision.Settings.Project}' is loaded.", true));
+            }
+            else
+            {
+                LogDms?.Invoke(this, new LogHanddlerArgs($"Project '{ionVision.Settings.Project}' was not loaded... Interrupted.", true));
+                return false;
             }
         }
+        else
+        {
+            LogDms?.Invoke(this, new LogHanddlerArgs($"Project '{ionVision.Settings.Project}' is loaded already", true));
+        }
 
-        LogDms?.Invoke(this, new LogHanddlerArgs($"Project '{ionVision.Settings.Project}' is loaded.", true));
-
-        await Task.Delay(500);
+        await Task.Delay(300);
 
         LogDms?.Invoke(this, new LogHanddlerArgs($"Loading '{ionVision.Settings.ParameterName}' parameter..."));
 
@@ -110,13 +102,21 @@ public class SetupProcedure
         if (!hasParameterLoaded)
         {
             await Task.Delay(300);
-            HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
-
-            LogDms?.Invoke(this, new LogHanddlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is set. Preloading...", true));
-            await Task.Delay(1000);
+            var responseSetParam = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
+            if (responseSetParam.Success)
+            {
+                LogDms?.Invoke(this, new LogHanddlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true));
+            }
+            else
+            {
+                LogDms?.Invoke(this, new LogHanddlerArgs($"Parameter '{ionVision.Settings.ParameterName}' was not set... Interrupted", true));
+                return false;
+            }
         }
-
-        LogDms?.Invoke(this, new LogHanddlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true));
+        else
+        {
+            LogDms?.Invoke(this, new LogHanddlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is loaded already.", true));
+        }
 
         if (App.ML != null)
         {
@@ -300,6 +300,22 @@ public class SetupProcedure
 
         LogDms?.Invoke(this, new LogHanddlerArgs("Scanning..."));
 
+        bool isScanFinished = false;
+
+        void FinalizeScan(object? s, EventArgs _) => isScanFinished = true;
+        void UpdateProgress(object? s, int value) =>
+            LogDms?.Invoke(this, new LogHanddlerArgs(value < 100 ? $"Scanning... {value} %" : "Scanning finished.", true));
+
+        ionVision.ScanProgress += UpdateProgress;
+        ionVision.ScanFinished += FinalizeScan;
+
+        while (!isScanFinished)
+            await Task.Delay(100);
+
+        ionVision.ScanProgress -= UpdateProgress;
+        ionVision.ScanFinished -= FinalizeScan;
+
+        /*
         var waitForScanProgress = true;
 
         do
@@ -324,7 +340,7 @@ public class SetupProcedure
             }
 
         } while (true);
-
+        */
         await Task.Delay(300);
         DmsScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
 

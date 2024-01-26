@@ -17,7 +17,7 @@ public class EventSink : IDisposable
 
     public record class Message(string Type, long Time, object Body)
     {
-        static JsonSerializerOptions _jso = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+        static readonly JsonSerializerOptions _jso = new() { PropertyNameCaseInsensitive = true };
         public T As<T>() => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(Body), _jso)!;
     }
 
@@ -506,5 +506,5 @@ public class EventSink : IDisposable
         }
     }
 
-    private T As<T>(object body) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(body), _jsonSerializerOptions)!;
+    //private T As<T>(object body) => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(body), _jsonSerializerOptions)!;
 }

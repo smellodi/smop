@@ -53,6 +53,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     // Internal
 
+    record class IonVisionConnectionInfo(bool IsConnected, string? Info = null);
+
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(Connect) + "Page");
 
     readonly System.Windows.Media.Imaging.BitmapImage _greenButtonImage;
@@ -158,10 +160,10 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         _ionVision = new IonVision.Communicator(IonVisionSetupFilename, _storage.Simulating.HasFlag(SimulationTarget.IonVision));
 
         btnConnectToIonVision.IsEnabled = false;
-        var isConnected = await CheckIonVisionSettings(_ionVision);
+        var connectionInfo = await CheckIonVision(_ionVision);
         btnConnectToIonVision.IsEnabled = true;
 
-        if (!isConnected)
+        if (!connectionInfo.IsConnected)
         {
             _ionVision = null;
         }
@@ -170,45 +172,56 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             btnConnectToIonVision.Content = new Image() { Source = _greenButtonImage };
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
 
-            var status = HandleIonVisionError(await _ionVision.GetSystemStatus(), "GetSystemStatus");
-            if (status.Success)
-            {
-                lblIonVisionInfo.Content = $"Device type: {status.Value?.DeviceType ?? 0}";
-                btnChooseIonVisionSetupFile.IsEnabled = false;
-                btnEditIonVisionSetup.IsEnabled = false;
-            }
+            btnChooseIonVisionSetupFile.IsEnabled = false;
+            btnEditIonVisionSetup.IsEnabled = false;
 
             App.IonVision = _ionVision;
         }
+
+        lblIonVisionInfo.Content = connectionInfo.Info;
     }
 
-    private async Task<bool> CheckIonVisionSettings(IonVision.Communicator ionVision)
+    private async Task<IonVisionConnectionInfo> CheckIonVision(IonVision.Communicator ionVision)
     {
-        var info = HandleIonVisionError(await ionVision.GetSystemInfo(), "GetSystemInfo");
+        var responseInfo = HandleIonVisionError(await ionVision.GetSystemInfo(), "GetSystemInfo");
         btnConnectToIonVision.IsEnabled = true;
 
-        if (!info.Success || info.Value == null)
+        var version = responseInfo.Value?.CurrentVersion ?? null;
+        string info = $"Version: {version ?? "-"}";
+
+        if (!responseInfo.Success || string.IsNullOrEmpty(version))
         {
-            MsgBox.Error(Title, "Cannot connect to the device");
-            return false;
+            await Task.Delay(150);
+            var responseStatus = HandleIonVisionError(await ionVision.GetSystemStatus(), "GetSystemStatus");
+            if (!responseStatus.Success)
+            {
+                MsgBox.Error(Title, "Cannot connect to the device");
+                return new IonVisionConnectionInfo(false);
+            }
+            else
+            {
+                info = $"Device type: {responseStatus.Value?.DeviceType}";
+            }
         }
-        else if (!info.Value.CurrentVersion.StartsWith(ionVision.SupportedVersion))
+        else if (!version.StartsWith(ionVision.SupportedVersion))
         {
             var settings = Properties.Settings.Default;
             var ignoredVersions = settings.Comm_IonVision_IgnoreVersionWarning ?? new System.Collections.Specialized.StringCollection();
 
-            if (!ignoredVersions.Contains(info.Value.CurrentVersion))
+            info = $"Version: {version} (expected {ionVision.SupportedVersion})";
+
+            if (!ignoredVersions.Contains(version))
             {
-                var msg = $"Version mismatch: this software targets the version {ionVision.SupportedVersion}, but the device is operating the version {info.Value.CurrentVersion}. Continue?";
+                var msg = $"Version mismatch: the app was developed for v{ionVision.SupportedVersion} but the device runs v{version}. Continue?";
                 var reply = MsgBox.Custom(Title, msg, MsgBox.MsgIcon.Warning,
                     "ignore warnings for this version", null, MsgBox.Button.Yes, MsgBox.Button.No);
                 if (reply.Button == MsgBox.Button.No)
                 {
-                    return false;
+                    return new IonVisionConnectionInfo(false);
                 }
                 else if (reply.IsOptionAccepted)
                 {
-                    ignoredVersions.Add(info.Value.CurrentVersion);
+                    ignoredVersions.Add(version);
                     settings.Comm_IonVision_IgnoreVersionWarning = ignoredVersions;
                     settings.Save();
                 }
@@ -229,10 +242,10 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             MsgBox.Warn(Title, $"Project '{ionVision.Settings.Project}' does not exist.\nPlease edit '{IonVisionSetupFilename}' file\nand specify one of the following projects\n\n{projectList}",
                 MsgBox.Button.OK);
 
-            return false;
+            return new IonVisionConnectionInfo(false, info);
         }
 
-        return true;
+        return new IonVisionConnectionInfo(true, info);
     }
 
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
@@ -357,8 +370,6 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             {
                 _storage.AddSimulatingTarget(SimulationTarget.All);
             }
-
-            //lblDebug.Visibility = Visibility.Visible;
         }
         else if (e.Key == Key.Enter)
         {

@@ -115,8 +115,14 @@ internal class Simulator : IMinimalAPI
             return Task.FromResult(new Response<Confirm>(null, $"Project '{project.Project}' doesn't exist"));
         }
 
-        _currentProject = result;
         Notify("project.currentChanged", new EventSink.CurrentProject(project.Project));
+        Notify("project.setupCurrentStarted");
+
+        Wait(1000);
+
+        _currentProject = result;
+        Notify("project.setupCurrentFinished");
+
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -139,8 +145,14 @@ internal class Simulator : IMinimalAPI
             return Task.FromResult(new Response<Confirm>(null, $"Parameter '{parameter.Parameter}' doesn't exist"));
         }
 
-        _currentParameter = result;
         Notify("parameter.currentChanged", new EventSink.CurrentParameter(result));
+        Notify("parameter.setupCurrentStarted");
+
+        Wait(1000);
+
+        _currentParameter = result;
+        Notify("parameter.setupCurrentFinished");
+
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
@@ -150,6 +162,10 @@ internal class Simulator : IMinimalAPI
         {
             return Task.FromResult(new Response<Confirm>(null, "No parameter is set as current"));
         }
+
+        Notify("parameter.preloadStarted");
+        Wait(300);
+        Notify("parameter.preloadFinished");
 
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
@@ -250,8 +266,8 @@ internal class Simulator : IMinimalAPI
 
     // Internal
 
-    const double SCAN_DURATION = 10000;
-    const double SCAN_PROGRESS_STEP_DURATION = 1000;
+    const double SCAN_DURATION = 2500;                 // ms
+    const double SCAN_PROGRESS_STEP_DURATION = 300;    // ms
 
     readonly WebSocketServer _wsServer;
     readonly List<IWebSocketConnection> _sockets = new();
@@ -301,4 +317,6 @@ internal class Simulator : IMinimalAPI
             }
         };
     }
+
+    private void Wait(int ms) => Task.WaitAll(new Task[] { Task.Delay(ms) });
 }

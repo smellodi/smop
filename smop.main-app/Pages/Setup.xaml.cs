@@ -4,7 +4,6 @@ using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -124,7 +123,7 @@ public partial class Setup : Page, IPage<object?>
         _dmsPlotTypes[(int)_dmsPlotType].SetValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
     }
 
-    private void AddToLog(LogType destination, string line, bool replaceLast = false)
+    private void AddToLog(LogType destination, string line, bool replaceLast = false) => Dispatcher.Invoke(() =>
     {
         var lines = destination == LogType.DMS ? _ionVisionLog : _smellInspLog;
         var tbl = destination == LogType.DMS ? tblDmsStatus : tblSntStatus;
@@ -137,7 +136,7 @@ public partial class Setup : Page, IPage<object?>
         lines.Add(line);
         tbl.Text = string.Join('\n', lines);
         scv.ScrollToBottom();
-    }
+    });
 
     private void ShowDmsPlot()
     {

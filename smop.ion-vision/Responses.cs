@@ -1,5 +1,4 @@
-﻿#pragma warning disable CS8618
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Smop.IonVision;
 
@@ -103,7 +102,9 @@ public record class SimpleComment()
 
 public record class Timezone(
     float Offset,
+#pragma warning disable IDE1006 // Naming Styles
     string timezone
+#pragma warning restore IDE1006 // Naming Styles
 );
 
 public record class Clock(

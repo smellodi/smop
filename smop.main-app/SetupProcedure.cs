@@ -42,7 +42,7 @@ public class SetupProcedure
         }
     }
 
-    public void Finalize()
+    public void SaveSetup()
     {
         _gases.Save();
     }
@@ -56,7 +56,7 @@ public class SetupProcedure
         }
     }
 
-    public void InitializeOdorPrinter()
+    public static void InitializeOdorPrinter()
     {
         var odController = new OdorDisplayController();
         HandleOdorDisplayError(odController.Init(), "initialize");
@@ -232,6 +232,10 @@ public class SetupProcedure
         }
     }
 
+    public void HandleMLError(string action, string error)
+    {
+        _nlog.Error($"{action}: {error}");
+    }
 
     // Internal
 
@@ -300,47 +304,11 @@ public class SetupProcedure
 
         LogDms?.Invoke(this, new LogHanddlerArgs("Scanning..."));
 
-        bool isScanFinished = false;
+        await ionVision.WaitScanToFinish(progress => LogDms?.Invoke(this, new LogHanddlerArgs(
+            progress < 100 ?
+            $"Scanning... {progress} %" :
+            "Scanning finished.", true)));
 
-        void FinalizeScan(object? s, EventArgs _) => isScanFinished = true;
-        void UpdateProgress(object? s, int value) =>
-            LogDms?.Invoke(this, new LogHanddlerArgs(value < 100 ? $"Scanning... {value} %" : "Scanning finished.", true));
-
-        ionVision.ScanProgress += UpdateProgress;
-        ionVision.ScanFinished += FinalizeScan;
-
-        while (!isScanFinished)
-            await Task.Delay(100);
-
-        ionVision.ScanProgress -= UpdateProgress;
-        ionVision.ScanFinished -= FinalizeScan;
-
-        /*
-        var waitForScanProgress = true;
-
-        do
-        {
-            await Task.Delay(1000);
-            var progress = HandleIonVisionError(await ionVision.GetScanProgress(), "GetScanProgress");
-            var value = progress?.Value?.Progress ?? -1;
-
-            if (value >= 0)
-            {
-                waitForScanProgress = false;
-                LogDms?.Invoke(this, new LogHanddlerArgs($"Scanning... {value} %", true));
-            }
-            else if (waitForScanProgress)
-            {
-                continue;
-            }
-            else
-            {
-                LogDms?.Invoke(this, new LogHanddlerArgs($"Scanning finished.", true));
-                break;
-            }
-
-        } while (true);
-        */
         await Task.Delay(300);
         DmsScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
 
@@ -377,6 +345,7 @@ public class SetupProcedure
         _nlog.Error($"{action}: {error}");
         return response;
     }
+
     private async void OdorDisplay_Data(object? sender, ODPackets.Data data)
     {
         await CommPortEventHandler.Do(() =>
@@ -385,13 +354,11 @@ public class SetupProcedure
             {
                 foreach (var measurement in data.Measurements)
                 {
-                    if (measurement.Device == OdorDisplay.Device.ID.Base)
+                    if (measurement.Device == OdorDisplay.Device.ID.Base &&
+                        measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
                     {
-                        if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
-                        {
-                            _pidSamples.Add(pid.Volts);
-                            break;
-                        }
+                        _pidSamples.Add(pid.Volts);
+                        break;
                     }
                 }
             }

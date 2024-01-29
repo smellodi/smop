@@ -46,6 +46,7 @@ public partial class Setup : Page, IPage<object?>
         {
             App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
             App.ML.StatusChanged += ML_StatusChanged;
+            App.ML.Error += ML_Error;
 
             _procedure.EnumGases(odorReproductionSettings.AddGas);
         }
@@ -207,6 +208,11 @@ public partial class Setup : Page, IPage<object?>
         Dispatcher.Invoke(UpdateUI);
     }
 
+    private void ML_Error(object? sender, ML.Communicator.ErrorEventHandlerArgs args)
+    {
+        _procedure.HandleMLError(args.Action, args.Error);
+    }
+
     // UI events
 
     private async void Page_Loaded(object? sender, RoutedEventArgs e)
@@ -244,7 +250,7 @@ public partial class Setup : Page, IPage<object?>
 
             await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 
-            _procedure.InitializeOdorPrinter();
+            SetupProcedure.InitializeOdorPrinter();
 
             if (App.IonVision != null)
             {
@@ -278,6 +284,7 @@ public partial class Setup : Page, IPage<object?>
 
                 App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
                 App.ML.StatusChanged += ML_StatusChanged;
+                App.ML.Error += ML_Error;
             }
         }
         if (e.Key == Key.F4)
@@ -316,7 +323,7 @@ public partial class Setup : Page, IPage<object?>
                 btnStart.IsEnabled = false;
 
                 await _procedure.ConfigureML();
-                _procedure.Finalize();
+                _procedure.SaveSetup();
                 UpdateUI();
 
                 var targetFlows = new List<Procedure.GasFlow>();

@@ -165,6 +165,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         if (!connectionInfo.IsConnected)
         {
+            _ionVision.Dispose();
             _ionVision = null;
         }
         else

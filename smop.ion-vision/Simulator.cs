@@ -318,5 +318,5 @@ internal class Simulator : IMinimalAPI
         };
     }
 
-    private void Wait(int ms) => Task.WaitAll(new Task[] { Task.Delay(ms) });
+    private static void Wait(int ms) => Task.WaitAll(new Task[] { Task.Delay(ms) });
 }

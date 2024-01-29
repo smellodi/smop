@@ -13,10 +13,22 @@ public class Communicator : IDisposable
         File
     }
 
+    public class ErrorEventHandlerArgs : EventArgs
+    {
+        public string Action { get; }
+        public string Error { get; }
+        public ErrorEventHandlerArgs(string action, string error)
+        {
+            Action = action;
+            Error = error;
+        }
+    }
+
     public IonVision.ParameterDefinition? Parameter { get; set; } = null;
 
     public event EventHandler<Status>? StatusChanged;
     public event EventHandler<Recipe>? RecipeReceived;
+    public event EventHandler<ErrorEventHandlerArgs>? Error;
 
     public bool IsConnected => _server.IsClientConnected;
     public string ConnectionMean { get; }
@@ -24,7 +36,8 @@ public class Communicator : IDisposable
     public Communicator(Type type, bool isSimulating)
     {
         _server = type == Type.Tcp ? new TcpServer() : new FileServer();
-        _server.RecipeReceived += Server_RecipeReceived;
+        _server.RecipeReceived += (s, e) => RecipeReceived?.Invoke(this, e);
+        _server.Error += (s, e) => Error?.Invoke(this, new ErrorEventHandlerArgs(_lastAction, e));
 
         ConnectionMean = type == Type.Tcp ? $"port {TcpServer.Port}" : $"files {FileServer.MLInput}/{FileServer.MLOutput}";
 
@@ -44,6 +57,8 @@ public class Communicator : IDisposable
 
     public async Task Config(string[] sources, ChannelProps[] channels, int maxInteractions = 0, float threshold = 0)
     {
+        _lastAction = "Config";
+
         if (!IsDemo)
         {
             await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels), maxInteractions, threshold)));
@@ -56,6 +71,8 @@ public class Communicator : IDisposable
         {
             throw new Exception("Parameter is not set");
         }
+
+        _lastAction = "PublishDMS";
 
         if (IsDemo)
         {
@@ -76,6 +93,8 @@ public class Communicator : IDisposable
 
     public async Task Publish(SmellInsp.Data data)
     {
+        _lastAction = "PublishSNT";
+
         if (!IsDemo)
         {
             var packet = new Packet(PacketType.Measurement, SntMeasurement.From(data));
@@ -85,6 +104,8 @@ public class Communicator : IDisposable
 
     public async Task Publish(float pid)
     {
+        _lastAction = "PublishPID";
+
         if (!IsDemo)
         {
             var packet = new Packet(PacketType.Measurement, PIDMeasurement.From(pid));
@@ -94,6 +115,8 @@ public class Communicator : IDisposable
 
     public void Dispose()
     {
+        _lastAction = "Dispose";
+
         _server.Dispose();
         _simulator?.Dispose();
         GC.SuppressFinalize(this);
@@ -104,9 +127,5 @@ public class Communicator : IDisposable
     readonly Server _server;
 
     Simulator? _simulator = null;
-
-    private void Server_RecipeReceived(object? sender, Recipe e)
-    {
-        RecipeReceived?.Invoke(this, e);
-    }
+    string _lastAction = "Init";
 }

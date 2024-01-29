@@ -172,47 +172,8 @@ public class Procedure
             return null;
         }
 
-        bool isScanFinished = false;
-
-        void FinalizeScan(object? s, EventArgs _) => isScanFinished = true;
-        void UpdateProgress(object? s, int value) =>
-            ENoseProgressChanged?.Invoke(this, value);
-
-        ionVision.ScanProgress += UpdateProgress;
-        ionVision.ScanFinished += FinalizeScan;
-
-        while (!isScanFinished)
-            await Task.Delay(100);
-
-        ionVision.ScanProgress -= UpdateProgress;
-        ionVision.ScanFinished -= FinalizeScan;
-
-        /*
-        var waitForScanProgress = true;
-
-        do
-        {
-            await Task.Delay(SCAN_PROGRESS_INTERVAL);
-            var progress = HandleIonVisionError(await ionVision.GetScanProgress(), "GetScanProgress");
-            var value = progress?.Value?.Progress ?? -1;
-
-            if (value >= 0)
-            {
-                waitForScanProgress = false;
-                ENoseProgressChanged?.Invoke(this, value);
-            }
-            else if (waitForScanProgress)
-            {
-                continue;
-            }
-            else
-            {
-                ENoseProgressChanged?.Invoke(this, 100);
-                break;
-            }
-
-        } while (true);
-        */
+        await ionVision.WaitScanToFinish(progress => ENoseProgressChanged?.Invoke(this, progress));
+        
         await Task.Delay(300);
         var scan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
 
@@ -260,13 +221,11 @@ public class Procedure
 
             foreach (var measurement in e.Measurements)
             {
-                if (measurement.Device == OdorDisplay.Device.ID.Base)
+                if (measurement.Device == OdorDisplay.Device.ID.Base &&
+                    measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
                 {
-                    if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
-                    {
-                        _ = _ml.Publish(pid.Volts);
-                        break;
-                    }
+                    _ = _ml.Publish(pid.Volts);
+                    break;
                 }
             }
         });

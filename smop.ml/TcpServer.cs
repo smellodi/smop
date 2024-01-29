@@ -24,7 +24,7 @@ internal class TcpServer : Server
         _server = new TcpNETServer(new ParamsTcpServer(Port, LineEnd, pingIntervalSec: 0));
         _server.ConnectionEvent += Server_ConnectionEvent;
         _server.MessageEvent += Server_MessageEvent;
-        _server.ErrorEvent += (s, e) => ScreenLogger.Print($"[MlServer] error: {e.Message}");
+        _server.ErrorEvent += (s, e) => PublishError(e.Message);
         _server.ServerEvent += (s, e) => ScreenLogger.Print($"[MlServer] event: {e.ServerEventType}");
         _server.StartAsync();
     }

@@ -8,6 +8,7 @@ namespace Smop.ML;
 internal abstract class Server : IDisposable
 {
     public event EventHandler<Recipe>? RecipeReceived;
+    public event EventHandler<string>? Error;
 
     public virtual bool IsClientConnected { get; }
 
@@ -46,6 +47,12 @@ internal abstract class Server : IDisposable
         {
             ScreenLogger.Print($"[MlServer] error: {ex.Message}");
         }
+    }
+
+    protected void PublishError(string error)
+    {
+        ScreenLogger.Print($"[MlServer] error: {error}");
+        Error?.Invoke(this, error);
     }
 
     private Recipe CreateDemoRecipe(string json)

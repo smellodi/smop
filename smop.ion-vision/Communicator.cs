@@ -153,6 +153,29 @@ public class Communicator : IDisposable
             false
         ));
 
+    // Helpers
+
+    /// <summary>
+    /// Call this function after <see cref="StartScan"/> was called, it will return after the progress reaches 100%
+    /// </summary>
+    /// <param name="progressCallback">Callback to receive the progress value</param>
+    public async Task WaitScanToFinish(Action<int> progressCallback)
+    {
+        bool isScanFinished = false;
+
+        void FinalizeScan(object? s, EventArgs _) => isScanFinished = true;
+        void UpdateProgress(object? s, int value) => progressCallback(value);
+
+        ScanProgress += UpdateProgress;
+        ScanFinished += FinalizeScan;
+
+        while (!isScanFinished)
+            await Task.Delay(100);
+
+        ScanProgress -= UpdateProgress;
+        ScanFinished -= FinalizeScan;
+    }
+
     // Internal
 
     readonly Settings _settings;

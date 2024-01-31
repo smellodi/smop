@@ -3,6 +3,7 @@ using Smop.OdorDisplay.Packets;
 using Smop.MainApp.Controls;
 using System;
 using System.Threading.Tasks;
+using Smop.MainApp.Reproducer;
 
 namespace Smop.MainApp.Indicators;
 
@@ -46,6 +47,19 @@ internal static class Factory
 
     public static string GetSourceId(Device.ID deviceID, Device.Capability cap) => $"od/{deviceID}/{cap}";
     public static string GetSourceId(string measure) => $"snt/{measure}";
+
+    public static void ApplyGasProps(ChannelIndicator indicator, Device.ID gasID, string gasName)
+    {
+        if (indicator.OdorID == gasID)
+        {
+            var p = indicator.Title.Split('\n');
+            if (string.IsNullOrEmpty(gasName))
+            {
+                gasName = gasID.ToString();
+            }
+            indicator.Title = gasName + '\n' + string.Join('\n', p[1..]);
+        }
+    }
 
     // Internal
 
@@ -106,8 +120,8 @@ internal static class Factory
             Device.Capability.ChassisThermometer => "Chassis therm.",
             Device.Capability.OdorSourceThermometer => "Source therm.",
             Device.Capability.GeneralPurposeThermometer => "Thermometer",
-            Device.Capability.OutputAirHumiditySensor => "Input humd.",
-            Device.Capability.InputAirHumiditySensor => "Output humd.",
+            Device.Capability.OutputAirHumiditySensor => "Input humid.",
+            Device.Capability.InputAirHumiditySensor => "Output humid.",
             Device.Capability.PressureSensor => "Pressure",
             Device.Capability.OdorantFlowSensor => "Flow",
             Device.Capability.DilutionAirFlowSensor => "Dil. flow",
@@ -151,6 +165,7 @@ internal static class Factory
 
         return units == null ? null : new ChannelIndicator()
         {
+            OdorID = deviceID,
             Title = $"{deviceID}\n{capName}",
             Units = units,
             Precision = precision,

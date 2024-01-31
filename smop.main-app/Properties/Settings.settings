@@ -59,5 +59,8 @@
     <Setting Name="Reproduction_SniffingDelay" Type="System.Single" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
+    <Setting Name="Reproduction_Humidity" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">15</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

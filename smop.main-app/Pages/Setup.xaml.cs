@@ -1,4 +1,5 @@
 ﻿using Smop.IonVision;
+using Smop.MainApp.Controls;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
@@ -32,8 +33,15 @@ public partial class Setup : Page, IPage<object?>
         _procedure.Log += (s, e) => AddToLog(App.IonVision != null ? LogType.DMS : LogType.SNT, e.Text, e.ReplaceLast);
         _procedure.LogDms += (s, e) => AddToLog(LogType.DMS, e.Text, e.ReplaceLast);
         _procedure.LogSnt += (s, e) => AddToLog(LogType.SNT, e.Text, e.ReplaceLast);
+        _procedure.ScanProgress += (s, e) => Dispatcher.Invoke(() =>
+        {
+            prbENoseProgress.Value = e;
+            lblENoseProgress.Content = $"{e:.1f}%";
+        });
 
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
+
+        odorReproductionSettings.GasNameChanged += (s, e) => _indicatorController.ApplyGasProps(e);
 
         DataContext = this;
 
@@ -250,7 +258,9 @@ public partial class Setup : Page, IPage<object?>
 
             await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 
-            SetupProcedure.InitializeOdorPrinter();
+            _procedure.EnumGases(_indicatorController.ApplyGasProps);
+
+            _procedure.InitializeOdorPrinter();
 
             if (App.IonVision != null)
             {
@@ -296,6 +306,7 @@ public partial class Setup : Page, IPage<object?>
     private async void MeasureSample_Click(object sender, RoutedEventArgs e)
     {
         btnMeasureSample.IsEnabled = false;
+        brdENoseProgress.Visibility = Visibility.Visible;
 
         await _procedure.MeasureSample();
 
@@ -312,6 +323,7 @@ public partial class Setup : Page, IPage<object?>
         UpdateUI();
 
         btnMeasureSample.IsEnabled = true;
+        brdENoseProgress.Visibility = Visibility.Collapsed;
     }
 
     private async void Start_Click(object sender, RoutedEventArgs e)

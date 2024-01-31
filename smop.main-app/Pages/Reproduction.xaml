@@ -159,6 +159,10 @@
                                          Margin="4,0,4,2"
                                          Height="3.5"
                                          Value="0"/>
+                            <Label x:Name="lblENoseProgress" Grid.RowSpan="2"
+                                         VerticalAlignment="Center"
+                                         Margin="4,0"
+                                         Content=""/>
                         </Grid>
                     </Border>
                 </StackPanel>

@@ -186,6 +186,33 @@
                     Click="Start_Click"/>
         </WrapPanel>
 
+        <Border x:Name="brdENoseProgress" Grid.RowSpan="100" Grid.ColumnSpan="100"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Padding="12"
+                Visibility="Collapsed"
+                BorderBrush="{StaticResource BrushBorder}"
+                BorderThickness="1"
+                Background="{StaticResource BrushPanelLight}">
+            <StackPanel>
+                <Label FontSize="18"
+                       Content="Please wait until data is collected . . ."
+                       Foreground="{StaticResource BrushFont}"/>
+                <WrapPanel>
+                    <ProgressBar x:Name="prbENoseProgress"
+                                 MaxWidth="600"
+                                 MinWidth="300"
+                                 Height="12"
+                                 Value="0"/>
+                    <Label x:Name="lblENoseProgress"
+                           VerticalAlignment="Center"
+                           Margin="4,0,0,0"
+                           Content="0%"
+                           Foreground="{StaticResource BrushFont}"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
         <Label x:Name="lblZoom" Style="{StaticResource ZoomIndicator}"/>
         <Label x:Name="lblDebug" Style="{StaticResource DebugWarning}" Visibility="Collapsed"/>
     </Grid>

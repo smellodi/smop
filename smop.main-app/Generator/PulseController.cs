@@ -20,17 +20,11 @@ internal enum Stage
 
 internal class PulseController : IDisposable
 {
-    public class StageChangedEventArgs
+    public class StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, Stage stage)
     {
-        public PulseIntervals? Intervals { get; }
-        public PulseProps? Pulse { get; }
-        public Stage Stage { get; }
-        public StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, Stage stage)
-        {
-            Intervals = intervals;
-            Pulse = pulse;
-            Stage = stage;
-        }
+        public PulseIntervals? Intervals { get; } = intervals;
+        public PulseProps? Pulse { get; } = pulse;
+        public Stage Stage { get; } = stage;
     }
 
     public event EventHandler<StageChangedEventArgs>? StageChanged;

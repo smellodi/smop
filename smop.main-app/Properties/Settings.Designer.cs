@@ -249,5 +249,17 @@ namespace Smop.MainApp.Properties {
                 this["Reproduction_SniffingDelay"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public float Reproduction_Humidity {
+            get {
+                return ((float)(this["Reproduction_Humidity"]));
+            }
+            set {
+                this["Reproduction_Humidity"] = value;
+            }
+        }
     }
 }

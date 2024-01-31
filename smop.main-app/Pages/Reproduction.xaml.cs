@@ -37,7 +37,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc = new Reproducer.Procedure(config.MLComm);
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
-        _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() => prbENoseProgress.Value = e);
+        _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() =>
+        {
+            prbENoseProgress.Value = e;
+            lblENoseProgress.Content = $"{e}%";
+        });
         _proc.OdorDisplayData += (s, e) => Dispatcher.Invoke(() => DisplayODState(e));
 
         _procConfig = config;
@@ -180,6 +184,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         brdENoses.Style = BoolToStyle(isActiveENose);
         prbENoseProgress.Visibility = BoolToVisible(isActiveENose);
         prbENoseProgress.Value = 0;
+        lblENoseProgress.Content = "";
 
         tblRecipeName.Visibility = BoolToVisible(!isActiveML);
         grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);

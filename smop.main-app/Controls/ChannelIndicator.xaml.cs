@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.OdorDisplay;
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -209,6 +210,8 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 
     #endregion
 
+    public Device.ID OdorID { get; init; }
+
     public string ValueStr => double.IsFinite(Value) ? Value.ToString($"F{Precision}") : "-";
     public bool IsWarningVisible => double.IsFinite(WarningThreshold) && double.IsFinite(Value) && WarningThreshold < Value;
 
@@ -222,6 +225,8 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 
         cmdChannels.SelectionChanged += Channels_SelectionChanged;
     }
+
+    // Internal
 
     private void Channels_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

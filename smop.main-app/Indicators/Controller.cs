@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Smop.MainApp.Reproducer;
 
 namespace Smop.MainApp.Indicators;
 
@@ -65,6 +66,14 @@ public class Controller
                 var source = Factory.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
                 Update(source, value);
             }
+        }
+    }
+
+    public void ApplyGasProps(Gas gas)
+    {
+        foreach (var chi in _indicators.Values)
+        {
+            Factory.ApplyGasProps(chi, gas.ChannelID, gas.Name);
         }
     }
 

@@ -215,7 +215,7 @@ internal class Simulator : IMinimalAPI
         _comments = comment;
 
         var data = _comments.GetType().GetProperties().Select(prop =>
-            new KeyValuePair<string, string>(prop.Name, (string)prop.GetValue(_comments, null)!)).ToArray();
+            new KeyValuePair<string, string>(prop.Name, prop.GetValue(_comments, null)?.ToString() ?? "")).ToArray();
         Notify("scan.commentsChanged", data);
 
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));

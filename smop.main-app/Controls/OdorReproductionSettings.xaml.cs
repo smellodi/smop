@@ -70,6 +70,18 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
+    public float Humidity
+    {
+        get => Properties.Settings.Default.Reproduction_Humidity;
+        set
+        {
+            Properties.Settings.Default.Reproduction_Humidity = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public event EventHandler<Gas>? GasNameChanged;
+
     public OdorReproductionSettings()
     {
         InitializeComponent();
@@ -89,6 +101,7 @@ public partial class OdorReproductionSettings : UserControl
             Style = FindResource("GasName") as Style,
             ToolTip = "Enter a name of the odor loaded into this channel,\nor leave it blank if the channel is not used"
         };
+        txbName.TextChanged += (s, e) => GasNameChanged?.Invoke(this, gas);
 
         var txbFlow = new TextBox()
         {
@@ -110,27 +123,24 @@ public partial class OdorReproductionSettings : UserControl
         };
         BindingOperations.SetBinding(txbFlow, IsEnabledProperty, nameToBoolBinding);
 
-        var nameBinding2 = new Binding("Flow")
+        var flowBinding = new Binding("Flow")
         {
             Source = gas,
             StringFormat = "0.#"
         };
-        nameBinding2.ValidationRules.Add(new Validators.RangeRule() { Min = 0, IsInteger = false });
-        BindingOperations.SetBinding(txbFlow, TextBox.TextProperty, nameBinding2);
+        flowBinding.ValidationRules.Add(new Validators.RangeRule() { Min = 0, IsInteger = false });
+        BindingOperations.SetBinding(txbFlow, TextBox.TextProperty, flowBinding);
 
 
         var container = new Grid();
         container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
         container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
-        //container.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(40) });
 
         Grid.SetColumn(lblID, 0);
         Grid.SetColumn(txbName, 1);
-        //Grid.SetColumn(txbFlow, 2);
 
         container.Children.Add(lblID);
         container.Children.Add(txbName);
-        //container.Children.Add(txbFlow);
 
         stpGases.Children.Add(container);
 

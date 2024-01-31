@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:v="clr-namespace:Smop.MainApp.Validators"
              mc:Ignorable="d" 
-             d:DesignHeight="300"
+             d:DesignHeight="400"
              d:DesignWidth="300">
     
     <UserControl.Resources>
@@ -91,7 +91,24 @@
         </UserControl>
 
         <Separator Margin="0,8,0,0"/>
+        <Label Style="{StaticResource Section}"
+               Content="Air settings:"/>
+        <UserControl x:Name="uscHumidity"
+                     Style="{StaticResource Setting}"
+                     Tag="Humidity, %">
+            <TextBox x:Name="txbHumidity" Grid.Column="0"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="Humidity" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <v:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </UserControl>
 
+        <Separator Margin="0,8,0,0"/>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>

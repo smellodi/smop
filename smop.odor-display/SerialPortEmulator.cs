@@ -107,10 +107,10 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
 
     const float BASE_PID = 0.06f;
 
-    // Internals (what the state should be like very soon)
-    float _desiredPID = BASE_PID;  // Volts
+    // Target values (what the state should be like very soon)
+    float _targetPID = BASE_PID;  // Volts
 
-    // Variables (what the state is like right now)
+    // Current values (what the state is like right now)
     float _currentPID = BASE_PID;  // Volts
 
     readonly Dictionary<Device.ID, Actuator> _state = new()
@@ -171,7 +171,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
                 }
             }
 
-            UpdateSystemInternals();
+            UpdateSystemTargets();
         }
     }
 
@@ -188,10 +188,10 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
             else if (req.Type == Type.QueryDevices)
             {
                 _responses.Enqueue(new Devices(new bool[] {
-                    true,
-                    true, true,
-                    false, false, false, false, false, false, false,
-                    true
+                    true,       // Base
+                    true, true, // Odor1 and Odor2
+                    false, false, false, false, false, false, false,    // Odor 3-9
+                    false //true // Dilution
                 }).ToArray());
             }
             else if (req.Type == Type.QueryCapabilities)
@@ -285,8 +285,8 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
                 new ThermometerValue(Device.Sensor.ChassisThermometer, baseCaps[Device.Controller.ChassisTemperature] + Random.Range(0.1f)),
                 new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
                 new ThermometerValue(Device.Sensor.GeneralPurposeThermometer, 27.0f + Random.Range(0.1f)),
-                new HumidityValue(Device.Sensor.OutputAirHumiditySensor, (baseCaps[Device.Controller.OdorantFlow] * Device.MaxBaseAirFlowRate) + Random.Range(0.04f), 27.1f + Random.Range(0.1f)),
-                new HumidityValue(Device.Sensor.InputAirHumiditySensor, 0f + Random.Range(0.05f), 26.6f + Random.Range(0.1f)),
+                new HumidityValue(Device.Sensor.OutputAirHumiditySensor, (baseCaps[Device.Controller.OdorantFlow] * Device.MaxBaseAirFlowRate) + Random.Range(0.07f), 27.1f + Random.Range(0.1f)),
+                new HumidityValue(Device.Sensor.InputAirHumiditySensor, 0.22f + Random.Range(0.04f), 26.6f + Random.Range(0.1f)),
                 new PressureValue(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
                 new GasValue(Device.Sensor.OdorantFlowSensor, baseCaps[Device.Controller.OdorantFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
                 new GasValue(Device.Sensor.DilutionAirFlowSensor, baseCaps[Device.Controller.DilutionAirFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
@@ -321,7 +321,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
         _valveCloseEvents.RemoveWhere(ev => ev.Item1 <= ts);
     }
 
-    private void UpdateSystemInternals()
+    private void UpdateSystemTargets()
     {
         var totalOdorFlow = _state
             .Where(state => state.Key != Device.ID.Base)
@@ -331,12 +331,12 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
             .Select(caps => caps[Device.Controller.OdorantFlow])    // normalized value!
             .Sum();
 
-        _desiredPID = BASE_PID + totalOdorFlow * Device.MaxOdoredAirFlowRate * 2 / 1000;
+        _targetPID = BASE_PID + totalOdorFlow * Device.MaxOdoredAirFlowRate * 2 / 1000;
     }
 
     private void UpdateSystemVariables()
     {
-        _currentPID += (_desiredPID - _currentPID) * 0.1f;
+        _currentPID += (_targetPID - _currentPID) * 0.1f;
     }
 
     private static class Random

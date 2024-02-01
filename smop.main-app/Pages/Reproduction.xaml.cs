@@ -55,7 +55,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeIteration.Text = "";
 
         var gases = _proc.Gases;
-        ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, 1);
+        ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_GAS);
         ConfigureChannelTable(gases, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle, 1);
 
         DisplayRecipeInfo(new ML.Recipe("", 0, 0, gases.Select(gas => new ML.ChannelRecipe((int)gas.ChannelID, -1, -1)).ToArray()));
@@ -75,6 +75,10 @@ public partial class Reproduction : Page, IPage<Navigation>
         OdorDisplay = 2,
         ENose = 4
     }
+
+    const int MEASUREMENT_ROW_PID = 0;
+    const int MEASUREMENT_ROW_HUMIDITY = 1;
+    const int MEASUREMENT_ROW_FIRST_GAS = 2;
 
     readonly Brush BRUSH_STATUS_CONNECTED = new SolidColorBrush(Color.FromRgb(32, 160, 32));
     readonly Brush BRUSH_STATUS_DISCONNECTED = new SolidColorBrush(Color.FromRgb(128, 160, 32));
@@ -232,13 +236,20 @@ public partial class Reproduction : Page, IPage<Navigation>
                 var value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.PID);
                 if (value != null && value is ODPackets.PIDValue pid)
                 {
-                    if (GetElementInGrid(grdODChannels, 0, 1) is TextBlock pidEl)
+                    if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_PID, 1) is TextBlock pidEl)
                         pidEl.Text = (pid.Volts * 1000).ToString("0.0") + " mV";
+                }
+
+                value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.OutputAirHumiditySensor);
+                if (value != null && value is ODPackets.HumidityValue humidity)
+                {
+                    if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_HUMIDITY, 1) is TextBlock humidityEl)
+                        humidityEl.Text = humidity.Percent.ToString("0.0") + " %";
                 }
             }
             else
             {
-                var row = (int)m.Device;
+                var row = ((int)m.Device - 1) + MEASUREMENT_ROW_FIRST_GAS;
                 if (GetElementInGrid(grdODChannels, row, 1) is not TextBlock flowEl)
                     continue;
 

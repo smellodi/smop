@@ -63,6 +63,10 @@ public class Communicator : IDisposable
         {
             await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels), maxInteractions, threshold)));
         }
+        else if (_simulator != null)
+        {
+            await _server.SendAsync(Array.Empty<float>());
+        }
     }
 
     public async Task Publish(IonVision.ScanResult scan)

@@ -109,24 +109,25 @@ public partial class OdorReproductionSettings : UserControl
         };
 
 
-        var nameBinding = new Binding("Name")
+        var nameBinding = new Binding(nameof(Gas.Name))
         {
             Source = gas,
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
         };
         BindingOperations.SetBinding(txbName, TextBox.TextProperty, nameBinding);
 
-        var nameToBoolBinding = new Binding("Name")
+        var nameToBoolBinding = new Binding(nameof(Gas.Name))
         {
             Source = gas,
             Converter = new StringToBoolConverter()
         };
         BindingOperations.SetBinding(txbFlow, IsEnabledProperty, nameToBoolBinding);
 
-        var flowBinding = new Binding("Flow")
+        var flowBinding = new Binding(nameof(Gas.Flow))
         {
             Source = gas,
-            StringFormat = "0.#"
+            StringFormat = "0.#",
+            Mode = BindingMode.TwoWay,
         };
         flowBinding.ValidationRules.Add(new Validators.RangeRule() { Min = 0, IsInteger = false });
         BindingOperations.SetBinding(txbFlow, TextBox.TextProperty, flowBinding);

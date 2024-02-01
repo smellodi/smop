@@ -34,8 +34,11 @@ public class SetupProcedure
 
     public void EnumGases(Action<Gas> callback)
     {
-        var channelIDs = GetAvailableChannelIDs();
-        _gases = new Gases(channelIDs);
+        if (_gases.Items.Length == 0)
+        {
+            var channelIDs = GetAvailableChannelIDs();
+            _gases = new Gases(channelIDs);
+        }
 
         foreach (var gas in _gases.Items)
         {
@@ -238,7 +241,7 @@ public class SetupProcedure
         }
     }
 
-    public void HandleMLError(string action, string error)
+    public static void HandleMLError(string action, string error)
     {
         _nlog.Error($"{action}: {error}");
     }

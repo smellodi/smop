@@ -70,8 +70,14 @@ internal static class Factory
             return;
         }
 
-        await CreateIndicators(Device.ID.Base, callback);
-        await CreateIndicators(Device.ID.DilutionAir, callback);
+        if (devices.HasBaseModule)
+        {
+            await CreateIndicators(Device.ID.Base, callback);
+        }
+        if (devices.HasDilutionModule)
+        {
+            await CreateIndicators(Device.ID.DilutionAir, callback);
+        }
 
         for (int i = 0; i < Devices.MaxOdorModuleCount; i++)
         {
@@ -120,11 +126,11 @@ internal static class Factory
             Device.Capability.ChassisThermometer => "Chassis therm.",
             Device.Capability.OdorSourceThermometer => "Source therm.",
             Device.Capability.GeneralPurposeThermometer => "Thermometer",
-            Device.Capability.OutputAirHumiditySensor => "Input humid.",
-            Device.Capability.InputAirHumiditySensor => "Output humid.",
+            Device.Capability.OutputAirHumiditySensor => "Output humid.",
+            Device.Capability.InputAirHumiditySensor => "Input humid.",
             Device.Capability.PressureSensor => "Pressure",
-            Device.Capability.OdorantFlowSensor => "Flow",
-            Device.Capability.DilutionAirFlowSensor => "Dil. flow",
+            Device.Capability.OdorantFlowSensor => deviceID == Device.ID.Base ? "Humid. flow" : "Flow",
+            Device.Capability.DilutionAirFlowSensor => "Dilut. flow",
             Device.Capability.OdorantValveSensor => "Valve",
             Device.Capability.OutputValveSensor => "Output valve",
             _ => null

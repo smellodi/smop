@@ -24,7 +24,7 @@
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
         <Style x:Key="OdorDisplayMeasurement" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style x:Key="OdorDisplayMeasurementLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
@@ -83,10 +83,11 @@
                       Margin="0,38,4,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition MinWidth="70"/>
                     </Grid.ColumnDefinitions>
 
                     <Label Grid.Row="0" Grid.Column="0"
@@ -95,7 +96,15 @@
                     <TextBlock Grid.Row="0" Grid.Column="1"
                                Style="{StaticResource OdorDisplayMeasurement}"
                                Text="0"/>
-                    <!-- filled in code -->
+
+                    <Label Grid.Row="1" Grid.Column="0"
+                           Style="{StaticResource OdorDisplayMeasurementLabel}"
+                           Content="Humidity:"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1"
+                               Style="{StaticResource OdorDisplayMeasurement}"
+                               Text="0"/>
+                    
+                    <!-- gas flow measurement elements are created in the code -->
                 </Grid>
             </StackPanel>
             
@@ -152,7 +161,7 @@
                             <TextBlock Grid.RowSpan="2"
                                        Style="{StaticResource DeviceName}"
                                        Text="eNose"
-                                       Margin="12,4,0,0"
+                                       Margin="14,4,0,0"
                                        TextAlignment="Center"/>
                             <ProgressBar x:Name="prbENoseProgress" Grid.RowSpan="2"
                                          VerticalAlignment="Bottom"
@@ -160,9 +169,9 @@
                                          Height="3.5"
                                          Value="0"/>
                             <Label x:Name="lblENoseProgress" Grid.RowSpan="2"
-                                         VerticalAlignment="Center"
-                                         Margin="4,0"
-                                         Content=""/>
+                                         VerticalAlignment="Top"
+                                         Margin="-2,-2"
+                                         Content="10%"/>
                         </Grid>
                     </Border>
                 </StackPanel>

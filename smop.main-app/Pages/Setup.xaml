@@ -191,9 +191,9 @@
                 HorizontalAlignment="Center"
                 Padding="12"
                 Visibility="Collapsed"
-                BorderBrush="{StaticResource BrushBorder}"
+                BorderBrush="{StaticResource BrushBorderDark}"
                 BorderThickness="1"
-                Background="{StaticResource BrushPanelLight}">
+                Background="{StaticResource BrushPanel}">
             <StackPanel>
                 <Label FontSize="18"
                        Content="Please wait until data is collected . . ."
@@ -207,6 +207,7 @@
                     <Label x:Name="lblENoseProgress"
                            VerticalAlignment="Center"
                            Margin="4,0,0,0"
+                           MinWidth="38"
                            Content="0%"
                            Foreground="{StaticResource BrushFont}"/>
                 </WrapPanel>

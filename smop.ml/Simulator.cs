@@ -58,7 +58,13 @@ internal abstract class Simulator : IDisposable
     private async Task HandleDemoPacket(string json)
     {
         var packet = JsonSerializer.Deserialize<float[]>(json, _serializerOptions);
-        if (packet == null || packet.Length < 3 || packet.Length != (int)(2 + packet[0] * packet[1]))
+        if (packet == null || packet.Length < 3)
+        {
+            _step = 0;
+            return;
+        }
+
+        if (packet.Length != (int)(2 + packet[0] * packet[1]))
             throw new Exception("The packet should consist of a row count, column count, and 'row x col' number of values");
 
         await Task.Delay(2000);

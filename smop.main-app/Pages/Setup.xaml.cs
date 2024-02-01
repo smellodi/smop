@@ -1,5 +1,4 @@
 ﻿using Smop.IonVision;
-using Smop.MainApp.Controls;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
@@ -36,7 +35,7 @@ public partial class Setup : Page, IPage<object?>
         _procedure.ScanProgress += (s, e) => Dispatcher.Invoke(() =>
         {
             prbENoseProgress.Value = e;
-            lblENoseProgress.Content = $"{e:.1f}%";
+            lblENoseProgress.Content = $"{e}%";
         });
 
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
@@ -119,7 +118,9 @@ public partial class Setup : Page, IPage<object?>
         {
             bool isDmsReady = _procedure.DmsScan != null && _procedure.ParamDefinition != null;
             bool isSntReady = _procedure.IsSntScanComplete || isDmsReady;
-            btnStart.IsEnabled = (isDmsReady || App.IonVision == null) && (isSntReady || !_smellInsp.IsOpen) && _mlIsConnected;
+            btnStart.IsEnabled = (isDmsReady || App.IonVision == null) && (isSntReady || !_smellInsp.IsOpen) &&
+                _mlIsConnected &&
+                brdENoseProgress.Visibility != Visibility.Visible;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? $"connected via {App.ML.ConnectionMean}" : "not connected";
@@ -218,7 +219,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void ML_Error(object? sender, ML.Communicator.ErrorEventHandlerArgs args)
     {
-        _procedure.HandleMLError(args.Action, args.Error);
+        SetupProcedure.HandleMLError(args.Action, args.Error);
     }
 
     // UI events
@@ -306,7 +307,12 @@ public partial class Setup : Page, IPage<object?>
     private async void MeasureSample_Click(object sender, RoutedEventArgs e)
     {
         btnMeasureSample.IsEnabled = false;
+
         brdENoseProgress.Visibility = Visibility.Visible;
+        prbENoseProgress.Value = 0;
+        lblENoseProgress.Content = "0%";
+
+        UpdateUI();
 
         await _procedure.MeasureSample();
 
@@ -320,10 +326,10 @@ public partial class Setup : Page, IPage<object?>
             }
         }
 
-        UpdateUI();
-
         btnMeasureSample.IsEnabled = true;
         brdENoseProgress.Visibility = Visibility.Collapsed;
+
+        UpdateUI();
     }
 
     private async void Start_Click(object sender, RoutedEventArgs e)

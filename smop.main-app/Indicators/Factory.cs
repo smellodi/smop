@@ -3,7 +3,6 @@ using Smop.OdorDisplay.Packets;
 using Smop.MainApp.Controls;
 using System;
 using System.Threading.Tasks;
-using Smop.MainApp.Reproducer;
 
 namespace Smop.MainApp.Indicators;
 
@@ -52,16 +51,18 @@ internal static class Factory
     {
         if (indicator.OdorID == gasID)
         {
-            var p = indicator.Title.Split('\n');
+            var p = indicator.Title.Split(SEPARATOR);
             if (string.IsNullOrEmpty(gasName))
             {
                 gasName = gasID.ToString();
             }
-            indicator.Title = gasName + '\n' + string.Join('\n', p[1..]);
+            indicator.Title = gasName + SEPARATOR + string.Join(SEPARATOR, p[1..]);
         }
     }
 
     // Internal
+
+    const char SEPARATOR = '\n';
 
     private static async Task CreateIndicators(Devices? devices, Action<ChannelIndicator> callback)
     {
@@ -172,7 +173,7 @@ internal static class Factory
         return units == null ? null : new ChannelIndicator()
         {
             OdorID = deviceID,
-            Title = $"{deviceID}\n{capName}",
+            Title = $"{deviceID}{SEPARATOR}{capName}",
             Units = units,
             Precision = precision,
             Value = 0,

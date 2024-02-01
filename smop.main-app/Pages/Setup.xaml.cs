@@ -19,6 +19,8 @@ public partial class Setup : Page, IPage<object?>
     {
         InitializeComponent();
 
+        brdENoseProgress.Visibility = Visibility.Collapsed;
+
         _dmsPlotTypes = new RadioButton[] { rdbDmsPlotTypeSingle, rdbDmsPlotTypeDiff, rdbDmsPlotTypeBlandAltman };
         foreach (int plotType in Enum.GetValues(typeof(DataPlot.ComparisonOperation)))
         {
@@ -124,6 +126,7 @@ public partial class Setup : Page, IPage<object?>
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? $"connected via {App.ML.ConnectionMean}" : "not connected";
+            odorReproductionSettings.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
         }
 
         _dmsPlotTypes[(int)DataPlot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;

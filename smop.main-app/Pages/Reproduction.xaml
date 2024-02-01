@@ -167,11 +167,12 @@
                                          VerticalAlignment="Bottom"
                                          Margin="4,0,4,2"
                                          Height="3.5"
-                                         Value="0"/>
+                                         Width="120"
+                                         Value="50"/>
                             <Label x:Name="lblENoseProgress" Grid.RowSpan="2"
-                                         VerticalAlignment="Top"
-                                         Margin="-2,-2"
-                                         Content="10%"/>
+                                         VerticalAlignment="Bottom"
+                                         Margin="0,0,0,-28"
+                                         Content="0%"/>
                         </Grid>
                     </Border>
                 </StackPanel>

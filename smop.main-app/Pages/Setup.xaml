@@ -190,7 +190,6 @@
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Padding="12"
-                Visibility="Collapsed"
                 BorderBrush="{StaticResource BrushBorderDark}"
                 BorderThickness="1"
                 Background="{StaticResource BrushPanel}">
@@ -200,10 +199,9 @@
                        Foreground="{StaticResource BrushFont}"/>
                 <WrapPanel>
                     <ProgressBar x:Name="prbENoseProgress"
-                                 MaxWidth="600"
-                                 MinWidth="300"
+                                 Width="300"
                                  Height="12"
-                                 Value="0"/>
+                                 Value="60"/>
                     <Label x:Name="lblENoseProgress"
                            VerticalAlignment="Center"
                            Margin="4,0,0,0"

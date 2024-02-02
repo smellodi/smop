@@ -774,60 +774,34 @@
     </Style>
     
     <!-- Progress bar -->
-    <Style x:Key="{x:Type ProgressBar}"
-           TargetType="{x:Type ProgressBar}">
+    <Style x:Key="{x:Type ProgressBar}" TargetType="{x:Type ProgressBar}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ProgressBar}">
                     <Grid MinHeight="2"
                           MinWidth="16"
                           Background="{TemplateBinding Background}">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Determinate"/>
-                                <!--Storyboard>
-                                    <ObjectAnimationUsingKeyFrames Duration="00:00:00"
-                                                                    Storyboard.TargetName="PART_GlowRect"
-                                                                    Storyboard.TargetProperty="Visibility">
-                                        <DiscreteObjectKeyFrame KeyTime="00:00:00" Value="{x:Static Visibility.Collapsed}"/>
-                                    </ObjectAnimationUsingKeyFrames>
-                                </Storyboard-->
-
-                                <VisualState x:Name="Indeterminate">
-                                    <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Duration="00:00:00"
-                                                                        Storyboard.TargetName="PART_Indicator"
-                                                                        Storyboard.TargetProperty="Background">
-                                            <DiscreteObjectKeyFrame KeyTime="00:00:00">
-                                                <DiscreteObjectKeyFrame.Value>
-                                                    <SolidColorBrush>Transparent</SolidColorBrush>
-                                                </DiscreteObjectKeyFrame.Value>
-                                            </DiscreteObjectKeyFrame>
-                                        </ObjectAnimationUsingKeyFrames>
-                                    </Storyboard>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
                         <Border x:Name="PART_Track"
-                                BorderThickness="1"
-                                BorderBrush="{StaticResource BrushBorderDark}"/>
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"/>
                         <Border x:Name="PART_Indicator"
-                                BorderThickness="1"
                                 HorizontalAlignment="Left"
                                 Background="{TemplateBinding Foreground}"
-                                BorderBrush="{StaticResource BrushBorderLight}"
-                                Margin="1">
-                            <Grid x:Name="Animation" ClipToBounds="True" Margin="-1">
+                                Margin="{TemplateBinding BorderThickness}">
+                            <Grid x:Name="Animation" ClipToBounds="True">
                                 <Rectangle x:Name="PART_GlowRect"
-                                           MaxWidth="100"
+                                           Width="{TemplateBinding ActualWidth}"
                                            HorizontalAlignment="Left"
-                                           Fill="{StaticResource BrushBorderDark}"
-                                           Margin="-100,0,0,0" />
+                                           Fill="{TemplateBinding Background}"/>
                             </Grid>
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsIndeterminate" Value="True">
+                            <Setter TargetName="PART_Indicator" Property="Background" Value="Transparent" />
+                        </Trigger>
+                        <Trigger Property="IsIndeterminate" Value="False">
+                            <Setter TargetName="PART_GlowRect" Property="Visibility" Value="Collapsed" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -835,7 +809,8 @@
         </Setter>
         <Setter Property="Background" Value="{StaticResource BrushFont}"/>
         <Setter Property="Foreground" Value="{StaticResource BrushBorderLight}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BrushBorderDark}"/>
+        <Setter Property="BorderThickness" Value="1"/>
     </Style>
-
 
 </ResourceDictionary>

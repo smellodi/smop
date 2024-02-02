@@ -168,6 +168,7 @@
                                          Margin="4,0,4,2"
                                          Height="3.5"
                                          Width="120"
+                                         BorderThickness="0"
                                          Value="50"/>
                             <Label x:Name="lblENoseProgress" Grid.RowSpan="2"
                                          VerticalAlignment="Bottom"

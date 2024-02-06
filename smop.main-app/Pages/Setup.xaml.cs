@@ -58,6 +58,7 @@ public partial class Setup : Page, IPage<object?>
             App.ML.StatusChanged += ML_StatusChanged;
             App.ML.Error += ML_Error;
 
+            _procedure.InitGases();
             _procedure.EnumGases(odorReproductionSettings.AddGas);
         }
 
@@ -267,7 +268,6 @@ public partial class Setup : Page, IPage<object?>
             await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 
             _procedure.EnumGases(_indicatorController.ApplyGasProps);
-
             _procedure.InitializeOdorPrinter();
 
             if (App.IonVision != null)

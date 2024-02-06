@@ -32,14 +32,14 @@ public class SetupProcedure
         IonVision.DataPlot.UseLogarithmicScaleInBlandAltman = false;
     }
 
+    public void InitGases()
+    {
+        var channelIDs = GetAvailableChannelIDs();
+        _gases = new Gases(channelIDs);
+    }
+
     public void EnumGases(Action<Gas> callback)
     {
-        if (_gases.Items.Length == 0)
-        {
-            var channelIDs = GetAvailableChannelIDs();
-            _gases = new Gases(channelIDs);
-        }
-
         foreach (var gas in _gases.Items)
         {
             callback(gas);

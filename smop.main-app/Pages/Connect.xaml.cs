@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Smop.MainApp.Utils;
+using System.Windows.Documents;
 
 namespace Smop.MainApp.Pages;
 
@@ -119,7 +120,11 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
         if (LogIO.Add(queryResult, "QueryVersion", LogSource.OD) && response is OdorDisplay.Packets.Version version)
         {
-            lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
+            tblOdorDisplayInfo.Inlines.Add($"Hardware: v{version.Hardware}");
+            tblOdorDisplayInfo.Inlines.Add(new LineBreak());
+            tblOdorDisplayInfo.Inlines.Add($"Software: v{version.Software}");
+            tblOdorDisplayInfo.Inlines.Add(new LineBreak());
+            tblOdorDisplayInfo.Inlines.Add($"Protocol: v{version.Protocol}");
         }
 
         //_odorDisplay.Debug += Comm_DebugAsync;
@@ -141,7 +146,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
         LogIO.Add(queryResult, "GetInfo", LogSource.SNT);
 
-        lblSmellInspInfo.Content = $"Status: {queryResult.Reason}";
+        tblSmellInspInfo.Text = $"Status: {queryResult.Reason}";
 
         //_smellInsp.Debug += Comm_DebugAsync;
 
@@ -175,7 +180,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             App.IonVision = _ionVision;
         }
 
-        lblIonVisionInfo.Content = connectionInfo.Info;
+        tblIonVisionInfo.Text = connectionInfo.Info;
     }
 
     private async Task<IonVisionConnectionInfo> CheckIonVision(IonVision.Communicator ionVision)

@@ -49,7 +49,8 @@ public class Procedure
     {
         if (_odorDisplay.IsOpen)
         {
-            LogIO.Add(_odController.StopGases(_gases), "StopFlows&CloseValves", LogSource.OD);
+            System.Threading.Thread.Sleep(100);
+            LogIO.Add(_odController.StopGases(_gases), "StopOdors", LogSource.OD);
         }
     }
 
@@ -95,7 +96,7 @@ public class Procedure
                 actuators.Add(actuator);
             }
 
-            COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "release gases");
+            COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "release odors");
         }
 
         // schedule new scan

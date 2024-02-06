@@ -1,9 +1,11 @@
 ﻿using Smop.MainApp.Logging;
 using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
+using Smop.ML;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 
@@ -32,7 +34,7 @@ public class SetupProcedure
         IonVision.DataPlot.UseLogarithmicScaleInBlandAltman = false;
     }
 
-    public void InitGases()
+    public void AcquireGasInfo()
     {
         var channelIDs = GetAvailableChannelIDs();
         _gases = new Gases(channelIDs);
@@ -55,6 +57,7 @@ public class SetupProcedure
     {
         if (_odorDisplay.IsOpen)
         {
+            System.Threading.Thread.Sleep(100);
             LogIO.Add(_odController.StopMeasurements(), "StopMeasurements", LogSource.OD);
         }
     }
@@ -68,6 +71,36 @@ public class SetupProcedure
 
         System.Threading.Thread.Sleep(100);
         COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set default humidity");
+    }
+
+    public async void CleanUpOdorPrinter(Action? finishedAction = null)
+    {
+        var cleanupFLow = 10f;
+        var cleanupDuration = 10_000;
+
+        var actuators = _gases.Items.Select(gas =>
+            new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
+                ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently,
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, cleanupFLow)
+            ))
+        );
+
+        System.Threading.Thread.Sleep(100);
+        COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "start cleaning up");
+
+        await Task.Delay(cleanupDuration);
+
+        actuators = _gases.Items.Select(gas =>
+            new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
+                ODPackets.ActuatorCapabilities.OdorantValveClose,
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f)
+            ))
+        );
+
+        System.Threading.Thread.Sleep(100);
+        COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "stop cleaning up");
+
+        finishedAction?.Invoke();
     }
 
     public async Task<bool> InitializeIonVision(IonVision.Communicator ionVision)
@@ -145,7 +178,7 @@ public class SetupProcedure
 
         await Task.Delay(150);
 
-        if (!COMHelper.ShowErrorIfAny(_odController.ReleaseGases(_gases), "release gases"))
+        if (!COMHelper.ShowErrorIfAny(_odController.ReleaseGases(_gases), "release odors"))
             return;
 
         Log?.Invoke(this, new LogHandlerArgs("Odors were released, waiting for the mixture to stabilize..."));
@@ -172,7 +205,7 @@ public class SetupProcedure
         _odorDisplay.Data -= OdorDisplay_Data;
         _smellInsp.Data -= SmellInsp_Data;
 
-        if (!COMHelper.ShowErrorIfAny(_odController.StopGases(_gases), "stop gases"))
+        if (!COMHelper.ShowErrorIfAny(_odController.StopGases(_gases), "stop odors"))
             return;
 
         await Task.Delay(300);

@@ -58,7 +58,7 @@ public partial class Setup : Page, IPage<object?>
             App.ML.StatusChanged += ML_StatusChanged;
             App.ML.Error += ML_Error;
 
-            _procedure.InitGases();
+            _procedure.AcquireGasInfo();
             _procedure.EnumGases(odorReproductionSettings.AddGas);
         }
 
@@ -107,6 +107,7 @@ public partial class Setup : Page, IPage<object?>
     readonly RadioButton[] _dmsPlotTypes;
 
     bool _isInitilized = false;
+    bool _isOdorDisplayCleanedUp = false;
     bool _ionVisionIsReady = false;
 
     DataPlot.ComparisonOperation _dmsPlotType = DataPlot.ComparisonOperation.None;
@@ -118,14 +119,18 @@ public partial class Setup : Page, IPage<object?>
     {
         if (_storage.SetupType == SetupType.PulseGenerator)
         {
-            btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) && pulseGeneratorSettings.Setup != null;
+            btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) && 
+                pulseGeneratorSettings.Setup != null;
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
         {
             bool isDmsReady = _procedure.DmsScan != null && _procedure.ParamDefinition != null;
             bool isSntReady = _procedure.IsSntScanComplete || isDmsReady;
-            btnStart.IsEnabled = (isDmsReady || App.IonVision == null) && (isSntReady || !_smellInsp.IsOpen) &&
+            btnStart.IsEnabled = 
+                (isDmsReady || App.IonVision == null) && 
+                (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
+                _isOdorDisplayCleanedUp &&
                 brdENoseProgress.Visibility != Visibility.Visible;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
 
@@ -269,6 +274,15 @@ public partial class Setup : Page, IPage<object?>
 
             _procedure.EnumGases(_indicatorController.ApplyGasProps);
             _procedure.InitializeOdorPrinter();
+
+            if (_storage.SetupType == SetupType.OdorReproduction)
+            {
+                _procedure.CleanUpOdorPrinter(() =>
+                {
+                    _isOdorDisplayCleanedUp = true;
+                    UpdateUI();
+                });
+            }
 
             if (App.IonVision != null)
             {

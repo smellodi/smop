@@ -194,6 +194,7 @@ while (true)
 // Exit
 
 _port.Close();
+_com.Dispose();
 
 Console.WriteLine("\nTesting finished.");
 

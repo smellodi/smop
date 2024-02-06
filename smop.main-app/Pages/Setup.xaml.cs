@@ -1,5 +1,6 @@
 ﻿using Smop.IonVision;
 using Smop.MainApp.Dialogs;
+using Smop.MainApp.Logging;
 using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
 using System;
@@ -89,6 +90,8 @@ public partial class Setup : Page, IPage<object?>
     enum LogType { DMS, SNT }
 
     readonly Storage _storage = Storage.Instance;
+
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(Setup) + "Page");
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
@@ -200,7 +203,7 @@ public partial class Setup : Page, IPage<object?>
 
     private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
     {
-        await CommPortEventHandler.Do(Dispatcher, () =>
+        await COMHelper.Do(Dispatcher, () =>
         {
             _indicatorController.Update(data);
         });
@@ -208,7 +211,7 @@ public partial class Setup : Page, IPage<object?>
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
     {
-        await CommPortEventHandler.Do(Dispatcher, () =>
+        await COMHelper.Do(Dispatcher, () =>
         {
             _indicatorController.Update(data);
         });
@@ -216,13 +219,14 @@ public partial class Setup : Page, IPage<object?>
 
     private void ML_StatusChanged(object? sender, ML.Status e)
     {
+        _nlog.Info(Logging.LogIO.Text("ML", "Status", e));
         _mlIsConnected = e == ML.Status.Connected;
         Dispatcher.Invoke(UpdateUI);
     }
 
     private void ML_Error(object? sender, ML.Communicator.ErrorEventHandlerArgs args)
     {
-        SetupProcedure.HandleMLError(args.Action, args.Error);
+        _nlog.Error(Logging.LogIO.Text("ML", "Error", args.Action, args.Error));
     }
 
     // UI events

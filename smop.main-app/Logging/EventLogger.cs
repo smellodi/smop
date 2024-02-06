@@ -1,6 +1,4 @@
-﻿using Smop.MainApp.Generator;
-
-namespace Smop.MainApp.Logging;
+﻿namespace Smop.MainApp.Logging;
 
 public class EventLogger : Logger<EventLogger.Record>, ILog
 {

@@ -1,4 +1,5 @@
-﻿using Smop.MainApp.Dialogs;
+﻿using Smop.MainApp.Logging;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -144,13 +145,13 @@ public class PulseSetup
                     else
                     {
                         linesWithInvalidData.Add(lineIndex);
-                        _nlog.Warn("no session defined yet on line {LineIndex}", lineIndex);
+                        _nlog.Warn(Logging.LogIO.Text("Pulse", $"no session defined yet on line {lineIndex}"));
                     }
                 }
                 else
                 {
                     linesWithInvalidData.Add(lineIndex);
-                    _nlog.Warn($"unknown command '{key}' on line {lineIndex}");
+                    _nlog.Warn(Logging.LogIO.Text("Pulse", "unknown command '{key}' on line {lineIndex}"));
                 }
             }
 
@@ -241,13 +242,13 @@ public class PulseSetup
         {
             if (field.Length < 3)
             {
-                _nlog.Warn($"invalid field `{field}` on line {lineIndex}");
+                _nlog.Warn(Logging.LogIO.Text("Pulse", $"invalid field `{field}` on line {lineIndex}"));
                 return null;
             }
             var keyvalue = field.Split('=');
             if (keyvalue.Length != 2)
             {
-                _nlog.Warn($"invalid keyvalue `{string.Join('=', keyvalue)}` on line {lineIndex}");
+                _nlog.Warn(Logging.LogIO.Text($"Pulse", $"invalid keyvalue `{string.Join('=', keyvalue)}` on line {lineIndex}"));
                 return null;
             }
 
@@ -274,7 +275,7 @@ public class PulseSetup
             }
             else
             {
-                _nlog.Warn($"unknown field '{field}' on line {lineIndex}");
+                _nlog.Warn(Logging.LogIO.Text("Pulse", $"unknown field '{field}' on line {lineIndex}"));
                 return null;
             }
         }

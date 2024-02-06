@@ -294,7 +294,7 @@ internal class PulseController : IDisposable
     private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
-        _nlog.Info($"{action}: {error}");
+        _nlog.Info(Logging.LogIO.Text(action, "Error", error));
         return response;
     }
 

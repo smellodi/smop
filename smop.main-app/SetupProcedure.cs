@@ -1,4 +1,4 @@
-﻿using Smop.MainApp.Generator;
+﻿using Smop.MainApp.Logging;
 using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
 using System;
@@ -55,36 +55,37 @@ public class SetupProcedure
     {
         if (_odorDisplay.IsOpen)
         {
-            var queryMeasurements = new ODPackets.SetMeasurements(ODPackets.SetMeasurements.Command.Stop);
-            SendOdorDisplayRequest(queryMeasurements);
+            LogIO.Add(_odController.StopMeasurements(), "StopMeasurements", LogSource.OD);
         }
     }
 
     public void InitializeOdorPrinter()
     {
-        HandleOdorDisplayError(_odController.Init(), "initialize");
+        COMHelper.ShowErrorIfAny(_odController.Init(), "initialize");
 
         System.Threading.Thread.Sleep(100);
-        HandleOdorDisplayError(_odController.Start(), "start measurements");
+        COMHelper.ShowErrorIfAny(_odController.StartMeasurements(), "start measurements");
 
         System.Threading.Thread.Sleep(100);
-        HandleOdorDisplayError(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set default humidity");
+        COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set default humidity");
     }
 
     public async Task<bool> InitializeIonVision(IonVision.Communicator ionVision)
     {
-        var responseSetClock = HandleIonVisionError(await ionVision.SetClock(), "SetClock");
+        if (LogIO.Add(await ionVision.SetClock(), "SetClock"))
+            LogDms?.Invoke(this, new LogHandlerArgs("Current clock is set."));
+        else
+            LogDms?.Invoke(this, new LogHandlerArgs("The clock was not set."));
 
         await Task.Delay(300);
-        LogDms?.Invoke(this, new LogHandlerArgs(responseSetClock.Success ? "Current clock is set." : "The clock was not set."));
+
         LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{ionVision.Settings.Project}' project..."));
 
-        var responseGetProject = HandleIonVisionError(await ionVision.GetProject(), "GetProject");
-        if (responseGetProject.Value?.Project != ionVision.Settings.Project)
+        LogIO.Add(await ionVision.GetProject(), "GetProject", out IonVision.ProjectAsName? responseGetProject);
+        if (responseGetProject?.Project != ionVision.Settings.Project)
         {
             await Task.Delay(300);
-            var responseSetProject = HandleIonVisionError(await ionVision.SetProjectAndWait(), "SetProjectAndWait");
-            if (responseSetProject.Success)
+            if (LogIO.Add(await ionVision.SetProjectAndWait(), "SetProjectAndWait"))
             {
                 LogDms?.Invoke(this, new LogHandlerArgs($"Project '{ionVision.Settings.Project}' is loaded.", true));
             }
@@ -103,13 +104,13 @@ public class SetupProcedure
 
         LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{ionVision.Settings.ParameterName}' parameter..."));
 
-        var getParameterResponse = await ionVision.GetParameter();
-        bool hasParameterLoaded = getParameterResponse.Value?.Parameter.Id == ionVision.Settings.ParameterId;
+        LogIO.Add(await ionVision.GetParameter(), "GetParameter", out IonVision.ParameterAsNameAndId? getParameterResponse);
+
+        bool hasParameterLoaded = getParameterResponse?.Parameter.Id == ionVision.Settings.ParameterId;
         if (!hasParameterLoaded)
         {
             await Task.Delay(300);
-            var responseSetParam = HandleIonVisionError(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload");
-            if (responseSetParam.Success)
+            if (LogIO.Add(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload"))
             {
                 LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true));
             }
@@ -127,8 +128,8 @@ public class SetupProcedure
         if (App.ML != null)
         {
             LogDms?.Invoke(this, new LogHandlerArgs($"Retrieving the parameter..."));
-            var paramDefinition = HandleIonVisionError(await ionVision.GetParameterDefinition(), "GetParameterDefinition");
-            ParamDefinition = paramDefinition.Value;
+            LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IonVision.ParameterDefinition? paramDefinition);
+            ParamDefinition = paramDefinition;
 
             await Task.Delay(500);
             LogDms?.Invoke(this, new LogHandlerArgs("Ready for scanning the target odor.", true));
@@ -139,16 +140,13 @@ public class SetupProcedure
 
     public async Task MeasureSample()
     {
-        HandleOdorDisplayError(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set humidity");
+        if (!COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set humidity"))
+            return;
+
         await Task.Delay(150);
 
-        var actuators = _gases.Items
-            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
-            .Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
-                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, gas.Flow),
-                gas.Flow > 0 ? ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently : ODPackets.ActuatorCapabilities.OdorantValveClose
-            )));
-        SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
+        if (!COMHelper.ShowErrorIfAny(_odController.ReleaseGases(_gases), "release gases"))
+            return;
 
         Log?.Invoke(this, new LogHandlerArgs("Odors were released, waiting for the mixture to stabilize..."));
         await Task.Delay((int)(1000 * Properties.Settings.Default.Reproduction_SniffingDelay));
@@ -174,13 +172,8 @@ public class SetupProcedure
         _odorDisplay.Data -= OdorDisplay_Data;
         _smellInsp.Data -= SmellInsp_Data;
 
-        actuators = _gases.Items
-            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
-            .Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
-                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f),
-                ODPackets.ActuatorCapabilities.OdorantValveClose
-            )));
-        SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
+        if (!COMHelper.ShowErrorIfAny(_odController.StopGases(_gases), "stop gases"))
+            return;
 
         await Task.Delay(300);
     }
@@ -210,6 +203,8 @@ public class SetupProcedure
         }
 
         var settings = Properties.Settings.Default;
+        _nlog.Info(Logging.LogIO.Text("ML", "Config", settings.Reproduction_MaxIterations, settings.Reproduction_Threshold));
+
         await App.ML.Config(dataSources.ToArray(),
             _gases.Items
                 .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
@@ -219,6 +214,8 @@ public class SetupProcedure
         );
 
         await Task.Delay(500);
+
+        _nlog.Info(Logging.LogIO.Text("ML", "InitialMeasurements"));
 
         if (DmsScan != null)
         {
@@ -241,11 +238,6 @@ public class SetupProcedure
         }
     }
 
-    public static void HandleMLError(string action, string error)
-    {
-        _nlog.Error($"{action}: {error}");
-    }
-
     // Internal
 
     const int SNT_MAX_DATA_COUNT = 10;
@@ -262,24 +254,24 @@ public class SetupProcedure
     readonly List<SmellInsp.Data> _sntSamples = new();
     readonly List<float> _pidSamples = new();
 
+    readonly DmsCache _dmsCache = new();
+
     Gases _gases = new();
 
     private OdorDisplay.Device.ID[] GetAvailableChannelIDs()
     {
         var ids = new List<OdorDisplay.Device.ID>();
-        var response = SendOdorDisplayRequest(new ODPackets.QueryDevices());
 
-        if (response != null)
+        if (!COMHelper.ShowErrorIfAny(_odController.QueryDevices(out var devices), "query the printer devices"))
+            return ids.ToArray();
+
+        if (devices != null)
         {
-            var devices = ODPackets.Devices.From(response);
-            if (devices != null)
+            for (int i = 0; i < ODPackets.Devices.MaxOdorModuleCount; i++)
             {
-                for (int i = 0; i < ODPackets.Devices.MaxOdorModuleCount; i++)
+                if (devices.HasOdorModule(i))
                 {
-                    if (devices.HasOdorModule(i))
-                    {
-                        ids.Add((OdorDisplay.Device.ID)(i + 1));
-                    }
+                    ids.Add((OdorDisplay.Device.ID)(i + 1));
                 }
             }
         }
@@ -287,45 +279,47 @@ public class SetupProcedure
         return ids.ToArray();
     }
 
-    private ODPackets.Response? SendOdorDisplayRequest(ODPackets.Request request)
-    {
-        _nlog.Info($"Sent: {request}");
-
-        var result = _odorDisplay.Request(request, out ODPackets.Ack? ack, out ODPackets.Response? response);
-        HandleOdorDisplayError(result, $"send the '{request.Type}' request");
-
-        if (ack != null)
-            _nlog.Info($"Received: {ack}");
-        if (result.Error == Comm.Error.Success && response != null)
-            _nlog.Info($"Received: {response}");
-
-        return response;
-    }
-
     private async Task MakeDmsScan(IonVision.Communicator ionVision)
     {
-        DmsScan = null;
+        DmsScan = _dmsCache.Find(_gases, out string? filename);
 
-        var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
-        if (!resp.Success)
+        if (DmsScan != null)
         {
-            LogDms?.Invoke(this, new LogHandlerArgs("Failed to start sample scan."));
-            return;
+            _nlog.Info(LogIO.Text("Cache", "Read", filename));
         }
+        else
+        {
+            if (!LogIO.Add(await ionVision.StartScan(), "StartScan"))
+            {
+                LogDms?.Invoke(this, new LogHandlerArgs("Failed to start sample scan."));
+                return;
+            }
 
-        LogDms?.Invoke(this, new LogHandlerArgs("Scanning..."));
+            LogDms?.Invoke(this, new LogHandlerArgs("Scanning..."));
 
-        await ionVision.WaitScanToFinish(progress => {
-            LogDms?.Invoke(this, new LogHandlerArgs(
-                progress < 100 ?
-                $"Scanning... {progress} %" :
-                "Scanning finished.", true
-            ));
-            ScanProgress?.Invoke(this, progress);
-        });
+            await ionVision.WaitScanToFinish(progress =>
+            {
+                LogDms?.Invoke(this, new LogHandlerArgs(
+                    progress < 100 ?
+                    $"Scanning... {progress} %" :
+                    "Scanning finished.", true
+                ));
+                ScanProgress?.Invoke(this, progress);
+            });
 
-        await Task.Delay(300);
-        DmsScan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
+            await Task.Delay(300);
+            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.ScanResult? scan);
+            DmsScan = scan;
+
+            if (scan != null)
+            {
+                filename = _dmsCache.Save(_gases, scan);
+                if (filename != null)
+                {
+                    _nlog.Info(LogIO.Text("Cache", "Write", filename));
+                }
+            }
+        }
 
         LogDms?.Invoke(this, new LogHandlerArgs(DmsScan != null ? "Ready to start." : "Failed to retrieve the scanning result"));
     }
@@ -347,24 +341,9 @@ public class SetupProcedure
         LogSnt?.Invoke(this, new LogHandlerArgs($"Ready to start."));
     }
 
-    private static void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
-    {
-        if (odorDisplayResult.Error != Comm.Error.Success)
-        {
-            Dialogs.MsgBox.Error("Odor Display", $"Cannot {action}:\n{odorDisplayResult.Reason}");
-        }
-    }
-
-    private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
-    {
-        var error = !response.Success ? response.Error : "OK";
-        _nlog.Error($"{action}: {error}");
-        return response;
-    }
-
     private async void OdorDisplay_Data(object? sender, ODPackets.Data data)
     {
-        await CommPortEventHandler.Do(() =>
+        await COMHelper.Do(() =>
         {
             if (_pidSamples.Count < PID_MAX_DATA_COUNT)
             {
@@ -383,7 +362,7 @@ public class SetupProcedure
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
     {
-        await CommPortEventHandler.Do(() =>
+        await COMHelper.Do(() =>
         {
             if (_sntSamples.Count < SNT_MAX_DATA_COUNT)
             {

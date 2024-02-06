@@ -98,6 +98,9 @@ public class Gases
         settings.Save();
     }
 
+    public string NameFromID(OdorDisplay.Device.ID id) => _items.FirstOrDefault(gas => gas.ChannelID == id)?.Name ?? id.ToString();
+
+
     // Internal
 
     readonly char SEPARATOR_GAS = ';';

@@ -13,6 +13,8 @@ public partial class App : Application
 
     #endregion
 
+    // Internal
+
     private void Application_Startup(object sender, StartupEventArgs e)
     {
         var settings = MainApp.Properties.Settings.Default;
@@ -31,11 +33,12 @@ public partial class App : Application
             FileName = "${basedir}/logs/logfile.txt",
             ArchiveOldFileOnStartup = true,
             MaxArchiveFiles = 5,
-            Layout = "${longdate} ${callsite}:${callsite-linenumber} ${message}${exception:format=ToString}"
+            Layout = Logging.LogIO.Text("${longdate}", "${logger}", "${callsite-linenumber}", "${message}", "${exception:format=ToString}")
+            //Layout = "${longdate} ${callsite}:${callsite-linenumber} ${message}${exception:format=ToString}"
         };
         var logdebug = new NLog.Targets.DebugSystemTarget("logdebug")
         {
-            Layout = "[${logger}] ${message}"
+            Layout = $"[${{logger}}] ${{replace:${{message}}:searchFor={Logging.LogIO.LOG_DELIM}:replaceWith= }}"
         };
 
         config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logdebug);

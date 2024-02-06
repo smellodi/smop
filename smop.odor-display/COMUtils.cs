@@ -12,7 +12,7 @@ namespace Smop.OdorDisplay;
 /// <summary>
 /// COM port utils: list of available ports, and firing events when this list changes.
 /// </summary>
-public class COMUtils
+public class COMUtils : IDisposable
 {
     /// <summary>
     /// Port descriptor
@@ -56,6 +56,18 @@ public class COMUtils
         Listen("__InstanceDeletionEvent", "Win32_SerialPort", ActionType.Removed);
     }
 
+    public void Dispose()
+    {
+        foreach (var w in _watchers)
+        {
+            w.Dispose();
+        }
+
+        _watchers.Clear();
+
+        GC.SuppressFinalize(this);
+    }
+
     // Internal
 
     private enum ActionType
@@ -65,6 +77,8 @@ public class COMUtils
     }
 
     static Port[]? _cachedPorts = null;
+
+    List<ManagementEventWatcher> _watchers = new();
 
     private void Listen(string source, string target, ActionType actionType)
     {
@@ -80,6 +94,7 @@ public class COMUtils
             {
                 var target = (ManagementBaseObject)e.NewEvent["TargetInstance"];
                 port = CreateCOMPort(target.Properties);
+                target.Dispose();
             }
             catch (Exception ex)
             {
@@ -100,7 +115,16 @@ public class COMUtils
             }
         };
 
-        watcher.Start();
+        _watchers.Add(watcher);
+
+        try
+        {
+            watcher.Start();
+        }
+        catch (Exception ex)
+        {
+            ScreenLogger.Print(ex.Message);
+        }
     }
 
     private static Port[]? GetAvailableFDTIPorts()

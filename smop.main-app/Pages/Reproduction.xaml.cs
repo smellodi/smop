@@ -34,7 +34,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(elpMLStatus, e == ML.Status.Connected);
 
-        _proc = new Reproducer.Procedure(config.MLComm);
+        _proc = new Reproducer.Procedure(config);
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() =>
@@ -197,23 +197,26 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         btnQuit.IsEnabled = !isActiveENose;
 
+        var stateText = new List<string>();
         if (hasNoActiveElement)
         {
-            tblRecipeState.Text = "Finished";
             tblRecipeName.Text = "Final recipe:";
+            stateText.Add("Finished");
         }
-        else if (isActiveML)
+        if (isActiveML)
         {
-            tblRecipeState.Text = "Creating a recipe";
+            stateText.Add("Creating a recipe");
         }
-        else if (isActiveOD)
+        if (isActiveOD)
         {
-            tblRecipeState.Text = "Mixing the chemicals to produce the odor";
+            stateText.Add("Producing the odor");
         }
-        else if (isActiveENose)
+        if (isActiveENose)
         {
-            tblRecipeState.Text = "Sniffing the produced odor with eNose";
+            stateText.Add("Measuring with eNose");
         }
+
+        tblRecipeState.Text = string.Join(". ", stateText) + ".";
     }
 
     private void HandleRecipe(object? sender, ML.Recipe recipe)

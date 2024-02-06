@@ -1,5 +1,6 @@
 ﻿using Smop.OdorDisplay.Packets;
 using Smop.MainApp.Dialogs;
+using Smop.MainApp.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Smop.MainApp.Utils;
 
 namespace Smop.MainApp.Pages;
 
@@ -32,7 +34,11 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         UpdatePortList(cmbOdorDisplayCommPort);
         UpdatePortList(cmbSmellInspCommPort);
 
-        Application.Current.Exit += (s, e) => Close();
+        Application.Current.Exit += (s, e) =>
+        {
+            _usb.Dispose();
+            Close();
+        };
 
         LoadSettings();
 
@@ -105,27 +111,21 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         if (_odorDisplay.IsOpen)
             return;
 
-        Comm.Result result = _odorDisplay.Open(address);
+        if (!COMHelper.ShowErrorIfAny(_odorDisplay.Open(address), $"open port {address}"))
+            return;
 
-        if (result.Error != Comm.Error.Success)
+        btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
+
+        var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
+        if (LogIO.Add(queryResult, "QueryVersion", LogSource.OD) && response is OdorDisplay.Packets.Version version)
         {
-            MsgBox.Error(Title, "Cannot open the port");
+            lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
         }
-        else
-        {
-            btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
 
-            var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
-            if (queryResult.Error == Comm.Error.Success && response is OdorDisplay.Packets.Version version)
-            {
-                lblOdorDisplayInfo.Content = $"Hardware: {version.Hardware}, Software: {version.Software}, Protocol: {version.Protocol}";
-            }
+        //_odorDisplay.Debug += Comm_DebugAsync;
 
-            //_odorDisplay.Debug += Comm_DebugAsync;
-
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
-        }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
     }
 
     private void ConnectToSmellInsp(string? address)
@@ -133,23 +133,19 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         if (_smellInsp.IsOpen)
             return;
 
-        var result = _smellInsp.Open(address);
+        if (!COMHelper.ShowErrorIfAny(_smellInsp.Open(address), $"open port {address}"))
+            return;
 
-        if (result.Error != Comm.Error.Success)
-        {
-            MsgBox.Error(Title, "Cannot open the port");
-        }
-        else
-        {
-            btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
+        btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
 
-            var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
-            lblSmellInspInfo.Content = $"Status: {queryResult.Reason}";
+        var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
+        LogIO.Add(queryResult, "GetInfo", LogSource.SNT);
 
-            //_smellInsp.Debug += Comm_DebugAsync;
+        lblSmellInspInfo.Content = $"Status: {queryResult.Reason}";
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
-        }
+        //_smellInsp.Debug += Comm_DebugAsync;
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
     }
 
     private async Task ConnectToIonVisionAsync()
@@ -184,7 +180,9 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     private async Task<IonVisionConnectionInfo> CheckIonVision(IonVision.Communicator ionVision)
     {
-        var responseInfo = HandleIonVisionError(await ionVision.GetSystemInfo(), "GetSystemInfo");
+        var responseInfo = await ionVision.GetSystemInfo();
+        LogIO.Add(responseInfo, "GetSystemInfo");
+
         btnConnectToIonVision.IsEnabled = true;
 
         var version = responseInfo.Value?.CurrentVersion ?? null;
@@ -193,7 +191,9 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         if (!responseInfo.Success || string.IsNullOrEmpty(version))
         {
             await Task.Delay(150);
-            var responseStatus = HandleIonVisionError(await ionVision.GetSystemStatus(), "GetSystemStatus");
+            var responseStatus = await ionVision.GetSystemStatus();
+            LogIO.Add(responseStatus, "GetSystemStatus");
+
             if (!responseStatus.Success)
             {
                 MsgBox.Error(Title, "Cannot connect to the device");
@@ -230,7 +230,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         }
 
         await Task.Delay(200);
-        var projects = HandleIonVisionError(await ionVision.GetProjects(), "GetProjects");
+        var projects = await ionVision.GetProjects();
+        LogIO.Add(projects, "GetProjects");
 
         if (!projects.Value?.Contains(ionVision.Settings.Project) ?? false)
         {
@@ -247,13 +248,6 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         }
 
         return new IonVisionConnectionInfo(true, info);
-    }
-
-    private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
-    {
-        var error = !response.Success ? response.Error : "OK";
-        _nlog.Info($"{action}: {error}");
-        return response;
     }
 
     private void Close()
@@ -371,13 +365,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             {
                 _storage.AddSimulatingTarget(SimulationTarget.All);
             }
-        }
-        else if (e.Key == Key.Enter)
-        {
-            if (btnConnectToOdorDisplay.IsEnabled)
-            {
-                ConnectToOdorDisplay_Click(sender, e);
-            }
+
+            _nlog.Info(Logging.LogIO.Text("Simulator", _storage.Simulating));
         }
     }
 
@@ -432,6 +421,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 IonVisionSetupFilename = filename;
             }
 
+            _nlog.Info(Logging.LogIO.Text("DMS", "SetupFile", IonVisionSetupFilename));
+
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
             txbIonVisionIP.Text = ivSettings.IP;
 
@@ -447,6 +438,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         setupDialog.Load(IonVisionSetupFilename);
         if (setupDialog.ShowDialog() == true)
         {
+            _nlog.Info(Logging.LogIO.Text("DMS", "SetupEdited"));
+
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename)
             {
                 IP = setupDialog.IP,

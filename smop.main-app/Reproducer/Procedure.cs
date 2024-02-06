@@ -1,4 +1,5 @@
-﻿using Smop.MainApp.Utils;
+﻿using Smop.MainApp.Logging;
+using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,9 +27,12 @@ public class Procedure
     public event EventHandler<double>? ENoseProgressChanged;
     public event EventHandler<ODPackets.Data>? OdorDisplayData;
 
-    public Procedure(ML.Communicator ml)
+    public Procedure(Config config)
     {
-        _ml = ml;
+        _ml = config.MLComm;
+
+        var targetText = config.TargetFlows.Select(flow => $"{_gases.NameFromID(flow.ID)} {flow.Flow}");
+        _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));
 
         var settings = Properties.Settings.Default;
         _scanDelay = settings.Reproduction_SniffingDelay;
@@ -45,13 +49,7 @@ public class Procedure
     {
         if (_odorDisplay.IsOpen)
         {
-            var actuators = _gases.Items
-                .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
-                .Select(gas => new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
-                    ODPackets.ActuatorCapabilities.OdorantValveClose,
-                    KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0.0f)
-                )));
-            SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
+            LogIO.Add(_odController.StopGases(_gases), "StopFlows&CloseValves", LogSource.OD);
         }
     }
 
@@ -68,10 +66,12 @@ public class Procedure
     public void ExecuteRecipe(ML.Recipe recipe)
     {
         _step++;
-        _nlog.Info(recipe.ToString());
+        _nlog.Info(RecipeToString(recipe));
+
+        var cachedDmsScan = _dmsCache.Find(recipe, out string? dmsFilename);
 
         // send command to OD
-        if (recipe.Channels != null)
+        if (cachedDmsScan == null && recipe.Channels != null)
         {
             var actuators = new List<ODPackets.Actuator>();
             foreach (var channel in recipe.Channels)
@@ -95,13 +95,39 @@ public class Procedure
                 actuators.Add(actuator);
             }
 
-            SendOdorDisplayRequest(new ODPackets.SetActuators(actuators.ToArray()));
+            COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "release gases");
         }
 
         // schedule new scan
         if (!recipe.Finished)
         {
-            DispatchOnce.Do(_scanDelay, ScanAndSendToML);
+            if (cachedDmsScan != null)
+            {
+                _nlog.Info(LogIO.Text("Cache", "Read", dmsFilename));
+                DispatchOnce.Do(2, () =>
+                {
+                    _ = _ml.Publish(cachedDmsScan);
+                    MlComputationStarted?.Invoke(this, EventArgs.Empty);
+                });
+            }
+            else
+            {
+                Task.Run(async () =>
+                {
+                    await Task.Delay((int)(1000 * _scanDelay));
+                    var dmsScan = await ScanAndSendToML();
+                    if (dmsScan != null)
+                    {
+                        var filename = _dmsCache.Save(recipe, dmsScan);
+                        _nlog.Info(LogIO.Text("Cache", "Write", filename));
+                    }
+
+                });
+            }
+        }
+        else
+        {
+            System.Media.SystemSounds.Beep.Play();
         }
     }
 
@@ -112,9 +138,12 @@ public class Procedure
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger("Reproducer");
 
     readonly Gases _gases = new();
+    readonly DmsCache _dmsCache = new();
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
+
+    readonly OdorDisplayController _odController = new();
 
     readonly ML.Communicator _ml;
 
@@ -125,38 +154,49 @@ public class Procedure
     bool _canSendFrequentData = false;
     int _sntSamplesCount = 0;
 
-    private void ScanAndSendToML()
+    public string RecipeToString(ML.Recipe recipe)
     {
-        Task.Run(async () =>
+        var fields = new List<string>() { "Received", recipe.Name, recipe.Finished ? "Final" : "Continues", recipe.MinRMSE.ToString("0.####") };
+        if (recipe.Channels != null)
         {
-            _canSendFrequentData = true;
-            
-            if (App.IonVision != null)
+            fields.AddRange(recipe.Channels.Select(ch => $"{_gases.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));
+        }
+        return LogIO.Text("Recipe", string.Join(" ", fields));
+    }
+
+    private async Task<IonVision.ScanResult?> ScanAndSendToML()
+    {
+        _canSendFrequentData = true;
+
+        IonVision.ScanResult? dmsScan = null;
+
+        if (App.IonVision != null)
+        {
+            dmsScan = await MakeDmsScan(App.IonVision);
+            if (dmsScan != null)
             {
-                var scan = await MakeDmsScan(App.IonVision);
-                if (scan != null)
-                {
-                    _ = _ml.Publish(scan);
-                    MlComputationStarted?.Invoke(this, EventArgs.Empty);
-                }
-            }
-            else
-            {
-                ENoseStarted?.Invoke(this, EventArgs.Empty);
-                while (_sntSamplesCount < SNT_MAX_DATA_COUNT)
-                {
-                    await Task.Delay(1000);
-                    ENoseProgressChanged?.Invoke(this, 100 * _sntSamplesCount / SNT_MAX_DATA_COUNT);
-                }
-                await Task.Delay(300);
+                _ = _ml.Publish(dmsScan);
                 MlComputationStarted?.Invoke(this, EventArgs.Empty);
             }
+        }
+        else
+        {
+            ENoseStarted?.Invoke(this, EventArgs.Empty);
+            while (_sntSamplesCount < SNT_MAX_DATA_COUNT)
+            {
+                await Task.Delay(1000);
+                ENoseProgressChanged?.Invoke(this, 100 * _sntSamplesCount / SNT_MAX_DATA_COUNT);
+            }
+            await Task.Delay(300);
+            MlComputationStarted?.Invoke(this, EventArgs.Empty);
+        }
 
-            _canSendFrequentData = false;
-            _sntSamplesCount = 0;
+        _canSendFrequentData = false;
+        _sntSamplesCount = 0;
 
-            ShutDownFlows();
-        });
+        ShutDownFlows();
+
+        return dmsScan;
     }
 
     private async Task<IonVision.ScanResult?> MakeDmsScan(IonVision.Communicator ionVision)
@@ -166,53 +206,20 @@ public class Procedure
 
         ENoseStarted?.Invoke(this, EventArgs.Empty);
 
-        var resp = HandleIonVisionError(await ionVision.StartScan(), "StartScan");
-        if (!resp.Success)
-        {
+        if (!LogIO.Add(await ionVision.StartScan(), "StartScan"))
             return null;
-        }
 
         await ionVision.WaitScanToFinish(progress => ENoseProgressChanged?.Invoke(this, progress));
         
         await Task.Delay(300);
-        var scan = HandleIonVisionError(await ionVision.GetScanResult(), "GetScanResult").Value;
+        LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.ScanResult? scan);
 
         return scan;
     }
 
-    private Comm.Result SendOdorDisplayRequest(ODPackets.Request request)
-    {
-        _nlog.Info($"Sent: {request}");
-
-        var result = _odorDisplay.Request(request, out ODPackets.Ack? ack, out ODPackets.Response? response);
-        HandleOdorDisplayError(result, $"send the '{request.Type}' request");
-
-        if (ack != null)
-            _nlog.Info($"Received: {ack}");
-        if (result.Error == Comm.Error.Success && response != null)
-            _nlog.Info($"Received: {response}");
-
-        return result;
-    }
-
-    private static void HandleOdorDisplayError(Comm.Result odorDisplayResult, string action)
-    {
-        if (odorDisplayResult.Error != Comm.Error.Success)
-        {
-            Dialogs.MsgBox.Error("Odor Display", $"Cannot {action}:\n{odorDisplayResult.Reason}");
-        }
-    }
-
-    private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
-    {
-        var error = !response.Success ? response.Error : "OK";
-        _nlog.Error($"{action}: {error}");
-        return response;
-    }
-
     private async void OdorDisplay_Data(object? sender, ODPackets.Data e)
     {
-        await CommPortEventHandler.Do(() =>
+        await COMHelper.Do(() =>
         {
             OdorDisplayData?.Invoke(this, e);
 
@@ -233,7 +240,7 @@ public class Procedure
 
     private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
     {
-        await CommPortEventHandler.Do(() =>
+        await COMHelper.Do(() =>
         {
             if (_canSendFrequentData)
             {

@@ -61,7 +61,7 @@ internal abstract class Server : IDisposable
         if (packet?.Length >= 3)
         {
             var rmsq = packet.Length == 4 ? packet[3] : float.NaN;
-            return new Recipe("Recipe", (int)packet[0], rmsq, new ChannelRecipe[] {
+            return new Recipe("Normal", (int)packet[0], rmsq, new ChannelRecipe[] {
                 new ChannelRecipe(1, packet[1], -1),
                 new ChannelRecipe(2, packet[2], -1),
             });

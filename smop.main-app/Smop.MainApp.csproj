@@ -133,7 +133,7 @@
     <None Update="Properties\IonVision-Hervanta.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Properties\IonVision-debug.json">
+    <None Update="Properties\IonVision-TietoPinni.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Properties\IonVision.json">

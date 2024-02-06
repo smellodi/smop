@@ -35,11 +35,11 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         UpdatePortList(cmbOdorDisplayCommPort);
         UpdatePortList(cmbSmellInspCommPort);
 
-        Application.Current.Exit += (s, e) =>
+        ((App)Application.Current).AddCleanupAction(() =>
         {
             _usb.Dispose();
-            Close();
-        };
+            CloseDevices();
+        });
 
         LoadSettings();
 
@@ -255,7 +255,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         return new IonVisionConnectionInfo(true, info);
     }
 
-    private void Close()
+    private void CloseDevices()
     {
         if (_odorDisplay.IsOpen)
         {

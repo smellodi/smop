@@ -39,7 +39,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         pdsInitialPause.Flow = -1;
         pdsFinalPause.Flow = -1;
 
-        Application.Current.Exit += (s, e) => CleanUp();
+        ((App)Application.Current).AddCleanupAction(CleanUp);
     }
 
     public void Start(PulseSetup setup)

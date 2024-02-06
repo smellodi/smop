@@ -26,7 +26,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         _odChannelStyle = FindResource("OdorDisplayMeasurement") as Style;
         _odChannelLabelStyle = FindResource("OdorDisplayMeasurementLabel") as Style;
 
-        Application.Current.Exit += (s, e) => CleanUp();
+        ((App)Application.Current).AddCleanupAction(CleanUp);
         OdorDisplay.CommPort.Instance.Closed += (s, e) => SetConnectionColor(elpODStatus, false);
     }
 

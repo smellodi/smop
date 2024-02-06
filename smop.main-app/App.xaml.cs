@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -13,7 +14,11 @@ public partial class App : Application
 
     #endregion
 
+    public void AddCleanupAction(Action action) => _cleanupActions.Push(action);
+
     // Internal
+
+    System.Collections.Generic.Stack<Action> _cleanupActions = new();
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {
@@ -62,5 +67,16 @@ public partial class App : Application
     private void TextBox_GotFocus(object sender, RoutedEventArgs e)
     {
         (sender as TextBox)?.SelectAll();
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        while (_cleanupActions.Count > 0)
+        {
+            var action = _cleanupActions.Pop();
+            action();
+        }
+
+        base.OnExit(e);
     }
 }

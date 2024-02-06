@@ -47,7 +47,7 @@ public partial class Setup : Page, IPage<object?>
 
         DataContext = this;
 
-        Application.Current.Exit += (s, e) => _procedure.ShutDown();
+        ((App)Application.Current).AddCleanupAction(_procedure.ShutDown);
     }
 
     public void Init(SetupType type)

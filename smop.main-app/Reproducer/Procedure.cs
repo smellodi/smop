@@ -16,7 +16,8 @@ public class Procedure
     );
     public record class Config(
         ML.Communicator MLComm,
-        GasFlow[] TargetFlows
+        GasFlow[] TargetFlows,
+        System.Windows.Size dataSize
     );
 
     public Gas[] Gases => _gases.Items;
@@ -30,6 +31,8 @@ public class Procedure
     public Procedure(Config config)
     {
         _ml = config.MLComm;
+
+        _dmsCache.SetSubfolder((int)config.dataSize.Height, (int)config.dataSize.Width);
 
         var targetText = config.TargetFlows.Select(flow => $"{_gases.NameFromID(flow.ID)} {flow.Flow}");
         _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));

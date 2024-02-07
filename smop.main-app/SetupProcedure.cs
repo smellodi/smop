@@ -1,11 +1,9 @@
 ﻿using Smop.MainApp.Logging;
 using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
-using Smop.ML;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 
@@ -36,8 +34,20 @@ public class SetupProcedure
 
     public void AcquireGasInfo()
     {
-        var channelIDs = GetAvailableChannelIDs();
-        _gases = new Gases(channelIDs);
+        var channelIDs = new List<OdorDisplay.Device.ID>();
+
+        if (COMHelper.ShowErrorIfAny(_odController.QueryDevices(out var devices), "query the printer devices") && devices != null)
+        {
+            for (int i = 0; i < ODPackets.Devices.MaxOdorModuleCount; i++)
+            {
+                if (devices.HasOdorModule(i))
+                {
+                    channelIDs.Add((OdorDisplay.Device.ID)(i + 1));
+                }
+            }
+        }
+
+        _gases = new Gases(channelIDs.ToArray());
     }
 
     public void EnumGases(Action<Gas> callback)
@@ -112,30 +122,32 @@ public class SetupProcedure
 
         await Task.Delay(300);
 
-        LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{ionVision.Settings.Project}' project..."));
+        var projectName = ionVision.Settings.Project;
+        LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{projectName}' project..."));
 
         LogIO.Add(await ionVision.GetProject(), "GetProject", out IonVision.ProjectAsName? responseGetProject);
-        if (responseGetProject?.Project != ionVision.Settings.Project)
+        if (responseGetProject?.Project != projectName)
         {
             await Task.Delay(300);
             if (LogIO.Add(await ionVision.SetProjectAndWait(), "SetProjectAndWait"))
             {
-                LogDms?.Invoke(this, new LogHandlerArgs($"Project '{ionVision.Settings.Project}' is loaded.", true));
+                LogDms?.Invoke(this, new LogHandlerArgs($"Project '{projectName}' is loaded.", true));
             }
             else
             {
-                LogDms?.Invoke(this, new LogHandlerArgs($"Project '{ionVision.Settings.Project}' was not loaded... Interrupted.", true));
+                LogDms?.Invoke(this, new LogHandlerArgs($"Project '{projectName}' was not loaded... Interrupted.", true));
                 return false;
             }
         }
         else
         {
-            LogDms?.Invoke(this, new LogHandlerArgs($"Project '{ionVision.Settings.Project}' is loaded already", true));
+            LogDms?.Invoke(this, new LogHandlerArgs($"Project '{projectName}' is loaded already", true));
         }
 
         await Task.Delay(300);
 
-        LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{ionVision.Settings.ParameterName}' parameter..."));
+        var paramName = ionVision.Settings.ParameterName;
+        LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{paramName}' parameter..."));
 
         LogIO.Add(await ionVision.GetParameter(), "GetParameter", out IonVision.ParameterAsNameAndId? getParameterResponse);
 
@@ -145,17 +157,17 @@ public class SetupProcedure
             await Task.Delay(300);
             if (LogIO.Add(await ionVision.SetParameterAndPreload(), "SetParameterAndPreload"))
             {
-                LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is set and preloaded.", true));
+                LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{paramName}' is set and preloaded.", true));
             }
             else
             {
-                LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{ionVision.Settings.ParameterName}' was not set... Interrupted", true));
+                LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{paramName}' was not set... Interrupted", true));
                 return false;
             }
         }
         else
         {
-            LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{ionVision.Settings.ParameterName}' is loaded already.", true));
+            LogDms?.Invoke(this, new LogHandlerArgs($"Parameter '{paramName}' is loaded already.", true));
         }
 
         if (App.ML != null)
@@ -164,7 +176,13 @@ public class SetupProcedure
             LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IonVision.ParameterDefinition? paramDefinition);
             ParamDefinition = paramDefinition;
 
-            await Task.Delay(500);
+            if (paramDefinition != null)
+            {
+                var sc = paramDefinition.MeasurementParameters.SteppingControl;
+                _dmsCache.SetSubfolder((int)sc.Usv.Steps, (int)sc.Ucv.Steps);
+            }
+
+            await Task.Delay(300);
             LogDms?.Invoke(this, new LogHandlerArgs("Ready for scanning the target odor.", true));
         }
 
@@ -236,7 +254,7 @@ public class SetupProcedure
         }
 
         var settings = Properties.Settings.Default;
-        _nlog.Info(Logging.LogIO.Text("ML", "Config", settings.Reproduction_MaxIterations, settings.Reproduction_Threshold));
+        _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_MaxIterations, settings.Reproduction_Threshold));
 
         await App.ML.Config(dataSources.ToArray(),
             _gases.Items
@@ -246,9 +264,9 @@ public class SetupProcedure
             settings.Reproduction_Threshold
         );
 
-        await Task.Delay(500);
+        await Task.Delay(300);
 
-        _nlog.Info(Logging.LogIO.Text("ML", "InitialMeasurements"));
+        _nlog.Info(LogIO.Text("ML", "InitialMeasurements"));
 
         if (DmsScan != null)
         {
@@ -290,27 +308,6 @@ public class SetupProcedure
     readonly DmsCache _dmsCache = new();
 
     Gases _gases = new();
-
-    private OdorDisplay.Device.ID[] GetAvailableChannelIDs()
-    {
-        var ids = new List<OdorDisplay.Device.ID>();
-
-        if (!COMHelper.ShowErrorIfAny(_odController.QueryDevices(out var devices), "query the printer devices"))
-            return ids.ToArray();
-
-        if (devices != null)
-        {
-            for (int i = 0; i < ODPackets.Devices.MaxOdorModuleCount; i++)
-            {
-                if (devices.HasOdorModule(i))
-                {
-                    ids.Add((OdorDisplay.Device.ID)(i + 1));
-                }
-            }
-        }
-
-        return ids.ToArray();
-    }
 
     private async Task MakeDmsScan(IonVision.Communicator ionVision)
     {

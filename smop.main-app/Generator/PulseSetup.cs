@@ -1,5 +1,4 @@
-﻿using Smop.MainApp.Logging;
-using Smop.MainApp.Dialogs;
+﻿using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;

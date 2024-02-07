@@ -112,14 +112,14 @@ public partial class MainWindow : Window
     {
         if (param is Generator.PulseSetup pulseSetup)
         {
-            _nlog.Info(Logging.LogIO.Text("Navigator", Navigation.PulseGenerator));
+            _nlog.Info(LogIO.Text("Navigator", Navigation.PulseGenerator));
 
             Content = _pulsePage;
             _pulsePage.Start(pulseSetup);
         }
         else if (param is Reproducer.Procedure.Config config)
         {
-            _nlog.Info(Logging.LogIO.Text("Navigator", Navigation.OdorReproduction));
+            _nlog.Info(LogIO.Text("Navigator", Navigation.OdorReproduction));
 
             Content = _reproductionPage;
             _reproductionPage.Start(config);
@@ -133,7 +133,7 @@ public partial class MainWindow : Window
             ToggleFullScreen();
         }
 
-        _nlog.Info(Logging.LogIO.Text("Navigator", next));
+        _nlog.Info(LogIO.Text("Navigator", next));
 
         if (next == Navigation.Exit)
         {
@@ -159,7 +159,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            _nlog.Error(Logging.LogIO.Text("Navigator", "Error", $"Unrecognized navigation target '{next}'"));
+            _nlog.Error(LogIO.Text("Navigator", "Error", $"Unrecognized navigation target '{next}'"));
         }
 
         _pulsePage.Dispose();

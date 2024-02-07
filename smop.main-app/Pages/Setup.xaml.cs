@@ -367,7 +367,15 @@ public partial class Setup : Page, IPage<object?>
 
                 var targetFlows = new List<Procedure.GasFlow>();
                 _procedure.EnumGases(gas => targetFlows.Add(new(gas.ChannelID, gas.Flow)));
-                Next?.Invoke(this, new Procedure.Config(App.ML, targetFlows.ToArray()));
+
+                var dataSize = new Size();
+                if (_procedure.ParamDefinition != null)
+                {
+                    var sc = _procedure.ParamDefinition.MeasurementParameters.SteppingControl;
+                    dataSize = new((int)sc.Ucv.Steps, (int)sc.Usv.Steps);
+                }
+
+                Next?.Invoke(this, new Procedure.Config(App.ML, targetFlows.ToArray(), dataSize));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

@@ -18,6 +18,15 @@ internal class DmsCache
         }
     }
 
+    public void SetSubfolder(int rows, int cols)
+    {
+        _subfolder = Path.Combine(ROOT_FOLDER, $"{rows}x{cols}");
+        if (!Directory.Exists(_subfolder))
+        {
+            Directory.CreateDirectory(_subfolder);
+        }
+    }
+
     public IonVision.ScanResult? Find(Gases gases, out string? filename)
     {
         if (!IsEnabled)
@@ -80,16 +89,19 @@ internal class DmsCache
 
     // Internal
 
-    readonly string ROOT_FOLDER = "cache";
+    static readonly string ROOT_FOLDER = "cache";
+
+    string _subfolder = ROOT_FOLDER;
+
 
     private static string ToChannelId(int id, double flow) => $"{id}-{flow}";
     private static string ToId(IEnumerable<string> list) => string.Join('x', list);
     private static string ToFilename(string id) => $"dms_{id}.json";
 
-    public IonVision.ScanResult? Find(string id, out string? filename)
+    private IonVision.ScanResult? Find(string id, out string? filename)
     {
         filename = ToFilename(id);
-        var cachedFilename = Path.Combine(ROOT_FOLDER, filename);
+        var cachedFilename = Path.Combine(_subfolder, filename);
 
         if (File.Exists(cachedFilename))
         {
@@ -102,10 +114,10 @@ internal class DmsCache
         return null;
     }
 
-    public string Save(string id, IonVision.ScanResult scan)
+    private string Save(string id, IonVision.ScanResult scan)
     {
         string filename = ToFilename(id);
-        var cachedFilename = Path.Combine(ROOT_FOLDER, filename);
+        var cachedFilename = Path.Combine(_subfolder, filename);
 
         var json = JsonSerializer.Serialize(scan);
         using StreamWriter writer = new(cachedFilename);

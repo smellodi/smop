@@ -1,0 +1,18 @@
+External libraries with non-MIT licenses used in the project:
+
+Apache 2.0 license:
+
+1. LinqStatistics
+2. RestSharp
+3. WpfAnimatedGif
+4. Tcp.NET.Client
+   Tcp.NET.Server
+   Tcp.NET.Core
+   PHS.Core
+   PHS.Networking
+   PHS.Networking.Server
+
+
+BSD-3-Clause license:
+
+1. NLog

@@ -19,6 +19,7 @@
                    Text="{Binding Text}"/>
         <ProgressBar x:Name="prbProgress" Grid.Row="1"
                      Height="2"
+                     BorderThickness="0"
                      BorderBrush="{StaticResource BrushInput}"
                      Foreground="{StaticResource BrushPanel}"
                      Visibility="Hidden"/>

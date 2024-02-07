@@ -36,11 +36,12 @@ DataPlot.Show(sizeX, sizeY, data1, data2);
 
 bool isSimulating = GetMode();
 bool isRunning = true;
+bool isShortOutput = true;
 
 List<MeasurementData> _data = new();
 ParameterDefinition? _paramDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
 
-var ionVision = new Communicator(null, isSimulating);
+var ionVision = new Communicator("IonVision-Hervanta.json", isSimulating);
 
 if (!await Connect(ionVision))
     return;
@@ -78,6 +79,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "plotba", ("shows the plot Bland-Altman for the two last scans", async () => { ShowPlot(DataPlot.ComparisonOperation.BlandAltman); await Task.CompletedTask; }) },
     { "all", ("a combnation of scpj, scpm, gcpmd, scan, result and plot", async () => await GetNewScan()) },
     { "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
+    { "tout", ("toggle short/long output", async () => { isShortOutput = !isShortOutput; await Task.CompletedTask; }) },
     { "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
 };
 
@@ -231,7 +233,11 @@ void Print<T>(API.Response<T> response)
         {
             WriteIndented = true,
         });
-        Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}...\nand {text.Length - MAX_CHARS_TO_PRINT} chars more.");
+
+        if (isShortOutput)
+            Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}...\nand {text.Length - MAX_CHARS_TO_PRINT} chars more.");
+        else
+            Console.WriteLine(text);
 
         if (response.Value is ParameterDefinition paramDefinition)
         {

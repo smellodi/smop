@@ -261,5 +261,17 @@ namespace Smop.MainApp.Properties {
                 this["Reproduction_Humidity"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Reproduction_UseDmsCache {
+            get {
+                return ((bool)(this["Reproduction_UseDmsCache"]));
+            }
+            set {
+                this["Reproduction_UseDmsCache"] = value;
+            }
+        }
     }
 }

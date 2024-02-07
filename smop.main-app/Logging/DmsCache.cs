@@ -8,7 +8,15 @@ namespace Smop.MainApp.Logging;
 
 internal class DmsCache
 {
-    public static bool IsEnabled => true;
+    public static bool IsEnabled
+    {
+        get => Properties.Settings.Default.Reproduction_UseDmsCache;
+        set
+        {
+            Properties.Settings.Default.Reproduction_UseDmsCache = value;
+            Properties.Settings.Default.Save();
+        }
+    }
 
     public DmsCache()
     {

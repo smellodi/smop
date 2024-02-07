@@ -86,7 +86,7 @@ public static class SimulatedData
         Description = "Another fake param"
     };
 
-    public static readonly ScanResult ScanResult = new(
+    public static ScanResult ScanResult => new(
         Guid.NewGuid().ToString(),
         User.Name,
         DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
@@ -140,8 +140,14 @@ public static class SimulatedData
 
     // Internal
 
+    static float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
+    static float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };
+    static float[] HyperbolaParams = HyperbolaParams1;
+
     private static T[] MakeArray<T>(Func<int,int,T> callback)
     {
+        HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
+
         var result = new T[DATA_POINT_COUNT];
         for (int row = 0; row < DATA_ROWS; row++)
             for (int col = 0; col < DATA_COLS; col++)
@@ -188,14 +194,14 @@ public static class SimulatedData
 
         var lines = new float[]
         {
-                    // The strongests line
-                    (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
-                    // Another line
-                    (40f - 40f * y) * Hyperbola(x, y, 0.4f, 0.5f, 0.1f),
-                    // Wide line up
-                    (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
-                    // Second wide line up
-                    (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
+            // The strongests line
+            (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
+            // Another line
+            (40f - 40f * y) * Hyperbola(x, y, HyperbolaParams[0], HyperbolaParams[1], HyperbolaParams[2]),
+            // Wide line up
+            (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
+            // Second wide line up
+            (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
         };
 
         return lines.Max();

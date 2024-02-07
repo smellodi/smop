@@ -205,40 +205,13 @@ public static class DataPlot
         return new Rect(new Point(0, 0), new Point(cols, rows));
     }
 
-    private static Rect DrawDiff(Canvas canvas, int cols, int rows, float[] values1, float[] values2)
+    private static Rect DrawDiff(Canvas canvas, int rows, int cols, float[] values1, float[] values2)
     {
-        double width = canvas.ActualWidth;
-        double height = canvas.ActualHeight;
-
-        double colSize = width / cols;
-        double rowSize = height / rows;
-
         float[] values = new float[values1.Length];
         for (int i = 0; i < values1.Length; i++)
             values[i] = values1[i] - values2[i];
 
-        var minValue = values.Min();
-        var maxValue = values.Max();
-        var range = maxValue - minValue;
-
-        for (int y = 0; y < rows; y++)
-        {
-            for (int x = 0; x < cols; x++)
-            {
-                var value = values[y * cols + x] - minValue;
-                var pixel = new Rectangle()
-                {
-                    Width = colSize,
-                    Height = rowSize,
-                    Fill = new SolidColorBrush(ValueToColor(value))
-                };
-                canvas.Children.Add(pixel);
-                Canvas.SetLeft(pixel, x * colSize);
-                Canvas.SetTop(pixel, height - (y + 1) * rowSize);
-            }
-        }
-
-        return new Rect(new Point(0, 0), new Point(colSize, rowSize));
+        return DrawPlot(canvas, rows, cols, values);
     }
 
     private static Rect DrawBlandAltman(Canvas canvas, float[] values1, float[] values2)

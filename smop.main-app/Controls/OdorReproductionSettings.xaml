@@ -72,6 +72,17 @@
                       VerticalAlignment="Center"/>
         </UserControl>
 
+        <Separator/>
+        <Label Style="{StaticResource Section}"
+               Content="DMS settings:"/>
+        <UserControl x:Name="uscUseDmsCache"
+                     Style="{StaticResource Setting}"
+                     Tag="Use cache">
+            <CheckBox x:Name="chkUseDmsCache"
+                      IsChecked="{Binding UseDmsCache}"
+                      VerticalAlignment="Center"/>
+        </UserControl>
+
         <!--Separator/>
         <Label Style="{StaticResource Section}"
                Content="eNose settings:"/>

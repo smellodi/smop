@@ -4,6 +4,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Smop.MainApp.Logging;
 
 namespace Smop.MainApp.Controls;
 
@@ -58,6 +59,12 @@ public partial class OdorReproductionSettings : UserControl
             Properties.Settings.Default.Reproduction_UsePID = value;
             Properties.Settings.Default.Save();
         }
+    }
+
+    public bool UseDmsCache
+    {
+        get => DmsCache.IsEnabled;
+        set => DmsCache.IsEnabled = value;
     }
 
     /*public float SniffingDelay

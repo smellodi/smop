@@ -130,7 +130,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Update="Properties\IonVision-Hervanta.json">
+    <None Update="Properties\IonVision-Hervanta-10.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\IonVision-Hervanta-3.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Properties\IonVision-TietoPinni.json">

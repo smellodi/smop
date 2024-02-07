@@ -1,8 +1,11 @@
 ﻿using Smop.MainApp.Logging;
 using Smop.OdorDisplay;
 using Smop.OdorDisplay.Packets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using static Smop.IonVision.API;
 
 namespace Smop.MainApp;
 
@@ -119,10 +122,32 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
+    public static double CalcWaitingTime(Reproducer.Gases gases)
+    {
+        var flows = gases.Items
+            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name) && gas.Name != gas.ChannelID.ToString())
+            .Select(gas => gas.Flow);
+        var minFlow = flows.Any() ? flows.Min() : 0;
+
+        var validFlow = flows.Where(flow => flow >= MIN_VALID_FLOW);
+        var minValidFlow = validFlow.Any() ? validFlow.Min() : 0;
+
+        var slowestFlow = Math.Min(minFlow, minValidFlow);
+        var result = slowestFlow < MIN_VALID_FLOW ?
+            CLEANUP_DURATION :
+            3.38 + 28.53 * Math.Exp(-slowestFlow * 0.2752);     // based on approximation in https://mycurvefit.com/ using Atte's data
+
+        _nlog.Info(LogIO.Text("OD", "Waiting", result.ToString("0.#")));
+        return result;
+    }
+
     // Internal
 
-    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
+    static readonly float MIN_VALID_FLOW = 1.5f;
+    static readonly float CLEANUP_DURATION = 10f;
 
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
+    
     readonly CommPort _odorDisplay = CommPort.Instance;
 
     private Comm.Result Send(Request request) =>
@@ -136,7 +161,7 @@ internal class OdorDisplayController
             SetSystem reqSystem => $"SetSystem Fans {reqSystem.Fans} PIDs {reqSystem.PIDs}",
             _ => request.ToString()
         };
-        _nlog.Info(Logging.LogIO.Text("OD", "Sent", reqText));
+        _nlog.Info(LogIO.Text("OD", "Sent", reqText));
 
         var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
         resp = response;
@@ -145,7 +170,7 @@ internal class OdorDisplayController
             _nlog.Info(LogExt.Text("OD", "ACK", ack));
         */
         if (result.Error == Comm.Error.Success && response != null)
-            _nlog.Info(Logging.LogIO.Text("OD", "Received", response));
+            _nlog.Info(LogIO.Text("OD", "Received", response));
 
         return result;
     }

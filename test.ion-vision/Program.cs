@@ -11,6 +11,8 @@ Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
 DataPlot.UseLogarithmicScaleInBlandAltman = false;
 
+const int MAX_CHARS_TO_PRINT = 700;
+
 // tests the Bland-Altman plot
 /*
 int sizeX = 150;
@@ -36,12 +38,12 @@ DataPlot.Show(sizeX, sizeY, data1, data2);
 
 bool isSimulating = GetMode();
 bool isRunning = true;
-bool isShortOutput = true;
+bool isOutputCutEnabled = true;
 
 List<MeasurementData> _data = new();
 ParameterDefinition? _paramDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
 
-var ionVision = new Communicator("IonVision-Hervanta.json", isSimulating);
+var ionVision = new Communicator("IonVision-Hervanta-10.json", isSimulating);
 
 if (!await Connect(ionVision))
     return;
@@ -79,7 +81,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "plotba", ("shows the plot Bland-Altman for the two last scans", async () => { ShowPlot(DataPlot.ComparisonOperation.BlandAltman); await Task.CompletedTask; }) },
     { "all", ("a combnation of scpj, scpm, gcpmd, scan, result and plot", async () => await GetNewScan()) },
     { "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
-    { "tout", ("toggle short/long output", async () => { isShortOutput = !isShortOutput; await Task.CompletedTask; }) },
+    { "tout", ($"toggle output cut to {MAX_CHARS_TO_PRINT} chars", async () => { ToggleOutputCut(); await Task.CompletedTask; }) },
     { "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
 };
 
@@ -217,13 +219,17 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
     }
 }
 
+void ToggleOutputCut()
+{
+    isOutputCutEnabled = !isOutputCutEnabled;
+    Console.Write("Output cut: " + (isOutputCutEnabled ? $"Enabled ({MAX_CHARS_TO_PRINT} chars)" : "Disabled") + "\n");
+}
+
 static void PrintEvent(string type, string msg)
 {
     Console.CursorLeft = 0;
     Console.Write($"[EVT]: {type} : {msg}\nCommand: ");
 }
-
-const int MAX_CHARS_TO_PRINT = 700;
 
 void Print<T>(API.Response<T> response)
 {
@@ -234,7 +240,7 @@ void Print<T>(API.Response<T> response)
             WriteIndented = true,
         });
 
-        if (isShortOutput)
+        if (isOutputCutEnabled)
             Console.WriteLine(text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}...\nand {text.Length - MAX_CHARS_TO_PRINT} chars more.");
         else
             Console.WriteLine(text);

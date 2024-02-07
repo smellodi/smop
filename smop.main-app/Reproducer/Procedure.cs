@@ -38,7 +38,6 @@ public class Procedure
         _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));
 
         var settings = Properties.Settings.Default;
-        _scanDelay = settings.Reproduction_SniffingDelay;
 
         _odorDisplay.Data += OdorDisplay_Data;
 
@@ -118,7 +117,9 @@ public class Procedure
             {
                 Task.Run(async () =>
                 {
-                    await Task.Delay((int)(1000 * _scanDelay));
+                    var waitingTime = OdorDisplayController.CalcWaitingTime(_gases);
+                    await Task.Delay((int)(waitingTime * 1000));
+
                     var dmsScan = await ScanAndSendToML();
                     if (dmsScan != null)
                     {
@@ -150,8 +151,6 @@ public class Procedure
     readonly OdorDisplayController _odController = new();
 
     readonly ML.Communicator _ml;
-
-    readonly float _scanDelay = 3;  // seconds
 
     int _step = 0;
 

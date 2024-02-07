@@ -60,7 +60,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public float SniffingDelay
+    /*public float SniffingDelay
     {
         get => Properties.Settings.Default.Reproduction_SniffingDelay;
         set
@@ -68,7 +68,7 @@ public partial class OdorReproductionSettings : UserControl
             Properties.Settings.Default.Reproduction_SniffingDelay = value;
             Properties.Settings.Default.Save();
         }
-    }
+    }*/
 
     public float Humidity
     {

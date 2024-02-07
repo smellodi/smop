@@ -5,8 +5,8 @@ namespace Smop.IonVision;
 
 public static class SimulatedData
 {
-    const int DATA_ROWS = 3;
-    const int DATA_COLS = 4;
+    const int DATA_ROWS = 10;
+    const int DATA_COLS = 200;
     const int DATA_POINT_COUNT = DATA_ROWS * DATA_COLS;
     const float DATA_PP = 1000;
     const float DATA_PW = 200;

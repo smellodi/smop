@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using ODPackets = Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp;
@@ -199,8 +200,9 @@ public class SetupProcedure
         if (!COMHelper.ShowErrorIfAny(_odController.ReleaseGases(_gases), "release odors"))
             return;
 
-        Log?.Invoke(this, new LogHandlerArgs("Odors were released, waiting for the mixture to stabilize..."));
-        await Task.Delay((int)(1000 * Properties.Settings.Default.Reproduction_SniffingDelay));
+        var waitingTime = OdorDisplayController.CalcWaitingTime(_gases) ;
+        Log?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {waitingTime:F1}s for the mixture to stabilize..."));
+        await Task.Delay((int)(waitingTime * 1000));
         Log?.Invoke(this, new LogHandlerArgs("Odor mixturing process has finished.", true));
 
         _pidSamples.Clear();

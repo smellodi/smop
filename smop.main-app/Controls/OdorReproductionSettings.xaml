@@ -72,7 +72,7 @@
                       VerticalAlignment="Center"/>
         </UserControl>
 
-        <Separator/>
+        <!--Separator/>
         <Label Style="{StaticResource Section}"
                Content="eNose settings:"/>
         <UserControl x:Name="uscSniffingDelay"
@@ -88,7 +88,7 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-        </UserControl>
+        </UserControl-->
 
         <Separator Margin="0,8,0,0"/>
         <Label Style="{StaticResource Section}"

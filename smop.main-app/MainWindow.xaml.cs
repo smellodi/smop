@@ -110,14 +110,14 @@ public partial class MainWindow : Window
 
     private void SetupPage_Next(object? sender, object? param)
     {
-        if (param is Generator.PulseSetup pulseSetup)
+        if (param is Controllers.PulseSetup pulseSetup)
         {
             _nlog.Info(LogIO.Text("Navigator", Navigation.PulseGenerator));
 
             Content = _pulsePage;
             _pulsePage.Start(pulseSetup);
         }
-        else if (param is Reproducer.Procedure.Config config)
+        else if (param is Controllers.OdorReproducerController.Config config)
         {
             _nlog.Info(LogIO.Text("Navigator", Navigation.OdorReproduction));
 

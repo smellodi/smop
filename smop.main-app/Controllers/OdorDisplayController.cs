@@ -4,10 +4,8 @@ using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using static Smop.IonVision.API;
 
-namespace Smop.MainApp;
+namespace Smop.MainApp.Controllers;
 
 internal class OdorDisplayController
 {
@@ -48,7 +46,7 @@ internal class OdorDisplayController
         }));
     }
 
-    public Comm.Result SetFlows(Generator.PulseChannelProps[] channels)
+    public Comm.Result SetFlows(PulseChannelProps[] channels)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -62,7 +60,7 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result OpenChannels(Generator.PulseChannelProps[] channels, float durationSec)
+    public Comm.Result OpenChannels(PulseChannelProps[] channels, float durationSec)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -79,7 +77,7 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result CloseChannels(Generator.PulseChannelProps[] channels)
+    public Comm.Result CloseChannels(PulseChannelProps[] channels)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
@@ -93,7 +91,7 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result ReleaseGases(Reproducer.Gases gases)
+    public Comm.Result ReleaseGases(Gases gases)
     {
         var actuators = gases.Items
             .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
@@ -110,7 +108,7 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators));
     }
 
-    public Comm.Result StopGases(Reproducer.Gases gases)
+    public Comm.Result StopGases(Gases gases)
     {
         var actuators = gases.Items
             .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
@@ -147,7 +145,7 @@ internal class OdorDisplayController
     static readonly float CLEANUP_DURATION = 10f;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
-    
+
     readonly CommPort _odorDisplay = CommPort.Instance;
 
     private Comm.Result Send(Request request) =>

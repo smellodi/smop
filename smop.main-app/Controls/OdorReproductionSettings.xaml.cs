@@ -1,4 +1,4 @@
-﻿using Smop.MainApp.Reproducer;
+﻿using Smop.MainApp.Controllers;
 using System.Globalization;
 using System;
 using System.Windows;
@@ -136,7 +136,7 @@ public partial class OdorReproductionSettings : UserControl
             StringFormat = "0.#",
             Mode = BindingMode.TwoWay,
         };
-        flowBinding.ValidationRules.Add(new Validators.RangeRule() { Min = 0, IsInteger = false });
+        flowBinding.ValidationRules.Add(new Utils.RangeRule() { Min = 0, IsInteger = false });
         BindingOperations.SetBinding(txbFlow, TextBox.TextProperty, flowBinding);
 
 

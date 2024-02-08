@@ -1,7 +1,6 @@
 ﻿using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Smop.ML;
 

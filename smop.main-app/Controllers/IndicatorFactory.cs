@@ -4,9 +4,9 @@ using Smop.MainApp.Controls;
 using System;
 using System.Threading.Tasks;
 
-namespace Smop.MainApp.Indicators;
+namespace Smop.MainApp.Controllers;
 
-internal static class Factory
+internal static class IndicatorFactory
 {
     public record class SmellInspChannel(string Type, string Units, int Count);
     public static SmellInspChannel[] SmellInspChannels => new SmellInspChannel[] {

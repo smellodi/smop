@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace Smop.MainApp.Reproducer;
+namespace Smop.MainApp.Controllers;
 
 public class Gas : INotifyPropertyChanged
 {

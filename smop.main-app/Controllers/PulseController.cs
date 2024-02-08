@@ -3,7 +3,7 @@ using Smop.MainApp.Utils;
 using System;
 using System.Threading.Tasks;
 
-namespace Smop.MainApp.Generator;
+namespace Smop.MainApp.Controllers;
 
 [Flags]
 internal enum Stage

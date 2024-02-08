@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Smop.MainApp.Generator;
+namespace Smop.MainApp.Controllers;
 
 public static class PulseChannels
 {
@@ -42,20 +42,14 @@ public record class PulseIntervals(float InitialPause, float Pulse, float DmsDel
 /// <summary>
 /// Session properties: humidity, intervals, list of pulses
 /// </summary>
-public class SessionProps
+public class SessionProps(float humidity, PulseIntervals intervals)
 {
     /// <summary>
     /// 0..100
     /// </summary>
-    public float Humidity { get; set; }
-    public PulseIntervals Intervals { get; set; }
+    public float Humidity { get; set; } = humidity;
+    public PulseIntervals Intervals { get; set; } = intervals;
     public PulseProps[] Pulses => _pulses.ToArray();
-
-    public SessionProps(float humidity, PulseIntervals intervals)
-    {
-        Humidity = humidity;
-        Intervals = intervals;
-    }
 
     public void AddPulse(PulseProps pulse)
     {

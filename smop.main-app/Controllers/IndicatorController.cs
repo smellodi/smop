@@ -1,31 +1,30 @@
-﻿using Smop.OdorDisplay.Packets;
-using Smop.MainApp.Controls;
+﻿using Smop.MainApp.Controls;
+using Smop.OdorDisplay.Packets;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Smop.MainApp.Reproducer;
 
-namespace Smop.MainApp.Indicators;
+namespace Smop.MainApp.Controllers;
 
-public class Controller
+public class IndicatorController
 {
-    public Controller(LiveData graph)
+    public IndicatorController(LiveData graph)
     {
         _graph = graph;
     }
 
     public async Task Create(Dispatcher dispatcher, Panel stpOdorDisplayIndicators, Panel smellInspContainer)
     {
-        await Factory.OdorDisplay(indicator => dispatcher.Invoke(() =>
+        await IndicatorFactory.OdorDisplay(indicator => dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             stpOdorDisplayIndicators.Children.Add(indicator);
             _indicators.Add(indicator.Source, indicator);
         }));
 
-        await Factory.SmellInsp(indicator => dispatcher.Invoke(() =>
+        await IndicatorFactory.SmellInsp(indicator => dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
             smellInspContainer.Children.Add(indicator);
@@ -63,7 +62,7 @@ public class Controller
                     _ => 0
                 };
 
-                var source = Factory.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
+                var source = IndicatorFactory.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
                 Update(source, value);
             }
         }
@@ -73,20 +72,20 @@ public class Controller
     {
         foreach (var chi in _indicators.Values)
         {
-            Factory.ApplyGasProps(chi, gas.ChannelID, gas.Name);
+            IndicatorFactory.ApplyGasProps(chi, gas.ChannelID, gas.Name);
         }
     }
 
     public void Update(SmellInsp.Data data)
     {
         var value = data.Resistances[_smellInspResistor];
-        var source = Factory.GetSourceId(Factory.SmellInspChannels[0].Type);
+        var source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[0].Type);
         Update(source, value);
 
-        source = Factory.GetSourceId(Factory.SmellInspChannels[1].Type);
+        source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[1].Type);
         Update(source, data.Temperature);
 
-        source = Factory.GetSourceId(Factory.SmellInspChannels[2].Type);
+        source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[2].Type);
         Update(source, data.Humidity);
     }
 

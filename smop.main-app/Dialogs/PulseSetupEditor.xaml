@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:validators="clr-namespace:Smop.MainApp.Validators"
+        xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
         Title="Pulse setup file editor"
         MinHeight="510"
@@ -154,7 +154,7 @@
                         <TextBox.Text>
                             <Binding Path="SessionHumidity" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="100"/>
+                                    <utils:RangeRule Min="0" Max="100"/>
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
@@ -166,7 +166,7 @@
                         <TextBox.Text>
                             <Binding Path="SessionInitialPause" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="600"/>
+                                    <utils:RangeRule Min="0" Max="600"/>
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
@@ -178,7 +178,7 @@
                         <TextBox.Text>
                             <Binding Path="SessionPulseDuration" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0.01" Max="3600"/>
+                                    <utils:RangeRule Min="0.01" Max="3600"/>
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
@@ -191,7 +191,7 @@
                         <TextBox.Text>
                             <Binding Path="SessionDMSDelay" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="600" CanBeEmpty="True"/>
+                                    <utils:RangeRule Min="0" Max="600" CanBeEmpty="True"/>
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>
@@ -208,7 +208,7 @@
                         <TextBox.Text>
                             <Binding Path="SessionFinalPause" UpdateSourceTrigger="PropertyChanged">
                                 <Binding.ValidationRules>
-                                    <validators:RangeRule Min="0" Max="600"/>
+                                    <utils:RangeRule Min="0" Max="600"/>
                                 </Binding.ValidationRules>
                             </Binding>
                         </TextBox.Text>

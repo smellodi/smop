@@ -1,5 +1,4 @@
 ﻿using Smop.MainApp.Logging;
-using Smop.MainApp.Reproducer;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
@@ -7,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 
-namespace Smop.MainApp;
+namespace Smop.MainApp.Controllers;
 
-public class SetupProcedure
+public class SetupController
 {
     public class LogHandlerArgs(string text, bool replaceLast = false) : EventArgs
     {
@@ -27,7 +26,7 @@ public class SetupProcedure
 
     public bool IsSntScanComplete => _sntSamples.Count >= SNT_MAX_DATA_COUNT;
 
-    public SetupProcedure()
+    public SetupController()
     {
         IonVision.DataPlot.UseLogarithmicScaleInBlandAltman = false;
     }
@@ -202,7 +201,7 @@ public class SetupProcedure
         var flows = _gases.Items
             .Where(gas => !string.IsNullOrWhiteSpace(gas.Name) && gas.Name != gas.ChannelID.ToString())
             .Select(gas => gas.Flow);
-        var waitingTime = OdorDisplayController.CalcWaitingTime(flows) ;
+        var waitingTime = OdorDisplayController.CalcWaitingTime(flows);
         Log?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {waitingTime:F1}s for the mixture to stabilize..."));
         await Task.Delay((int)(waitingTime * 1000));
         Log?.Invoke(this, new LogHandlerArgs("Odor mixturing process has finished.", true));
@@ -298,12 +297,12 @@ public class SetupProcedure
     const int SNT_MAX_DATA_COUNT = 10;
     const int PID_MAX_DATA_COUNT = 30;
 
-    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(SetupProcedure));
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(SetupController));
 
     readonly Storage _storage = Storage.Instance;
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
- 
+
     readonly OdorDisplayController _odController = new();
 
     readonly List<SmellInsp.Data> _sntSamples = new();
@@ -368,7 +367,7 @@ public class SetupProcedure
         {
             await Task.Delay(1000);
             LogSnt?.Invoke(this, new LogHandlerArgs($"Collected {_sntSamples.Count}/{SNT_MAX_DATA_COUNT} samples...", true));
-            ScanProgress?.Invoke(this, 100 * _sntSamples.Count/SNT_MAX_DATA_COUNT);
+            ScanProgress?.Invoke(this, 100 * _sntSamples.Count / SNT_MAX_DATA_COUNT);
         }
 
         LogSnt?.Invoke(this, new LogHandlerArgs($"Samples collected.", true));

@@ -1,7 +1,6 @@
 ﻿using Smop.IonVision;
 using Smop.MainApp.Dialogs;
-using Smop.MainApp.Logging;
-using Smop.MainApp.Reproducer;
+using Smop.MainApp.Controllers;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
@@ -29,13 +28,13 @@ public partial class Setup : Page, IPage<object?>
             _dmsPlotTypes[plotType].IsEnabled = false;
         }
 
-        _indicatorController = new Indicators.Controller(lmsGraph);
+        _indicatorController = new IndicatorController(lmsGraph);
 
-        _procedure = new SetupProcedure();
-        _procedure.Log += (s, e) => AddToLog(App.IonVision != null ? LogType.DMS : LogType.SNT, e.Text, e.ReplaceLast);
-        _procedure.LogDms += (s, e) => AddToLog(LogType.DMS, e.Text, e.ReplaceLast);
-        _procedure.LogSnt += (s, e) => AddToLog(LogType.SNT, e.Text, e.ReplaceLast);
-        _procedure.ScanProgress += (s, e) => Dispatcher.Invoke(() =>
+        _ctrl = new SetupController();
+        _ctrl.Log += (s, e) => AddToLog(App.IonVision != null ? LogType.DMS : LogType.SNT, e.Text, e.ReplaceLast);
+        _ctrl.LogDms += (s, e) => AddToLog(LogType.DMS, e.Text, e.ReplaceLast);
+        _ctrl.LogSnt += (s, e) => AddToLog(LogType.SNT, e.Text, e.ReplaceLast);
+        _ctrl.ScanProgress += (s, e) => Dispatcher.Invoke(() =>
         {
             prbENoseProgress.Value = e;
             lblENoseProgress.Content = $"{e}%";
@@ -47,7 +46,7 @@ public partial class Setup : Page, IPage<object?>
 
         DataContext = this;
 
-        ((App)Application.Current).AddCleanupAction(_procedure.ShutDown);
+        ((App)Application.Current).AddCleanupAction(_ctrl.ShutDown);
     }
 
     public void Init(SetupType type)
@@ -58,8 +57,8 @@ public partial class Setup : Page, IPage<object?>
             App.ML.StatusChanged += ML_StatusChanged;
             App.ML.Error += ML_Error;
 
-            _procedure.AcquireGasInfo();
-            _procedure.EnumGases(odorReproductionSettings.AddGas);
+            _ctrl.AcquireGasInfo();
+            _ctrl.EnumGases(odorReproductionSettings.AddGas);
         }
 
         cnvDmsScan.Children.Clear();
@@ -97,8 +96,8 @@ public partial class Setup : Page, IPage<object?>
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-    readonly Indicators.Controller _indicatorController;
-    readonly SetupProcedure _procedure;
+    readonly IndicatorController _indicatorController;
+    readonly SetupController _ctrl;
 
     readonly List<string> _ionVisionLog = new();
     readonly List<string> _smellInspLog = new();
@@ -124,8 +123,8 @@ public partial class Setup : Page, IPage<object?>
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
         {
-            bool isDmsReady = _procedure.DmsScan != null && _procedure.ParamDefinition != null;
-            bool isSntReady = _procedure.IsSntScanComplete || isDmsReady;
+            bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
+            bool isSntReady = _ctrl.IsSntScanComplete || isDmsReady;
             btnStart.IsEnabled = 
                 (isDmsReady || App.IonVision == null) && 
                 (isSntReady || !_smellInsp.IsOpen) &&
@@ -174,7 +173,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void ShowPlot(DataPlot.ComparisonOperation compOp)
     {
-        if (_procedure.ParamDefinition == null)
+        if (_ctrl.ParamDefinition == null)
             return;
 
         if (compOp == DataPlot.ComparisonOperation.None)
@@ -182,8 +181,8 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsScans.Count > 0)
                 DataPlot.Create(
                     cnvDmsScan,
-                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop
                 );
             else
@@ -194,8 +193,8 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsScans.Count > 1)
                 DataPlot.Create(
                     cnvDmsScan,
-                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    (int)_procedure.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop,
                     _dmsScans[^2].IntensityTop,
                     compOp
@@ -272,12 +271,12 @@ public partial class Setup : Page, IPage<object?>
 
             await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 
-            _procedure.EnumGases(_indicatorController.ApplyGasProps);
-            _procedure.InitializeOdorPrinter();
+            _ctrl.EnumGases(_indicatorController.ApplyGasProps);
+            _ctrl.InitializeOdorPrinter();
 
             if (_storage.SetupType == SetupType.OdorReproduction)
             {
-                _procedure.CleanUpOdorPrinter(() =>
+                _ctrl.CleanUpOdorPrinter(() =>
                 {
                     _isOdorDisplayCleanedUp = true;
                     UpdateUI();
@@ -286,7 +285,7 @@ public partial class Setup : Page, IPage<object?>
 
             if (App.IonVision != null)
             {
-                _ionVisionIsReady = await _procedure.InitializeIonVision(App.IonVision);
+                _ionVisionIsReady = await _ctrl.InitializeIonVision(App.IonVision);
             }
         }
 
@@ -335,11 +334,11 @@ public partial class Setup : Page, IPage<object?>
 
         UpdateUI();
 
-        await _procedure.MeasureSample();
+        await _ctrl.MeasureSample();
 
-        if (_procedure.DmsScan != null)
+        if (_ctrl.DmsScan != null)
         {
-            _dmsScans.Add(_procedure.DmsScan.MeasurementData);
+            _dmsScans.Add(_ctrl.DmsScan.MeasurementData);
 
             if (_dmsPlotType == DataPlot.ComparisonOperation.None || _dmsScans.Count > 1)
             {
@@ -361,21 +360,21 @@ public partial class Setup : Page, IPage<object?>
             {
                 btnStart.IsEnabled = false;
 
-                await _procedure.ConfigureML();
-                _procedure.SaveSetup();
+                await _ctrl.ConfigureML();
+                _ctrl.SaveSetup();
                 UpdateUI();
 
-                var targetFlows = new List<Procedure.GasFlow>();
-                _procedure.EnumGases(gas => targetFlows.Add(new(gas.ChannelID, gas.Flow)));
+                var targetFlows = new List<OdorReproducerController.GasFlow>();
+                _ctrl.EnumGases(gas => targetFlows.Add(new(gas.ChannelID, gas.Flow)));
 
                 var dataSize = new Size();
-                if (_procedure.ParamDefinition != null)
+                if (_ctrl.ParamDefinition != null)
                 {
-                    var sc = _procedure.ParamDefinition.MeasurementParameters.SteppingControl;
+                    var sc = _ctrl.ParamDefinition.MeasurementParameters.SteppingControl;
                     dataSize = new((int)sc.Ucv.Steps, (int)sc.Usv.Steps);
                 }
 
-                Next?.Invoke(this, new Procedure.Config(App.ML, targetFlows.ToArray(), dataSize));
+                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), dataSize));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

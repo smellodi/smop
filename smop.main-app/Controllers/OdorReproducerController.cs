@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 
-namespace Smop.MainApp.Reproducer;
+namespace Smop.MainApp.Controllers;
 
-public class Procedure
+public class OdorReproducerController
 {
     public record class GasFlow(
         OdorDisplay.Device.ID ID,
@@ -29,7 +29,7 @@ public class Procedure
     public event EventHandler<double>? ENoseProgressChanged;
     public event EventHandler<ODPackets.Data>? OdorDisplayData;
 
-    public Procedure(Config config)
+    public OdorReproducerController(Config config)
     {
         _ml = config.MLComm;
 

@@ -18,7 +18,7 @@ public partial class App : Application
 
     // Internal
 
-    System.Collections.Generic.Stack<Action> _cleanupActions = new();
+    readonly System.Collections.Generic.Stack<Action> _cleanupActions = new();
 
     private void Application_Startup(object sender, StartupEventArgs e)
     {

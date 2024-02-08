@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.MainApp.Controllers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -30,11 +31,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         OdorDisplay.CommPort.Instance.Closed += (s, e) => SetConnectionColor(elpODStatus, false);
     }
 
-    public void Start(Reproducer.Procedure.Config config)
+    public void Start(OdorReproducerController.Config config)
     {
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(elpMLStatus, e == ML.Status.Connected);
 
-        _proc = new Reproducer.Procedure(config);
+        _proc = new OdorReproducerController(config);
         _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
             (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
@@ -94,8 +95,8 @@ public partial class Reproduction : Page, IPage<Navigation>
     readonly Style? _odChannelStyle;
     readonly Style? _odChannelLabelStyle;
 
-    Reproducer.Procedure? _proc;
-    Reproducer.Procedure.Config? _procConfig = null;
+    OdorReproducerController? _proc;
+    OdorReproducerController.Config? _procConfig = null;
 
     ActiveElement _activeElement = ActiveElement.None;
 
@@ -128,7 +129,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         return result;
     }
 
-    private static void ConfigureChannelTable(Reproducer.Gas[] gases, Grid grid, Style? labelStyle, Style? valueStyle, int constantRowCount = 0)
+    private static void ConfigureChannelTable(Gas[] gases, Grid grid, Style? labelStyle, Style? valueStyle, int constantRowCount = 0)
     {
         var elementsToRemove = new List<UIElement>();
         foreach (UIElement el in grid.Children)
@@ -320,8 +321,8 @@ public partial class Reproduction : Page, IPage<Navigation>
                 AddToTable(channel.Flow >= 0 ? channel.Flow.ToString("0.#") : "-", rowIndex, 1);
                 AddToTable(channel.Duration >= 0 ? channel.Duration.ToString("0.##") : "-", rowIndex, 2);
                 AddToTable(channel.Temperature > 0 ? channel.Duration.ToString("0.##") : "-", rowIndex, 3);
-                AddToTable(_procConfig?.TargetFlows.FirstOrDefault(gasFlow => gasFlow.ID == id) is 
-                    Reproducer.Procedure.GasFlow targetFlow ? targetFlow.Flow.ToString("0.#") : "-", rowIndex, 4);
+                AddToTable(_procConfig?.TargetFlows.FirstOrDefault(gasFlow => gasFlow.ID == id) is
+                    OdorReproducerController.GasFlow targetFlow ? targetFlow.Flow.ToString("0.#") : "-", rowIndex, 4);
 
                 rowIndex++;
             }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32;
-using Smop.MainApp.Generator;
+using Smop.MainApp.Controllers;
 using Smop.MainApp.Utils;
 using System;
 using System.IO;

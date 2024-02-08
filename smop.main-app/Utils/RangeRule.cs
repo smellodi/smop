@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Controls;
 
-namespace Smop.MainApp.Validators;
+namespace Smop.MainApp.Utils;
 
 public class RangeRule : ValidationRule
 {

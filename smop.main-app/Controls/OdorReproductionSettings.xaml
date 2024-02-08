@@ -3,15 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:v="clr-namespace:Smop.MainApp.Validators"
+             xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              mc:Ignorable="d" 
              d:DesignHeight="400"
              d:DesignWidth="300">
     
     <UserControl.Resources>
-        <v:RangeRule x:Key="maxInterationsValidator" Min="0" Max="100" IsInteger="True"/>
-        <v:RangeRule x:Key="thresholdValidator" Min="0" IsInteger="False"/>
-        <v:RangeRule x:Key="sniffingDelayValidator" Min="0" IsInteger="False"/>
+        <utils:RangeRule x:Key="maxInterationsValidator" Min="0" Max="100" IsInteger="True"/>
+        <utils:RangeRule x:Key="thresholdValidator" Min="0" IsInteger="False"/>
+        <utils:RangeRule x:Key="sniffingDelayValidator" Min="0" IsInteger="False"/>
         
         <Style x:Key="GasName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="FontSize" Value="14"/>
@@ -45,7 +45,7 @@
                     <TextBox.Text>
                         <Binding Path="MaxIterations" UpdateSourceTrigger="PropertyChanged">
                             <Binding.ValidationRules>
-                                <v:RangeRule Min="0" Max="100" IsInteger="True"/>
+                                <utils:RangeRule Min="0" Max="100" IsInteger="True"/>
                             </Binding.ValidationRules>
                         </Binding>
                     </TextBox.Text>
@@ -59,7 +59,7 @@
                     <TextBox.Text>
                         <Binding Path="Threshold" UpdateSourceTrigger="PropertyChanged" StringFormat="0.####">
                             <Binding.ValidationRules>
-                                <v:RangeRule Min="0" IsInteger="False"/>
+                                <utils:RangeRule Min="0" IsInteger="False"/>
                             </Binding.ValidationRules>
                         </Binding>
                     </TextBox.Text>
@@ -96,7 +96,7 @@
                 <TextBox.Text>
                     <Binding Path="SniffingDelay" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
-                            <v:RangeRule Min="0" IsInteger="False"/>
+                            <utils:RangeRule Min="0" IsInteger="False"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
@@ -114,7 +114,7 @@
                 <TextBox.Text>
                     <Binding Path="Humidity" UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
-                            <v:RangeRule Min="0" Max="100" IsInteger="False"/>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>

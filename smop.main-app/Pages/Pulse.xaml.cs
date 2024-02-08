@@ -1,6 +1,6 @@
 ﻿using Smop.OdorDisplay.Packets;
 using Smop.MainApp.Controls;
-using Smop.MainApp.Generator;
+using Smop.MainApp.Controllers;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using System;

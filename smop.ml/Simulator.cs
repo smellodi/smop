@@ -22,8 +22,8 @@ internal abstract class Simulator : IDisposable
 
     int[] _channelIDs = new int[2] { (int)Device.ID.Odor1, (int)Device.ID.Odor2 };
     bool _hasDmsSource = false;
-    float _threshold = 0.1f;
-    int _maxSteps = 3;
+    float _threshold = 0.015f;
+    int _maxSteps = 20;
 
     int _step = 0;
     int _sntSampleCount = 0;

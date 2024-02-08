@@ -33,44 +33,46 @@
                        Text="not connected"/>
         </Grid>
 
-        <Separator/>
-        <Label Style="{StaticResource Section}"
-               Content="ML settings:"/>
-        <UserControl x:Name="uscMaxIterationNumber"
-                     Style="{StaticResource Setting}"
-                     Tag="Max iterations">
-            <TextBox x:Name="txbMaxIterations"
-                     Style="{StaticResource Value}">
-                <TextBox.Text>
-                    <Binding Path="MaxIterations" UpdateSourceTrigger="PropertyChanged">
-                        <Binding.ValidationRules>
-                            <v:RangeRule Min="0" Max="100" IsInteger="True"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
-        </UserControl>
-        <UserControl x:Name="uscThreshold"
-                     Style="{StaticResource Setting}"
-                     Tag="Threshold">
-            <TextBox x:Name="txbThreshold"
-                     Style="{StaticResource Value}">
-                <TextBox.Text>
-                    <Binding Path="Threshold" UpdateSourceTrigger="PropertyChanged" StringFormat="0.####">
-                        <Binding.ValidationRules>
-                            <v:RangeRule Min="0" IsInteger="False"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
-        </UserControl>
-        <UserControl x:Name="uscSendPID"
-                     Style="{StaticResource Setting}"
-                     Tag="Send PID values">
-            <CheckBox x:Name="chkSendPID"
-                      IsChecked="{Binding SendPID}"
-                      VerticalAlignment="Center"/>
-        </UserControl>
+        <StackPanel Visibility="Collapsed">
+            <Separator/>
+            <Label Style="{StaticResource Section}"
+                   Content="ML settings:"/>
+            <UserControl x:Name="uscMaxIterationNumber"
+                         Style="{StaticResource Setting}"
+                         Tag="Max iterations">
+                <TextBox x:Name="txbMaxIterations"
+                         Style="{StaticResource Value}">
+                    <TextBox.Text>
+                        <Binding Path="MaxIterations" UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                                <v:RangeRule Min="0" Max="100" IsInteger="True"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
+            </UserControl>
+            <UserControl x:Name="uscThreshold"
+                         Style="{StaticResource Setting}"
+                         Tag="Threshold">
+                <TextBox x:Name="txbThreshold"
+                         Style="{StaticResource Value}">
+                    <TextBox.Text>
+                        <Binding Path="Threshold" UpdateSourceTrigger="PropertyChanged" StringFormat="0.####">
+                            <Binding.ValidationRules>
+                                <v:RangeRule Min="0" IsInteger="False"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
+            </UserControl>
+            <UserControl x:Name="uscSendPID"
+                         Style="{StaticResource Setting}"
+                         Tag="Send PID values">
+                <CheckBox x:Name="chkSendPID"
+                          IsChecked="{Binding SendPID}"
+                          VerticalAlignment="Center"/>
+            </UserControl>
+        </StackPanel>
 
         <Separator/>
         <Label Style="{StaticResource Section}"

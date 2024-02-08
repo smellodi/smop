@@ -35,6 +35,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(elpMLStatus, e == ML.Status.Connected);
 
         _proc = new Reproducer.Procedure(config);
+        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
+            (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() =>
@@ -53,6 +55,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeName.Text = "";
         tblRecipeRMSQ.Text = "";
         tblRecipeIteration.Text = "";
+
+        crtRMSQ.Reset();
 
         var gases = _proc.Gases;
         ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_GAS);
@@ -195,6 +199,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeRMSQ.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
         tblRecipeIteration.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
 
+        cnvDmsScan.Visibility = BoolToVisible(!isActiveENose && App.IonVision != null);
+
         btnQuit.IsEnabled = !isActiveENose;
 
         var stateText = new List<string>();
@@ -279,6 +285,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         }
         tblRecipeRMSQ.Text = "r = " + recipe.MinRMSE.ToString("0.####");
         tblRecipeIteration.Text = $"iteration #{_proc?.CurrentStep + 1}";
+
+        if (!string.IsNullOrEmpty(recipe.Name))
+        {
+            crtRMSQ.Add(recipe.MinRMSE);
+        }
 
         // Clear the table leaving only the header row
         var tableElements = new UIElement[grdRecipeChannels.Children.Count];

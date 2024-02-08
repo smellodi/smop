@@ -147,10 +147,10 @@ public partial class LiveData : UserControl
 
         if (_data.Count > 0)
         {
-            foreach (var i in _data)
+            foreach (var point in _data)
             {
-                xi.Add(i.Timestamp);
-                yi.Add(i.Value);
+                xi.Add(point.Timestamp);
+                yi.Add(point.Value);
             }
         }
         else

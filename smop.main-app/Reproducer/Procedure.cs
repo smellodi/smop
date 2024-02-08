@@ -17,12 +17,13 @@ public class Procedure
     public record class Config(
         ML.Communicator MLComm,
         GasFlow[] TargetFlows,
-        System.Windows.Size dataSize
+        System.Windows.Size DataSize
     );
 
     public Gas[] Gases => _gases.Items;
     public int CurrentStep => _step;
 
+    public event EventHandler<IonVision.ScanResult>? ScanFinished;
     public event EventHandler? MlComputationStarted;
     public event EventHandler? ENoseStarted;
     public event EventHandler<double>? ENoseProgressChanged;
@@ -32,7 +33,7 @@ public class Procedure
     {
         _ml = config.MLComm;
 
-        _dmsCache.SetSubfolder((int)config.dataSize.Height, (int)config.dataSize.Width);
+        _dmsCache.SetSubfolder((int)config.DataSize.Height, (int)config.DataSize.Width);
 
         var targetText = config.TargetFlows.Select(flow => $"{_gases.NameFromID(flow.ID)} {flow.Flow}");
         _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));
@@ -74,31 +75,11 @@ public class Procedure
         var cachedDmsScan = _dmsCache.Find(recipe, out string? dmsFilename);
 
         // send command to OD
-        if (cachedDmsScan == null && recipe.Channels != null)
+        if (cachedDmsScan == null)
         {
-            var actuators = new List<ODPackets.Actuator>();
-            foreach (var channel in recipe.Channels)
-            {
-                var valveCap = channel.Duration switch
-                {
-                    > 0 => KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantValve, channel.Duration * 1000),
-                    0 => ODPackets.ActuatorCapabilities.OdorantValveClose,
-                    _ => ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently,
-                };
-                var caps = new ODPackets.ActuatorCapabilities(
-                    valveCap,
-                    KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, channel.Flow)
-                );
-                if (channel.Temperature != null)
-                {
-                    caps.Add(OdorDisplay.Device.Controller.ChassisTemperature, (float)channel.Temperature);
-                }
-
-                var actuator = new ODPackets.Actuator((OdorDisplay.Device.ID)channel.Id, caps);
-                actuators.Add(actuator);
-            }
-
-            COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "release odors");
+            var actuators = recipe.ToOdorPrinterActuators();
+            if (actuators.Length > 0)
+                COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "release odors");
         }
 
         // schedule new scan
@@ -107,26 +88,22 @@ public class Procedure
             if (cachedDmsScan != null)
             {
                 _nlog.Info(LogIO.Text("Cache", "Read", dmsFilename));
-                DispatchOnce.Do(2, () =>
-                {
-                    _ = _ml.Publish(cachedDmsScan);
-                    MlComputationStarted?.Invoke(this, EventArgs.Empty);
-                });
+                DispatchOnce.Do(2, () => SendDmsScanToML(cachedDmsScan));
             }
             else
             {
                 Task.Run(async () =>
                 {
-                    var waitingTime = OdorDisplayController.CalcWaitingTime(_gases);
+                    var waitingTime = OdorDisplayController.CalcWaitingTime(recipe.Channels?.Select(ch => ch.Flow));
                     await Task.Delay((int)(waitingTime * 1000));
 
-                    var dmsScan = await ScanAndSendToML();
+                    var dmsScan = await CollectData();
                     if (dmsScan != null)
                     {
+                        SendDmsScanToML(dmsScan);
                         var filename = _dmsCache.Save(recipe, dmsScan);
                         _nlog.Info(LogIO.Text("Cache", "Write", filename));
                     }
-
                 });
             }
         }
@@ -167,7 +144,7 @@ public class Procedure
         return LogIO.Text("Recipe", string.Join(" ", fields));
     }
 
-    private async Task<IonVision.ScanResult?> ScanAndSendToML()
+    private async Task<IonVision.ScanResult?> CollectData()
     {
         _canSendFrequentData = true;
 
@@ -176,11 +153,6 @@ public class Procedure
         if (App.IonVision != null)
         {
             dmsScan = await MakeDmsScan(App.IonVision);
-            if (dmsScan != null)
-            {
-                _ = _ml.Publish(dmsScan);
-                MlComputationStarted?.Invoke(this, EventArgs.Empty);
-            }
         }
         else
         {
@@ -192,14 +164,22 @@ public class Procedure
             }
             await Task.Delay(300);
             MlComputationStarted?.Invoke(this, EventArgs.Empty);
+
+            _sntSamplesCount = 0;
         }
 
         _canSendFrequentData = false;
-        _sntSamplesCount = 0;
 
         ShutDownFlows();
 
         return dmsScan;
+    }
+
+    private void SendDmsScanToML(IonVision.ScanResult dmsScan)
+    {
+        _ = _ml.Publish(dmsScan);
+        ScanFinished?.Invoke(this, dmsScan);
+        MlComputationStarted?.Invoke(this, EventArgs.Empty);
     }
 
     private async Task<IonVision.ScanResult?> MakeDmsScan(IonVision.Communicator ionVision)

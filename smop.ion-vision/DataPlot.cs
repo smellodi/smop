@@ -16,7 +16,15 @@ public static class DataPlot
     public enum ComparisonOperation { None, Difference, BlandAltman }
 
     public static bool UseLogarithmicScaleInBlandAltman { get; set; } = true;
-    
+
+    /// <summary>
+    /// Creates a plot and shows it in a separate window running in its own thread.
+    /// </summary>
+    /// <param name="rows">Number of rows</param>
+    /// <param name="cols">Number of columns</param>
+    /// <param name="values1">Vector of the DMS data (Intensity top or bottom)</param>
+    /// <param name="values2">Second vector of the DMS data (Intensity top or bottom) used for comparison</param>
+    /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
     public static void Show(int rows, int cols, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
     {
         var thread = new Thread(() => {
@@ -53,6 +61,15 @@ public static class DataPlot
         thread.Join();
     }
 
+    /// <summary>
+    /// Creates a plot and draws it on the provided canvas.
+    /// </summary>
+    /// <param name="canvas">The canvas to draw the plot</param>
+    /// <param name="rows">Number of rows</param>
+    /// <param name="cols">Number of columns</param>
+    /// <param name="values1">Vector of the DMS data (Intensity top or bottom)</param>
+    /// <param name="values2">Second vector of the DMS data (Intensity top or bottom) used for comparison</param>
+    /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
     public static void Create(Canvas canvas, int rows, int cols, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
     {
         canvas.Children.Clear();
@@ -81,10 +98,11 @@ public static class DataPlot
 
     private static void CreateAxis(Canvas canvas, Rect rc)
     {
-        int offset = 2;
-        int lbOffset = 25;
         double width = canvas.ActualWidth;
         double height = canvas.ActualHeight;
+        /*
+        int offset = 2;
+        int lbOffset = 25;
 
         var shadowEffect = new DropShadowEffect()
         {
@@ -92,26 +110,26 @@ public static class DataPlot
             ShadowDepth = 0,
         };
 
-        var xMin = new Label() { Content = rc.Left.ToString("F2"), Effect = shadowEffect };
+        var xMin = new Label() { Content = rc.Left.ToString("0.##"), Effect = shadowEffect };
         canvas.Children.Add(xMin);
         Canvas.SetLeft(xMin, offset + lbOffset);
         Canvas.SetTop(xMin, height - offset - 20);
 
-        var xMax = new Label() { Content = rc.Right.ToString("F2"), Effect = shadowEffect };
+        var xMax = new Label() { Content = rc.Right.ToString("0.##"), Effect = shadowEffect };
         canvas.Children.Add(xMax);
         Canvas.SetLeft(xMax, width - offset - 40 );
         Canvas.SetTop(xMax, height - offset - 20);
 
-        var yMin = new Label() { Content = rc.Top.ToString("F2"), Effect = shadowEffect };
+        var yMin = new Label() { Content = rc.Top.ToString("0.##"), Effect = shadowEffect };
         canvas.Children.Add(yMin);
         Canvas.SetLeft(yMin, offset);
         Canvas.SetTop(yMin, height - offset - lbOffset - 20);
 
-        var yMax = new Label() { Content = rc.Bottom.ToString("F2"), Effect = shadowEffect };
+        var yMax = new Label() { Content = rc.Bottom.ToString("0.##"), Effect = shadowEffect };
         canvas.Children.Add(yMax);
         Canvas.SetLeft(yMax, offset);
         Canvas.SetTop(yMax, offset);
-
+        */
         if (rc.Height != 0)
         {
             var xAxe = new Line()

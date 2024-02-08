@@ -122,11 +122,11 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public static double CalcWaitingTime(Reproducer.Gases gases)
+    public static double CalcWaitingTime(IEnumerable<float>? flows)
     {
-        var flows = gases.Items
-            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name) && gas.Name != gas.ChannelID.ToString())
-            .Select(gas => gas.Flow);
+        if (flows == null)
+            return CLEANUP_DURATION;
+
         var minFlow = flows.Any() ? flows.Min() : 0;
 
         var validFlow = flows.Where(flow => flow >= MIN_VALID_FLOW);

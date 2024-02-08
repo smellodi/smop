@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.OdorDisplay.Packets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,6 +33,33 @@ public record class ChannelRecipe(int Id, float Flow, float Duration, float? Tem
 public record class Recipe(string Name, int IsFinal, float MinRMSE, ChannelRecipe[]? Channels)
 {
     public bool Finished => IsFinal != 0;
+
+    public Actuator[] ToOdorPrinterActuators()
+    {
+        var actuators = new List<Actuator>();
+        foreach (var channel in Channels ?? Array.Empty<ChannelRecipe>())
+        {
+            var valveCap = channel.Duration switch
+            {
+                > 0 => KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantValve, channel.Duration * 1000),
+                0 => ActuatorCapabilities.OdorantValveClose,
+                _ => ActuatorCapabilities.OdorantValveOpenPermanently,
+            };
+            var caps = new ActuatorCapabilities(
+                valveCap,
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, channel.Flow)
+            );
+            if (channel.Temperature != null)
+            {
+                caps.Add(OdorDisplay.Device.Controller.ChassisTemperature, (float)channel.Temperature);
+            }
+
+            var actuator = new Actuator((OdorDisplay.Device.ID)channel.Id, caps);
+            actuators.Add(actuator);
+        }
+
+        return actuators.ToArray();
+    }
 }
 
 public record class Content(string Source);

@@ -54,10 +54,10 @@ public partial class Reproduction : Page, IPage<Navigation>
         imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
 
         tblRecipeName.Text = "";
-        tblRecipeRMSQ.Text = "";
+        tblRecipeRMSE.Text = "";
         tblRecipeIteration.Text = "";
 
-        crtRMSQ.Reset();
+        crtRMSE.Reset();
 
         var gases = _proc.Gases;
         ConfigureChannelTable(gases, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_GAS);
@@ -197,7 +197,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         tblRecipeName.Visibility = BoolToVisible(!isActiveML);
         grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);
-        tblRecipeRMSQ.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
+        tblRecipeRMSE.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
         tblRecipeIteration.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
 
         cnvDmsScan.Visibility = BoolToVisible(!isActiveENose && App.IonVision != null);
@@ -284,12 +284,12 @@ public partial class Reproduction : Page, IPage<Navigation>
         {
             tblRecipeName.Text = recipe.Name + ":";
         }
-        tblRecipeRMSQ.Text = "r = " + recipe.MinRMSE.ToString("0.####");
+        tblRecipeRMSE.Text = "r = " + recipe.MinRMSE.ToString("0.####");
         tblRecipeIteration.Text = $"iteration #{_proc?.CurrentStep + 1}";
 
         if (!string.IsNullOrEmpty(recipe.Name))
         {
-            crtRMSQ.Add(recipe.MinRMSE);
+            crtRMSE.Add(recipe.MinRMSE);
         }
 
         // Clear the table leaving only the header row

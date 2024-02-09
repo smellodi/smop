@@ -7,13 +7,9 @@ namespace Smop.MainApp.Pages;
 
 public partial class Finished : Page, IPage<Navigation>
 {
-    public class RequestSavingArgs : EventArgs
+    public class RequestSavingArgs(SavingResult result) : EventArgs
     {
-        public SavingResult Result { get; set; }
-        public RequestSavingArgs(SavingResult result)
-        {
-            Result = result;
-        }
+        public SavingResult Result { get; set; } = result;
     }
 
     public event EventHandler<Navigation>? Next;

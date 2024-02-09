@@ -9,13 +9,13 @@ namespace Smop.MainApp.Controllers;
 
 public static class PulseChannels
 {
-    public static int Count => 5;
+    public static int MaxCount => 5;
 }
 
 /// <summary>
 /// One odor channel properties
 /// </summary>
-/// <param name="Id">Channel ID, 1..<see cref="PulseChannels.Count"/></param>
+/// <param name="Id">Channel ID, 1..<see cref="PulseChannels.MaxCount"/></param>
 /// <param name="Flow">Flow in ccm</param>
 /// <param name="Active">Set to true for the channel to be opened during the pulse</param>
 public record class PulseChannelProps(int Id, float Flow, bool Active);

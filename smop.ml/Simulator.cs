@@ -29,7 +29,7 @@ internal abstract class Simulator : IDisposable
     int _sntSampleCount = 0;
 
     const float FLOW_DURATION_ENDLESS = -1;
-    const float RMSQ = 0.2f;
+    const float RMSE = 0.2f;
     const int SNT_SAMPLE_MAX_COUNT = 10;
 
     protected abstract Task SendData(string data);
@@ -70,10 +70,10 @@ internal abstract class Simulator : IDisposable
         await Task.Delay(2000);
 
         _step++;
-        var rmsq = RMSQ / _step;
-        bool isFinished = rmsq < _threshold || _step >= _maxSteps;
+        var rmse = RMSE / _step;
+        bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
-        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmsq };
+        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse };
         json = JsonSerializer.Serialize(recipe);
         ScreenLogger.Print("[MlSimul] recipe sent");
         await SendData(json);
@@ -125,10 +125,10 @@ internal abstract class Simulator : IDisposable
                 await Task.Delay(2000);
 
                 _step++;
-                var rmsq = RMSQ / _step;
-                bool isFinished = rmsq < _threshold || _step >= _maxSteps;
+                var rmse = RMSE / _step;
+                bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
-                var recipe = new Recipe("Normal", isFinished ? 1 : 0, rmsq, _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
+                var recipe = new Recipe("Normal", isFinished ? 1 : 0, rmse, _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 ScreenLogger.Print("[MlSimul] recipe sent");
                 await SendData(json);

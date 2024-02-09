@@ -31,60 +31,50 @@ public partial class MsgBox : Window
         Custom = 0x10000,
     }
 
-    public class Result
-    {
-        public Button Button { get; private set; }
-        public int ID { get; private set; }
-        public bool IsOptionAccepted { get; private set; }
-        public Result(Button button, int customButtonID, bool optionAccepted)
-        {
-            Button = button;
-            ID = customButtonID;
-            IsOptionAccepted = optionAccepted;
-        }
-    }
+    public record class Result(Button Button, int ID, bool IsOptionAccepted);
 
     public Button ClickedButton { get; private set; } = Button.None;
     public int CustomButtonID { get; private set; } = -1;
+
     public bool IsOptionAccepted => chkOption.IsChecked ?? false;
 
-    public static void Notify(string? title, string? message) =>
+    public static void Notify(string title, string message) =>
         Show(title, message, MsgIcon.Info, null, new Button[] { Button.OK });
-    public static Button Notify(string? title, string? message, params Button[] stdButtons) =>
+    public static Button Notify(string title, string message, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Info, null, stdButtons).Button;
-    public static Result Notify(string? title, string? message, string[] customButtons, params Button[] stdButtons) =>
+    public static Result Notify(string title, string message, string[] customButtons, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Info, customButtons, stdButtons);
-    public static Result Notify(string? title, string? message, string customButton, params Button[] stdButtons) =>
+    public static Result Notify(string title, string message, string customButton, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Info, new string[] { customButton }, stdButtons);
 
-    public static void Error(string? title, string? message) =>
+    public static void Error(string title, string message) =>
         Show(title, message, MsgIcon.Error, null, new Button[] { Button.OK });
-    public static Button Error(string? title, string? message, params Button[] stdButtons) =>
+    public static Button Error(string title, string message, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Error, null, stdButtons).Button;
-    public static Result Error(string? title, string? message, string[] customButtons, params Button[] stdButtons) =>
+    public static Result Error(string title, string message, string[] customButtons, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Error, customButtons, stdButtons);
-    public static Result Error(string? title, string? message, string customButton, params Button[] stdButtons) =>
+    public static Result Error(string title, string message, string customButton, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Error, new string[] { customButton }, stdButtons);
 
-    public static Button Ask(string? title, string? message) =>
+    public static Button Ask(string title, string message) =>
         Show(title, message, MsgIcon.Question, null, new Button[] { Button.Yes, Button.No }).Button;
-    public static Button Ask(string? title, string? message, params Button[] stdButtons) =>
+    public static Button Ask(string title, string message, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Question, null, stdButtons).Button;
-    public static Result Ask(string? title, string? message, string[] customButtons, params Button[] stdButtons) =>
+    public static Result Ask(string title, string message, string[] customButtons, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Question, customButtons, stdButtons);
-    public static Result Ask(string? title, string? message, string customButton, params Button[] stdButtons) =>
+    public static Result Ask(string title, string message, string customButton, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Question, new string[] { customButton }, stdButtons);
 
-    public static Button Warn(string? title, string? message) =>
+    public static Button Warn(string title, string message) =>
         Show(title, message, MsgIcon.Warning, null, new Button[] { Button.OK, Button.Cancel }).Button;
-    public static Button Warn(string? title, string? message, params Button[] stdButtons) =>
+    public static Button Warn(string title, string message, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Warning, null, stdButtons).Button;
-    public static Result Warn(string? title, string? message, string[] customButtons, params Button[] stdButtons) =>
+    public static Result Warn(string title, string message, string[] customButtons, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Warning, customButtons, stdButtons);
-    public static Result Warn(string? title, string? message, string customButton, params Button[] stdButtons) =>
+    public static Result Warn(string title, string message, string customButton, params Button[] stdButtons) =>
         Show(title, message, MsgIcon.Warning, new string[] { customButton }, stdButtons);
 
-    public static Result Custom(string? title, string? message, MsgIcon icon, string? option, string[]? customButtons, params Button[] stdButtons) =>
+    public static Result Custom(string title, string message, MsgIcon icon, string? option, string[]? customButtons, params Button[] stdButtons) =>
         Show(title, message, icon, customButtons, stdButtons, option);
 
     public new bool? ShowDialog()
@@ -107,7 +97,7 @@ public partial class MsgBox : Window
 
     readonly MsgIcon _icon;
 
-    private MsgBox(string? title, string? message, MsgIcon icon, string[]? customButtons, Button[] stdButtons)
+    private MsgBox(string title, string message, MsgIcon icon, string[]? customButtons, Button[] stdButtons)
     {
         InitializeComponent();
 
@@ -119,7 +109,6 @@ public partial class MsgBox : Window
         }
 
         _icon = icon;
-        message ??= "MISSING THE MESSAGE TEXT";
 
         Title = title;
         txbMessage.Text = message;
@@ -177,7 +166,7 @@ public partial class MsgBox : Window
         }
     }
 
-    private static Result Show(string? title, string? message, MsgIcon icon, string[]? customButtons, Button[] stdButtons, string? option = null)
+    private static Result Show(string title, string message, MsgIcon icon, string[]? customButtons, Button[] stdButtons, string? option = null)
     {
         void SetOption(MsgBox box)
         {

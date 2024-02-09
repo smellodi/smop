@@ -43,7 +43,7 @@ bool isOutputCutEnabled = true;
 List<MeasurementData> _data = new();
 ParameterDefinition? _paramDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
 
-var ionVision = new Communicator("IonVision-Hervanta-10.json", isSimulating);
+var ionVision = new Communicator("IonVision-Tietotalo.json", isSimulating);
 
 if (!await Connect(ionVision))
     return;

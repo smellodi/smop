@@ -93,7 +93,7 @@ internal class OdorDisplayController
 
     public Comm.Result ReleaseGases(Gases gases)
     {
-        var actuators = gases.Items
+        var actuators = gases
             .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
             .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, gas.Flow),
@@ -110,7 +110,7 @@ internal class OdorDisplayController
 
     public Comm.Result StopGases(Gases gases)
     {
-        var actuators = gases.Items
+        var actuators = gases
             .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
             .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),

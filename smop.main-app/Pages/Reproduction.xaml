@@ -251,14 +251,14 @@
                                Content="Target flow"/>
                         <!-- filled in code -->
                     </Grid>
-                    <TextBlock x:Name="tblRecipeRMSQ"
+                    <TextBlock x:Name="tblRecipeRMSE"
                                FontStyle="Italic"
                                TextAlignment="Center"
                                Margin="0,8,0,0"/>
                     <TextBlock x:Name="tblRecipeIteration"
                                FontStyle="Italic"
                                TextAlignment="Center"/>
-                    <local:ProgressPlot x:Name="crtRMSQ"
+                    <local:ProgressPlot x:Name="crtRMSE"
                              Height="40"
                              Width="200"/>
                 </StackPanel>

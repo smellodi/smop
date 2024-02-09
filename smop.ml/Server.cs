@@ -60,8 +60,8 @@ internal abstract class Server : IDisposable
         var packet = JsonSerializer.Deserialize<float[]>(json, _serializerOptions);
         if (packet?.Length >= 3)
         {
-            var rmsq = packet.Length == 4 ? packet[3] : float.NaN;
-            return new Recipe("Normal", (int)packet[0], rmsq, new ChannelRecipe[] {
+            var rmse = packet.Length == 4 ? packet[3] : float.NaN;
+            return new Recipe("Normal", (int)packet[0], rmse, new ChannelRecipe[] {
                 new ChannelRecipe(1, packet[1], -1),
                 new ChannelRecipe(2, packet[2], -1),
             });

@@ -146,7 +146,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Update="Properties\setup.txt">
+    <None Update="Properties\pulse-setup.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -182,10 +182,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\smop.ion-vision\Smop.IonVision.csproj" />
     <ProjectReference Include="..\smop.ml\Smop.ML.csproj" />
     <ProjectReference Include="..\smop.odor-display\Smop.OdorDisplay.csproj" />
     <ProjectReference Include="..\smop.smell-insp\Smop.SmellInsp.csproj" />
-    <ProjectReference Include="..\test.ion-vision\Test.IonVision.csproj" />
   </ItemGroup>
 
 </Project>

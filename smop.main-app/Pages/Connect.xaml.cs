@@ -371,7 +371,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 _storage.AddSimulatingTarget(SimulationTarget.All);
             }
 
-            _nlog.Info(Logging.LogIO.Text("Simulator", _storage.Simulating));
+            _nlog.Info(LogIO.Text("Simulator", _storage.Simulating));
         }
     }
 
@@ -426,7 +426,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 IonVisionSetupFilename = filename;
             }
 
-            _nlog.Info(Logging.LogIO.Text("DMS", "SetupFile", IonVisionSetupFilename));
+            _nlog.Info(LogIO.Text("DMS", "SetupFile", IonVisionSetupFilename));
 
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
             txbIonVisionIP.Text = ivSettings.IP;
@@ -443,7 +443,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         setupDialog.Load(IonVisionSetupFilename);
         if (setupDialog.ShowDialog() == true)
         {
-            _nlog.Info(Logging.LogIO.Text("DMS", "SetupEdited"));
+            _nlog.Info(LogIO.Text("DMS", "SetupEdited"));
 
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename)
             {

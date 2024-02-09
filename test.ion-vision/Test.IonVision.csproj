@@ -24,7 +24,7 @@
     <None Update="IonVision-Hervanta-10.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="IonVision.json">
+    <None Update="IonVision-Tietotalo.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

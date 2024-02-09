@@ -20,7 +20,7 @@ public class OdorReproducerController
         System.Windows.Size DataSize
     );
 
-    public Gas[] Gases => _gases.Items;
+    public Gas[] Gases => _gases.ToArray();
     public int CurrentStep => _step;
 
     public event EventHandler<IonVision.ScanResult>? ScanFinished;

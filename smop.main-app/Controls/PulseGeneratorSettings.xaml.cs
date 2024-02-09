@@ -92,7 +92,7 @@ public partial class PulseGeneratorSettings : UserControl
         var settings = Properties.Settings.Default;
         if (string.IsNullOrEmpty(settings.Pulses_SetupFilename.Trim()) || !File.Exists(settings.Pulses_SetupFilename.Trim()))
         {
-            settings.Pulses_SetupFilename = "Properties/setup.txt";
+            settings.Pulses_SetupFilename = "Properties/pulse-setup.txt";
         }
 
         editor.Load(settings.Pulses_SetupFilename.Trim());

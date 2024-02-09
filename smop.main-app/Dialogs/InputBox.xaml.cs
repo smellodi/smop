@@ -17,7 +17,7 @@ public partial class InputBox : Window, INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public static string? Show(string? title, string? message, string? value, InputType inputType = InputType.String)
+    public static string? Show(string title, string message, string? value = null, InputType inputType = InputType.String)
     {
         string? CreateAndShow()
         {
@@ -32,9 +32,9 @@ public partial class InputBox : Window, INotifyPropertyChanged
 
     // Internal
 
-    InputType _inputType;
+    readonly InputType _inputType;
 
-    private InputBox(string? title, string? message, string? value, InputType inputType)
+    private InputBox(string title, string message, string? value, InputType inputType)
     {
         InitializeComponent();
 
@@ -43,8 +43,6 @@ public partial class InputBox : Window, INotifyPropertyChanged
         DataContext = this;
 
         _inputType = inputType;
-
-        message ??= "MISSING THE MESSAGE TEXT";
 
         Title = title;
         txbMessage.Text = message;

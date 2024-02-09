@@ -31,7 +31,7 @@ public partial class OdorReproductionSettings : UserControl
         set => tblMLStatus.Text = value;
     }
 
-    public int MaxIterations
+    public static int MaxIterations
     {
         get => Properties.Settings.Default.Reproduction_MaxIterations;
         set
@@ -41,7 +41,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public float Threshold
+    public static float Threshold
     {
         get => Properties.Settings.Default.Reproduction_Threshold;
         set
@@ -51,7 +51,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public bool SendPID
+    public static bool SendPID
     {
         get => Properties.Settings.Default.Reproduction_UsePID;
         set
@@ -61,7 +61,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public bool UseDmsCache
+    public static bool UseDmsCache
     {
         get => DmsCache.IsEnabled;
         set => DmsCache.IsEnabled = value;
@@ -77,7 +77,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }*/
 
-    public float Humidity
+    public static float Humidity
     {
         get => Properties.Settings.Default.Reproduction_Humidity;
         set

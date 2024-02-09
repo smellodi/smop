@@ -6,7 +6,6 @@ namespace Smop.IonVision;
 
 public class Settings
 {
-    public static string DefaultFilename { get; set; } = "IonVision.json";
     public string IP
     {
         get => _properties.IP;
@@ -36,7 +35,7 @@ public class Settings
 
     public Settings(string? filename = null)
     {
-        _filename = filename ?? DefaultFilename;
+        _filename = filename ?? DEFAULT_FILENAME;
 
         try
         {
@@ -82,9 +81,10 @@ public class Settings
 
     record class Properties(string IP, string Project, string ParameterId, string ParameterName, string? User);
 
+    readonly static string DEFAULT_FILENAME = "IonVision.json";
     readonly static Properties DEFAULT_PROPERTIES = new("localhost", "Smellodi", "GUID", "Default", null);
 
     readonly string _filename;
 
-    Properties _properties = DEFAULT_PROPERTIES with { };   // copying
+    Properties _properties = DEFAULT_PROPERTIES with { };   // copying|
 }

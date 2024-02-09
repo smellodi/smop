@@ -2,18 +2,12 @@
 
 public class EventLogger : Logger<EventLogger.Record>, ILog
 {
-    public class Record : RecordBase
+    public class Record(string type, string[] data) : RecordBase()
     {
         public static string Header => $"ts{Delim}type{Delim}data";
 
-        public string Type { get; }
-        public string[] Data { get; }
-
-        public Record(string type, string[] data) : base()
-        {
-            Type = type;
-            Data = data;
-        }
+        public string Type { get; } = type;
+        public string[] Data { get; } = data;
 
         public override string ToString()
         {

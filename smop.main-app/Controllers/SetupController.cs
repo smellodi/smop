@@ -51,7 +51,7 @@ public class SetupController
 
     public void EnumGases(Action<Gas> callback)
     {
-        foreach (var gas in _gases.Items)
+        foreach (var gas in _gases)
         {
             callback(gas);
         }
@@ -87,7 +87,7 @@ public class SetupController
         var cleanupFLow = 10f;
         var cleanupDuration = 10_000;
 
-        var actuators = _gases.Items.Select(gas =>
+        var actuators = _gases.Select(gas =>
             new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
                 ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently,
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, cleanupFLow)
@@ -99,7 +99,7 @@ public class SetupController
 
         await Task.Delay(cleanupDuration);
 
-        actuators = _gases.Items.Select(gas =>
+        actuators = _gases.Select(gas =>
             new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
                 ODPackets.ActuatorCapabilities.OdorantValveClose,
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f)
@@ -198,7 +198,7 @@ public class SetupController
         if (!COMHelper.ShowErrorIfAny(_odController.ReleaseGases(_gases), "release odors"))
             return;
 
-        var flows = _gases.Items
+        var flows = _gases
             .Where(gas => !string.IsNullOrWhiteSpace(gas.Name) && gas.Name != gas.ChannelID.ToString())
             .Select(gas => gas.Flow);
         var waitingTime = OdorDisplayController.CalcWaitingTime(flows);
@@ -259,8 +259,7 @@ public class SetupController
         var settings = Properties.Settings.Default;
         _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_MaxIterations, settings.Reproduction_Threshold));
 
-        await App.ML.Config(dataSources.ToArray(),
-            _gases.Items
+        await App.ML.Config(dataSources.ToArray(), _gases
                 .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
                 .Select(gas => new ML.ChannelProps((int)gas.ChannelID, gas.Name, gas.Propeties)).ToArray(),
             settings.Reproduction_MaxIterations,

@@ -43,7 +43,7 @@ internal class DmsCache
             return null;
         }
 
-        var id = ToId(gases.Items.Select(gas => ToChannelId((int)gas.ChannelID, gas.Flow)));
+        var id = ToId(gases.Select(gas => ToChannelId((int)gas.ChannelID, gas.Flow)));
         return Find(id, out filename);
     }
 
@@ -72,7 +72,7 @@ internal class DmsCache
             return null;
         }
 
-        var id = ToId(gases.Items.Select(gas => ToChannelId((int)gas.ChannelID, gas.Flow)));
+        var id = ToId(gases.Select(gas => ToChannelId((int)gas.ChannelID, gas.Flow)));
         var filename = Save(id, scan);
 
         return filename;

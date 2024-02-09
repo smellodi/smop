@@ -1,7 +1,6 @@
 ﻿using Smop.OdorDisplay.Packets;
 using Smop.MainApp.Controls;
 using Smop.MainApp.Controllers;
-using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
@@ -15,15 +14,6 @@ namespace Smop.MainApp.Pages;
 
 public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyPropertyChanged
 {
-    public class RequestSavingArgs : EventArgs
-    {
-        public SavingResult Result { get; set; }
-        public RequestSavingArgs(SavingResult result)
-        {
-            Result = result;
-        }
-    }
-
     public bool IsInitialPause { get; private set; } = false;
     public bool IsFinalPause { get; private set; } = false;
 

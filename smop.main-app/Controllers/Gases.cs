@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,7 +29,7 @@ public class Gas : INotifyPropertyChanged
     }
 
     public OdorDisplay.Device.ID ChannelID { get; }
-    public Dictionary<string, string> Propeties { get; } = new() { { "maxFlow", "80" } };
+    public Dictionary<string, string> Propeties { get; } = new() { { "maxFlow", "50" } };
 
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -50,10 +51,8 @@ public class Gas : INotifyPropertyChanged
     float _flow = 0;
 }
 
-public class Gases
+public class Gases : IEnumerable<Gas>
 {
-    public Gas[] Items => _items.ToArray();
-
     public Gases(OdorDisplay.Device.ID[]? ids = null)
     {
         var odorDefs = Properties.Settings.Default.Reproduction_Odors;
@@ -88,7 +87,7 @@ public class Gases
     public void Save()
     {
         var defs = new List<string>();
-        foreach (var gas in Items)
+        foreach (var gas in _items)
         {
             defs.Add($"{gas.ChannelID}{SEPARATOR_KV}{gas.Name}{SEPARATOR_VALUES}{gas.Flow}");
         }
@@ -100,6 +99,8 @@ public class Gases
 
     public string NameFromID(OdorDisplay.Device.ID id) => _items.FirstOrDefault(gas => gas.ChannelID == id)?.Name ?? id.ToString();
 
+    public IEnumerator<Gas> GetEnumerator() => new EnumGases(_items);
+
 
     // Internal
 
@@ -108,4 +109,26 @@ public class Gases
     readonly char SEPARATOR_VALUES = ',';
 
     readonly List<Gas> _items = new();
+
+    IEnumerator IEnumerable.GetEnumerator() => new EnumGases(_items);
+}
+
+internal class EnumGases(List<Gas> gases) : IEnumerator<Gas>
+{
+    public Gas Current => _gases[_position];
+
+    public bool MoveNext() => ++_position < _gases.Count;
+
+    public void Reset() => _position = -1;
+
+    public void Dispose() { }
+
+
+    // Internal 
+
+    readonly List<Gas> _gases = gases;
+
+    int _position = -1;
+
+    object IEnumerator.Current => Current;
 }

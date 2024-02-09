@@ -42,7 +42,7 @@ public partial class Setup : Page, IPage<object?>
 
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
 
-        odorReproductionSettings.GasNameChanged += (s, e) => _indicatorController.ApplyGasProps(e);
+        odorReproductionSettings.OdorNameChanged += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
 
         DataContext = this;
 
@@ -57,8 +57,8 @@ public partial class Setup : Page, IPage<object?>
             App.ML.StatusChanged += ML_StatusChanged;
             App.ML.Error += ML_Error;
 
-            _ctrl.AcquireGasInfo();
-            _ctrl.EnumGases(odorReproductionSettings.AddGas);
+            _ctrl.AcquireOdorChannelsInfo();
+            _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
         }
 
         cnvDmsScan.Children.Clear();
@@ -271,7 +271,7 @@ public partial class Setup : Page, IPage<object?>
 
             await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
 
-            _ctrl.EnumGases(_indicatorController.ApplyGasProps);
+            _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
 
             if (_storage.SetupType == SetupType.OdorReproduction)
@@ -364,8 +364,8 @@ public partial class Setup : Page, IPage<object?>
                 _ctrl.SaveSetup();
                 UpdateUI();
 
-                var targetFlows = new List<OdorReproducerController.GasFlow>();
-                _ctrl.EnumGases(gas => targetFlows.Add(new(gas.ChannelID, gas.Flow)));
+                var targetFlows = new List<OdorReproducerController.OdorChannelConfig>();
+                _ctrl.EnumOdorChannels(odorChannel => targetFlows.Add(new(odorChannel.ID, odorChannel.Flow)));
 
                 var dataSize = new Size();
                 if (_ctrl.ParamDefinition != null)

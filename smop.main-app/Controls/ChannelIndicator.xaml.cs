@@ -210,7 +210,7 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 
     #endregion
 
-    public Device.ID OdorID { get; init; }
+    public Device.ID ChannelID { get; init; }
 
     public string ValueStr => double.IsFinite(Value) ? Value.ToString($"F{Precision}") : "-";
     public bool IsWarningVisible => double.IsFinite(WarningThreshold) && double.IsFinite(Value) && WarningThreshold < Value;

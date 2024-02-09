@@ -35,7 +35,7 @@ internal class DmsCache
         }
     }
 
-    public IonVision.ScanResult? Find(Gases gases, out string? filename)
+    public IonVision.ScanResult? Find(OdorChannels odorChannels, out string? filename)
     {
         if (!IsEnabled)
         {
@@ -43,7 +43,7 @@ internal class DmsCache
             return null;
         }
 
-        var id = ToId(gases.Select(gas => ToChannelId((int)gas.ChannelID, gas.Flow)));
+        var id = ToId(odorChannels.Select(odorChannel => ToChannelId((int)odorChannel.ID, odorChannel.Flow)));
         return Find(id, out filename);
     }
 
@@ -65,14 +65,14 @@ internal class DmsCache
         return null;
     }
 
-    public string? Save(Gases gases, IonVision.ScanResult scan)
+    public string? Save(OdorChannels odorChannels, IonVision.ScanResult scan)
     {
         if (!IsEnabled)
         {
             return null;
         }
 
-        var id = ToId(gases.Select(gas => ToChannelId((int)gas.ChannelID, gas.Flow)));
+        var id = ToId(odorChannels.Select(odorChannel => ToChannelId((int)odorChannel.ID, odorChannel.Flow)));
         var filename = Save(id, scan);
 
         return filename;

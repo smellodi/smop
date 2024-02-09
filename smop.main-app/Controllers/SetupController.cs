@@ -31,7 +31,7 @@ public class SetupController
         IonVision.DataPlot.UseLogarithmicScaleInBlandAltman = false;
     }
 
-    public void AcquireGasInfo()
+    public void AcquireOdorChannelsInfo()
     {
         var channelIDs = new List<OdorDisplay.Device.ID>();
 
@@ -46,20 +46,20 @@ public class SetupController
             }
         }
 
-        _gases = new Gases(channelIDs.ToArray());
+        _odorChannels = new OdorChannels(channelIDs.ToArray());
     }
 
-    public void EnumGases(Action<Gas> callback)
+    public void EnumOdorChannels(Action<OdorChannel> callback)
     {
-        foreach (var gas in _gases)
+        foreach (var odorChannel in _odorChannels)
         {
-            callback(gas);
+            callback(odorChannel);
         }
     }
 
     public void SaveSetup()
     {
-        _gases.Save();
+        _odorChannels.Save();
     }
 
     public void ShutDown()
@@ -87,27 +87,27 @@ public class SetupController
         var cleanupFLow = 10f;
         var cleanupDuration = 10_000;
 
-        var actuators = _gases.Select(gas =>
-            new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
+        var actuators = _odorChannels.Select(odorChannel =>
+            new ODPackets.Actuator(odorChannel.ID, new ODPackets.ActuatorCapabilities(
                 ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently,
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, cleanupFLow)
             ))
         );
 
         System.Threading.Thread.Sleep(100);
-        COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "start cleaning up");
+        COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "start cleaning up");
 
         await Task.Delay(cleanupDuration);
 
-        actuators = _gases.Select(gas =>
-            new ODPackets.Actuator(gas.ChannelID, new ODPackets.ActuatorCapabilities(
+        actuators = _odorChannels.Select(odorChannel =>
+            new ODPackets.Actuator(odorChannel.ID, new ODPackets.ActuatorCapabilities(
                 ODPackets.ActuatorCapabilities.OdorantValveClose,
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f)
             ))
         );
 
         System.Threading.Thread.Sleep(100);
-        COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "stop cleaning up");
+        COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "stop cleaning up");
 
         finishedAction?.Invoke();
     }
@@ -195,12 +195,12 @@ public class SetupController
 
         await Task.Delay(150);
 
-        if (!COMHelper.ShowErrorIfAny(_odController.ReleaseGases(_gases), "release odors"))
+        if (!COMHelper.ShowErrorIfAny(_odController.OpenChannels(_odorChannels), "release odors"))
             return;
 
-        var flows = _gases
-            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name) && gas.Name != gas.ChannelID.ToString())
-            .Select(gas => gas.Flow);
+        var flows = _odorChannels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString())
+            .Select(odorChannel => odorChannel.Flow);
         var waitingTime = OdorDisplayController.CalcWaitingTime(flows);
         Log?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {waitingTime:F1}s for the mixture to stabilize..."));
         await Task.Delay((int)(waitingTime * 1000));
@@ -226,7 +226,7 @@ public class SetupController
         _odorDisplay.Data -= OdorDisplay_Data;
         _smellInsp.Data -= SmellInsp_Data;
 
-        if (!COMHelper.ShowErrorIfAny(_odController.StopGases(_gases), "stop odors"))
+        if (!COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors"))
             return;
 
         await Task.Delay(300);
@@ -259,9 +259,9 @@ public class SetupController
         var settings = Properties.Settings.Default;
         _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_MaxIterations, settings.Reproduction_Threshold));
 
-        await App.ML.Config(dataSources.ToArray(), _gases
-                .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
-                .Select(gas => new ML.ChannelProps((int)gas.ChannelID, gas.Name, gas.Propeties)).ToArray(),
+        await App.ML.Config(dataSources.ToArray(), _odorChannels
+                .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
+                .Select(odorChannel => new ML.ChannelProps((int)odorChannel.ID, odorChannel.Name, odorChannel.Propeties)).ToArray(),
             settings.Reproduction_MaxIterations,
             settings.Reproduction_Threshold
         );
@@ -309,11 +309,11 @@ public class SetupController
 
     readonly DmsCache _dmsCache = new();
 
-    Gases _gases = new();
+    OdorChannels _odorChannels = new();
 
     private async Task MakeDmsScan(IonVision.Communicator ionVision)
     {
-        DmsScan = _dmsCache.Find(_gases, out string? filename);
+        DmsScan = _dmsCache.Find(_odorChannels, out string? filename);
 
         if (DmsScan != null)
         {
@@ -345,7 +345,7 @@ public class SetupController
 
             if (scan != null)
             {
-                filename = _dmsCache.Save(_gases, scan);
+                filename = _dmsCache.Save(_odorChannels, scan);
                 if (filename != null)
                 {
                     _nlog.Info(LogIO.Text("Cache", "Write", filename));

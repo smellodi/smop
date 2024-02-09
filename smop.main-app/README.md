@@ -65,10 +65,10 @@ present as a list of space-separated `key=value` pairs.
 The following sessions parameters are allowed:
 
 - `HUMIDITY` : humidity in percentages in the range 0..100,
-- `DELAY` : delay (seconds) before the gas is released,
-- `DMS` : delay (seconds) of starting DMS measurement after the gas starts flowing. DMS measurement will not be triggered if this parameter is absent,
-- `DURATION` : gas flow duration (seconds),
-- `FINAL` : final pause (seconds) after the gas stops flowing,
+- `DELAY` : delay (seconds) before the odor is released,
+- `DMS` : delay (seconds) of starting DMS measurement after the odor starts flowing. DMS measurement will not be triggered if this parameter is absent,
+- `DURATION` : odor flow duration (seconds),
+- `FINAL` : final pause (seconds) after the odor stops flowing,
 
 Example:
 ```

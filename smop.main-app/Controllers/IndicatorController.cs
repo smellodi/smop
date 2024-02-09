@@ -68,11 +68,11 @@ public class IndicatorController
         }
     }
 
-    public void ApplyGasProps(Gas gas)
+    public void ApplyOdorChannelProps(OdorChannel odorChannel)
     {
         foreach (var chi in _indicators.Values)
         {
-            IndicatorFactory.ApplyGasProps(chi, gas.ChannelID, gas.Name);
+            IndicatorFactory.ApplyChannelProps(chi, odorChannel.ID, odorChannel.Name);
         }
     }
 

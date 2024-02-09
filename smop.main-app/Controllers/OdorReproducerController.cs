@@ -10,17 +10,17 @@ namespace Smop.MainApp.Controllers;
 
 public class OdorReproducerController
 {
-    public record class GasFlow(
+    public record class OdorChannelConfig(
         OdorDisplay.Device.ID ID,
         float Flow
     );
     public record class Config(
         ML.Communicator MLComm,
-        GasFlow[] TargetFlows,
+        OdorChannelConfig[] TargetFlows,
         System.Windows.Size DataSize
     );
 
-    public Gas[] Gases => _gases.ToArray();
+    public OdorChannel[] OdorChannels => _odorChannels.ToArray();
     public int CurrentStep => _step;
 
     public event EventHandler<IonVision.ScanResult>? ScanFinished;
@@ -35,7 +35,7 @@ public class OdorReproducerController
 
         _dmsCache.SetSubfolder((int)config.DataSize.Height, (int)config.DataSize.Width);
 
-        var targetText = config.TargetFlows.Select(flow => $"{_gases.NameFromID(flow.ID)} {flow.Flow}");
+        var targetText = config.TargetFlows.Select(flow => $"{_odorChannels.NameFromID(flow.ID)} {flow.Flow}");
         _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));
 
         var settings = Properties.Settings.Default;
@@ -53,7 +53,7 @@ public class OdorReproducerController
         if (_odorDisplay.IsOpen)
         {
             System.Threading.Thread.Sleep(100);
-            LogIO.Add(_odController.StopGases(_gases), "StopOdors", LogSource.OD);
+            LogIO.Add(_odController.CloseChannels(_odorChannels), "StopOdors", LogSource.OD);
         }
     }
 
@@ -79,7 +79,7 @@ public class OdorReproducerController
         {
             var actuators = recipe.ToOdorPrinterActuators();
             if (actuators.Length > 0)
-                COMHelper.ShowErrorIfAny(_odController.ReleaseGases(actuators.ToArray()), "release odors");
+                COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "release odors");
         }
 
         // schedule new scan
@@ -119,7 +119,7 @@ public class OdorReproducerController
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger("Reproducer");
 
-    readonly Gases _gases = new();
+    readonly OdorChannels _odorChannels = new();
     readonly DmsCache _dmsCache = new();
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
@@ -139,7 +139,7 @@ public class OdorReproducerController
         var fields = new List<string>() { "Received", recipe.Name, recipe.Finished ? "Final" : "Continues", recipe.MinRMSE.ToString("0.####") };
         if (recipe.Channels != null)
         {
-            fields.AddRange(recipe.Channels.Select(ch => $"{_gases.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));
+            fields.AddRange(recipe.Channels.Select(ch => $"{_odorChannels.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));
         }
         return LogIO.Text("Recipe", string.Join(" ", fields));
     }

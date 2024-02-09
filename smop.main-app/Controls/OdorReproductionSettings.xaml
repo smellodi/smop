@@ -13,7 +13,7 @@
         <utils:RangeRule x:Key="thresholdValidator" Min="0" IsInteger="False"/>
         <utils:RangeRule x:Key="sniffingDelayValidator" Min="0" IsInteger="False"/>
         
-        <Style x:Key="GasName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Style x:Key="OdorName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="4, 0"/>
         </Style>
@@ -131,7 +131,7 @@
             <StackPanel Grid.Column="0">
                 <Label Style="{StaticResource Section}"
                     Content="Odors:"/>
-                <StackPanel x:Name="stpGases">
+                <StackPanel x:Name="stpOdorChannels">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="40"/>
@@ -153,20 +153,5 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
-        <!--Label Style="{StaticResource Section}"
-               Content="Odors:"/>
-        <StackPanel x:Name="stpGases">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Label Grid.Column="0">ID</Label>
-                <Label Grid.Column="1">Name</Label>
-                <Label Grid.Column="2" HorizontalContentAlignment="Right">Target flow, ml/min</Label>
-            </Grid>
-        </StackPanel-->
-
     </StackPanel>
 </UserControl>

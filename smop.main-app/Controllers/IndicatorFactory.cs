@@ -47,16 +47,16 @@ internal static class IndicatorFactory
     public static string GetSourceId(Device.ID deviceID, Device.Capability cap) => $"od/{deviceID}/{cap}";
     public static string GetSourceId(string measure) => $"snt/{measure}";
 
-    public static void ApplyGasProps(ChannelIndicator indicator, Device.ID gasID, string gasName)
+    public static void ApplyChannelProps(ChannelIndicator indicator, Device.ID channelID, string odorName)
     {
-        if (indicator.OdorID == gasID)
+        if (indicator.ChannelID == channelID)
         {
             var p = indicator.Title.Split(SEPARATOR);
-            if (string.IsNullOrEmpty(gasName))
+            if (string.IsNullOrEmpty(odorName))
             {
-                gasName = gasID.ToString();
+                odorName = channelID.ToString();
             }
-            indicator.Title = gasName + SEPARATOR + string.Join(SEPARATOR, p[1..]);
+            indicator.Title = odorName + SEPARATOR + string.Join(SEPARATOR, p[1..]);
         }
     }
 
@@ -172,7 +172,7 @@ internal static class IndicatorFactory
 
         return units == null ? null : new ChannelIndicator()
         {
-            OdorID = deviceID,
+            ChannelID = deviceID,
             Title = $"{deviceID}{SEPARATOR}{capName}",
             Units = units,
             Precision = precision,

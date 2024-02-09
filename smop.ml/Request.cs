@@ -23,7 +23,7 @@ public static class Source
 }
 
 
-public record class ChannelProps(int Id, string Gas, Dictionary<string, string> Props);
+public record class ChannelProps(int Id, string Odor, Dictionary<string, string> Props);
 
 public record class Printer(ChannelProps[] Channels);
 public record class Config(string[] Sources, Printer Printer, int MaxIterationNumber, float Threshold);

@@ -91,28 +91,28 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result ReleaseGases(Gases gases)
+    public Comm.Result OpenChannels(OdorChannels channels)
     {
-        var actuators = gases
-            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
-            .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, gas.Flow),
-                gas.Flow > 0 ? ActuatorCapabilities.OdorantValveOpenPermanently : ActuatorCapabilities.OdorantValveClose
+        var actuators = channels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
+            .Select(odorChannel => new Actuator(odorChannel.ID, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, odorChannel.Flow),
+                odorChannel.Flow > 0 ? ActuatorCapabilities.OdorantValveOpenPermanently : ActuatorCapabilities.OdorantValveClose
             )));
 
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result ReleaseGases(Actuator[] actuators)
+    public Comm.Result OpenChannels(Actuator[] actuators)
     {
         return Send(new SetActuators(actuators));
     }
 
-    public Comm.Result StopGases(Gases gases)
+    public Comm.Result CloseChannels(OdorChannels channels)
     {
-        var actuators = gases
-            .Where(gas => !string.IsNullOrWhiteSpace(gas.Name))
-            .Select(gas => new Actuator(gas.ChannelID, new ActuatorCapabilities(
+        var actuators = channels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
+            .Select(odorChannel => new Actuator(odorChannel.ID, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
                 ActuatorCapabilities.OdorantValveClose
             )));

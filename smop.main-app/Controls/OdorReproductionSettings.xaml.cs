@@ -87,7 +87,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public event EventHandler<Gas>? GasNameChanged;
+    public event EventHandler<OdorChannel>? OdorNameChanged;
 
     public OdorReproductionSettings()
     {
@@ -96,19 +96,19 @@ public partial class OdorReproductionSettings : UserControl
         DataContext = this;
     }
 
-    public void AddGas(Gas gas)
+    public void AddOdorChannel(OdorChannel odorChannel)
     {
         var lblID = new Label()
         {
-            Content = "#" + gas.ChannelID.ToString()[4..]
+            Content = "#" + odorChannel.ID.ToString()[4..]
         };
 
         var txbName = new TextBox()
         {
-            Style = FindResource("GasName") as Style,
+            Style = FindResource("OdorName") as Style,
             ToolTip = "Enter a name of the odor loaded into this channel,\nor leave it blank if the channel is not used"
         };
-        txbName.TextChanged += (s, e) => GasNameChanged?.Invoke(this, gas);
+        txbName.TextChanged += (s, e) => OdorNameChanged?.Invoke(this, odorChannel);
 
         var txbFlow = new TextBox()
         {
@@ -116,23 +116,23 @@ public partial class OdorReproductionSettings : UserControl
         };
 
 
-        var nameBinding = new Binding(nameof(Gas.Name))
+        var nameBinding = new Binding(nameof(OdorChannel.Name))
         {
-            Source = gas,
+            Source = odorChannel,
             UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
         };
         BindingOperations.SetBinding(txbName, TextBox.TextProperty, nameBinding);
 
-        var nameToBoolBinding = new Binding(nameof(Gas.Name))
+        var nameToBoolBinding = new Binding(nameof(OdorChannel.Name))
         {
-            Source = gas,
+            Source = odorChannel,
             Converter = new StringToBoolConverter()
         };
         BindingOperations.SetBinding(txbFlow, IsEnabledProperty, nameToBoolBinding);
 
-        var flowBinding = new Binding(nameof(Gas.Flow))
+        var flowBinding = new Binding(nameof(OdorChannel.Flow))
         {
-            Source = gas,
+            Source = odorChannel,
             StringFormat = "0.#",
             Mode = BindingMode.TwoWay,
         };
@@ -150,7 +150,7 @@ public partial class OdorReproductionSettings : UserControl
         container.Children.Add(lblID);
         container.Children.Add(txbName);
 
-        stpGases.Children.Add(container);
+        stpOdorChannels.Children.Add(container);
 
         stpFlows.Children.Add(txbFlow);
     }

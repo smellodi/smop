@@ -3,6 +3,7 @@ using Smop.OdorDisplay.Packets;
 using Smop.MainApp.Controls;
 using System;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Smop.MainApp.Controllers;
 
@@ -104,12 +105,13 @@ internal static class IndicatorFactory
         }
 
         // Create an indicator for each capability
+        int index = 0;
         foreach (var capId in Enum.GetValues(typeof(Device.Capability)))
         {
             var cap = (Device.Capability)capId;
             if (caps.Has(cap))
             {
-                var indicator = CreateIndicator(deviceID, cap);
+                var indicator = CreateIndicator(deviceID, cap, index++ > 0);
                 if (indicator != null)
                 {
                     callback(indicator);
@@ -118,7 +120,7 @@ internal static class IndicatorFactory
         }
     }
 
-    private static ChannelIndicator? CreateIndicator(Device.ID deviceID, Device.Capability cap)
+    private static ChannelIndicator? CreateIndicator(Device.ID deviceID, Device.Capability cap, bool isSameDeviceAsPrevious)
     {
         var capName = cap switch
         {
@@ -178,6 +180,7 @@ internal static class IndicatorFactory
             Precision = precision,
             Value = 0,
             Source = GetSourceId(deviceID, cap),
+            HasLeftBorder = !isSameDeviceAsPrevious,
         };
     }
 }

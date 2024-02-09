@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Smop.MainApp.Controls;
 
@@ -210,6 +211,28 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 
     #endregion
 
+    public bool HasLeftBorder
+    {
+        get => _hasLeftBorder;
+        set
+        {
+            _hasLeftBorder = value;
+            lblMain.Style = (_hasLeftBorder ? FindResource("Channel") : FindResource("NoLeftBorder")) as Style;
+        }
+    }
+
+    public SolidColorBrush HeaderColor => new SolidColorBrush(ChannelID switch
+    {
+        Device.ID.Base => Colors.Linen,
+        Device.ID.DilutionAir => Colors.Beige,
+        Device.ID.Odor1 => Colors.LightPink,
+        Device.ID.Odor2 => Colors.LightBlue,
+        Device.ID.Odor3 => Colors.PaleGreen,
+        Device.ID.Odor4 => Colors.Lavender,
+        Device.ID.Odor5 => Colors.PaleGoldenrod,
+        _ => Colors.White
+    });
+
     public Device.ID ChannelID { get; init; }
 
     public string ValueStr => double.IsFinite(Value) ? Value.ToString($"F{Precision}") : "-";
@@ -223,10 +246,14 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
         InitializeComponent();
         WarningThreshold = double.PositiveInfinity;
 
+        DataContext = this;
+
         cmdChannels.SelectionChanged += Channels_SelectionChanged;
     }
 
     // Internal
+
+    bool _hasLeftBorder = true;
 
     private void Channels_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {

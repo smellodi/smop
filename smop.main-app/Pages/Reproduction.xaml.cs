@@ -9,6 +9,8 @@ using System.Windows.Threading;
 using ODPackets = Smop.OdorDisplay.Packets;
 using ODDevice = Smop.OdorDisplay.Device;
 using System.Windows.Shapes;
+using System.Windows.Media.Effects;
+using System.Windows.Media.Animation;
 
 namespace Smop.MainApp.Pages;
 
@@ -29,6 +31,13 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         ((App)Application.Current).AddCleanupAction(CleanUp);
         OdorDisplay.CommPort.Instance.Closed += (s, e) => SetConnectionColor(elpODStatus, false);
+
+        _anim = new[] {
+            FindResource("ML2OD") as Storyboard,
+            FindResource("OD2ENose") as Storyboard,
+            FindResource("ENose2ML") as Storyboard,
+        }.Select(anim => anim!)
+        .ToArray();
     }
 
     public void Start(OdorReproducerController.Config config)
@@ -38,8 +47,15 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc = new OdorReproducerController(config);
         _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
             (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
-        _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.ML));
-        _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() => SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose));
+        _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => {
+            SetActiveElement(ActiveElement.ML);
+            NextAnimation();
+        });
+        _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() =>
+        {
+            SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose);
+            NextAnimation();
+        });
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() =>
         {
             prbENoseProgress.Value = e;
@@ -58,6 +74,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeIteration.Text = "";
 
         crtRMSE.Reset();
+
+        Traveller.Visibility = Visibility.Visible;
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
@@ -94,6 +112,10 @@ public partial class Reproduction : Page, IPage<Navigation>
     readonly Style? _recipeChannelLabelStyle;
     readonly Style? _odChannelStyle;
     readonly Style? _odChannelLabelStyle;
+
+    readonly BlurEffect _blurEffect = new BlurEffect() { Radius = 3 };
+    readonly Storyboard[] _anim;
+    int _animIndex = 0;
 
     OdorReproducerController? _proc;
     OdorReproducerController.Config? _procConfig = null;
@@ -171,6 +193,14 @@ public partial class Reproduction : Page, IPage<Navigation>
             Grid.SetColumn(tbl, 1);
             grid.Children.Add(tbl);
         }
+    
+    }
+    private void NextAnimation()
+    {
+        _anim[_animIndex].Stop();
+        _anim[_animIndex++].Begin();
+        if (_animIndex == _anim.Length)
+            _animIndex = 0;
     }
 
     private void SetActiveElement(ActiveElement el)
@@ -204,6 +234,13 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         btnQuit.IsEnabled = !isActiveENose;
 
+        imgOdorPrinter.Effect = !isActiveOD && !hasNoActiveElement ? _blurEffect : null;
+        if (imgSnt.IsVisible)
+            imgSnt.Effect = !isActiveENose && !hasNoActiveElement ? _blurEffect : null;
+        if (imgDms.IsVisible)
+            imgDms.Effect = !isActiveENose && !hasNoActiveElement ? _blurEffect : null;
+        imgMLPassive.Effect = !isActiveML && !hasNoActiveElement ? _blurEffect : null;
+
         var stateText = new List<string>();
         if (hasNoActiveElement)
         {
@@ -234,6 +271,11 @@ public partial class Reproduction : Page, IPage<Navigation>
             _proc?.ExecuteRecipe(recipe);
 
             SetActiveElement(recipe.Finished ? ActiveElement.None : ActiveElement.OdorDisplay);
+
+            if (recipe.Finished)
+                Traveller.Visibility = Visibility.Collapsed;
+            else
+                NextAnimation();
         });
     }
 
@@ -373,6 +415,13 @@ public partial class Reproduction : Page, IPage<Navigation>
         {
             Focus();
         }
+
+        var lastAnim = _anim[_anim.Length - 1];
+        lastAnim.Begin(this);
+        lastAnim.Stop(this);
+
+        Storyboard? animPulsing = FindResource("Pulsing") as Storyboard;
+        animPulsing?.Begin();
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)

@@ -54,6 +54,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             UpdatePortList(cmbSmellInspCommPort);
         });
 
+        _smellInsp.DeviceInfo += async (s, e) => await Dispatcher.BeginInvoke(() => tblSmellInspInfo.Text = $"Version: v{e.Version}");
+
         UpdateUI();
     }
 
@@ -146,7 +148,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
         LogIO.Add(queryResult, "GetInfo", LogSource.SNT);
 
-        tblSmellInspInfo.Text = $"Status: {queryResult.Reason}";
+        if (queryResult.Error != Comm.Error.Success)
+            tblSmellInspInfo.Text = $"Status: {queryResult.Reason}";
 
         //_smellInsp.Debug += Comm_DebugAsync;
 

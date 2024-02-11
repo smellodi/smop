@@ -195,11 +195,11 @@
                 Background="{StaticResource BrushPanel}">
             <StackPanel>
                 <Label FontSize="18"
-                       Content="Please wait until data is collected . . ."
+                       Content="Please wait while DMS scan is progressing..."
                        Foreground="{StaticResource BrushFont}"/>
                 <WrapPanel>
                     <ProgressBar x:Name="prbENoseProgress"
-                                 Width="300"
+                                 Width="328"
                                  Height="12"
                                  Value="60"/>
                     <Label x:Name="lblENoseProgress"

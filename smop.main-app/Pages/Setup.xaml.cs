@@ -390,7 +390,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        lmsGraph.Visibility = tabOdorDisplay.IsSelected ? Visibility.Visible : Visibility.Hidden;
+        lmsGraph.Visibility = (tabOdorDisplay.IsSelected || tabSmellInsp.IsSelected) ? Visibility.Visible : Visibility.Hidden;
     }
 
     private void DmsPlotType_Click(object sender, RoutedEventArgs e)

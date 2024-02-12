@@ -31,6 +31,12 @@ public partial class OdorReproductionSettings : UserControl
         set => tblMLStatus.Text = value;
     }
 
+    public bool IsMLConnected
+    {
+        get => cclMLConnIndicator.IsConnected;
+        set => cclMLConnIndicator.IsConnected = value;
+    }
+
     public static int MaxIterations
     {
         get => Properties.Settings.Default.Reproduction_MaxIterations;

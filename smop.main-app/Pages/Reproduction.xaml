@@ -45,80 +45,6 @@
             <Setter Property="TextAlignment" Value="Right"/>
             <Setter Property="Margin" Value="4"/>
         </Style>
-        <Style x:Key="Status" TargetType="Ellipse">
-            <Setter Property="Fill" Value="#888"/>
-            <Setter Property="Width" Value="10"/>
-            <Setter Property="Height" Value="10"/>
-        </Style>
-
-        <Storyboard x:Key="ML2OD">
-            <DoubleAnimationUsingPath 
-                Duration="00:00:00.25"
-                Source="X"
-                Storyboard.TargetName="Traveller"
-                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)">
-                <DoubleAnimationUsingPath.PathGeometry>
-                    <PathGeometry Figures="M54.500007,117.50001 C14.217026,117.50001 -9.5000051,82.999995 -9.5000051,55.500008"/>
-                </DoubleAnimationUsingPath.PathGeometry>
-            </DoubleAnimationUsingPath>
-            <DoubleAnimationUsingPath
-                Duration="00:00:00.25"
-                Source="Y"
-                Storyboard.TargetName="Traveller"
-                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
-                <DoubleAnimationUsingPath.PathGeometry>
-                    <PathGeometry Figures="M54.500007,117.50001 C14.217026,117.50001 -9.5000051,82.999995 -9.5000051,55.500008"/>
-                </DoubleAnimationUsingPath.PathGeometry>
-            </DoubleAnimationUsingPath>
-        </Storyboard>
-        <Storyboard x:Key="OD2ENose">
-            <DoubleAnimationUsingPath
-                Duration="00:00:00.5"
-                Source="X"
-                Storyboard.TargetName="Traveller"
-                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)">
-                <DoubleAnimationUsingPath.PathGeometry>
-                    <PathGeometry Figures="M-9.5000017,55.499994 C-9.5000017,-32.773848 117.5,-28.297365 117.5,51.715681"/>
-                </DoubleAnimationUsingPath.PathGeometry>
-            </DoubleAnimationUsingPath>
-            <DoubleAnimationUsingPath
-                Duration="00:00:00.5"
-                Source="Y"
-                Storyboard.TargetName="Traveller"
-                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
-                <DoubleAnimationUsingPath.PathGeometry>
-                    <PathGeometry Figures="M-9.5000017,55.499994 C-9.5000017,-32.773848 117.5,-28.297365 117.5,51.715681"/>
-                </DoubleAnimationUsingPath.PathGeometry>
-            </DoubleAnimationUsingPath>
-        </Storyboard>
-        <Storyboard x:Key="ENose2ML">
-            <DoubleAnimationUsingPath
-                Duration="00:00:00.25"
-                Source="X"
-                Storyboard.TargetName="Traveller"
-                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)">
-                <DoubleAnimationUsingPath.PathGeometry>
-                    <PathGeometry Figures="M117.5,52.499996 C117.5,88.625005 89.500001,117.5 54.500004,117.5"/>
-                </DoubleAnimationUsingPath.PathGeometry>
-            </DoubleAnimationUsingPath>
-            <DoubleAnimationUsingPath
-                Duration="00:00:00.25"
-                Source="Y"
-                Storyboard.TargetName="Traveller"
-                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)">
-                <DoubleAnimationUsingPath.PathGeometry>
-                    <PathGeometry Figures="M117.5,52.499996 C117.5,88.625005 89.500001,117.5 54.500004,117.5"/>
-                </DoubleAnimationUsingPath.PathGeometry>
-            </DoubleAnimationUsingPath>
-        </Storyboard>
-        <Storyboard x:Key="Pulsing" AutoReverse="True" RepeatBehavior="Forever">
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Traveller" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)">
-                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="0.6"/>
-            </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Traveller" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)">
-                <EasingDoubleKeyFrame KeyTime="00:00:01" Value="0.6"/>
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
     </Page.Resources>
 
     <Grid>
@@ -196,11 +122,10 @@
                                 <Image x:Name="imgOdorPrinter" Width="100"
                                        Margin="4"
                                        Source="/Assets/images/od.png"/>
-                                <Ellipse x:Name="elpODStatus"
-                                         Style="{StaticResource Status}"
-                                         VerticalAlignment="Center"
-                                         HorizontalAlignment="Left"
-                                         Margin="30,3,0,0"/>
+                                <local:ConnectionCircle x:Name="cclODStatus"
+                                                        VerticalAlignment="Center"
+                                                        HorizontalAlignment="Left"
+                                                        Margin="30,3,0,0"/>
                             </Grid>
                         </StackPanel>
                     </Border>
@@ -269,11 +194,10 @@
                                        Source="/Assets/images/processing.png"/>
                                 <TextBlock Style="{StaticResource DeviceName}"
                                            Text="ML"/>
-                                <Ellipse x:Name="elpMLStatus"
-                                         Style="{StaticResource Status}"
-                                         VerticalAlignment="Bottom"
-                                         HorizontalAlignment="Right"
-                                         Margin="3"/>
+                                <local:ConnectionCircle x:Name="cclMLStatus"
+                                                        VerticalAlignment="Bottom"
+                                                        HorizontalAlignment="Right"
+                                                        Margin="3"/>
                             </Grid>
                         </Border>
                     </StackPanel>
@@ -341,50 +265,11 @@
                     VerticalAlignment="Top"
                     HorizontalAlignment="Left"/>
 
-
             <Grid Grid.Row="1" Grid.Column="1"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"
-                  Margin="0,-388,110,0">
-                <!--Path HorizontalAlignment="Left"
-                  VerticalAlignment="Top" 
-                  Height="63" 
-                  Width="65"
-                  Margin="0,65"
-                  Stretch="Fill" 
-                  Stroke="Blue"
-                  Data="M223.56977,239.36454 C183.59155,239.36454 160.05395,206.95303 160.05395,181.11779" />
-            <Path HorizontalAlignment="Left"
-                  VerticalAlignment="Top" 
-                  Height="66" 
-                  Width="128"
-                  Stretch="Fill" 
-                  Stroke="Red"
-                  Data="M174.85574,153.91258 C174.85574,120.41631 436.36481,122.11495 436.36481,152.47659" />
-            <Path HorizontalAlignment="Left"
-                  VerticalAlignment="Top" 
-                  Height="66" 
-                  Width="64"
-                  Margin="64,62"
-                  Stretch="Fill" 
-                  Stroke="Green"
-                  Data="M437.13697,152.57527 C437.13697,166.42014 379.13824,177.48645 306.63984,177.48645"  /-->
-                <Ellipse x:Name="Traveller"
-                     HorizontalAlignment="Left"
-                     VerticalAlignment="Top" 
-                     Width="20"
-                     Height="20"
-                     Fill="#16A4FF"
-                     RenderTransformOrigin="0.5,0.5">
-                    <Ellipse.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </Ellipse.RenderTransform>
-                </Ellipse>
+                  Margin="0,-386,109,0">
+                <local:ActiveDeviceAnimation x:Name="adaAnimation"/>
             </Grid>
 
         </Grid>

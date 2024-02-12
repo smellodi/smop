@@ -1,16 +1,14 @@
 ﻿using Smop.MainApp.Controllers;
+using Smop.MainApp.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Threading;
-using ODPackets = Smop.OdorDisplay.Packets;
-using ODDevice = Smop.OdorDisplay.Device;
-using System.Windows.Shapes;
 using System.Windows.Media.Effects;
-using System.Windows.Media.Animation;
+using System.Windows.Threading;
+using ODDevice = Smop.OdorDisplay.Device;
+using ODPackets = Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp.Pages;
 
@@ -30,31 +28,24 @@ public partial class Reproduction : Page, IPage<Navigation>
         _odChannelLabelStyle = FindResource("OdorDisplayMeasurementLabel") as Style;
 
         ((App)Application.Current).AddCleanupAction(CleanUp);
-        OdorDisplay.CommPort.Instance.Closed += (s, e) => SetConnectionColor(elpODStatus, false);
-
-        _anim = new[] {
-            FindResource("ML2OD") as Storyboard,
-            FindResource("OD2ENose") as Storyboard,
-            FindResource("ENose2ML") as Storyboard,
-        }.Select(anim => anim!)
-        .ToArray();
+        OdorDisplay.CommPort.Instance.Closed += (s, e) => SetConnectionColor(cclODStatus, false);
     }
 
     public void Start(OdorReproducerController.Config config)
     {
-        config.MLComm.StatusChanged += (s, e) => SetConnectionColor(elpMLStatus, e == ML.Status.Connected);
+        config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Connected);
 
         _proc = new OdorReproducerController(config);
         _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
             (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => {
             SetActiveElement(ActiveElement.ML);
-            NextAnimation();
+            adaAnimation.Next();
         });
         _proc.ENoseStarted += (s, e) => Dispatcher.Invoke(() =>
         {
             SetActiveElement(ActiveElement.OdorDisplay | ActiveElement.ENose);
-            NextAnimation();
+            adaAnimation.Next();
         });
         _proc.ENoseProgressChanged += (s, e) => Dispatcher.Invoke(() =>
         {
@@ -73,9 +64,9 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeRMSE.Text = "";
         tblRecipeIteration.Text = "";
 
-        crtRMSE.Reset();
+        adaAnimation.Visibility = Visibility.Visible;
 
-        Traveller.Visibility = Visibility.Visible;
+        crtRMSE.Reset();
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
@@ -84,8 +75,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         DisplayRecipeInfo(new ML.Recipe("", 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
 
         SetActiveElement(ActiveElement.ML);
-        SetConnectionColor(elpMLStatus, config.MLComm.IsConnected);
-        SetConnectionColor(elpODStatus, OdorDisplay.CommPort.Instance.IsOpen);
+        SetConnectionColor(cclMLStatus, config.MLComm.IsConnected);
+        SetConnectionColor(cclODStatus, OdorDisplay.CommPort.Instance.IsOpen);
     }
 
     // Internal
@@ -103,9 +94,6 @@ public partial class Reproduction : Page, IPage<Navigation>
     const int MEASUREMENT_ROW_HUMIDITY = 1;
     const int MEASUREMENT_ROW_FIRST_ODOR_CHANNEL = 2;
 
-    readonly Brush BRUSH_STATUS_CONNECTED = new SolidColorBrush(Color.FromRgb(32, 160, 32));
-    readonly Brush BRUSH_STATUS_DISCONNECTED = new SolidColorBrush(Color.FromRgb(128, 160, 32));
-
     readonly Style? _activeElementStyle;
     readonly Style? _inactiveElementStyle;
     readonly Style? _recipeChannelStyle;
@@ -114,8 +102,6 @@ public partial class Reproduction : Page, IPage<Navigation>
     readonly Style? _odChannelLabelStyle;
 
     readonly BlurEffect _blurEffect = new BlurEffect() { Radius = 3 };
-    readonly Storyboard[] _anim;
-    int _animIndex = 0;
 
     OdorReproducerController? _proc;
     OdorReproducerController.Config? _procConfig = null;
@@ -195,13 +181,6 @@ public partial class Reproduction : Page, IPage<Navigation>
         }
     
     }
-    private void NextAnimation()
-    {
-        _anim[_animIndex].Stop();
-        _anim[_animIndex++].Begin();
-        if (_animIndex == _anim.Length)
-            _animIndex = 0;
-    }
 
     private void SetActiveElement(ActiveElement el)
     {
@@ -273,9 +252,9 @@ public partial class Reproduction : Page, IPage<Navigation>
             SetActiveElement(recipe.Finished ? ActiveElement.None : ActiveElement.OdorDisplay);
 
             if (recipe.Finished)
-                Traveller.Visibility = Visibility.Collapsed;
+                adaAnimation.Visibility = Visibility.Collapsed;
             else
-                NextAnimation();
+                adaAnimation.Next();
         });
     }
 
@@ -373,9 +352,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         btnQuit.Content = recipe.Finished ? "Return" : "Interrupt";
     }
 
-    private void SetConnectionColor(Ellipse elp, bool isConnected) => Dispatcher.Invoke(() => elp.Fill = isConnected ?
-                    BRUSH_STATUS_CONNECTED :
-                    BRUSH_STATUS_DISCONNECTED);
+    private void SetConnectionColor(ConnectionCircle ccl, bool isConnected) => Dispatcher.Invoke(() => ccl.IsConnected = isConnected);
 
     private void CleanUp()
     {
@@ -416,12 +393,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             Focus();
         }
 
-        var lastAnim = _anim[_anim.Length - 1];
-        lastAnim.Begin(this);
-        lastAnim.Stop(this);
-
-        Storyboard? animPulsing = FindResource("Pulsing") as Storyboard;
-        animPulsing?.Begin();
+        adaAnimation.Init();
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)

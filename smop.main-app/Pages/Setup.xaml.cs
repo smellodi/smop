@@ -61,7 +61,7 @@ public partial class Setup : Page, IPage<object?>
             _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
         }
 
-        cnvDmsScan.Children.Clear();
+        //cnvDmsScan.Children.Clear();
 
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
@@ -248,7 +248,7 @@ public partial class Setup : Page, IPage<object?>
         _smellInsp.Data += SmellInsp_Data;
 
         _indicatorController.Clear();
-        _dmsScans.Clear();
+        //_dmsScans.Clear();
 
         if (Focusable)
         {
@@ -375,7 +375,7 @@ public partial class Setup : Page, IPage<object?>
                     dataSize = new((int)sc.Ucv.Steps, (int)sc.Usv.Steps);
                 }
 
-                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), dataSize));
+                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), _dmsScans[^1], dataSize));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

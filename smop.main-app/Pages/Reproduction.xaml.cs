@@ -1,5 +1,6 @@
 ﻿using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
+using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +68,9 @@ public partial class Reproduction : Page, IPage<Navigation>
         adaAnimation.Visibility = Visibility.Visible;
 
         crtRMSE.Reset();
+
+        DispatchOnce.Do(1, () => Dispatcher.Invoke(() =>
+            IonVision.DataPlot.Create(cnvDmsTargetScan, (int)config.DataSize.Height, (int)config.DataSize.Width, config.TargetDMS.IntensityTop)));
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);

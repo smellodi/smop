@@ -17,6 +17,7 @@ public class OdorReproducerController
     public record class Config(
         ML.Communicator MLComm,
         OdorChannelConfig[] TargetFlows,
+        IonVision.MeasurementData TargetDMS,
         System.Windows.Size DataSize
     );
 

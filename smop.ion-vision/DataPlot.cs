@@ -1,11 +1,11 @@
 ﻿using LinqStatistics;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -35,7 +35,11 @@ public static class DataPlot
             };
             var canvas = new Canvas()
             {
-                Background = Brushes.LightGray
+                Background = Brushes.LightGray,
+                Width = plot.Width,
+                Height = plot.Height,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
             };
 
             plot.Content = canvas;
@@ -199,6 +203,9 @@ public static class DataPlot
         double colSize = width / cols;
         double rowSize = height / rows;
 
+        double cellWidth = Math.Ceiling(colSize);
+        double cellHeight = Math.Ceiling(rowSize);
+
         var minValue = values.Min();
         var maxValue = values.Max();
         var range = maxValue - minValue;
@@ -210,13 +217,13 @@ public static class DataPlot
                 var value = values[y * cols + x] - minValue;
                 var pixel = new Rectangle()
                 {
-                    Width = colSize,
-                    Height = rowSize,
-                    Fill = new SolidColorBrush(ValueToColor(value / range))
+                    Width = cellWidth,
+                    Height = cellHeight,
+                    Fill = new SolidColorBrush(ValueToColor(value / range)),
                 };
                 canvas.Children.Add(pixel);
-                Canvas.SetLeft(pixel, x * colSize);
-                Canvas.SetTop(pixel, height - (y + 1) * rowSize);
+                Canvas.SetLeft(pixel, (int)(x * colSize));
+                Canvas.SetTop(pixel, (int)(height - (y + 1) * rowSize));
             }
         }
 
@@ -276,32 +283,78 @@ public static class DataPlot
 
     // Color scheme
 
+    const int COLOR_LEVEL_COUNT = 4;
+    const int COLOR_COMP_PROC_COUNT = COLOR_LEVEL_COUNT + 1;
+    static readonly double[] LEVELS = new double[COLOR_LEVEL_COUNT] { 0.05, 0.2, 0.4, 0.7 };
+
+    // Helpers
+    static (double, double) GetMinMax(int levelIndex)
+    {
+        var min = levelIndex <= 0 ? 0 : LEVELS[levelIndex - 1];
+        var max = levelIndex >= LEVELS.Length ? 1 : LEVELS[levelIndex];
+        return (min, max);
+    }
+
+    static Func<double, byte>[] MakeColorScale(params byte[] values)
+    {
+        var result = new List<Func<double, byte>>();
+
+        byte current = values[0];
+        int index = 0;
+
+        foreach (var value in values.Skip(1))
+        {
+            if (current < value)
+                result.Add(Up(index, current, value));
+            else if (current > value)
+                result.Add(Down(index, current, value));
+            else
+                result.Add(Keep(value));
+
+            current = value;
+            index++;
+        }
+
+        return result.ToArray();
+    }
+
+    // Constant and transition functions for a custom scale, X..Y where 0 <= X,Y <= 255 and X < Y
+    static Func<double, byte> Keep(byte value) => (double _) => value;
+    static Func<double, byte> Up(int levelIndex, byte from, byte to)
+    {
+        var (min, max) = GetMinMax(levelIndex);
+        return (double value) => (byte)Math.Min(to, from + (to - from) * (value - min) * (1f / (max - min)));
+    }
+    static Func<double, byte> Down(int levelIndex, byte from, byte to)
+    {
+        var (min, max) = GetMinMax(levelIndex);
+        return (double value) => (byte)Math.Min(from, to + (from - to) * (max - value) * (1f / (max - min)));
+    }
+
+    // Constant and transition functions for a full scale, 0..255
+    /*
     static byte Min(double _) => 0;
     static byte Max(double _) => 0xff;
     static Func<double, byte> Up(int levelIndex)
     {
-        var min = levelIndex <= 0 ? 0 : LEVELS[levelIndex - 1];
-        var max = levelIndex >= LEVELS.Length ? 1 : LEVELS[levelIndex];
-        return (double value) =>
-        {
-            return (byte)Math.Min(0xff, 0xff * (value - min) * (1f / (max - min)));
-        };
+        var (min, max) = GetMinMax(levelIndex);
+        return (double value) => (byte)Math.Min(0xff, 0xff * (value - min) * (1f / (max - min)));
     }
     static Func<double, byte> Down(int levelIndex)
     {
-        var min = levelIndex == 0 ? 0 : LEVELS[levelIndex - 1];
-        var max = levelIndex == LEVELS.Length ? 1 : LEVELS[levelIndex];
-        return (double value) =>
-        {
-            return (byte)Math.Min(0xff, 0xff * (max - value) * (1f / (max - min)));
-        };
+        var (min, max) = GetMinMax(levelIndex);
+        return (double value) => (byte)Math.Min(0xff, 0xff * (max - value) * (1f / (max - min)));
     }
 
-    static readonly double[] LEVELS = new double[4] { 0.1, 0.2, 0.4, 0.7 };
+    static readonly Func<double, byte>[] R = new Func<double, byte>[COLOR_COMP_PROC_COUNT] { Min, Min, Up(2), Max, Max };
+    static readonly Func<double, byte>[] G = new Func<double, byte>[COLOR_COMP_PROC_COUNT] { Up(0), Max, Max, Down(3), Up(4) };
+    static readonly Func<double, byte>[] B = new Func<double, byte>[COLOR_COMP_PROC_COUNT] { Max, Down(1), Min, Min, Up(4) };
+    */
 
-    static readonly Func<double, byte>[] R = new Func<double, byte>[] { Min, Min, Up(2), Max, Max };
-    static readonly Func<double, byte>[] G = new Func<double, byte>[] { Up(0), Max, Max, Down(3), Up(4) };
-    static readonly Func<double, byte>[] B = new Func<double, byte>[] { Max, Down(1), Min, Min, Up(4) };
+    //                                                      grey cyan green brown red  white
+    static readonly Func<double, byte>[] R = MakeColorScale(240, 0,   0,    128,  128, 216);
+    static readonly Func<double, byte>[] G = MakeColorScale(240, 208, 176,  190,  0,   216);
+    static readonly Func<double, byte>[] B = MakeColorScale(240, 208, 0,    0,    0,   216);
 
     /// <summary>
     /// Creates a plot color from a normalized value

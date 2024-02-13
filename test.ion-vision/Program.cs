@@ -5,11 +5,21 @@ using System.Data;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
 DataPlot.UseLogarithmicScaleInBlandAltman = false;
+KeyValuePair<double, Color>[] plotTheme = new Dictionary<double, Color>()
+{
+    { 0, Colors.White },
+    { 0.1, Colors.Cyan },
+    { 0.2, Colors.Green },
+    { 0.5, Colors.Orange },
+    { 0.75, Colors.Red },
+    { 1, Colors.Fuchsia },
+}.ToArray();
 
 const int MAX_CHARS_TO_PRINT = 700;
 
@@ -198,7 +208,8 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
                 DataPlot.Show(
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                         (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                        _data[^1].IntensityTop
+                        _data[^1].IntensityTop,
+                        theme: plotTheme
                     );
             else
                 Console.Write($"No scan results retrieved yet (use 'result' command to retrieve it)");

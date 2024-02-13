@@ -69,7 +69,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         crtRMSE.Reset();
 
-        DispatchOnce.Do(1, () => Dispatcher.Invoke(() =>
+        DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
             IonVision.DataPlot.Create(cnvDmsTargetScan, (int)config.DataSize.Height, (int)config.DataSize.Width, config.TargetDMS.IntensityTop)));
 
         var odorChannels = _proc.OdorChannels;

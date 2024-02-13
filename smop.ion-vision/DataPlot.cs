@@ -25,7 +25,12 @@ public static class DataPlot
     /// <param name="values1">Vector of the DMS data (Intensity top or bottom)</param>
     /// <param name="values2">Second vector of the DMS data (Intensity top or bottom) used for comparison</param>
     /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
-    public static void Show(int rows, int cols, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
+    /// <param name="theme">Coloring theme as a list of {level: Color} record where 
+    /// levels are numbers greater starting from 0 and ending by 1 in ascending order
+    public static void Show(int rows, int cols,
+        float[] values1, float[]? values2 = null,
+        ComparisonOperation compOp = ComparisonOperation.BlandAltman,
+        KeyValuePair<double, Color>[]? theme = null)
     {
         var thread = new Thread(() => {
             var plot = new Window()
@@ -45,7 +50,7 @@ public static class DataPlot
             plot.Content = canvas;
             plot.Loaded += (s, e) =>
             {
-                Create(canvas, rows, cols, values1, values2, compOp);
+                Create(canvas, rows, cols, values1, values2, compOp, theme);
                 plot.Title = compOp switch
                 {
                     ComparisonOperation.None => "Single scan",
@@ -74,9 +79,17 @@ public static class DataPlot
     /// <param name="values1">Vector of the DMS data (Intensity top or bottom)</param>
     /// <param name="values2">Second vector of the DMS data (Intensity top or bottom) used for comparison</param>
     /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
-    public static void Create(Canvas canvas, int rows, int cols, float[] values1, float[]? values2 = null, ComparisonOperation compOp = ComparisonOperation.BlandAltman)
+    /// <param name="theme">Coloring theme as a list of {level: Color} record where 
+    /// levels are numbers greater starting from 0 and ending by 1 in ascending order
+    public static void Create(Canvas canvas, int rows, int cols,
+        float[] values1,
+        float[]? values2 = null,
+        ComparisonOperation compOp = ComparisonOperation.BlandAltman,
+        KeyValuePair<double, Color>[]? theme = null)
     {
         canvas.Children.Clear();
+
+        CreateTheme(theme);
 
         var rc = new Rect();
         if (values2 is null)
@@ -283,9 +296,7 @@ public static class DataPlot
 
     // Color scheme
 
-    const int COLOR_LEVEL_COUNT = 4;
-    const int COLOR_COMP_PROC_COUNT = COLOR_LEVEL_COUNT + 1;
-    static readonly double[] LEVELS = new double[COLOR_LEVEL_COUNT] { 0.05, 0.2, 0.4, 0.7 };
+    static double[] LEVELS = new double[] { 0.05, 0.2, 0.4, 0.7 };
 
     // Helpers
     static (double, double) GetMinMax(int levelIndex)
@@ -293,6 +304,35 @@ public static class DataPlot
         var min = levelIndex <= 0 ? 0 : LEVELS[levelIndex - 1];
         var max = levelIndex >= LEVELS.Length ? 1 : LEVELS[levelIndex];
         return (min, max);
+    }
+
+    static void CreateTheme(KeyValuePair<double, Color>[]? theme)
+    {
+        if (theme == null)
+            return;
+
+        var levels = theme.Select(kv => kv.Key).ToArray();
+        if (levels.Length < 2 || levels[0] != 0 || levels[^1] != 1 || 
+            levels.Aggregate(-1.0, (accum, v) => v > accum ? v : double.MaxValue) > 1)    // the final will ne >1 if the order is not ascending
+            return;
+
+        LEVELS = levels.Skip(1).SkipLast(1).ToArray();
+        R = MakeColorScale(theme.Select(kv => kv.Value.R).ToArray());
+        G = MakeColorScale(theme.Select(kv => kv.Value.G).ToArray());
+        B = MakeColorScale(theme.Select(kv => kv.Value.B).ToArray());
+    }
+
+    // Constant and transition functions for a custom scale, X..Y where 0 <= X,Y <= 255 and X < Y
+    static Func<double, byte> Keep(byte value) => (double _) => value;
+    static Func<double, byte> Up(int levelIndex, byte from, byte to)
+    {
+        var (min, max) = GetMinMax(levelIndex);
+        return (double value) => (byte)Math.Min(to, from + (to - from) * (value - min) * (1f / (max - min)));
+    }
+    static Func<double, byte> Down(int levelIndex, byte from, byte to)
+    {
+        var (min, max) = GetMinMax(levelIndex);
+        return (double value) => (byte)Math.Min(from, to + (from - to) * (max - value) * (1f / (max - min)));
     }
 
     static Func<double, byte>[] MakeColorScale(params byte[] values)
@@ -318,43 +358,10 @@ public static class DataPlot
         return result.ToArray();
     }
 
-    // Constant and transition functions for a custom scale, X..Y where 0 <= X,Y <= 255 and X < Y
-    static Func<double, byte> Keep(byte value) => (double _) => value;
-    static Func<double, byte> Up(int levelIndex, byte from, byte to)
-    {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(to, from + (to - from) * (value - min) * (1f / (max - min)));
-    }
-    static Func<double, byte> Down(int levelIndex, byte from, byte to)
-    {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(from, to + (from - to) * (max - value) * (1f / (max - min)));
-    }
-
-    // Constant and transition functions for a full scale, 0..255
-    /*
-    static byte Min(double _) => 0;
-    static byte Max(double _) => 0xff;
-    static Func<double, byte> Up(int levelIndex)
-    {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(0xff, 0xff * (value - min) * (1f / (max - min)));
-    }
-    static Func<double, byte> Down(int levelIndex)
-    {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(0xff, 0xff * (max - value) * (1f / (max - min)));
-    }
-
-    static readonly Func<double, byte>[] R = new Func<double, byte>[COLOR_COMP_PROC_COUNT] { Min, Min, Up(2), Max, Max };
-    static readonly Func<double, byte>[] G = new Func<double, byte>[COLOR_COMP_PROC_COUNT] { Up(0), Max, Max, Down(3), Up(4) };
-    static readonly Func<double, byte>[] B = new Func<double, byte>[COLOR_COMP_PROC_COUNT] { Max, Down(1), Min, Min, Up(4) };
-    */
-
-    //                                                      grey cyan green brown red  white
-    static readonly Func<double, byte>[] R = MakeColorScale(240, 0,   0,    128,  128, 216);
-    static readonly Func<double, byte>[] G = MakeColorScale(240, 208, 176,  190,  0,   216);
-    static readonly Func<double, byte>[] B = MakeColorScale(240, 208, 0,    0,    0,   216);
+    // RGB functions, +1 to the number of levels.   Colors: grey cyan green brown red  white
+    static Func<double, byte>[] R = MakeColorScale(240, 0,   0,    128,  128, 216);
+    static Func<double, byte>[] G = MakeColorScale(240, 208, 176,  190,  0,   216);
+    static Func<double, byte>[] B = MakeColorScale(240, 208, 0,    0,    0,   216);
 
     /// <summary>
     /// Creates a plot color from a normalized value

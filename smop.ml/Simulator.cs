@@ -9,6 +9,8 @@ namespace Smop.ML;
 
 internal abstract class Simulator : IDisposable
 {
+    public bool UseScopeMode => false;
+
     public abstract void Dispose();
 
 
@@ -71,9 +73,10 @@ internal abstract class Simulator : IDisposable
 
         _step++;
         var rmse = RMSE / _step;
+        var usv = UseScopeMode ? 400 + _step * 20 : 0;
         bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
-        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse };
+        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse, usv };
         json = JsonSerializer.Serialize(recipe);
         ScreenLogger.Print("[MlSimul] recipe sent");
         await SendData(json);
@@ -126,9 +129,11 @@ internal abstract class Simulator : IDisposable
 
                 _step++;
                 var rmse = RMSE / _step;
+                var usv = UseScopeMode ? 400 + _step * 20 : 0;
                 bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
-                var recipe = new Recipe("Normal", isFinished ? 1 : 0, rmse, _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
+                var recipe = new Recipe("Normal", isFinished ? 1 : 0, rmse, usv, 
+                    _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 ScreenLogger.Print("[MlSimul] recipe sent");
                 await SendData(json);

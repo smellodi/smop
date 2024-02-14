@@ -18,9 +18,7 @@ public static class SimulatedData
     const float VB_START = -6;
     const float VB_STOP = -6;
 
-    static readonly Settings _setting = new();
-
-    public static User User = new(_setting.User);
+    public static User User = new();
     public static readonly Parameter Parameter1 = new("daa1c397-ebd0-4920-b405-5c6029d45fdd", "Fast scan");
     public static readonly Parameter Parameter2 = new("8036cca5-0677-475c-aa7f-1c9202d94b85", "Slow scan");
     public static readonly Project Project1 = new("Oleg fast scan", new Parameter[] { Parameter1, Parameter2 });
@@ -138,6 +136,15 @@ public static class SimulatedData
         )
     );
 
+    public static ScopeParameters ScopeParameters = new(-3, 11, 400, -6, 1000, 220, 1024, 90, 90, 0, 0);
+
+    public static ScopeResult ScopeResult => new(
+        ScopeParameters.Usv,
+        MakeArrayLine(0, (row, col) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_ROWS - 1)),
+        MakeArrayLine((int)((ScopeParameters.Usv - USV_START) / (USV_STOP - USV_START) * DATA_ROWS), GetImitatedPixel),
+        MakeArrayLine(0, (row, col) => 100f * col)
+    );
+
     // Internal
 
     static float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
@@ -152,6 +159,17 @@ public static class SimulatedData
         for (int row = 0; row < DATA_ROWS; row++)
             for (int col = 0; col < DATA_COLS; col++)
                 result[row * DATA_COLS + col] = callback(row, col);
+        return result;
+    }
+
+    private static T[] MakeArrayLine<T>(int usvIndex, Func<int, int, T> callback)
+    {
+        HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
+        usvIndex = Math.Max(usvIndex, 0);
+
+        var result = new T[DATA_COLS];
+        for (int col = 0; col < DATA_COLS; col++)
+            result[col] = callback(usvIndex, col);
         return result;
     }
 

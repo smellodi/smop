@@ -27,4 +27,10 @@ internal interface IMinimalAPI : IDisposable
     Task<Response<string[]>> GetProjectResults(string project);
     Task<Response<Clock>> GetClock();
     Task<Response<Confirm>> SetClock(ClockToSet clock);
+    Task<Response<ScopeStatus>> CheckScopeMode();
+    Task<Response<Confirm>> EnableScopeMode();
+    Task<Response<Confirm>> DisableScopeMode();
+    Task<Response<ScopeResult>> GetScopeResult();
+    Task<Response<ScopeParameters>> GetScopeParameters();
+    Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters);
 }

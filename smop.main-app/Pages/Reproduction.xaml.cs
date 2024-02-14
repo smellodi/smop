@@ -39,6 +39,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         _proc = new OdorReproducerController(config);
         _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
             (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
+        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
+            1, e.IntensityTop.Length, e.IntensityTop));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => {
             SetActiveElement(ActiveElement.ML);
             adaAnimation.Next();
@@ -76,7 +78,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
         ConfigureChannelTable(odorChannels, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle, 1);
 
-        DisplayRecipeInfo(new ML.Recipe("", 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
+        DisplayRecipeInfo(new ML.Recipe("", 0, 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
 
         SetActiveElement(ActiveElement.ML);
         SetConnectionColor(cclMLStatus, config.MLComm.IsConnected);

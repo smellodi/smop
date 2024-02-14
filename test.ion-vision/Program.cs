@@ -11,7 +11,10 @@ Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
 DataPlot.UseLogarithmicScaleInBlandAltman = false;
-KeyValuePair<double, Color>[] plotTheme = new Dictionary<double, Color>()
+
+const int MAX_CHARS_TO_PRINT = 700;
+
+KeyValuePair<double, Color>[] PLOT_THEME = new Dictionary<double, Color>()
 {
     { 0, Colors.White },
     { 0.1, Colors.Cyan },
@@ -20,8 +23,6 @@ KeyValuePair<double, Color>[] plotTheme = new Dictionary<double, Color>()
     { 0.75, Colors.Red },
     { 1, Colors.Fuchsia },
 }.ToArray();
-
-const int MAX_CHARS_TO_PRINT = 700;
 
 // tests the Bland-Altman plot
 /*
@@ -50,14 +51,19 @@ bool isSimulating = GetMode();
 bool isRunning = true;
 bool isOutputCutEnabled = true;
 
-List<MeasurementData> _data = new();
-ParameterDefinition? _paramDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
+List<MeasurementData> scanDataList = new();
+ParameterDefinition? scanParamDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
+List<ScopeResult> scopeDataList = new();
+ScopeParameters? scopeParamDefinition = isSimulating ? SimulatedData.ScopeParameters : null;
 
 var ionVision = new Communicator("IonVision-Tietotalo.json", isSimulating);
+ionVision.ScanProgress += (s, e) => Print(new API.Response<ScanProgress>(new(e, new()), null));
+ionVision.ScopeResult += (s, e) => scopeDataList.Add(e);
 
 if (!await Connect(ionVision))
     return;
 
+/*
 await Task.Delay(1);
 EventSink events = new(isSimulating ? "127.0.0.1" : ionVision.Settings.IP);
 events.ScanStarted += (s, e) => PrintEvent(e.Type, "scan started");
@@ -66,6 +72,7 @@ events.ScanFinished += (s, e) => PrintEvent(e.Type, "scan finished");
 events.ScanResultsProcessed += (s, e) => PrintEvent(e.Type, "scan results are available now");
 events.CurrentProjectChanged += (s, e) => PrintEvent(e.Type, $"project = {e.Data.NewProject}");
 events.CurrentParameterChanged += (s, e) => PrintEvent(e.Type, $"param = {e.Data.NewParameter.Name}");
+*/
 
 (string, string)[] listOfCommands = Array.Empty<(string, string)>();
 var commands = new Dictionary<string, (string, Func<Task>)>()
@@ -77,19 +84,45 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "user", ("retrieves user", async () => Print(await ionVision.GetUser())) },
     { "projs", ("retrieves projects", async () => Print(await ionVision.GetProjects())) },
     { "params", ("retrieves parameters", async () => Print(await ionVision.GetParameters())) },
-    { "gcpj", ("retrieves the current project", async () => Print(await ionVision.GetProject())) },
-    { "scpj", ("sets the current project", async () => Print(await ionVision.SetProjectAndWait())) },
-    { "gcpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
-    { "gcpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
-    { "scpm", ("sets the current parameter", async () => Print(await ionVision.SetParameterAndPreload())) },
-    { "scom", ("sets a comment to be added to the next scan result", async () => Print(await ionVision.SetScanResultComment(new { _quickcomment = new string[] { "my comment" } } ))) },
+    { "gpj", ("retrieves the current project", async () => Print(await ionVision.GetProject())) },
+    { "spj", ("sets the current project", async () => Print(await ionVision.SetProjectAndWait())) },
+    { "gpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
+    { "gpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
+    { "spm", ("sets the current parameter", async () => Print(await ionVision.SetParameterAndPreload())) },
+    { "com", ("sets a comment to be added to the next scan result", async () => 
+        Print(await ionVision.SetScanResultComment(new { _quickcomment = new string[] { "my comment" } } ))) },
     { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
     { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
     { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
-    { "plot", ("shows the last result as a plot", async () => { ShowPlot(DataPlot.ComparisonOperation.None); await Task.CompletedTask; }) },
-    { "plotd", ("shows the difference plot for the two last scans", async () => { ShowPlot(DataPlot.ComparisonOperation.Difference); await Task.CompletedTask; }) },
-    { "plotba", ("shows the plot Bland-Altman for the two last scans", async () => { ShowPlot(DataPlot.ComparisonOperation.BlandAltman); await Task.CompletedTask; }) },
+    { "plot", ("shows the last result as a plot", async () => {
+        ShowPlot(DataPlot.ComparisonOperation.None);
+        await Task.CompletedTask;
+    }) },
+    { "plotd", ("shows the difference plot for the two last scans", async () => {
+        ShowPlot(DataPlot.ComparisonOperation.Difference);
+        await Task.CompletedTask;
+    }) },
+    { "plotba", ("shows the plot Bland-Altman for the two last scans", async () => {
+        ShowPlot(DataPlot.ComparisonOperation.BlandAltman);
+        await Task.CompletedTask;
+    }) },
     { "all", ("a combnation of scpj, scpm, gcpmd, scan, result and plot", async () => await GetNewScan()) },
+    { "sc", ("gets scope mode", async () => Print(await ionVision.CheckScopeMode())) },
+    { "scon", ("enables scope mode", async () => Print(await ionVision.EnableScopeMode())) },
+    { "sq", ("disabled scope mode", async () => Print(await ionVision.DisableScopeMode())) },
+    { "scr", ("gets the latest scope result", async () => Print(await ionVision.GetScopeResult())) },
+    { "scgp", ("retrieves scope parameters", async () => Print(await ionVision.GetScopeParameters())) },
+    { "scsp", ("sets scope parameters", async () => 
+        Print(await ionVision.SetScopeParameters(SimulatedData.ScopeParameters with { Usv = 500 }))) },
+    { "scplot", ("shows the last scope result as a plot", async () => {
+        ShowScopePlot(DataPlot.ComparisonOperation.None);
+        await Task.CompletedTask;
+    }) },
+    { "scplotd", ("shows the difference plot for the two last scope data", async () => {
+        ShowScopePlot(DataPlot.ComparisonOperation.Difference);
+        await Task.CompletedTask;
+    }) },
+    { "scall", ("a combnation of scsp, scon, scoff, and scplot", async () => await GetNewScopeScan()) },
     { "help", ("displays available commands", async () => { PrintHelp(listOfCommands); await Task.CompletedTask; }) },
     { "tout", ($"toggle output cut to {MAX_CHARS_TO_PRINT} chars", async () => { ToggleOutputCut(); await Task.CompletedTask; }) },
     { "exit", ("exists the app", async () => { isRunning = false; await Task.CompletedTask; }) },
@@ -146,7 +179,7 @@ static async Task<bool> Connect(Communicator ionVision)
         Console.WriteLine("The device is offline");
         return false;
     }
-    else if (version.Value!.CurrentVersion != ionVision.SupportedVersion)
+    else if (!version.Value?.CurrentVersion.StartsWith(ionVision.SupportedVersion) ?? false)
     {
         Console.WriteLine();
         Console.WriteLine("=================== WARNING! ===================");
@@ -175,9 +208,13 @@ static void PrintHelp((string, string)[] help)
 async Task GetNewScan()
 {
     await ionVision.SetProjectAndWait();
+    await Task.Delay(150);
     await ionVision.SetParameterAndPreload();
+    await Task.Delay(150);
     await ionVision.GetParameterDefinition();
+    await Task.Delay(150);
     await ionVision.StartScan();
+
     API.Response<ScanProgress> progress;
     do
     {
@@ -185,43 +222,65 @@ async Task GetNewScan()
         progress = await ionVision.GetScanProgress();
     } while (progress.Success);
 
+    await Task.Delay(150);
     var response = await ionVision.GetScanResult();
     if (response.Value != null)
     {
-        _data.Add(response.Value.MeasurementData);
+        scanDataList.Add(response.Value.MeasurementData);
         ShowPlot(DataPlot.ComparisonOperation.None);
     }
 }
 
+async Task GetNewScopeScan()
+{
+    await ionVision.SetScopeParameters(SimulatedData.ScopeParameters with { Usv = 500 });
+
+    await Task.Delay(150);
+    var result = await ionVision.EnableScopeMode();
+    if (!result.Success)
+        return;
+
+    scopeDataList.Clear();
+
+    while (scopeDataList.Count < 1)
+    {
+        await Task.Delay(100);
+    }
+
+    await ionVision.DisableScopeMode();
+
+    ShowScopePlot(DataPlot.ComparisonOperation.None);
+}
+
 void ShowPlot(DataPlot.ComparisonOperation operation)
 {
-    if (_paramDefinition == null)
+    if (scanParamDefinition == null)
     {
-        Console.Write($"Parameter definition is uknown (use 'gcpmd' command to retrieve it)");
+        Console.Write($"Parameter definition is uknown (use 'gpmd' command to retrieve it)");
         return;
     }
 
     switch (operation)
     {
         case DataPlot.ComparisonOperation.None:
-            if (_data.Count > 0)
+            if (scanDataList.Count > 0)
                 DataPlot.Show(
-                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                        _data[^1].IntensityTop,
-                        theme: plotTheme
+                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                        scanDataList[^1].IntensityTop,
+                        theme: PLOT_THEME
                     );
             else
                 Console.Write($"No scan results retrieved yet (use 'result' command to retrieve it)");
             break;
         case DataPlot.ComparisonOperation.Difference:
         case DataPlot.ComparisonOperation.BlandAltman:
-            if (_data.Count > 1)
+            if (scanDataList.Count > 1)
                 DataPlot.Show(
-                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                        (int)_paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                        _data[^1].IntensityTop,
-                        _data[^2].IntensityTop,
+                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                        scanDataList[^1].IntensityTop,
+                        scanDataList[^2].IntensityTop,
                         operation
                     );
             else
@@ -230,17 +289,50 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
     }
 }
 
+void ShowScopePlot(DataPlot.ComparisonOperation operation)
+{
+    if (operation == DataPlot.ComparisonOperation.None)
+    {
+        if (scopeDataList.Count > 0)
+            DataPlot.Show(
+                1,
+                scopeDataList[^1].IntensityTop.Length,
+                scopeDataList[^1].IntensityTop,
+                theme: PLOT_THEME
+            );
+        else
+            Console.Write("No scope results retrieved yet");
+    }
+    else if (operation == DataPlot.ComparisonOperation.Difference)
+    {
+        if (scopeDataList.Count > 1)
+            DataPlot.Show(
+                1,
+                scopeDataList[^1].IntensityTop.Length,
+                scopeDataList[^1].IntensityTop,
+                scopeDataList[^2].IntensityTop,
+                theme: PLOT_THEME
+            );
+        else
+            Console.Write("At least 2 scope scan must be completed");
+    }
+    else
+    {
+        Console.Write($"Operation '{operation}' not supported for plotting scope data");
+    }
+}
+
 void ToggleOutputCut()
 {
     isOutputCutEnabled = !isOutputCutEnabled;
-    Console.Write("Output cut: " + (isOutputCutEnabled ? $"Enabled ({MAX_CHARS_TO_PRINT} chars)" : "Disabled") + "\n");
+    Console.Write("Output cut: " + (isOutputCutEnabled ? $"Enabled (max {MAX_CHARS_TO_PRINT} chars)" : "Disabled") + "\n");
 }
 
-static void PrintEvent(string type, string msg)
+/*static void PrintEvent(string type, string msg)
 {
     Console.CursorLeft = 0;
     Console.Write($"[EVT]: {type} : {msg}\nCommand: ");
-}
+}*/
 
 void Print<T>(API.Response<T> response)
 {
@@ -258,13 +350,17 @@ void Print<T>(API.Response<T> response)
 
         if (response.Value is ParameterDefinition paramDefinition)
         {
-            _paramDefinition = paramDefinition;
+            scanParamDefinition = paramDefinition;
             Console.WriteLine($"COLS x ROWS = {paramDefinition.MeasurementParameters.SteppingControl.Usv.Steps} x {paramDefinition.MeasurementParameters.SteppingControl.Ucv.Steps}");
         }
         else if (response.Value is ScanResult result)
         {
-            _data.Add(result.MeasurementData);
+            scanDataList.Add(result.MeasurementData);
             Console.WriteLine($"{result.MeasurementData.DataPoints} data points");
+        }
+        else if (response.Value is ScopeParameters scopeParameters)
+        {
+            scopeParamDefinition = scopeParameters;
         }
     }
     else

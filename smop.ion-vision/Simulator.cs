@@ -41,6 +41,7 @@ internal class Simulator : IMinimalAPI
             _scanProgressTimer.Stop();
             _stopwatch.Stop();
             _latestResult = RandomizeScanData(SimulatedData.ScanResult);
+
             Notify("scan.finished");
             DispatchOnce.Do(1, () => Notify("scan.resultsProcessed"));
         };
@@ -49,8 +50,30 @@ internal class Simulator : IMinimalAPI
         _scanProgressTimer.Interval = SCAN_PROGRESS_STEP_DURATION;
         _scanProgressTimer.Elapsed += (s, e) =>
         {
-            int progress = (int)(_stopwatch.Elapsed.TotalMilliseconds / SCAN_DURATION * 100);
+            int progress = _scopeTimer.Enabled ?
+                (int)Math.Min(100, _scopeProgressStopwatch.Elapsed.TotalMilliseconds / SCOPE_DURATION * 100) :
+                (int)(_stopwatch.Elapsed.TotalMilliseconds / SCAN_DURATION * 100);
             Notify("scan.progress", new EventSink.ProcessProgress(progress));
+        };
+
+        _scopeTimer.AutoReset = true;
+        _scopeTimer.Interval = SCOPE_DURATION;
+        _scopeTimer.Elapsed += (s, e) =>
+        {
+            _scopeProgressStopwatch.Restart();
+
+            _scopeData = RandomizeScopeData(SimulatedData.ScopeResult);
+            _scopeStatus = _scopeStatus with { Progress = 0 };
+
+            Notify("scope.data", _scopeData);
+        };
+
+        _scopeProgressTimer.AutoReset = true;
+        _scopeProgressTimer.Interval = SCOPE_PROGRESS_STEP_DURATION;
+        _scopeProgressTimer.Elapsed += (s, e) =>
+        {
+            int progress = (int)(_scopeProgressStopwatch.Elapsed.TotalMilliseconds / SCOPE_DURATION * 100);
+            _scopeStatus = _scopeStatus with { Progress = Math.Min(100, progress) };
         };
     }
 
@@ -59,6 +82,9 @@ internal class Simulator : IMinimalAPI
         _wsServer.Dispose();
         _scanTimer.Dispose();
         _scanProgressTimer.Dispose();
+        _scopeTimer.Dispose();
+        _scopeProgressTimer.Dispose();
+
         GC.SuppressFinalize(this);
     }
 
@@ -184,6 +210,10 @@ internal class Simulator : IMinimalAPI
         {
             return Task.FromResult(new Response<Confirm>(null, "Scan is in progress"));
         }
+        if (_scopeStatus.Progress >= 0)
+        {
+            return Task.FromResult(new Response<Confirm>(null, "In scope mode"));
+        }
 
         _stopwatch.Reset();
         _stopwatch.Start();
@@ -264,10 +294,73 @@ internal class Simulator : IMinimalAPI
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
+    public Task<Response<ScopeStatus>> CheckScopeMode() =>
+        _scopeStatus.Progress < 0 ?
+            Task.FromResult(new Response<ScopeStatus>(null, "Not in the scope mode")) :
+            Task.FromResult(new Response<ScopeStatus>(_scopeStatus, null));
+
+    public Task<Response<Confirm>> EnableScopeMode()
+    {
+        if (_scopeStatus.Progress < 0)
+        {
+            _scopeStatus = _scopeStatus with { Progress = 0 };
+            _scopeProgressStopwatch.Start();
+            _scopeTimer.Start();
+            _scopeProgressTimer.Start();
+            _scanProgressTimer.Start();
+
+            Notify("scope.started");
+
+            return Task.FromResult(new Response<Confirm>(new Confirm(), null));
+        }
+        else
+        {
+            return Task.FromResult(new Response<Confirm>(null, "Already in the scope mode"));
+        }
+    }
+
+    public Task<Response<Confirm>> DisableScopeMode()
+    {
+        if (_scopeStatus.Progress < 0)
+        {
+            return Task.FromResult(new Response<Confirm>(null, "Not in the scope mode"));
+        }
+        else
+        {
+            _scanProgressTimer.Stop();
+            _scopeProgressTimer.Stop();
+            _scopeTimer.Stop();
+            _scopeProgressStopwatch.Stop();
+            _scopeStatus = _scopeStatus with { Progress = -1 };
+
+            Notify("scope.stopped");
+
+            return Task.FromResult(new Response<Confirm>(new Confirm(), null));
+        }
+    }
+
+    public Task<Response<ScopeResult>> GetScopeResult() =>
+        _scopeStatus.Progress < 0 || _scopeData == null ?
+            Task.FromResult(new Response<ScopeResult>(null, "Not available")) :
+            Task.FromResult(new Response<ScopeResult>(_scopeData, null));
+
+    public Task<Response<ScopeParameters>> GetScopeParameters() => 
+        Task.FromResult(new Response<ScopeParameters>(SimulatedData.ScopeParameters, null));
+
+    public Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters)
+    {
+        SimulatedData.ScopeParameters = parameters;
+        Notify("scope.parametersChanged", SimulatedData.ScopeParameters);
+        return Task.FromResult(new Response<Confirm>(new Confirm(), null));
+    }
+
+
     // Internal
 
     const double SCAN_DURATION = 2500;                 // ms
     const double SCAN_PROGRESS_STEP_DURATION = 300;    // ms
+    const double SCOPE_DURATION = 2000;                // ms
+    const double SCOPE_PROGRESS_STEP_DURATION = 100;        // ms
 
     readonly WebSocketServer _wsServer;
     readonly List<IWebSocketConnection> _sockets = new();
@@ -275,6 +368,9 @@ internal class Simulator : IMinimalAPI
     readonly Stopwatch _stopwatch = new();
     readonly Timer _scanTimer = new();
     readonly Timer _scanProgressTimer = new();
+    readonly Timer _scopeTimer = new();
+    readonly Timer _scopeProgressTimer = new();
+    readonly Stopwatch _scopeProgressStopwatch = new();
 
     readonly Random _rnd = new();
 
@@ -291,6 +387,9 @@ internal class Simulator : IMinimalAPI
     Parameter? _currentParameter = null;
     ScanResult? _latestResult = null;
     object? _comments = null;
+
+    ScopeStatus _scopeStatus = new(-1);
+    ScopeResult? _scopeData = null;
 
     private void Notify(string type, object? obj = null)
     {
@@ -317,6 +416,12 @@ internal class Simulator : IMinimalAPI
             }
         };
     }
+
+    private ScopeResult RandomizeScopeData(ScopeResult data) => data with
+    {
+        IntensityTop = data.IntensityTop.Select(value => value + (float)(0.5 * _rnd.NextDouble() - 1)).ToArray(),
+        IntensityBottom = data.IntensityBottom.Select(value => value + (float)(0.5 * _rnd.NextDouble() - 1)).ToArray()
+    };
 
     private static void Wait(int ms) => Task.WaitAll(new Task[] { Task.Delay(ms) });
 }

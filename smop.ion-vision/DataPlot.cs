@@ -29,7 +29,7 @@ public static class DataPlot
     /// levels are numbers greater starting from 0 and ending by 1 in ascending order
     public static void Show(int rows, int cols,
         float[] values1, float[]? values2 = null,
-        ComparisonOperation compOp = ComparisonOperation.BlandAltman,
+        ComparisonOperation compOp = ComparisonOperation.Difference,
         KeyValuePair<double, Color>[]? theme = null)
     {
         var thread = new Thread(() => {
@@ -51,11 +51,11 @@ public static class DataPlot
             plot.Loaded += (s, e) =>
             {
                 Create(canvas, rows, cols, values1, values2, compOp, theme);
-                plot.Title = compOp switch
+                plot.Title = (values2, compOp) switch
                 {
-                    ComparisonOperation.None => "Single scan",
-                    ComparisonOperation.BlandAltman => "Bland-Altman",
-                    ComparisonOperation.Difference => "Difference between two scans",
+                    (null, _) or (_, ComparisonOperation.None) => "Single scan",
+                    (_, ComparisonOperation.BlandAltman) => "Bland-Altman",
+                    (_, ComparisonOperation.Difference) => "Difference between two scans",
                     _ => throw new Exception($"Operation '{compOp}' is not supported")
                 };
             };
@@ -84,7 +84,7 @@ public static class DataPlot
     public static void Create(Canvas canvas, int rows, int cols,
         float[] values1,
         float[]? values2 = null,
-        ComparisonOperation compOp = ComparisonOperation.BlandAltman,
+        ComparisonOperation compOp = ComparisonOperation.Difference,
         KeyValuePair<double, Color>[]? theme = null)
     {
         canvas.Children.Clear();

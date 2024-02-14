@@ -1,5 +1,5 @@
 {
-  "ip": "169.254.79.113",
+  "ip": "153.1.60.173", //"169.254.79.113",
   "project": "Oleg fast scan",
   "parameterId": "daa1c397-ebd0-4920-b405-5c6029d45fdd", // 8036cca5-0677-475c-aa7f-1c9202d94b85
   "parameterName": "Fast scan", // "Default scan"

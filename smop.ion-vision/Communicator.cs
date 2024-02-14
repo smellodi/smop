@@ -10,6 +10,7 @@ public class Communicator : IDisposable
 
     public event EventHandler<int>? ScanProgress;
     public event EventHandler? ScanFinished;
+    public event EventHandler<ScopeResult>? ScopeResult;
 
     public Settings Settings => _settings;
 
@@ -24,6 +25,7 @@ public class Communicator : IDisposable
         _events.ProjectSetupFinished += (s, e) => _projectIsReady = true;
         _events.ParameterSetupFinished += (s, e) => _parameterIsReady = true;
         _events.ParameterPreloadFinished += (s, e) => _parameterWasPreloaded = true;
+        _events.ScopeDataReceived += (s, e) => ScopeResult?.Invoke(this, e.Data);
     }
 
     public void Dispose()
@@ -153,6 +155,31 @@ public class Communicator : IDisposable
             false
         ));
 
+    /// <summary>Check if the device is in scope mode</summary>
+    /// <returns>Scope status</returns>
+    public Task<API.Response<ScopeStatus>> CheckScopeMode() => _api.CheckScopeMode();
+
+    /// <summary>Set the device to the scope mode</summary>
+    /// <returns>Confirmation message</returns>
+    public Task<API.Response<Confirm>> EnableScopeMode() => _api.EnableScopeMode();
+
+    /// <summary>Move the device back to idle</summary>
+    /// <returns>Confirmation message</returns>
+    public Task<API.Response<Confirm>> DisableScopeMode() => _api.DisableScopeMode();
+
+    /// <summary>Retrieves the latest scope result</summary>
+    /// <returns>Scope result</returns>
+    public Task<API.Response<ScopeResult>> GetScopeResult() => _api.GetScopeResult();
+
+    /// <summary>Retrieves the scope parameters</summary>
+    /// <returns>Scope parameters</returns>
+    public Task<API.Response<ScopeParameters>> GetScopeParameters() => _api.GetScopeParameters();
+
+    /// <summary>Sets the scope parameters</summary>
+    /// <param name="parameters">Scope parameters</param>
+    /// <returns>Confirmation message</returns>
+    public Task<API.Response<Confirm>> SetScopeParameters(ScopeParameters parameters) => _api.SetScopeParameters(parameters);
+
     // Helpers
 
     /// <summary>
@@ -174,6 +201,29 @@ public class Communicator : IDisposable
 
         ScanProgress -= UpdateProgress;
         ScanFinished -= FinalizeScan;
+    }
+
+    /// <summary>
+    /// Call this function after <see cref="EnableScopeMode"/> was called, it will return after the progress reaches 100%
+    /// </summary>
+    /// <param name="progressCallback">Callback to receive the progress value</param>
+    public async Task<ScopeResult> WaitScopeScanToFinish(Action<int> progressCallback)
+    {
+        ScopeResult? result = null;
+
+        void FinalizeScan(object? s, ScopeResult scan) => result = scan;
+        void UpdateProgress(object? s, int value) => progressCallback(value);
+
+        ScanProgress += UpdateProgress;
+        ScopeResult += FinalizeScan;
+
+        while (result == null)
+            await Task.Delay(100);
+
+        ScanProgress -= UpdateProgress;
+        ScopeResult -= FinalizeScan;
+
+        return result;
     }
 
     // Internal

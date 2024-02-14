@@ -77,7 +77,7 @@ public class API : IMinimalAPI
 
     /// <summary>Set the device to the scope mode</summary>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> EnableScopeMode() => Set("scope");
+    public Task<Response<Confirm>> EnableScopeMode() => Create("scope");
 
     /// <summary>Move the device back to idle</summary>
     /// <returns>Confirmation message</returns>
@@ -677,7 +677,10 @@ public class API : IMinimalAPI
     private async Task<Response<Confirm>> Remove<T>(string path, T? param = null, bool preserveCase = false) where T : class
     {
         var request = new RestRequest(path);
-        request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
+        if (param != null)
+        {
+            request.AddBody(JsonSerializer.Serialize(param, preserveCase ? null : _serializationOptions));
+        }
         try
         {
             var response = await _client.DeleteAsync(request);

@@ -25,6 +25,7 @@ public class Communicator : IDisposable
     }
 
     public IonVision.ParameterDefinition? Parameter { get; set; } = null;
+    public IonVision.ScopeParameters? ScopeParameters { get; set; } = null;
 
     public event EventHandler<Status>? StatusChanged;
     public event EventHandler<Recipe>? RecipeReceived;
@@ -91,6 +92,28 @@ public class Communicator : IDisposable
         else
         {
             var packet = new Packet(PacketType.Measurement, DmsMeasurement.From(scan, Parameter));
+            await _server.SendAsync(packet);
+        }
+    }
+
+    public async Task Publish(IonVision.ScopeResult scan)
+    {
+        if (ScopeParameters == null)
+        {
+            throw new Exception("Scope parameter is not set");
+        }
+
+        _lastAction = "PublishDMS";
+
+        if (IsDemo)
+        {
+            var packet = new System.Collections.Generic.List<float>() { 1, scan.IntensityTop.Length };
+            packet.AddRange(scan.IntensityTop);
+            await _server.SendAsync(packet.ToArray());
+        }
+        else
+        {
+            var packet = new Packet(PacketType.Measurement, DmsMeasurementScope.From(scan, ScopeParameters));
             await _server.SendAsync(packet);
         }
     }

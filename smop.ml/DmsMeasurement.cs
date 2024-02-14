@@ -40,3 +40,25 @@ internal record class DmsMeasurement(
         )
     );
 }
+
+internal record class ScopeSetup(
+    float Usv,
+    RangeStep Ucv
+);
+
+internal record class DmsMeasurementScope(
+    ScopeSetup Setup,
+    ScanData Data
+) : Content(ML.Source.DMS)
+{
+    public static DmsMeasurementScope From(ScopeResult scopeResult, ScopeParameters parameters) => new(
+        new ScopeSetup(
+            parameters.Usv,
+            new RangeStep(parameters.UcvStart, parameters.UcvStop, scopeResult.IntensityTop.Length)
+        ),
+        new ScanData(
+            scopeResult.IntensityTop,
+            scopeResult.IntensityBottom
+        )
+    );
+}

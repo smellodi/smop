@@ -22,6 +22,7 @@ public class SetupController
     public event EventHandler<float>? ScanProgress;
 
     public IonVision.ParameterDefinition? ParamDefinition { get; private set; } = null;
+    public IonVision.ScopeParameters? ScopeParameters { get; private set; } = null;
     public IonVision.ScanResult? DmsScan { get; private set; } = null;
 
     public bool IsSntScanComplete => _sntSamples.Count >= SNT_MAX_DATA_COUNT;
@@ -175,6 +176,11 @@ public class SetupController
             LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IonVision.ParameterDefinition? paramDefinition);
             ParamDefinition = paramDefinition;
 
+            await Task.Delay(300);
+
+            LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.ScopeParameters? scopeParameters);
+            ScopeParameters = scopeParameters;
+
             if (paramDefinition != null)
             {
                 var sc = paramDefinition.MeasurementParameters.SteppingControl;
@@ -254,6 +260,10 @@ public class SetupController
         if (ParamDefinition != null)
         {
             App.ML.Parameter = ParamDefinition;
+        }
+        if (ScopeParameters != null)
+        {
+            App.ML.ScopeParameters = ScopeParameters;
         }
 
         var settings = Properties.Settings.Default;

@@ -1,5 +1,7 @@
 ﻿namespace Smop.IonVision;
 
+public record class Scan();
+
 public record class ErrorRegister(
     bool ambientPressureR1Under,
     bool ambientPressureR1Over,
@@ -77,4 +79,4 @@ public record class ScanResult(
     int FormatVersion,
     SystemData SystemData,
     MeasurementData MeasurementData
-);
+) : Scan;

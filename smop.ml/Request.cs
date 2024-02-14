@@ -29,7 +29,7 @@ public record class Printer(ChannelProps[] Channels);
 public record class Config(string[] Sources, Printer Printer, int MaxIterationNumber, float Threshold);
 
 public record class ChannelRecipe(int Id, float Flow, float Duration, float? Temperature = null);
-public record class Recipe(string Name, int IsFinal, float MinRMSE, ChannelRecipe[]? Channels)
+public record class Recipe(string Name, int IsFinal, float MinRMSE, float Usv, ChannelRecipe[]? Channels)
 {
     public bool Finished => IsFinal != 0;
 

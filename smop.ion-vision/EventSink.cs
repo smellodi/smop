@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Websocket.Client;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Smop.IonVision;
 
@@ -78,7 +79,7 @@ public class EventSink : IDisposable
 
     public record class ProcessProgress(int Progress);
     public record class ScanUserName(string? UserName);
-    public record class ScopeData(float Usv, float[] Ucv, float[] IntensityTop, float[] IntensityBottom);
+    //public record class ScopeData(float Usv, float[] Ucv, float[] IntensityTop, float[] IntensityBottom);
     public record class ScopeParameters(
         float UcvStart, float UcvStop, float Usv, float Vb,
         float PP, float PW,
@@ -199,7 +200,7 @@ public class EventSink : IDisposable
     /// <summary>
     /// A scope scan has finished. This message includes the scan results. A new scope scan will be started automatically and scope mode will continue until manually stopped.
     /// </summary>
-    public event EventHandler<TimedEventArgs<ScopeData>>? ScopeDataReceived;
+    public event EventHandler<TimedEventArgs<ScopeResult>>? ScopeDataReceived;
     /// <summary>
     /// The scope parameters have changed. The new parameters are included in the message.
     /// </summary>
@@ -358,6 +359,8 @@ public class EventSink : IDisposable
 
     // Internal
 
+    const int MAX_CHARS_TO_PRINT = 700;
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly string _ip;
 
@@ -401,7 +404,9 @@ public class EventSink : IDisposable
 
         if (message.Type != "controllers.status")
         {
-            ScreenLogger.Print("[IvWsC] " + msg.ToString());
+            var text = msg.ToString();
+            text = text.Length < MAX_CHARS_TO_PRINT ? text : $"{text[..MAX_CHARS_TO_PRINT]}...\nand {text.Length - MAX_CHARS_TO_PRINT} chars more.";
+            ScreenLogger.Print("[IvWsC] " + text);
         }
 
         try
@@ -425,7 +430,7 @@ public class EventSink : IDisposable
             else if (message.Type == "scope.stopped")
                 ScopeStopped?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scope.data")
-                ScopeDataReceived?.Invoke(this, new TimedEventArgs<ScopeData>(message));
+                ScopeDataReceived?.Invoke(this, new TimedEventArgs<ScopeResult>(message));
             else if (message.Type == "scope.parametersChanged")
                 ScopeParametersChanged?.Invoke(this, new TimedEventArgs<ScopeParameters>(message));
             else if (message.Type == "parameter.currentChanged")

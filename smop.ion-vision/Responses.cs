@@ -11,7 +11,7 @@ public record class Confirm(
 );
 
 public record class User(
-    string? Name
+    string? Name = null
 );
 
 public record class ParameterAsId(
@@ -158,11 +158,11 @@ public record class ScopeStatus(
     float Progress
 );
 public record class ScopeResult(
-    int Usv,
+    float Usv,
     float[] Ucv,
     float[] IntensityTop,
     float[] IntensityBottom
-);
+) : Scan;
 public record class ScopeParameters(
     float UcvStart,
     float UcvStop,

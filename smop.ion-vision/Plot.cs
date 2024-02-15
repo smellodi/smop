@@ -11,14 +11,14 @@ using System.Windows.Threading;
 
 namespace Smop.IonVision;
 
-public static class Plot
+public class Plot
 {
     public enum ComparisonOperation { None, Difference, BlandAltman }
 
-    public static double PointSize { get; set; } = 4;
-    public static Color PointColor { get; set; } = Color.FromRgb(0x16, 0xA4, 0xFF);
-    public static Color CurveColor { get; set; } = Colors.Black;
-    public static bool UseLogarithmicScaleInBlandAltman { get; set; } = true;
+    public double PointSize { get; set; } = 4;
+    public Color PointColor { get; set; } = Application.Current?.FindResource("ColorDark") is Color color ? color : Color.FromRgb(0x80, 0x45, 0x15);
+    public Color CurveColor { get; set; } = Application.Current?.FindResource("ColorLightDarker") is Color color ? color : Color.FromRgb(0xD4, 0x9A, 0x6A);
+    public bool UseLogarithmicScaleInBlandAltman { get; set; } = true;
 
     /// <summary>
     /// Creates a plot and shows it in a separate window running in its own thread.
@@ -30,7 +30,7 @@ public static class Plot
     /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
     /// <param name="theme">Coloring theme as a list of {level: Color} record where 
     /// levels are numbers greater starting from 0 and ending by 1 in ascending order
-    public static void Show(int rows, int cols,
+    public void Show(int rows, int cols,
         float[] values1, float[]? values2 = null,
         ComparisonOperation compOp = ComparisonOperation.Difference,
         KeyValuePair<double, Color>[]? theme = null)
@@ -79,12 +79,12 @@ public static class Plot
     /// <param name="canvas">The canvas to draw the plot</param>
     /// <param name="rows">Number of rows</param>
     /// <param name="cols">Number of columns</param>
-    /// <param name="values1">Vector of the DMS data (Intensity top or bottom)</param>
-    /// <param name="values2">Second vector of the DMS data (Intensity top or bottom) used for comparison</param>
+    /// <param name="values1">Vector of the DMS data (<see cref="MeasurementData.IntensityTop"/>)</param>
+    /// <param name="values2">Second vector of the DMS data (<see cref="MeasurementData.IntensityTop"/>) used for comparison</param>
     /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
-    /// <param name="theme">Coloring theme as a list of {level: Color} record where 
-    /// levels are numbers greater starting from 0 and ending by 1 in ascending order
-    public static void Create(Canvas canvas, int rows, int cols,
+    /// <param name="theme">Coloring theme as a list of {level: <see cref="Color"/>} record 
+    /// where levels are numbers starting from 0 and ending by 1 in ascending order
+    public void Create(Canvas canvas, int rows, int cols,
         float[] values1,
         float[]? values2 = null,
         ComparisonOperation compOp = ComparisonOperation.Difference,
@@ -260,7 +260,7 @@ public static class Plot
         return DrawPlot(canvas, rows, cols, values);
     }
 
-    private static Rect DrawBlandAltman(Canvas canvas, float[] values1, float[] values2)
+    private Rect DrawBlandAltman(Canvas canvas, float[] values1, float[] values2)
     {
         float[] valuesX = new float[values1.Length];
         float[] valuesY = new float[values1.Length];
@@ -302,7 +302,7 @@ public static class Plot
         return new Rect(new Point(minValueX, minValueY), new Point(maxValueX, maxValueY));
     }
 
-    private static Rect DrawCurve(Canvas canvas, int cols, float[] values)
+    private Rect DrawCurve(Canvas canvas, int cols, float[] values)
     {
         double width = canvas.ActualWidth;
         double height = canvas.ActualHeight;
@@ -317,6 +317,8 @@ public static class Plot
         double yp = height - (values[0] - minValue) / range * height;
         var pathComp = new List<string>() { $"M{xp},{yp}" };
 
+        var brush = new SolidColorBrush(PointColor);
+
         for (int i = 1; i < cols; i++)
         {
             var x = width * i / (count - 1);
@@ -327,18 +329,20 @@ public static class Plot
             {
                 Width = PointSize,
                 Height = PointSize,
-                Fill = new SolidColorBrush(PointColor)
+                Fill = brush
             };
             canvas.Children.Add(dot);
             Canvas.SetLeft(dot, x - PointSize / 2);
             Canvas.SetTop(dot, y - PointSize / 2);
         }
 
-        var path = new Path();
-        path.Stroke = new SolidColorBrush(CurveColor);
-        path.StrokeThickness = 1;
-        path.Data = Geometry.Parse(string.Join(' ', pathComp));
-        path.VerticalAlignment = VerticalAlignment.Top;
+        var path = new Path()
+        {
+            Stroke = new SolidColorBrush(CurveColor),
+            StrokeThickness = 1,
+            Data = Geometry.Parse(string.Join(' ', pathComp)),
+            VerticalAlignment = VerticalAlignment.Top
+        };
 
         canvas.Children.Add(path);
 

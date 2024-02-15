@@ -166,7 +166,7 @@
                                              Click="DmsPlotType_Click"/>
                             </WrapPanel>
                             <Canvas x:Name="cnvDmsScan"
-                                    Background="#eee"
+                                    Background="{StaticResource BrushPanelLightest}"
                                     Height="416"/>
                         </StackPanel>
                     </TabItem>

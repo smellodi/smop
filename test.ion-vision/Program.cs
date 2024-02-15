@@ -10,8 +10,6 @@ using System.Windows.Media;
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
-Plot.UseLogarithmicScaleInBlandAltman = false;
-
 const int MAX_CHARS_TO_PRINT = 700;
 
 KeyValuePair<double, Color>[] PLOT_THEME = new Dictionary<double, Color>()
@@ -264,25 +262,28 @@ void ShowPlot(Plot.ComparisonOperation operation)
     {
         case Plot.ComparisonOperation.None:
             if (scanDataList.Count > 0)
-                Plot.Show(
-                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                        scanDataList[^1].IntensityTop,
-                        theme: PLOT_THEME
-                    );
+               new Plot().Show(
+                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    scanDataList[^1].IntensityTop,
+                    theme: PLOT_THEME
+                );
             else
                 Console.Write($"No scan results retrieved yet (use 'result' command to retrieve it)");
             break;
         case Plot.ComparisonOperation.Difference:
         case Plot.ComparisonOperation.BlandAltman:
             if (scanDataList.Count > 1)
-                Plot.Show(
-                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                        (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                        scanDataList[^1].IntensityTop,
-                        scanDataList[^2].IntensityTop,
-                        operation
-                    );
+            {
+                var plot = new Plot() { UseLogarithmicScaleInBlandAltman = false };
+                plot.Show(
+                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    scanDataList[^1].IntensityTop,
+                    scanDataList[^2].IntensityTop,
+                    operation
+                );
+            }
             else
                 Console.Write($"At least 2 scan results must be retrieved (use 'scan' and 'result' commands)");
             break;
@@ -294,8 +295,7 @@ void ShowScopePlot(Plot.ComparisonOperation operation)
     if (operation == Plot.ComparisonOperation.None)
     {
         if (scopeDataList.Count > 0)
-            Plot.Show(
-                1,
+            new Plot().Show(1,
                 scopeDataList[^1].IntensityTop.Length,
                 scopeDataList[^1].IntensityTop,
                 theme: PLOT_THEME
@@ -306,8 +306,7 @@ void ShowScopePlot(Plot.ComparisonOperation operation)
     else if (operation == Plot.ComparisonOperation.Difference)
     {
         if (scopeDataList.Count > 1)
-            Plot.Show(
-                1,
+            new Plot().Show(1,
                 scopeDataList[^1].IntensityTop.Length,
                 scopeDataList[^1].IntensityTop,
                 scopeDataList[^2].IntensityTop,

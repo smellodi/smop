@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using ODDevice = Smop.OdorDisplay.Device;
@@ -37,10 +38,15 @@ public partial class Reproduction : Page, IPage<Navigation>
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Connected);
 
         _proc = new OdorReproducerController(config);
-        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.Plot.Create(cnvDmsScan,
-            (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
-        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.Plot.Create(cnvDmsScan,
-            1, e.IntensityTop.Length, e.IntensityTop));
+        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => new IonVision.Plot().Create(cnvDmsScan,
+            (int)config.DataSize.Height,
+            (int)config.DataSize.Width,
+            e.MeasurementData.IntensityTop,
+            theme: PLOT_THEME));
+        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => new IonVision.Plot().Create(cnvDmsScan,
+            1, e.IntensityTop.Length,
+            e.IntensityTop,
+            theme: PLOT_THEME));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => {
             SetActiveElement(ActiveElement.ML);
             adaAnimation.Next();
@@ -72,7 +78,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         crtRMSE.Reset();
 
         DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-            IonVision.Plot.Create(cnvDmsTargetScan, (int)config.DataSize.Height, (int)config.DataSize.Width, config.TargetDMS.IntensityTop)));
+            new IonVision.Plot().Create(cnvDmsTargetScan, 
+                (int)config.DataSize.Height,
+                (int)config.DataSize.Width,
+                config.TargetDMS.IntensityTop,
+                theme: PLOT_THEME)));
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
@@ -100,6 +110,15 @@ public partial class Reproduction : Page, IPage<Navigation>
     const int MEASUREMENT_ROW_HUMIDITY = 1;
     const int MEASUREMENT_ROW_FIRST_ODOR_CHANNEL = 2;
 
+    readonly KeyValuePair<double, Color>[] PLOT_THEME = new Dictionary<double, Color>()
+    {
+        { 0, (Color)Application.Current.FindResource("ColorLight") },
+        { 0.05, (Color)Application.Current.FindResource("ColorLightDarker") },
+        { 0.15, (Color)Application.Current.FindResource("ColorDarkLighter") },
+        { 0.4, (Color)Application.Current.FindResource("ColorDark") },
+        { 1, (Color)Application.Current.FindResource("ColorDarkDarker") },
+    }.ToArray();
+
     readonly Style? _activeElementStyle;
     readonly Style? _inactiveElementStyle;
     readonly Style? _recipeChannelStyle;
@@ -107,7 +126,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     readonly Style? _odChannelStyle;
     readonly Style? _odChannelLabelStyle;
 
-    readonly BlurEffect _blurEffect = new BlurEffect() { Radius = 3 };
+    readonly BlurEffect _blurEffect = new() { Radius = 3 };
 
     OdorReproducerController? _proc;
     OdorReproducerController.Config? _procConfig = null;

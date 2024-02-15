@@ -180,7 +180,7 @@ public partial class Setup : Page, IPage<object?>
         if (compOp == Plot.ComparisonOperation.None)
         {
             if (_dmsScans.Count > 0)
-                Plot.Create(
+                new Plot().Create(
                     cnvDmsScan,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
@@ -192,7 +192,7 @@ public partial class Setup : Page, IPage<object?>
         else
         {
             if (_dmsScans.Count > 1)
-                Plot.Create(
+                new Plot().Create(
                     cnvDmsScan,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,

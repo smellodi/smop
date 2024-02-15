@@ -263,14 +263,14 @@
                         HorizontalAlignment="Left">
                 <Label>Actual DMS scan</Label>
                 <Canvas x:Name="cnvDmsScan"
-                        Background="#eee"
+                        Background="{StaticResource BrushPanelLightest}"
                         Height="73"
                         Width="182"
                         Margin="0,0,0,12"/>
 
                 <Label>Target DMS scan</Label>
                 <Canvas x:Name="cnvDmsTargetScan"
-                        Background="#eee"
+                        Background="{StaticResource BrushPanelLightest}"
                         Height="73"
                         Width="182"/>
             </StackPanel>

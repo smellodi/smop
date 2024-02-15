@@ -27,11 +27,6 @@ public class SetupController
 
     public bool IsSntScanComplete => _sntSamples.Count >= SNT_MAX_DATA_COUNT;
 
-    public SetupController()
-    {
-        IonVision.Plot.UseLogarithmicScaleInBlandAltman = false;
-    }
-
     public void AcquireOdorChannelsInfo()
     {
         var channelIDs = new List<OdorDisplay.Device.ID>();

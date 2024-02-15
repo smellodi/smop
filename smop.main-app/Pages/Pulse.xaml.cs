@@ -49,7 +49,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         CreateChannelStageIndicators(channelsExist);
         CreateAdditionalStageIndicators();
 
-        _controller = new PulseController(setup);
+        _controller = new PulseController(setup, App.IonVision);
         _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Intervals, e.Pulse, e.Stage));
         _controller.DmsScanProgressChanged += (s, e) => Dispatcher.Invoke(() => SetDmsProgress(e));
         _controller.OdorDisplayDataArrived += (s, e) => Dispatcher.Invoke(() => SetMeasurments(e));
@@ -62,6 +62,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         CleanUp();
         GC.SuppressFinalize(this);
     }
+
 
     // Internal
 

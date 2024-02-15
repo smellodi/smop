@@ -16,14 +16,16 @@ public class SetupController
         public bool ReplaceLast { get; } = replaceLast;
     }
 
-    public event EventHandler<LogHandlerArgs>? Log;
     public event EventHandler<LogHandlerArgs>? LogDms;
     public event EventHandler<LogHandlerArgs>? LogSnt;
+    public event EventHandler<LogHandlerArgs>? LogOD;
     public event EventHandler<float>? ScanProgress;
 
     public IonVision.ParameterDefinition? ParamDefinition { get; private set; } = null;
     public IonVision.ScopeParameters? ScopeParameters { get; private set; } = null;
     public IonVision.ScanResult? DmsScan { get; private set; } = null;
+
+    public bool HasInitializationFinished { get; private set; } = false;
 
     public bool IsSntScanComplete => _sntSamples.Count >= SNT_MAX_DATA_COUNT;
 
@@ -80,22 +82,33 @@ public class SetupController
 
     public async void CleanUpOdorPrinter(Action? finishedAction = null)
     {
-        var cleanupFLow = 10f;
-        var cleanupDuration = 10_000;
+        LogOD?.Invoke(this, new LogHandlerArgs("Cleaning up: started."));
 
+        var setupFilename = _storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? "init-setup-debug.txt" : "init-setup.txt";
+        var setup = PulseSetup.Load(System.IO.Path.Combine("Properties", setupFilename));
+        if (setup != null)
+        {
+            using var controller = new PulseController(setup, null);
+            controller.StageChanged += (s, e) =>
+            {
+                HasInitializationFinished = e.Stage.HasFlag(Stage.Finished);
+                if (e.Stage.HasFlag(Stage.NewSession))
+                    LogOD?.Invoke(this, new LogHandlerArgs($"Cleaning up: Session {e.SessionID}"));
+                else if (e.Stage.HasFlag(Stage.Pulse))
+                    LogOD?.Invoke(this, new LogHandlerArgs($"Cleaning up: Pulse {e.PulseID}"));
+            };
+
+            await Task.Delay(500);
+            controller.Start();
+
+            while (!HasInitializationFinished)
+                await Task.Delay(200);
+
+            EventLogger.Instance.Clear();
+        }
+
+        LogOD?.Invoke(this, new LogHandlerArgs("Cleaning up: finished."));
         var actuators = _odorChannels.Select(odorChannel =>
-            new ODPackets.Actuator(odorChannel.ID, new ODPackets.ActuatorCapabilities(
-                ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently,
-                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, cleanupFLow)
-            ))
-        );
-
-        System.Threading.Thread.Sleep(100);
-        COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "start cleaning up");
-
-        await Task.Delay(cleanupDuration);
-
-        actuators = _odorChannels.Select(odorChannel =>
             new ODPackets.Actuator(odorChannel.ID, new ODPackets.ActuatorCapabilities(
                 ODPackets.ActuatorCapabilities.OdorantValveClose,
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, 0f)
@@ -203,9 +216,9 @@ public class SetupController
             .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString())
             .Select(odorChannel => odorChannel.Flow);
         var waitingTime = OdorDisplayController.CalcWaitingTime(flows);
-        Log?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {waitingTime:F1}s for the mixture to stabilize..."));
+        LogOD?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {waitingTime:F1}s for the mixture to stabilize..."));
         await Task.Delay((int)(waitingTime * 1000));
-        Log?.Invoke(this, new LogHandlerArgs("Odor mixturing process has finished.", true));
+        LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
 
         _pidSamples.Clear();
 
@@ -358,7 +371,8 @@ public class SetupController
             }
         }
 
-        LogDms?.Invoke(this, new LogHandlerArgs(DmsScan != null ? "Ready to start." : "Failed to retrieve the scanning result"));
+        if (DmsScan == null)
+            LogDms?.Invoke(this, new LogHandlerArgs("Failed to retrieve the scanning result"));
     }
 
     private async Task CollectSntSamples()
@@ -375,7 +389,6 @@ public class SetupController
         }
 
         LogSnt?.Invoke(this, new LogHandlerArgs($"Samples collected.", true));
-        LogSnt?.Invoke(this, new LogHandlerArgs($"Ready to start."));
     }
 
     private async void OdorDisplay_Data(object? sender, ODPackets.Data data)

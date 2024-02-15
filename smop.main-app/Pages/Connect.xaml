@@ -141,6 +141,8 @@
                         IsEnabled="{Binding HasOutputAndInputConnections, Mode=OneWay}"
                         Content="Reproduce odor"
                         Click="ReproduceOdor_Click"/>
+                <CheckBox x:Name="chkOdorDisplayRequiresCleanup"
+                          Content="Odor Display requires clean-up"/>
             </StackPanel>
         </Grid>
 

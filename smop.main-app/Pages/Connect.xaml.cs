@@ -24,6 +24,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     public bool HasOutputConnection => _odorDisplay.IsOpen;
     public bool HasOutputAndInputConnections => _odorDisplay.IsOpen && (_ionVision != null || _smellInsp.IsOpen);
 
+    public bool OdorDisplayRequiresCleanup => chkOdorDisplayRequiresCleanup.IsChecked ?? false;
+
     public Connect()
     {
         InitializeComponent();

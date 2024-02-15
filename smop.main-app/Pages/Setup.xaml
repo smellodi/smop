@@ -4,7 +4,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
-      xmlns:dms="clr-namespace:Smop.IonVision;assembly=Smop.IonVision"
       mc:Ignorable="d" 
       d:DesignHeight="750" d:DesignWidth="1000"
       Title="Setup"
@@ -54,9 +53,10 @@
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                             <RowDefinition/>
+                            <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <Grid x:Name="grdDmsStatus" Grid.Row="0">
+                        <Grid x:Name="grdODStatus" Grid.Row="0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -64,9 +64,54 @@
                             </Grid.RowDefinitions>
 
                             <Separator Grid.Row="0" Margin="0,8,0,0"/>
-                            <Label Grid.Row="1"
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="70"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0"
+                                   Style="{StaticResource Section}"
+                                   Content="Odor Display events:"/>
+                                <ProgressBar x:Name="prbODBusy" Grid.Column="1"
+                                             Margin="0,8"
+                                             IsIndeterminate="True"/>
+                            </Grid>
+                            <Border Grid.Row="2"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource BrushBorderLight}">
+                                <ScrollViewer x:Name="scvODStatus" 
+                                              Padding="0,2"
+                                              VerticalScrollBarVisibility="Auto" 
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <TextBlock Name="tblODStatus"
+                                               TextWrapping="Wrap"
+                                               Padding="6,0,0,0">
+                                        <Run Text="ready"/>
+                                    </TextBlock>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+
+                        <Grid x:Name="grdDmsStatus" Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <Separator Grid.Row="0" Margin="0,8,0,0"/>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="70"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0"
                                    Style="{StaticResource Section}"
                                    Content="DMS events:"/>
+                                <ProgressBar x:Name="prbDMSBusy" Grid.Column="1"
+                                             Margin="0,8"
+                                             IsIndeterminate="True"/>
+                            </Grid>
                             <Border Grid.Row="2"
                                     BorderThickness="1"
                                     BorderBrush="{StaticResource BrushBorderLight}">
@@ -83,7 +128,7 @@
                             </Border>
                         </Grid>
 
-                        <Grid x:Name="grdSntStatus" Grid.Row="1">
+                        <Grid x:Name="grdSntStatus" Grid.Row="2">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>

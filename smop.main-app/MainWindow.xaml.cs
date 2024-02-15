@@ -153,7 +153,9 @@ public partial class MainWindow : Window
             IonVisionLogger.Instance.Clear();
 
             _storage.SetupPage = next;
-            _setupPage.Init(_storage.SetupType);
+
+            bool odorDisplayRequiresCleanup = sender is Connect connectPage ? connectPage.OdorDisplayRequiresCleanup : false;
+            _setupPage.Init(_storage.SetupType, odorDisplayRequiresCleanup);
 
             Content = _setupPage;
         }

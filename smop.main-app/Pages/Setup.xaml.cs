@@ -31,9 +31,9 @@ public partial class Setup : Page, IPage<object?>
         _indicatorController = new IndicatorController(lmsGraph);
 
         _ctrl = new SetupController();
-        _ctrl.Log += (s, e) => AddToLog(App.IonVision != null ? LogType.DMS : LogType.SNT, e.Text, e.ReplaceLast);
         _ctrl.LogDms += (s, e) => AddToLog(LogType.DMS, e.Text, e.ReplaceLast);
         _ctrl.LogSnt += (s, e) => AddToLog(LogType.SNT, e.Text, e.ReplaceLast);
+        _ctrl.LogOD += (s, e) => AddToLog(LogType.OD, e.Text, e.ReplaceLast);
         _ctrl.ScanProgress += (s, e) => Dispatcher.Invoke(() =>
         {
             prbENoseProgress.Value = e;
@@ -49,16 +49,21 @@ public partial class Setup : Page, IPage<object?>
         ((App)Application.Current).AddCleanupAction(_ctrl.ShutDown);
     }
 
-    public void Init(SetupType type)
+    public void Init(SetupType type, bool odorDisplayRequiresCleanup)
     {
-        if (type == SetupType.OdorReproduction && App.ML == null)
+        if (type == SetupType.OdorReproduction)
         {
-            App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
-            App.ML.StatusChanged += ML_StatusChanged;
-            App.ML.Error += ML_Error;
+            if (App.ML == null)
+            {
+                App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
+                App.ML.StatusChanged += ML_StatusChanged;
+                App.ML.Error += ML_Error;
 
-            _ctrl.AcquireOdorChannelsInfo();
-            _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
+                _ctrl.AcquireOdorChannelsInfo();
+                _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
+            }
+
+            _odorDisplayRequiresCleanup = odorDisplayRequiresCleanup;
         }
 
         //cnvDmsScan.Children.Clear();
@@ -66,10 +71,11 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
 
-        if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 2)
-            grdStatuses.RowDefinitions.RemoveAt(0);
+        if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 3)
+            grdStatuses.RowDefinitions.RemoveAt(1);
 
         grdDmsStatus.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
+
 
         /* BOTH ENOSES
         if (!_smellInsp.IsOpen && grdStatuses.RowDefinitions.Count == 2)
@@ -79,15 +85,15 @@ public partial class Setup : Page, IPage<object?>
         */
 
         // SINGLE ENOSE
-        if ((App.IonVision != null || !_smellInsp.IsOpen) && grdStatuses.RowDefinitions.Count == 2)
-            grdStatuses.RowDefinitions.RemoveAt(1);
+        if ((App.IonVision != null || !_smellInsp.IsOpen) && grdStatuses.RowDefinitions.Count == 3)
+            grdStatuses.RowDefinitions.RemoveAt(2);
 
         grdSntStatus.Visibility = App.IonVision == null && _smellInsp.IsOpen ? Visibility.Visible : Visibility.Collapsed;
     }
 
     // Internal
 
-    enum LogType { DMS, SNT }
+    enum LogType { DMS, SNT, OD }
 
     readonly Storage _storage = Storage.Instance;
 
@@ -101,6 +107,7 @@ public partial class Setup : Page, IPage<object?>
 
     readonly List<string> _ionVisionLog = new();
     readonly List<string> _smellInspLog = new();
+    readonly List<string> _odorDisplayLog = new();
 
     readonly List<MeasurementData> _dmsScans = new();
     readonly RadioButton[] _dmsPlotTypes;
@@ -108,6 +115,11 @@ public partial class Setup : Page, IPage<object?>
     bool _isInitilized = false;
     bool _isOdorDisplayCleanedUp = false;
     bool _ionVisionIsReady = false;
+
+    bool _isOdorDisplayCleaningRunning = false;
+    bool _isDMSInitRunning = false;
+
+    bool _odorDisplayRequiresCleanup = false;
 
     Plot.ComparisonOperation _dmsPlotType = Plot.ComparisonOperation.None;
 
@@ -132,10 +144,14 @@ public partial class Setup : Page, IPage<object?>
                 _isOdorDisplayCleanedUp &&
                 brdENoseProgress.Visibility != Visibility.Visible;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
+            btnMeasureSample.IsEnabled = !_isOdorDisplayCleaningRunning;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;
             odorReproductionSettings.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
+
+            prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
+            prbDMSBusy.Visibility = _isDMSInitRunning ? Visibility.Visible : Visibility.Hidden;
         }
 
         _dmsPlotTypes[(int)Plot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
@@ -147,9 +163,12 @@ public partial class Setup : Page, IPage<object?>
 
     private void AddToLog(LogType destination, string line, bool replaceLast = false) => Dispatcher.Invoke(() =>
     {
-        var lines = destination == LogType.DMS ? _ionVisionLog : _smellInspLog;
-        var tbl = destination == LogType.DMS ? tblDmsStatus : tblSntStatus;
-        var scv = destination == LogType.DMS ? scvDmsStatus : scvSntStatus;
+        (IList<string> lines, TextBlock tbl, ScrollViewer scv) = destination switch {
+            LogType.DMS => (_ionVisionLog, tblDmsStatus, scvDmsStatus),
+            LogType.SNT => (_smellInspLog, tblSntStatus, scvSntStatus),
+            LogType.OD => (_odorDisplayLog, tblODStatus, scvODStatus),
+            _ => throw new Exception("Log type not supported")
+        };
 
         if (replaceLast)
         {
@@ -275,10 +294,14 @@ public partial class Setup : Page, IPage<object?>
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
 
-            if (_storage.SetupType == SetupType.OdorReproduction)
+            if (_odorDisplayRequiresCleanup)
             {
+                _isOdorDisplayCleaningRunning = true;
+
+                await Task.Delay(150);
                 _ctrl.CleanUpOdorPrinter(() =>
                 {
+                    _isOdorDisplayCleaningRunning = false;
                     _isOdorDisplayCleanedUp = true;
                     UpdateUI();
                 });
@@ -286,7 +309,13 @@ public partial class Setup : Page, IPage<object?>
 
             if (App.IonVision != null)
             {
+                _isDMSInitRunning = true;
+                UpdateUI();
+
                 _ionVisionIsReady = await _ctrl.InitializeIonVision(App.IonVision);
+
+                _isDMSInitRunning = false;
+                UpdateUI();
             }
         }
 

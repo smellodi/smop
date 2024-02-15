@@ -130,6 +130,12 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+    <None Update="Properties\init-setup-debug.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\init-setup.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Properties\IonVision-Hervanta-10.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

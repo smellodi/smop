@@ -20,11 +20,13 @@ internal enum Stage
 
 internal class PulseController : IDisposable
 {
-    public class StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, Stage stage) : EventArgs
+    public class StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, Stage stage, int sessionID, int pulseID) : EventArgs
     {
         public PulseIntervals? Intervals { get; } = intervals;
         public PulseProps? Pulse { get; } = pulse;
         public Stage Stage { get; } = stage;
+        public int SessionID { get; } = sessionID;
+        public int PulseID { get; } = pulseID;
     }
 
     public event EventHandler<StageChangedEventArgs>? StageChanged;
@@ -36,9 +38,10 @@ internal class PulseController : IDisposable
     public int SessionCount => _setup.Sessions.Length;
     public int PulseCount => 0 <= _sessionIndex && _sessionIndex < _setup.Sessions.Length ? _setup.Sessions[_sessionIndex].Pulses.Length : 0;
 
-    public PulseController(PulseSetup setup)
+    public PulseController(PulseSetup setup, IonVision.Communicator? ionVision)
     {
         _setup = setup;
+        _ionVision = ionVision;
     }
 
     public void Dispose()
@@ -101,7 +104,7 @@ internal class PulseController : IDisposable
     const double DMS_PROGRESS_CHECK_INTERVAL = 1;
 
     readonly OdorDisplayController _odorDisplay = new();
-    readonly IonVision.Communicator? _ionVision = App.IonVision;
+    readonly IonVision.Communicator? _ionVision;
 
     readonly PulseSetup _setup;
 
@@ -141,7 +144,7 @@ internal class PulseController : IDisposable
         }
         else
         {
-            StageChanged?.Invoke(this, new StageChangedEventArgs(null, null, Stage.Finished));
+            StageChanged?.Invoke(this, new StageChangedEventArgs(null, null, Stage.Finished, 0, 0));
         }
     }
 
@@ -258,7 +261,7 @@ internal class PulseController : IDisposable
 
         _currentStage = stage | _extraStages;
 
-        StageChanged?.Invoke(this, new StageChangedEventArgs(session.Intervals, pulse, _currentStage));
+        StageChanged?.Invoke(this, new StageChangedEventArgs(session.Intervals, pulse, _currentStage, _sessionIndex + 1, _pulseIndex + 1));
         _extraStages = Stage.None;
     }
 

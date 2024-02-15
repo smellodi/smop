@@ -11,10 +11,13 @@ using System.Windows.Threading;
 
 namespace Smop.IonVision;
 
-public static class DataPlot
+public static class Plot
 {
     public enum ComparisonOperation { None, Difference, BlandAltman }
 
+    public static double PointSize { get; set; } = 4;
+    public static Color PointColor { get; set; } = Color.FromRgb(0x16, 0xA4, 0xFF);
+    public static Color CurveColor { get; set; } = Colors.Black;
     public static bool UseLogarithmicScaleInBlandAltman { get; set; } = true;
 
     /// <summary>
@@ -89,12 +92,15 @@ public static class DataPlot
     {
         canvas.Children.Clear();
 
-        CreateTheme(theme);
+        PlotColorTheme.CreateTheme(theme);
 
         var rc = new Rect();
         if (values2 is null)
         {
-            rc = DrawPlot(canvas, rows, cols, values1);
+            if (rows == 1)
+                rc = DrawCurve(canvas, cols, values1);
+            else
+                rc = DrawPlot(canvas, rows, cols, values1);
         }
         else if (values1.Length == values2.Length)
         {
@@ -147,6 +153,8 @@ public static class DataPlot
         Canvas.SetLeft(yMax, offset);
         Canvas.SetTop(yMax, offset);
         */
+
+        /*
         if (rc.Height != 0)
         {
             var xAxe = new Line()
@@ -170,7 +178,7 @@ public static class DataPlot
                 StrokeThickness = 2
             };
             canvas.Children.Add(yAxe);
-        }
+        }*/
     }
 
     private static void CreateStdLinesY(Canvas canvas, float[] values)
@@ -232,7 +240,7 @@ public static class DataPlot
                 {
                     Width = cellWidth,
                     Height = cellHeight,
-                    Fill = new SolidColorBrush(ValueToColor(value / range)),
+                    Fill = new SolidColorBrush(PlotColorTheme.ValueToColor(value / range)),
                 };
                 canvas.Children.Add(pixel);
                 Canvas.SetLeft(pixel, (int)(x * colSize));
@@ -294,83 +302,46 @@ public static class DataPlot
         return new Rect(new Point(minValueX, minValueY), new Point(maxValueX, maxValueY));
     }
 
-    // Color scheme
-
-    static double[] LEVELS = new double[] { 0.05, 0.2, 0.4, 0.7 };
-
-    // Helpers
-    static (double, double) GetMinMax(int levelIndex)
+    private static Rect DrawCurve(Canvas canvas, int cols, float[] values)
     {
-        var min = levelIndex <= 0 ? 0 : LEVELS[levelIndex - 1];
-        var max = levelIndex >= LEVELS.Length ? 1 : LEVELS[levelIndex];
-        return (min, max);
-    }
+        double width = canvas.ActualWidth;
+        double height = canvas.ActualHeight;
 
-    static void CreateTheme(KeyValuePair<double, Color>[]? theme)
-    {
-        if (theme == null)
-            return;
+        int count = values.Length;
 
-        var levels = theme.Select(kv => kv.Key).ToArray();
-        if (levels.Length < 2 || levels[0] != 0 || levels[^1] != 1 || 
-            levels.Aggregate(-1.0, (accum, v) => v > accum ? v : double.MaxValue) > 1)    // the final will ne >1 if the order is not ascending
-            return;
+        var minValue = Math.Min(-10, values.Min());
+        var maxValue = Math.Max(100, values.Max());
+        var range = maxValue - minValue;
 
-        LEVELS = levels.Skip(1).SkipLast(1).ToArray();
-        R = MakeColorScale(theme.Select(kv => kv.Value.R).ToArray());
-        G = MakeColorScale(theme.Select(kv => kv.Value.G).ToArray());
-        B = MakeColorScale(theme.Select(kv => kv.Value.B).ToArray());
-    }
+        double xp = 0;
+        double yp = height - (values[0] - minValue) / range * height;
+        var pathComp = new List<string>() { $"M{xp},{yp}" };
 
-    // Constant and transition functions for a custom scale, X..Y where 0 <= X,Y <= 255 and X < Y
-    static Func<double, byte> Keep(byte value) => (double _) => value;
-    static Func<double, byte> Up(int levelIndex, byte from, byte to)
-    {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(to, from + (to - from) * (value - min) * (1f / (max - min)));
-    }
-    static Func<double, byte> Down(int levelIndex, byte from, byte to)
-    {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(from, to + (from - to) * (max - value) * (1f / (max - min)));
-    }
-
-    static Func<double, byte>[] MakeColorScale(params byte[] values)
-    {
-        var result = new List<Func<double, byte>>();
-
-        byte current = values[0];
-        int index = 0;
-
-        foreach (var value in values.Skip(1))
+        for (int i = 1; i < cols; i++)
         {
-            if (current < value)
-                result.Add(Up(index, current, value));
-            else if (current > value)
-                result.Add(Down(index, current, value));
-            else
-                result.Add(Keep(value));
+            var x = width * i / (count - 1);
+            var y = height - (values[i] - minValue) / range * height;
+            pathComp.Add($"L{x},{y}");
 
-            current = value;
-            index++;
+            var dot = new Ellipse()
+            {
+                Width = PointSize,
+                Height = PointSize,
+                Fill = new SolidColorBrush(PointColor)
+            };
+            canvas.Children.Add(dot);
+            Canvas.SetLeft(dot, x - PointSize / 2);
+            Canvas.SetTop(dot, y - PointSize / 2);
         }
 
-        return result.ToArray();
-    }
+        var path = new Path();
+        path.Stroke = new SolidColorBrush(CurveColor);
+        path.StrokeThickness = 1;
+        path.Data = Geometry.Parse(string.Join(' ', pathComp));
+        path.VerticalAlignment = VerticalAlignment.Top;
 
-    // RGB functions, +1 to the number of levels.   Colors: grey cyan green brown red  white
-    static Func<double, byte>[] R = MakeColorScale(240, 0,   0,    128,  128, 216);
-    static Func<double, byte>[] G = MakeColorScale(240, 208, 176,  190,  0,   216);
-    static Func<double, byte>[] B = MakeColorScale(240, 208, 0,    0,    0,   216);
+        canvas.Children.Add(path);
 
-    /// <summary>
-    /// Creates a plot color from a normalized value
-    /// </summary>
-    /// <param name="value">0..1</param>
-    /// <returns>Color</returns>
-    private static Color ValueToColor(double value)
-    {
-        var i = LEVELS.TakeWhile(level => value > level).Count();
-        return Color.FromRgb(R[i](value), G[i](value), B[i](value));
+        return new Rect(new Point(0, 0), new Point(cols, 1));
     }
 }

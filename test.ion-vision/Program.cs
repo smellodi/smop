@@ -10,7 +10,7 @@ using System.Windows.Media;
 Console.Title = "Smellody Odor Printer (SMOP)";
 Console.WriteLine("Testing IonVision module (SMOP.IonVision)...\n");
 
-DataPlot.UseLogarithmicScaleInBlandAltman = false;
+Plot.UseLogarithmicScaleInBlandAltman = false;
 
 const int MAX_CHARS_TO_PRINT = 700;
 
@@ -95,15 +95,15 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
     { "result", ("gets the latest scan result", async () => Print(await ionVision.GetScanResult())) },
     { "plot", ("shows the last result as a plot", async () => {
-        ShowPlot(DataPlot.ComparisonOperation.None);
+        ShowPlot(Plot.ComparisonOperation.None);
         await Task.CompletedTask;
     }) },
     { "plotd", ("shows the difference plot for the two last scans", async () => {
-        ShowPlot(DataPlot.ComparisonOperation.Difference);
+        ShowPlot(Plot.ComparisonOperation.Difference);
         await Task.CompletedTask;
     }) },
     { "plotba", ("shows the plot Bland-Altman for the two last scans", async () => {
-        ShowPlot(DataPlot.ComparisonOperation.BlandAltman);
+        ShowPlot(Plot.ComparisonOperation.BlandAltman);
         await Task.CompletedTask;
     }) },
     { "all", ("a combnation of scpj, scpm, gcpmd, scan, result and plot", async () => await GetNewScan()) },
@@ -115,11 +115,11 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "scsp", ("sets scope parameters", async () => 
         Print(await ionVision.SetScopeParameters(SimulatedData.ScopeParameters with { Usv = 500 }))) },
     { "scplot", ("shows the last scope result as a plot", async () => {
-        ShowScopePlot(DataPlot.ComparisonOperation.None);
+        ShowScopePlot(Plot.ComparisonOperation.None);
         await Task.CompletedTask;
     }) },
     { "scplotd", ("shows the difference plot for the two last scope data", async () => {
-        ShowScopePlot(DataPlot.ComparisonOperation.Difference);
+        ShowScopePlot(Plot.ComparisonOperation.Difference);
         await Task.CompletedTask;
     }) },
     { "scall", ("a combnation of scsp, scon, scoff, and scplot", async () => await GetNewScopeScan()) },
@@ -227,7 +227,7 @@ async Task GetNewScan()
     if (response.Value != null)
     {
         scanDataList.Add(response.Value.MeasurementData);
-        ShowPlot(DataPlot.ComparisonOperation.None);
+        ShowPlot(Plot.ComparisonOperation.None);
     }
 }
 
@@ -249,10 +249,10 @@ async Task GetNewScopeScan()
 
     await ionVision.DisableScopeMode();
 
-    ShowScopePlot(DataPlot.ComparisonOperation.None);
+    ShowScopePlot(Plot.ComparisonOperation.None);
 }
 
-void ShowPlot(DataPlot.ComparisonOperation operation)
+void ShowPlot(Plot.ComparisonOperation operation)
 {
     if (scanParamDefinition == null)
     {
@@ -262,9 +262,9 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
 
     switch (operation)
     {
-        case DataPlot.ComparisonOperation.None:
+        case Plot.ComparisonOperation.None:
             if (scanDataList.Count > 0)
-                DataPlot.Show(
+                Plot.Show(
                         (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                         (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         scanDataList[^1].IntensityTop,
@@ -273,10 +273,10 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
             else
                 Console.Write($"No scan results retrieved yet (use 'result' command to retrieve it)");
             break;
-        case DataPlot.ComparisonOperation.Difference:
-        case DataPlot.ComparisonOperation.BlandAltman:
+        case Plot.ComparisonOperation.Difference:
+        case Plot.ComparisonOperation.BlandAltman:
             if (scanDataList.Count > 1)
-                DataPlot.Show(
+                Plot.Show(
                         (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                         (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                         scanDataList[^1].IntensityTop,
@@ -289,12 +289,12 @@ void ShowPlot(DataPlot.ComparisonOperation operation)
     }
 }
 
-void ShowScopePlot(DataPlot.ComparisonOperation operation)
+void ShowScopePlot(Plot.ComparisonOperation operation)
 {
-    if (operation == DataPlot.ComparisonOperation.None)
+    if (operation == Plot.ComparisonOperation.None)
     {
         if (scopeDataList.Count > 0)
-            DataPlot.Show(
+            Plot.Show(
                 1,
                 scopeDataList[^1].IntensityTop.Length,
                 scopeDataList[^1].IntensityTop,
@@ -303,10 +303,10 @@ void ShowScopePlot(DataPlot.ComparisonOperation operation)
         else
             Console.Write("No scope results retrieved yet");
     }
-    else if (operation == DataPlot.ComparisonOperation.Difference)
+    else if (operation == Plot.ComparisonOperation.Difference)
     {
         if (scopeDataList.Count > 1)
-            DataPlot.Show(
+            Plot.Show(
                 1,
                 scopeDataList[^1].IntensityTop.Length,
                 scopeDataList[^1].IntensityTop,

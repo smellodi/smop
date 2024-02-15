@@ -29,7 +29,7 @@ public class SetupController
 
     public SetupController()
     {
-        IonVision.DataPlot.UseLogarithmicScaleInBlandAltman = false;
+        IonVision.Plot.UseLogarithmicScaleInBlandAltman = false;
     }
 
     public void AcquireOdorChannelsInfo()

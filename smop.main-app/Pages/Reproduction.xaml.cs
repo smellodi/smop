@@ -37,9 +37,9 @@ public partial class Reproduction : Page, IPage<Navigation>
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Connected);
 
         _proc = new OdorReproducerController(config);
-        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
+        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.Plot.Create(cnvDmsScan,
             (int)config.DataSize.Height, (int)config.DataSize.Width, e.MeasurementData.IntensityTop));
-        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.DataPlot.Create(cnvDmsScan,
+        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => IonVision.Plot.Create(cnvDmsScan,
             1, e.IntensityTop.Length, e.IntensityTop));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => {
             SetActiveElement(ActiveElement.ML);
@@ -72,7 +72,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         crtRMSE.Reset();
 
         DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-            IonVision.DataPlot.Create(cnvDmsTargetScan, (int)config.DataSize.Height, (int)config.DataSize.Width, config.TargetDMS.IntensityTop)));
+            IonVision.Plot.Create(cnvDmsTargetScan, (int)config.DataSize.Height, (int)config.DataSize.Width, config.TargetDMS.IntensityTop)));
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
@@ -215,7 +215,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeRMSE.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
         tblRecipeIteration.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
 
-        cnvDmsScan.Visibility = BoolToVisible(!isActiveENose && App.IonVision != null);
+        cnvDmsScan.Visibility = BoolToVisible(App.IonVision != null);
+        cnvDmsTargetScan.Visibility = BoolToVisible(App.IonVision != null);
 
         btnQuit.IsEnabled = !isActiveENose;
 

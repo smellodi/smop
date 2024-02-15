@@ -22,7 +22,7 @@ public partial class Setup : Page, IPage<object?>
         brdENoseProgress.Visibility = Visibility.Collapsed;
 
         _dmsPlotTypes = new RadioButton[] { rdbDmsPlotTypeSingle, rdbDmsPlotTypeDiff, rdbDmsPlotTypeBlandAltman };
-        foreach (int plotType in Enum.GetValues(typeof(DataPlot.ComparisonOperation)))
+        foreach (int plotType in Enum.GetValues(typeof(Plot.ComparisonOperation)))
         {
             _dmsPlotTypes[plotType].Tag = plotType;
             _dmsPlotTypes[plotType].IsEnabled = false;
@@ -109,7 +109,7 @@ public partial class Setup : Page, IPage<object?>
     bool _isOdorDisplayCleanedUp = false;
     bool _ionVisionIsReady = false;
 
-    DataPlot.ComparisonOperation _dmsPlotType = DataPlot.ComparisonOperation.None;
+    Plot.ComparisonOperation _dmsPlotType = Plot.ComparisonOperation.None;
 
     // Odor Reproduction
     bool _mlIsConnected = false;
@@ -138,9 +138,9 @@ public partial class Setup : Page, IPage<object?>
             odorReproductionSettings.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
         }
 
-        _dmsPlotTypes[(int)DataPlot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
-        _dmsPlotTypes[(int)DataPlot.ComparisonOperation.Difference].IsEnabled = _dmsScans.Count > 1;
-        _dmsPlotTypes[(int)DataPlot.ComparisonOperation.BlandAltman].IsEnabled = _dmsScans.Count > 1;
+        _dmsPlotTypes[(int)Plot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
+        _dmsPlotTypes[(int)Plot.ComparisonOperation.Difference].IsEnabled = _dmsScans.Count > 1;
+        _dmsPlotTypes[(int)Plot.ComparisonOperation.BlandAltman].IsEnabled = _dmsScans.Count > 1;
 
         _dmsPlotTypes[(int)_dmsPlotType].SetValue(System.Windows.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
     }
@@ -172,15 +172,15 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
-    private void ShowPlot(DataPlot.ComparisonOperation compOp)
+    private void ShowPlot(Plot.ComparisonOperation compOp)
     {
         if (_ctrl.ParamDefinition == null)
             return;
 
-        if (compOp == DataPlot.ComparisonOperation.None)
+        if (compOp == Plot.ComparisonOperation.None)
         {
             if (_dmsScans.Count > 0)
-                DataPlot.Create(
+                Plot.Create(
                     cnvDmsScan,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
@@ -192,7 +192,7 @@ public partial class Setup : Page, IPage<object?>
         else
         {
             if (_dmsScans.Count > 1)
-                DataPlot.Create(
+                Plot.Create(
                     cnvDmsScan,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
@@ -341,7 +341,7 @@ public partial class Setup : Page, IPage<object?>
         {
             _dmsScans.Add(_ctrl.DmsScan.MeasurementData);
 
-            if (_dmsPlotType == DataPlot.ComparisonOperation.None || _dmsScans.Count > 1)
+            if (_dmsPlotType == Plot.ComparisonOperation.None || _dmsScans.Count > 1)
             {
                 ShowDmsPlot();
             }
@@ -396,7 +396,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void DmsPlotType_Click(object sender, RoutedEventArgs e)
     {
-        _dmsPlotType = (DataPlot.ComparisonOperation)Enum.Parse(typeof(DataPlot.ComparisonOperation), (sender as RadioButton)!.Tag.ToString() ?? "0");
+        _dmsPlotType = (Plot.ComparisonOperation)Enum.Parse(typeof(Plot.ComparisonOperation), (sender as RadioButton)!.Tag.ToString() ?? "0");
         ShowDmsPlot();
     }
 }

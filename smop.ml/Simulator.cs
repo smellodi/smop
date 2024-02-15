@@ -9,7 +9,7 @@ namespace Smop.ML;
 
 internal abstract class Simulator : IDisposable
 {
-    public bool UseScopeMode => false;
+    public static readonly bool USE_SCOPE_MODE = true;
 
     public abstract void Dispose();
 
@@ -73,7 +73,7 @@ internal abstract class Simulator : IDisposable
 
         _step++;
         var rmse = RMSE / _step;
-        var usv = UseScopeMode ? 400 + _step * 20 : 0;
+        var usv = USE_SCOPE_MODE ? 400 + _step * 20 : 0;
         bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
         var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse, usv };
@@ -129,7 +129,7 @@ internal abstract class Simulator : IDisposable
 
                 _step++;
                 var rmse = RMSE / _step;
-                var usv = UseScopeMode ? 400 + _step * 20 : 0;
+                var usv = USE_SCOPE_MODE ? 400 + _step * 20 : 0;
                 bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
                 var recipe = new Recipe("Normal", isFinished ? 1 : 0, rmse, usv, 

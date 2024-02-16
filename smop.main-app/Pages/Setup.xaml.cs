@@ -63,7 +63,7 @@ public partial class Setup : Page, IPage<object?>
                 _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
             }
 
-            _odorDisplayRequiresCleanup = odorDisplayRequiresCleanup;
+            _doesOdorDisplayRequireCleanup = odorDisplayRequiresCleanup;
         }
 
         //cnvDmsScan.Children.Clear();
@@ -113,17 +113,16 @@ public partial class Setup : Page, IPage<object?>
     readonly RadioButton[] _dmsPlotTypes;
 
     bool _isInitilized = false;
-    bool _isOdorDisplayCleanedUp = false;
     bool _ionVisionIsReady = false;
-
+    bool _isOdorDisplayCleanedUp = false;
     bool _isOdorDisplayCleaningRunning = false;
     bool _isDMSInitRunning = false;
+    bool _isCollectingData = false;
 
-    bool _odorDisplayRequiresCleanup = false;
+    bool _doesOdorDisplayRequireCleanup = false;
 
     Plot.ComparisonOperation _dmsPlotType = Plot.ComparisonOperation.None;
 
-    // Odor Reproduction
     bool _mlIsConnected = false;
 
     private void UpdateUI()
@@ -152,6 +151,7 @@ public partial class Setup : Page, IPage<object?>
 
             prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
             prbDMSBusy.Visibility = _isDMSInitRunning ? Visibility.Visible : Visibility.Hidden;
+            prbSNTBusy.Visibility = _isCollectingData && !_ctrl.IsSntScanComplete ? Visibility.Visible : Visibility.Hidden;
         }
 
         _dmsPlotTypes[(int)Plot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
@@ -294,7 +294,7 @@ public partial class Setup : Page, IPage<object?>
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
 
-            if (_odorDisplayRequiresCleanup)
+            if (_doesOdorDisplayRequireCleanup)
             {
                 _isOdorDisplayCleaningRunning = true;
 
@@ -356,6 +356,8 @@ public partial class Setup : Page, IPage<object?>
 
     private async void MeasureSample_Click(object sender, RoutedEventArgs e)
     {
+        _isCollectingData = true;
+
         btnMeasureSample.IsEnabled = false;
 
         brdENoseProgress.Visibility = Visibility.Visible;
@@ -378,6 +380,8 @@ public partial class Setup : Page, IPage<object?>
 
         btnMeasureSample.IsEnabled = true;
         brdENoseProgress.Visibility = Visibility.Collapsed;
+
+        _isCollectingData = false;
 
         UpdateUI();
     }

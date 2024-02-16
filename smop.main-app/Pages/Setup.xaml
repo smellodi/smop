@@ -12,6 +12,15 @@
       Loaded="Page_Loaded"
       Unloaded="Page_Unloaded">
 
+    <Page.Resources>
+        <Style x:Key="BusyDevice" TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}">
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Height" Value="3"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="IsIndeterminate" Value="True"/>
+        </Style>
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -65,16 +74,11 @@
 
                             <Separator Grid.Row="0" Margin="0,8,0,0"/>
                             <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="70"/>
-                                </Grid.ColumnDefinitions>
                                 <Label Grid.Column="0"
-                                   Style="{StaticResource Section}"
-                                   Content="Odor Display events:"/>
-                                <ProgressBar x:Name="prbODBusy" Grid.Column="1"
-                                             Margin="0,8"
-                                             IsIndeterminate="True"/>
+                                       Style="{StaticResource Section}"
+                                       Content="Odor Display events:"/>
+                                <ProgressBar x:Name="prbODBusy"
+                                             Style="{StaticResource BusyDevice}"/>
                             </Grid>
                             <Border Grid.Row="2"
                                     BorderThickness="1"
@@ -101,16 +105,11 @@
 
                             <Separator Grid.Row="0" Margin="0,8,0,0"/>
                             <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="70"/>
-                                </Grid.ColumnDefinitions>
                                 <Label Grid.Column="0"
                                    Style="{StaticResource Section}"
                                    Content="DMS events:"/>
                                 <ProgressBar x:Name="prbDMSBusy" Grid.Column="1"
-                                             Margin="0,8"
-                                             IsIndeterminate="True"/>
+                                             Style="{StaticResource BusyDevice}"/>
                             </Grid>
                             <Border Grid.Row="2"
                                     BorderThickness="1"
@@ -136,9 +135,13 @@
                             </Grid.RowDefinitions>
 
                             <Separator Grid.Row="0" Margin="0,8,0,0"/>
-                            <Label Grid.Row="1"
+                            <Grid Grid.Row="1">
+                                <Label Grid.Column="0"
                                    Style="{StaticResource Section}"
                                    Content="SNT events:"/>
+                                <ProgressBar x:Name="prbSNTBusy" Grid.Column="1"
+                                             Style="{StaticResource BusyDevice}"/>
+                            </Grid>
                             <Border Grid.Row="2"
                                     BorderThickness="1"
                                     BorderBrush="{StaticResource BrushBorderLight}">

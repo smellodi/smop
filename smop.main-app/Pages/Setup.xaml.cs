@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Linq;
 
 namespace Smop.MainApp.Pages;
 
@@ -95,6 +97,15 @@ public partial class Setup : Page, IPage<object?>
 
     enum LogType { DMS, SNT, OD }
 
+    readonly KeyValuePair<double, Color>[] PLOT_THEME = new Dictionary<double, Color>()
+    {
+        { 0, (Color)Application.Current.FindResource("ColorLight") },
+        { 0.05, (Color)Application.Current.FindResource("ColorLightDarker") },
+        { 0.15, (Color)Application.Current.FindResource("ColorDarkLighter") },
+        { 0.4, (Color)Application.Current.FindResource("ColorDark") },
+        { 1, (Color)Application.Current.FindResource("ColorDarkDarker") },
+    }.ToArray();
+
     readonly Storage _storage = Storage.Instance;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(Setup) + "Page");
@@ -134,13 +145,15 @@ public partial class Setup : Page, IPage<object?>
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
         {
+            bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
             bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
             bool isSntReady = _ctrl.IsSntScanComplete || isDmsReady;
-            btnStart.IsEnabled = 
+
+            btnStart.IsEnabled =
+                isODReady &&
                 (isDmsReady || App.IonVision == null) && 
                 (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
-                _isOdorDisplayCleanedUp &&
                 brdENoseProgress.Visibility != Visibility.Visible;
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
             btnMeasureSample.IsEnabled = !_isOdorDisplayCleaningRunning;
@@ -203,7 +216,8 @@ public partial class Setup : Page, IPage<object?>
                     cnvDmsScan,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                    _dmsScans[^1].IntensityTop
+                    _dmsScans[^1].IntensityTop,
+                    theme: PLOT_THEME
                 );
             else
                 throw new Exception($"No DMS scan performed yet");
@@ -217,7 +231,8 @@ public partial class Setup : Page, IPage<object?>
                     (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop,
                     _dmsScans[^2].IntensityTop,
-                    compOp
+                    compOp,
+                    PLOT_THEME
                 );
             else
                 throw new Exception($"At least 2 DMS scans must be performed to display this plot");

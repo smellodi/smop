@@ -90,7 +90,7 @@
                                     <TextBlock Name="tblODStatus"
                                                TextWrapping="Wrap"
                                                Padding="6,0,0,0">
-                                        <Run Text="ready"/>
+                                        <Run Text="The device is ready"/>
                                     </TextBlock>
                                 </ScrollViewer>
                             </Border>
@@ -152,7 +152,7 @@
                                     <TextBlock Name="tblSntStatus"
                                                TextWrapping="Wrap"
                                                Padding="6,0,0,0">
-                                        <Run Text="ready"/>
+                                        <Run Text="The device is ready"/>
                                     </TextBlock>
                                 </ScrollViewer>
                             </Border>

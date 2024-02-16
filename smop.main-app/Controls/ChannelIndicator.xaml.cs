@@ -1,4 +1,5 @@
 ﻿using Smop.OdorDisplay;
+using Smop.MainApp.Utils.Extensions;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -223,13 +224,17 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
 
     public SolidColorBrush HeaderColor => new SolidColorBrush(ChannelID switch
     {
-        Device.ID.Base => Colors.Linen,
-        Device.ID.DilutionAir => Colors.Beige,
-        Device.ID.Odor1 => Colors.LightPink,
-        Device.ID.Odor2 => Colors.LightBlue,
-        Device.ID.Odor3 => Colors.PaleGreen,
-        Device.ID.Odor4 => Colors.Lavender,
-        Device.ID.Odor5 => Colors.PaleGoldenrod,
+        Device.ID.Base => (Color)Application.Current.FindResource("ColorLight"),
+        Device.ID.DilutionAir => ((Color)Application.Current.FindResource("ColorLight")).Darker(15),
+        Device.ID.Odor1 => (Color)Application.Current.FindResource("ColorLightDarker"),
+        Device.ID.Odor2 => (Color)Application.Current.FindResource("ColorDarkLighter"),
+        Device.ID.Odor3 => (Color)Application.Current.FindResource("ColorDark"),
+        Device.ID.Odor4 => (Color)Application.Current.FindResource("ColorDarkDarker"),
+        Device.ID.Odor5 => (Color)Application.Current.FindResource("ColorLightDarker"),
+        Device.ID.Odor6 => (Color)Application.Current.FindResource("ColorDarkLighter"),
+        Device.ID.Odor7 => (Color)Application.Current.FindResource("ColorDark"),
+        Device.ID.Odor8 => (Color)Application.Current.FindResource("ColorDarkDarker"),
+        Device.ID.Odor9 => (Color)Application.Current.FindResource("ColorLight"),
         _ => Colors.White
     });
 

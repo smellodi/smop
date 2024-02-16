@@ -2,4 +2,4 @@
 
 ## Usage
 
-Run this console app and follow the onscreen instruction to test the module
+Run this console app and follow the onscreen instructions to test the module

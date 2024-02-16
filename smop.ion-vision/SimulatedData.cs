@@ -66,8 +66,8 @@ public static class SimulatedData
                 1
             ),
             new PointConfiguration(
-                MakeArray((row, col) => USV_START + row * (USV_STOP - USV_START) / (DATA_COLS - 1)),
-                MakeArray((row, col) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_ROWS - 1)),
+                MakeArray((row, col) => USV_START + row * (USV_STOP - USV_START) / (DATA_ROWS - 1)),
+                MakeArray((row, col) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_COLS - 1)),
                 MakeArray((row, col) => VB_START),
                 MakeArray((row, col) => DATA_PP),
                 MakeArray((row, col) => DATA_PW),
@@ -124,9 +124,9 @@ public static class SimulatedData
         ),
         new MeasurementData(
             true,
-            DATA_POINT_COUNT,
+            (int)(ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Steps * ParameterDefinition.MeasurementParameters.SteppingControl.Ucv.Steps),
             MakeArray(GetImitatedPixel),
-            MakeArray((row, col) => 100f * col),
+            MakeArray((x, y) => 100f * x),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Ucv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Vb,
@@ -140,36 +140,48 @@ public static class SimulatedData
 
     public static ScopeResult ScopeResult => new(
         ScopeParameters.Usv,
-        MakeArrayLine(0, (row, col) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_ROWS - 1)),
-        MakeArrayLine((int)((ScopeParameters.Usv - USV_START) / (USV_STOP - USV_START) * DATA_ROWS), GetImitatedPixel),
-        MakeArrayLine(0, (row, col) => 100f * col)
+        MakeArrayLine(0, (x, y) => ScopeParameters.UcvStart + x * (ScopeParameters.UcvStop - ScopeParameters.UcvStart)),
+        MakeArrayLine((ScopeParameters.Usv - ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Min )
+            / (ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Max - ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Min),
+            GetImitatedPixel),
+        MakeArrayLine(0, (x, y) => 100f * x)
     );
 
     // Internal
 
-    static float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
-    static float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };
+    static readonly float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
+    static readonly float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };
     static float[] HyperbolaParams = HyperbolaParams1;
 
-    private static T[] MakeArray<T>(Func<int,int,T> callback)
+    private static T[] MakeArray<T>(Func<float, float, T> callback)
     {
         HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
 
-        var result = new T[DATA_POINT_COUNT];
-        for (int row = 0; row < DATA_ROWS; row++)
-            for (int col = 0; col < DATA_COLS; col++)
-                result[row * DATA_COLS + col] = callback(row, col);
+        var config = ParameterDefinition?.MeasurementParameters.SteppingControl;
+        var rowCount = (int)(config?.Usv.Steps ?? DATA_ROWS);
+        var colCount = (int)(config?.Ucv.Steps ?? DATA_COLS);
+        var count = rowCount * colCount;
+
+        var result = new T[count];
+        for (int row = 0; row < rowCount; row++)
+            for (int col = 0; col < colCount; col++)
+                result[row * colCount + col] = callback(
+                    (float)col / (colCount - 1),
+                    (float)row / (rowCount - 1));
         return result;
     }
 
-    private static T[] MakeArrayLine<T>(int usvIndex, Func<int, int, T> callback)
+    private static T[] MakeArrayLine<T>(float usvRatio, Func<float, float, T> callback)
     {
         HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
-        usvIndex = Math.Max(usvIndex, 0);
+        usvRatio = Math.Max(usvRatio, 0);
 
-        var result = new T[DATA_COLS];
-        for (int col = 0; col < DATA_COLS; col++)
-            result[col] = callback(usvIndex, col);
+        var config = ParameterDefinition?.MeasurementParameters.SteppingControl;
+        var colCount = (int)(config?.Ucv.Steps ?? DATA_COLS);
+
+        var result = new T[colCount];
+        for (int col = 0; col < colCount; col++)
+            result[col] = callback((float)col / (colCount - 1), usvRatio);
         return result;
     }
 
@@ -202,15 +214,11 @@ public static class SimulatedData
     /// <summary>
     /// Imitate real data
     /// </summary>
-    /// <param name="row">Row</param>
-    /// <param name="col">Col</param>
+    /// <param name="x">0..1</param>
+    /// <param name="y">0..1</param>
     /// <returns>Pixels value</returns>
-    private static float GetImitatedPixel(int row, int col)
-    {
-        float x = (float)col / (DATA_COLS - 1);
-        float y = (float)row / (DATA_ROWS - 1);
-
-        var lines = new float[]
+    private static float GetImitatedPixel(float x, float y) =>
+        new float[]
         {
             // The strongests line
             (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
@@ -220,8 +228,5 @@ public static class SimulatedData
             (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
             // Second wide line up
             (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
-        };
-
-        return lines.Max();
-    }
+        }.Max();
 }

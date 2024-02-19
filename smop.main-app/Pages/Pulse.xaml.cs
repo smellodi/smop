@@ -1,7 +1,7 @@
-﻿using Smop.OdorDisplay.Packets;
+﻿using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
-using Smop.MainApp.Controllers;
 using Smop.MainApp.Utils;
+using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

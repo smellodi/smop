@@ -1,12 +1,12 @@
-﻿using Smop.MainApp.Logging;
+﻿using Smop.MainApp.Dialogs;
+using Smop.MainApp.Logging;
 using Smop.MainApp.Pages;
 using Smop.MainApp.Utils;
-using Smop.MainApp.Dialogs;
+using Smop.OdorDisplay.Packets;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp;
 
@@ -44,7 +44,7 @@ public partial class MainWindow : Window
     // Internal
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(MainWindow));
-    
+
     readonly Connect _connectPage = new();
     readonly Setup _setupPage = new();
     readonly Pulse _pulsePage = new();

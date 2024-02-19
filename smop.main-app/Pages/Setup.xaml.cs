@@ -1,15 +1,15 @@
 ﻿using Smop.IonVision;
-using Smop.MainApp.Dialogs;
 using Smop.MainApp.Controllers;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Linq;
 
 namespace Smop.MainApp.Pages;
 
@@ -140,7 +140,7 @@ public partial class Setup : Page, IPage<object?>
     {
         if (_storage.SetupType == SetupType.PulseGenerator)
         {
-            btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) && 
+            btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) &&
                 pulseGeneratorSettings.Setup != null;
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
@@ -151,7 +151,7 @@ public partial class Setup : Page, IPage<object?>
 
             btnStart.IsEnabled =
                 isODReady &&
-                (isDmsReady || App.IonVision == null) && 
+                (isDmsReady || App.IonVision == null) &&
                 (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
                 brdENoseProgress.Visibility != Visibility.Visible;
@@ -176,7 +176,8 @@ public partial class Setup : Page, IPage<object?>
 
     private void AddToLog(LogType destination, string line, bool replaceLast = false) => Dispatcher.Invoke(() =>
     {
-        (IList<string> lines, TextBlock tbl, ScrollViewer scv) = destination switch {
+        (IList<string> lines, TextBlock tbl, ScrollViewer scv) = destination switch
+        {
             LogType.DMS => (_ionVisionLog, tblDmsStatus, scvDmsStatus),
             LogType.SNT => (_smellInspLog, tblSntStatus, scvSntStatus),
             LogType.OD => (_odorDisplayLog, tblODStatus, scvODStatus),

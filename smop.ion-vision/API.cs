@@ -1,9 +1,9 @@
 ﻿using RestSharp;
+using Smop.Common;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Smop.Common;
 
 namespace Smop.IonVision;
 

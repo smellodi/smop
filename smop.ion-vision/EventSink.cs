@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Websocket.Client;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Smop.IonVision;
 
@@ -64,7 +63,7 @@ public class EventSink : IDisposable
         /// <summary>
         /// Body / payload
         /// </summary>
-        public KeyValuePair<string,T>[] Data { get; init; }
+        public KeyValuePair<string, T>[] Data { get; init; }
         public TimedArrayEventArgs(Message msg) : base(msg)
         {
             Data = msg.Body.GetType().GetProperties()

@@ -20,16 +20,16 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     public string SessionHumidity
     {
         get => Session?.Humidity.ToString("F1") ?? "";
-        set 
+        set
         {
             if (_sessionIndex >= 0 && float.TryParse(value, out float v))
-                _sessions[_sessionIndex].Humidity = v; 
+                _sessions[_sessionIndex].Humidity = v;
         }
     }
     public string SessionInitialPause
     {
         get => Session?.Intervals.InitialPause.ToString("F1") ?? "";
-        set 
+        set
         {
             if (_sessionIndex >= 0 && float.TryParse(value, out float v))
                 _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { InitialPause = v };
@@ -41,7 +41,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         get => Session?.Intervals.Pulse.ToString("F1") ?? "";
         set
         {
-            if (_sessionIndex >= 0 && float.TryParse(value, out float v)) 
+            if (_sessionIndex >= 0 && float.TryParse(value, out float v))
                 _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { Pulse = v };
         }
     }
@@ -92,9 +92,9 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     public string SessionFinalPause
     {
         get => Session?.Intervals.FinalPause.ToString("F1") ?? "";
-        set 
+        set
         {
-            if (_sessionIndex >= 0 && float.TryParse(value, out float v)) 
+            if (_sessionIndex >= 0 && float.TryParse(value, out float v))
                 _sessions[_sessionIndex].Intervals = _sessions[_sessionIndex].Intervals with { FinalPause = v };
         }
     }
@@ -180,7 +180,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     readonly Style? _pulseChannelFlowValid;
     readonly Style? _pulseChannelFlowInvalid;
 
-    List<SessionProps> _sessions = new ();
+    List<SessionProps> _sessions = new();
     int _sessionIndex = -1;
     int _pulseIndex = -1;
     float _lastDmsDelay = 5f;
@@ -368,7 +368,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             int i = 0;
             foreach (var pulse in Session.Pulses)
             {
-                lsvPulses.Items.Add($"#{i+1}");
+                lsvPulses.Items.Add($"#{i + 1}");
                 i++;
             }
             lsvPulses.SelectedIndex = _pulseIndex;

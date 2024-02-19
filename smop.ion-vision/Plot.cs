@@ -35,7 +35,8 @@ public class Plot
         ComparisonOperation compOp = ComparisonOperation.Difference,
         KeyValuePair<double, Color>[]? theme = null)
     {
-        var thread = new Thread(() => {
+        var thread = new Thread(() =>
+        {
             var plot = new Window()
             {
                 Width = 1200,

@@ -89,7 +89,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "gpm", ("retrieves the current parameter", async () => Print(await ionVision.GetParameter())) },
     { "gpmd", ("retrieves the current parameter definition", async () => Print(await ionVision.GetParameterDefinition())) },
     { "spm", ("sets the current parameter", async () => Print(await ionVision.SetParameterAndPreload())) },
-    { "com", ("sets a comment to be added to the next scan result", async () => 
+    { "com", ("sets a comment to be added to the next scan result", async () =>
         Print(await ionVision.SetScanResultComment(new { _quickcomment = new string[] { "my comment" } } ))) },
     { "scan", ("starts a new scan", async () => Print(await ionVision.StartScan())) },
     { "p", ("retrieves the scan progress", async () => Print(await ionVision.GetScanProgress())) },
@@ -112,7 +112,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "sq", ("disabled scope mode", async () => Print(await ionVision.DisableScopeMode())) },
     { "scr", ("gets the latest scope result", async () => Print(await ionVision.GetScopeResult())) },
     { "scgp", ("retrieves scope parameters", async () => Print(await ionVision.GetScopeParameters())) },
-    { "scsp", ("sets scope parameters", async () => 
+    { "scsp", ("sets scope parameters", async () =>
         Print(await ionVision.SetScopeParameters(SimulatedData.ScopeParameters with { Usv = 500 }))) },
     { "scplot", ("shows the last scope result as a plot", async () => {
         ShowScopePlot(Plot.ComparisonOperation.None);
@@ -264,12 +264,12 @@ void ShowPlot(Plot.ComparisonOperation operation)
     {
         case Plot.ComparisonOperation.None:
             if (scanDataList.Count > 0)
-               new Plot().Show(
-                    scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                    scanDataList[^1].IntensityTop,
-                    theme: PLOT_THEME
-                );
+                new Plot().Show(
+                     scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                     scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                     scanDataList[^1].IntensityTop,
+                     theme: PLOT_THEME
+                 );
             else
                 Console.Write($"No scan results retrieved yet (use 'result' command to retrieve it)");
             break;

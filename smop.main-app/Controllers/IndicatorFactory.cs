@@ -1,9 +1,8 @@
-﻿using Smop.OdorDisplay;
+﻿using Smop.MainApp.Controls;
+using Smop.OdorDisplay;
 using Smop.OdorDisplay.Packets;
-using Smop.MainApp.Controls;
 using System;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace Smop.MainApp.Controllers;
 

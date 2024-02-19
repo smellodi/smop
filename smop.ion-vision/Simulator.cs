@@ -344,7 +344,7 @@ internal class Simulator : IMinimalAPI
             Task.FromResult(new Response<ScopeResult>(null, "Not available")) :
             Task.FromResult(new Response<ScopeResult>(_scopeData, null));
 
-    public Task<Response<ScopeParameters>> GetScopeParameters() => 
+    public Task<Response<ScopeParameters>> GetScopeParameters() =>
         Task.FromResult(new Response<ScopeParameters>(SimulatedData.ScopeParameters, null));
 
     public Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters)
@@ -395,7 +395,8 @@ internal class Simulator : IMinimalAPI
     {
         foreach (var socket in _sockets)
         {
-            var msg = new {
+            var msg = new
+            {
                 type,
                 time = (long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalMilliseconds,
                 body = obj ?? new object()

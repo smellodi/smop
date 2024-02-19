@@ -140,7 +140,7 @@ public static class SimulatedData
     public static ScopeResult ScopeResult => new(
         ScopeParameters.Usv,
         MakeArrayLine(0, (x, y) => ScopeParameters.UcvStart + x * (ScopeParameters.UcvStop - ScopeParameters.UcvStart)),
-        MakeArrayLine((ScopeParameters.Usv - _usv.Min ) / (_usv.Max - _usv.Min), GetImitatedPixel),
+        MakeArrayLine((ScopeParameters.Usv - _usv.Min) / (_usv.Max - _usv.Min), GetImitatedPixel),
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 

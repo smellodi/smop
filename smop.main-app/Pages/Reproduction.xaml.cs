@@ -47,7 +47,8 @@ public partial class Reproduction : Page, IPage<Navigation>
             1, e.IntensityTop.Length,
             e.IntensityTop,
             theme: PLOT_THEME));
-        _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() => {
+        _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() =>
+        {
             SetActiveElement(ActiveElement.ML);
             adaAnimation.Next();
         });
@@ -78,7 +79,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         crtRMSE.Reset();
 
         DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-            new IonVision.Plot().Create(cnvDmsTargetScan, 
+            new IonVision.Plot().Create(cnvDmsTargetScan,
                 (int)config.DataSize.Height,
                 (int)config.DataSize.Width,
                 config.TargetDMS.IntensityTop,
@@ -204,7 +205,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             Grid.SetColumn(tbl, 1);
             grid.Children.Add(tbl);
         }
-    
+
     }
 
     private void SetActiveElement(ActiveElement el)

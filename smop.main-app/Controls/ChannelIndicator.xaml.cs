@@ -1,5 +1,5 @@
-﻿using Smop.OdorDisplay;
-using Smop.MainApp.Utils.Extensions;
+﻿using Smop.MainApp.Utils.Extensions;
+using Smop.OdorDisplay;
 using System;
 using System.ComponentModel;
 using System.Windows;

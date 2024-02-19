@@ -34,7 +34,7 @@ public partial class App : Application
         var config = new NLog.Config.LoggingConfiguration();
 
         var logfile = new NLog.Targets.FileTarget("File")
-        { 
+        {
             FileName = "${basedir}/logs/logfile.txt",
             ArchiveOldFileOnStartup = true,
             MaxArchiveFiles = 5,

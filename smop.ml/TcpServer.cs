@@ -3,8 +3,8 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using Tcp.NET.Server;
-using Tcp.NET.Server.Models;
 using Tcp.NET.Server.Events.Args;
+using Tcp.NET.Server.Models;
 
 namespace Smop.ML;
 

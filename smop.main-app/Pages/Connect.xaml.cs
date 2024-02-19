@@ -1,6 +1,7 @@
-﻿using Smop.OdorDisplay.Packets;
-using Smop.MainApp.Dialogs;
+﻿using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
+using Smop.MainApp.Utils;
+using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,10 +10,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Smop.MainApp.Utils;
-using System.Windows.Documents;
 
 namespace Smop.MainApp.Pages;
 

@@ -7,7 +7,6 @@ public static class SimulatedData
 {
     const int DATA_ROWS = 10;
     const int DATA_COLS = 200;
-    const int DATA_POINT_COUNT = DATA_ROWS * DATA_COLS;
     const float DATA_PP = 1000;
     const float DATA_PW = 200;
     const short DATA_SAMPLE_COUNT = 64;
@@ -124,7 +123,7 @@ public static class SimulatedData
         ),
         new MeasurementData(
             true,
-            (int)(ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Steps * ParameterDefinition.MeasurementParameters.SteppingControl.Ucv.Steps),
+            _usv.Steps * _ucv.Steps,
             MakeArray(GetImitatedPixel),
             MakeArray((x, y) => 100f * x),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
@@ -141,13 +140,14 @@ public static class SimulatedData
     public static ScopeResult ScopeResult => new(
         ScopeParameters.Usv,
         MakeArrayLine(0, (x, y) => ScopeParameters.UcvStart + x * (ScopeParameters.UcvStop - ScopeParameters.UcvStart)),
-        MakeArrayLine((ScopeParameters.Usv - ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Min )
-            / (ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Max - ParameterDefinition.MeasurementParameters.SteppingControl.Usv.Min),
-            GetImitatedPixel),
+        MakeArrayLine((ScopeParameters.Usv - _usv.Min ) / (_usv.Max - _usv.Min), GetImitatedPixel),
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 
     // Internal
+
+    static RangeStep _usv => ParameterDefinition.MeasurementParameters.SteppingControl.Usv; // shortcut
+    static RangeStep _ucv => ParameterDefinition.MeasurementParameters.SteppingControl.Ucv; // shortcut
 
     static readonly float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
     static readonly float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };
@@ -158,8 +158,8 @@ public static class SimulatedData
         HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
 
         var config = ParameterDefinition?.MeasurementParameters.SteppingControl;
-        var rowCount = (int)(config?.Usv.Steps ?? DATA_ROWS);
-        var colCount = (int)(config?.Ucv.Steps ?? DATA_COLS);
+        var rowCount = config?.Usv.Steps ?? DATA_ROWS;
+        var colCount = config?.Ucv.Steps ?? DATA_COLS;
         var count = rowCount * colCount;
 
         var result = new T[count];
@@ -177,7 +177,7 @@ public static class SimulatedData
         usvRatio = Math.Max(usvRatio, 0);
 
         var config = ParameterDefinition?.MeasurementParameters.SteppingControl;
-        var colCount = (int)(config?.Ucv.Steps ?? DATA_COLS);
+        var colCount = config?.Ucv.Steps ?? DATA_COLS;
 
         var result = new T[colCount];
         for (int col = 0; col < colCount; col++)

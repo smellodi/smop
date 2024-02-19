@@ -265,8 +265,8 @@ void ShowPlot(Plot.ComparisonOperation operation)
         case Plot.ComparisonOperation.None:
             if (scanDataList.Count > 0)
                new Plot().Show(
-                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     scanDataList[^1].IntensityTop,
                     theme: PLOT_THEME
                 );
@@ -279,8 +279,8 @@ void ShowPlot(Plot.ComparisonOperation operation)
             {
                 var plot = new Plot() { UseLogarithmicScaleInBlandAltman = false };
                 plot.Show(
-                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    (int)scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    scanParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    scanParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     scanDataList[^1].IntensityTop,
                     scanDataList[^2].IntensityTop,
                     operation

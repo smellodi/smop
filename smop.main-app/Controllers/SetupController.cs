@@ -192,7 +192,7 @@ public class SetupController
             if (paramDefinition != null)
             {
                 var sc = paramDefinition.MeasurementParameters.SteppingControl;
-                _dmsCache.SetSubfolder((int)sc.Usv.Steps, (int)sc.Ucv.Steps);
+                _dmsCache.SetSubfolder(sc.Usv.Steps, sc.Ucv.Steps);
             }
 
             await Task.Delay(300);

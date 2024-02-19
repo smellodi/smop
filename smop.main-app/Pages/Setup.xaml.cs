@@ -214,8 +214,8 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsScans.Count > 0)
                 new Plot().Create(
                     cnvDmsScan,
-                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop,
                     theme: PLOT_THEME
                 );
@@ -227,8 +227,8 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsScans.Count > 1)
                 new Plot().Create(
                     cnvDmsScan,
-                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
-                    (int)_ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
+                    _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
+                    _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
                     _dmsScans[^1].IntensityTop,
                     _dmsScans[^2].IntensityTop,
                     compOp,
@@ -420,7 +420,7 @@ public partial class Setup : Page, IPage<object?>
                 if (_ctrl.ParamDefinition != null)
                 {
                     var sc = _ctrl.ParamDefinition.MeasurementParameters.SteppingControl;
-                    dataSize = new((int)sc.Ucv.Steps, (int)sc.Usv.Steps);
+                    dataSize = new(sc.Ucv.Steps, sc.Usv.Steps);
                 }
 
                 Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), _dmsScans[^1], dataSize));

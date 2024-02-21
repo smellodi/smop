@@ -28,99 +28,6 @@ public abstract class RecordBase
     protected static string Delim => "\t";
 }
 
-public class LogLocation
-{
-    public string Folder => Path.Combine(_rootFolder, _folderName);
-
-    public LogLocation()
-    {
-        var settings = Properties.Settings.Default;
-        _rootFolder = settings.Logger_Folder;
-
-        if (string.IsNullOrEmpty(_rootFolder) || !Directory.Exists(_rootFolder))
-        {
-            _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        }
-
-        _folderName = $"{DateTime.Now:u}".ToPath();
-    }
-
-    public SavingResult PromptToSave()
-    {
-        var title = $"{Application.Current.MainWindow.Title} - Logging";
-        var message = $"{SaveInto}\n'{Folder}'?\n\n{PressChange}\n{PressDiscard}\n{PressCancel}";
-
-        MsgBox.Result answer = MsgBox.Ask(title, message, Array.Empty<string>(),
-            MsgBox.Button.Save, MsgBox.Button.Change, MsgBox.Button.Discard, MsgBox.Button.Cancel);
-
-        if (answer.Button == MsgBox.Button.Discard)
-        {
-            if (MsgBox.Warn(title, "The data will be lost. Continue?", MsgBox.Button.Yes, MsgBox.Button.No) == MsgBox.Button.Yes)
-            {
-                return SavingResult.Discard;
-            }
-        }
-        else if (answer.Button == MsgBox.Button.Change)
-        {
-            if (AskFolderName())
-            {
-                return SavingResult.Save;
-            }
-        }
-        else if (answer.Button == MsgBox.Button.Save)
-        {
-            return SavingResult.Save;
-        }
-
-        return SavingResult.Cancel;
-    }
-
-    public string GetFileName(string logName)
-    {
-        return Path.Combine(Folder, logName + ".txt");
-    }
-
-    public void EnsureLocationExists()
-    {
-        if (!Directory.Exists(Folder))
-        {
-            Directory.CreateDirectory(Folder);
-        }
-    }
-
-    // Internal
-
-    readonly string SaveInto = "Save data into";
-    readonly string PressChange = "Press 'Change' to set another destination file";
-    readonly string PressDiscard = "Press 'Discard' to discard data";
-    readonly string PressCancel = "Press 'Cancel' to cancel the action";
-
-    string _rootFolder;
-    string _folderName;
-
-    private bool AskFolderName()
-    {
-        var savePicker = new Microsoft.Win32.SaveFileDialog()
-        {
-            InitialDirectory = _rootFolder,
-            FileName = _folderName,
-        };
-
-        if (savePicker.ShowDialog() ?? false)
-        {
-            _rootFolder = Path.GetDirectoryName(savePicker.FileName) ?? _rootFolder;
-            Properties.Settings.Default.Logger_Folder = _rootFolder;
-            Properties.Settings.Default.Save();
-
-            _folderName = savePicker.FileName;
-
-            return true;
-        }
-
-        return false;
-    }
-}
-
 public interface ILog
 {
     public string Name { get; }
@@ -236,5 +143,98 @@ public abstract class Logger<T> where T : RecordBase
         }
 
         return stringBuilder.ToString();
+    }
+}
+
+file class LogLocation
+{
+    public string Folder => Path.Combine(_rootFolder, _folderName);
+
+    public LogLocation()
+    {
+        var settings = Properties.Settings.Default;
+        _rootFolder = settings.Logger_Folder;
+
+        if (string.IsNullOrEmpty(_rootFolder) || !Directory.Exists(_rootFolder))
+        {
+            _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        }
+
+        _folderName = $"{DateTime.Now:u}".ToPath();
+    }
+
+    public SavingResult PromptToSave()
+    {
+        var title = $"{Application.Current.MainWindow.Title} - Logging";
+        var message = $"{SaveInto}\n'{Folder}'?\n\n{PressChange}\n{PressDiscard}\n{PressCancel}";
+
+        MsgBox.Result answer = MsgBox.Ask(title, message, Array.Empty<string>(),
+            MsgBox.Button.Save, MsgBox.Button.Change, MsgBox.Button.Discard, MsgBox.Button.Cancel);
+
+        if (answer.Button == MsgBox.Button.Discard)
+        {
+            if (MsgBox.Warn(title, "The data will be lost. Continue?", MsgBox.Button.Yes, MsgBox.Button.No) == MsgBox.Button.Yes)
+            {
+                return SavingResult.Discard;
+            }
+        }
+        else if (answer.Button == MsgBox.Button.Change)
+        {
+            if (AskFolderName())
+            {
+                return SavingResult.Save;
+            }
+        }
+        else if (answer.Button == MsgBox.Button.Save)
+        {
+            return SavingResult.Save;
+        }
+
+        return SavingResult.Cancel;
+    }
+
+    public string GetFileName(string logName)
+    {
+        return Path.Combine(Folder, logName + ".txt");
+    }
+
+    public void EnsureLocationExists()
+    {
+        if (!Directory.Exists(Folder))
+        {
+            Directory.CreateDirectory(Folder);
+        }
+    }
+
+    // Internal
+
+    readonly string SaveInto = "Save data into";
+    readonly string PressChange = "Press 'Change' to set another destination file";
+    readonly string PressDiscard = "Press 'Discard' to discard data";
+    readonly string PressCancel = "Press 'Cancel' to cancel the action";
+
+    string _rootFolder;
+    string _folderName;
+
+    private bool AskFolderName()
+    {
+        var savePicker = new Microsoft.Win32.SaveFileDialog()
+        {
+            InitialDirectory = _rootFolder,
+            FileName = _folderName,
+        };
+
+        if (savePicker.ShowDialog() ?? false)
+        {
+            _rootFolder = Path.GetDirectoryName(savePicker.FileName) ?? _rootFolder;
+            Properties.Settings.Default.Logger_Folder = _rootFolder;
+            Properties.Settings.Default.Save();
+
+            _folderName = savePicker.FileName;
+
+            return true;
+        }
+
+        return false;
     }
 }

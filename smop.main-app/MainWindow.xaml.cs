@@ -154,7 +154,7 @@ public partial class MainWindow : Window
 
             _storage.SetupPage = next;
 
-            bool odorDisplayRequiresCleanup = sender is Connect connectPage ? connectPage.OdorDisplayRequiresCleanup : false;
+            bool odorDisplayRequiresCleanup = sender is Connect connectPage && connectPage.OdorDisplayRequiresCleanup;
             _setupPage.Init(_storage.SetupType, odorDisplayRequiresCleanup);
 
             Content = _setupPage;
@@ -167,7 +167,7 @@ public partial class MainWindow : Window
         _pulsePage.Dispose();
     }
 
-    private void FinishedPage_RequestSaving(object? sender, Pages.Finished.RequestSavingArgs e)
+    private void FinishedPage_RequestSaving(object? sender, Finished.RequestSavingArgs e)
     {
         var savingResult = SaveData(true);
         e.Result = savingResult;

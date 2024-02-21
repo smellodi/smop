@@ -5,12 +5,6 @@ namespace Smop.MainApp.Controls;
 
 public partial class LiveData : UserControl
 {
-    public class MeasureModel
-    {
-        public double Timestamp { get; set; }
-        public double Value { get; set; }
-    }
-
     public double Step
     {
         get => _step;
@@ -109,6 +103,12 @@ public partial class LiveData : UserControl
 
 
     // Internal 
+
+    private class MeasureModel
+    {
+        public double Timestamp { get; set; }
+        public double Value { get; set; }
+    }
 
     static readonly System.Drawing.Color LINE_COLOR = System.Drawing.Color.FromArgb(16, 160, 255);
     static readonly System.Drawing.Color AXIS_COLOR = System.Drawing.Color.FromArgb(80, 80, 80);

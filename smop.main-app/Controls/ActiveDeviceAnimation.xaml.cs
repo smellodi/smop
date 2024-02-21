@@ -20,7 +20,7 @@ public partial class ActiveDeviceAnimation : UserControl
 
     public void Init()
     {
-        var lastAnim = _anim[_anim.Length - 1];
+        var lastAnim = _anim[^1];
         lastAnim.Begin(this);
         lastAnim.Stop(this);
 

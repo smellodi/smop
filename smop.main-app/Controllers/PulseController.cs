@@ -18,7 +18,7 @@ internal enum Stage
     Finished = 0x80,
 }
 
-internal class PulseController : IDisposable
+internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVision) : IDisposable
 {
     public class StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, Stage stage, int sessionID, int pulseID) : EventArgs
     {
@@ -37,12 +37,6 @@ internal class PulseController : IDisposable
     public int PulseId => _pulseIndex + 1;
     public int SessionCount => _setup.Sessions.Length;
     public int PulseCount => 0 <= _sessionIndex && _sessionIndex < _setup.Sessions.Length ? _setup.Sessions[_sessionIndex].Pulses.Length : 0;
-
-    public PulseController(PulseSetup setup, IonVision.Communicator? ionVision)
-    {
-        _setup = setup;
-        _ionVision = ionVision;
-    }
 
     public void Dispose()
     {
@@ -104,9 +98,9 @@ internal class PulseController : IDisposable
     const double DMS_PROGRESS_CHECK_INTERVAL = 1;
 
     readonly OdorDisplayController _odorDisplay = new();
-    readonly IonVision.Communicator? _ionVision;
+    readonly IonVision.Communicator? _ionVision = ionVision;
 
-    readonly PulseSetup _setup;
+    readonly PulseSetup _setup = setup;
 
     readonly EventLogger _eventLogger = EventLogger.Instance;
     readonly IonVisionLogger _ionVisionLogger = IonVisionLogger.Instance;

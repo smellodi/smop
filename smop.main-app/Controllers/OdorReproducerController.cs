@@ -22,7 +22,7 @@ public class OdorReproducerController
     );
 
     public OdorChannel[] OdorChannels => _odorChannels.ToArray();
-    public int CurrentStep => _step;
+    public int CurrentStep { get; private set; } = 0;
 
     public event EventHandler<IonVision.ScanResult>? ScanFinished;
     public event EventHandler<IonVision.ScopeResult>? ScopeScanFinished;
@@ -71,7 +71,7 @@ public class OdorReproducerController
 
     public void ExecuteRecipe(ML.Recipe recipe)
     {
-        _step++;
+        CurrentStep++;
         _nlog.Info(RecipeToString(recipe));
 
         var cachedDmsScan = _dmsCache.Find(recipe, out string? dmsFilename);
@@ -132,8 +132,6 @@ public class OdorReproducerController
     readonly OdorDisplayController _odController = new();
 
     readonly ML.Communicator _ml;
-
-    int _step = 0;
 
     bool _canSendFrequentData = false;
     int _sntSamplesCount = 0;

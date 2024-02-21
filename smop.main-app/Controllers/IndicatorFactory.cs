@@ -10,9 +10,9 @@ internal static class IndicatorFactory
 {
     public record class SmellInspChannel(string Type, string Units, int Count);
     public static SmellInspChannel[] SmellInspChannels => new SmellInspChannel[] {
-        new SmellInspChannel("Resistor", "Ohms", 64),
-        new SmellInspChannel("Temperature", "°C", 0),
-        new SmellInspChannel("Humidity", "%", 0)
+        new("Resistor", "Ohms", 64),
+        new("Temperature", "°C", 0),
+        new("Humidity", "%", 0)
     };
 
     public static async Task OdorDisplay(Action<ChannelIndicator> callback)

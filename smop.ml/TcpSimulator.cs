@@ -19,7 +19,7 @@ internal class TcpSimulator : Simulator
 
     public override void Dispose()
     {
-        Task.WaitAll(_client.DisconnectAsync());
+        _client.DisconnectAsync().Wait();
         _client.Dispose();
     }
 

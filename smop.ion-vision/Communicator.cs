@@ -12,13 +12,13 @@ public class Communicator : IDisposable
     public event EventHandler? ScanFinished;
     public event EventHandler<ScopeResult>? ScopeResult;
 
-    public Settings Settings => _settings;
+    public Settings Settings { get; }
 
     public Communicator(string? settingsFilename = null, bool isSimulator = false)
     {
-        _settings = settingsFilename == null ? new() : new(settingsFilename);
-        _api = isSimulator ? new Simulator() : new API(_settings.IP);
-        _events = new(isSimulator ? "127.0.0.1" : _settings.IP);
+        Settings = settingsFilename == null ? new() : new(settingsFilename);
+        _api = isSimulator ? new Simulator() : new API(Settings.IP);
+        _events = new(isSimulator ? "127.0.0.1" : Settings.IP);
         _events.ScanProgressChanged += (s, e) => ScanProgress?.Invoke(this, e.Data.Progress);
         _events.ScanFinished += (s, e) => ScanProgress?.Invoke(this, 100);
         _events.ScanResultsProcessed += (s, e) => ScanFinished?.Invoke(this, EventArgs.Empty);
@@ -49,7 +49,7 @@ public class Communicator : IDisposable
 
     /// <summary>Sets user</summary>
     /// <returns>Error message, if any</returns>
-    public Task<API.Response<Confirm>> SetUser() => _api.SetUser(new User(_settings.User));
+    public Task<API.Response<Confirm>> SetUser() => _api.SetUser(new User(Settings.User));
 
     /// <summary>Retrieves a list of project names</summary>
     /// <returns>Project names</returns>
@@ -73,7 +73,7 @@ public class Communicator : IDisposable
     public async Task<API.Response<Confirm>> SetProjectAndWait()
     {
         _projectIsReady = false;
-        var response = await _api.SetProject(new ProjectAsName(_settings.Project));
+        var response = await _api.SetProject(new ProjectAsName(Settings.Project));
         if (response.Success)
         {
             while (!_projectIsReady)
@@ -88,7 +88,7 @@ public class Communicator : IDisposable
     /// <summary>Retrieves the current parameter definition</summary>
     /// <returns>Parameter definition</returns>
     public Task<API.Response<ParameterDefinition>> GetParameterDefinition() =>
-        _api.GetParameterDefinition(new Parameter(_settings.ParameterId, _settings.ParameterName));
+        _api.GetParameterDefinition(new Parameter(Settings.ParameterId, Settings.ParameterName));
 
 
     /// <summary>Retrieves the current parameter</summary>
@@ -102,7 +102,7 @@ public class Communicator : IDisposable
         _parameterIsReady = false;
         _parameterWasPreloaded = false;
 
-        var response = await _api.SetParameter(new ParameterAsId(_settings.ParameterId));
+        var response = await _api.SetParameter(new ParameterAsId(Settings.ParameterId));
         if (response.Success)
         {
             await Task.Delay(300);
@@ -141,7 +141,7 @@ public class Communicator : IDisposable
 
     /// <summary>Retrieves all project scanning result</summary>
     /// <returns>Array of scanning results</returns>
-    public Task<API.Response<string[]>> GetProjectResults() => _api.GetProjectResults(_settings.Project);
+    public Task<API.Response<string[]>> GetProjectResults() => _api.GetProjectResults(Settings.Project);
 
     /// <summary>Retrieves the system clock</summary>
     /// <returns>Clock</returns>
@@ -226,9 +226,6 @@ public class Communicator : IDisposable
         return result;
     }
 
-    // Internal
-
-    readonly Settings _settings;
     readonly IMinimalAPI _api;
     readonly EventSink _events;
 

@@ -9,7 +9,7 @@ namespace Smop.SmellInsp;
 /// </summary>
 public class SerialPortEmulator : ISerialPort, IDisposable
 {
-    public bool IsOpen => _isOpen;
+    public bool IsOpen { get; private set; } = false;
 
     public SerialPortEmulator()
     {
@@ -26,17 +26,17 @@ public class SerialPortEmulator : ISerialPort, IDisposable
         _dataTimer.Start();
     }
 
-    public void Open() { _isOpen = true; }
+    public void Open() { IsOpen = true; }
 
     public void Close()
     {
-        _isOpen = false;
+        IsOpen = false;
         Thread.Sleep(10);
     }
 
     public string ReadLine()
     {
-        while (_isOpen)
+        while (IsOpen)
         {
             Thread.Sleep(10);
             if (_hasDataToSend)
@@ -95,7 +95,6 @@ public class SerialPortEmulator : ISerialPort, IDisposable
     readonly static string VERSION = "1.0.0";
     readonly static string ADDRESS = "A1:5F:53:C7:31:0B";
 
-    bool _isOpen = false;
     bool _timerAutoStop = false;
     bool _hasDataToSend = false;
     bool _hasInfoToSend = false;

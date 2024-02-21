@@ -187,8 +187,8 @@ public class BeadThermistorValue : SensorValue
         Volts = FourBytes.ToFloat(data[4..]);
     }
     public BeadThermistorValue(float ohms, float volts) : base(Device.Sensor.BeadThermistor, new FourBytes[] {
-            new FourBytes(ohms),
-            new FourBytes(volts)
+            new(ohms),
+            new(volts)
         }.SelectMany(v => v.ToArray()).ToArray())
     {
         Ohms = ohms;
@@ -223,8 +223,8 @@ public class HumidityValue : SensorValue
         Celsius = FourBytes.ToFloat(data[4..]);
     }
     public HumidityValue(Device.Sensor sensor, float percent, float celsius) : base(sensor, new FourBytes[] {
-            new FourBytes(percent),
-            new FourBytes(celsius)
+            new(percent),
+            new(celsius)
         }.SelectMany(v => v.ToArray()).ToArray())
     {
         Percent = percent;
@@ -244,8 +244,8 @@ public class PressureValue : SensorValue
         Celsius = FourBytes.ToFloat(data[4..]);
     }
     public PressureValue(float millibars, float celsius) : base(Device.Sensor.PressureSensor, new FourBytes[] {
-            new FourBytes(millibars),
-            new FourBytes(celsius)
+            new(millibars),
+            new(celsius)
         }.SelectMany(v => v.ToArray()).ToArray())
     {
         Millibars = millibars;
@@ -267,9 +267,9 @@ public class GasValue : SensorValue
         Millibars = FourBytes.ToFloat(data[8..]);
     }
     public GasValue(Device.Sensor sensor, float slpm, float celsius, float millibars) : base(sensor, new FourBytes[] {
-            new FourBytes(slpm),
-            new FourBytes(celsius),
-            new FourBytes(millibars),
+            new(slpm),
+            new(celsius),
+            new(millibars),
         }.SelectMany(v => v.ToArray()).ToArray())
     {
         SLPM = slpm;

@@ -84,11 +84,8 @@ internal abstract class Simulator : IDisposable
 
     private async Task HandlePacket(string json)
     {
-        var packet = JsonSerializer.Deserialize<Packet>(json, _serializerOptions);
-        if (packet == null)
-        {
-            throw new Exception($"packet is not a valid JSON:\n  {json}");
-        }
+        var packet = JsonSerializer.Deserialize<Packet>(json, _serializerOptions)
+            ?? throw new Exception($"packet is not a valid JSON:\n  {json}");
 
         if (packet.Type == PacketType.Config)
         {

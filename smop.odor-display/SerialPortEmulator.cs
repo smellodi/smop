@@ -15,7 +15,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
     /// </summary>
     public static int SamplingFrequency { get; set; } = 100;
 
-    public bool IsOpen => _isOpen;
+    public bool IsOpen { get; private set; } = false;
 
     public SerialPortEmulator()
     {
@@ -31,17 +31,17 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
         };
     }
 
-    public void Open() { _isOpen = true; }
+    public void Open() { IsOpen = true; }
 
     public void Close()
     {
-        _isOpen = false;
+        IsOpen = false;
         Thread.Sleep(10);
     }
 
     public int Read(byte[] buffer, int offset, int count)
     {
-        while (_isOpen)
+        while (IsOpen)
         {
             Thread.Sleep(10);
             lock (_requests)
@@ -101,8 +101,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
     readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
     readonly HashSet<(long, Device.ID, Device.Controller)> _valveCloseEvents = new();
-
-    bool _isOpen = false;
+    
     bool _timerAutoStop = false;
 
     const float BASE_PID = 0.06f;
@@ -278,7 +277,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
 
         var measurements = new List<Measurement>
         {
-            new Measurement(Device.ID.Base, new SensorValue[]
+            new(Device.ID.Base, new SensorValue[]
             {
                 new PIDValue(_currentPID + Random.Range(0.001f)),
                 //new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
@@ -343,6 +342,6 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
     {
         public static float Range(float pm) => (float)((_random.NextDouble() - 0.5) * 2 * pm);
 
-        static System.Random _random = new();
+        static readonly System.Random _random = new();
     }
 }

@@ -18,11 +18,11 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "caps1", ("retrieves Odor1 module capabilities", new QueryCapabilities(Device.ID.Odor1)) },
     { "set1", ("sets Base odorant flow = 5 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+            new(Device.ID.Base, new ActuatorCapabilities(
                 ActuatorCapabilities.OutputValveOpenPermanently,
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 5.0f)
             )),
-            new Actuator(Device.ID.Odor1, new ActuatorCapabilities()
+            new(Device.ID.Odor1, new ActuatorCapabilities()
             {
                 { Device.Controller.OdorantFlow, 0.1f },
                 { Device.Controller.ChassisTemperature, 25f },
@@ -30,7 +30,7 @@ var commands = new Dictionary<string, (string, Request?)>()
         })) },
     { "set2", ("sets Base [humidity = 4 ccm, dilution = 6 ccm, odorant+output valve ON]", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+            new(Device.ID.Base, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 4f),
                 KeyValuePair.Create(Device.Controller.DilutionAirFlow, 6f),
                 ActuatorCapabilities.OdorantValveOpenPermanently
@@ -39,41 +39,41 @@ var commands = new Dictionary<string, (string, Request?)>()
         })) },
     { "set3", ("sets Base [odorant+output OFF]", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+            new(Device.ID.Base, new ActuatorCapabilities(
                 ActuatorCapabilities.OdorantValveClose
                 //ActuatorCapabilities.OutputValveClose
             )),
         })) },
     { "set4", ("sets Odor1-3 [flow = 50 sccm, odorant ON]", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+            new(Device.ID.Odor1, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
                 ActuatorCapabilities.OdorantValveOpenPermanently
             )),
-            new Actuator(Device.ID.Odor2, new ActuatorCapabilities(
+            new(Device.ID.Odor2, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
                 ActuatorCapabilities.OdorantValveOpenPermanently
             )),
-            new Actuator(Device.ID.Odor3, new ActuatorCapabilities(
+            new(Device.ID.Odor3, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
                 ActuatorCapabilities.OdorantValveOpenPermanently
             ))
         })) },
     { "set5", ("sets Odor1-3 [odorant OFF]", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+            new(Device.ID.Odor1, new ActuatorCapabilities(
                 ActuatorCapabilities.OdorantValveClose
             )),
-            new Actuator(Device.ID.Odor2, new ActuatorCapabilities(
+            new(Device.ID.Odor2, new ActuatorCapabilities(
                 ActuatorCapabilities.OdorantValveClose
             )),
-            new Actuator(Device.ID.Odor3, new ActuatorCapabilities(
+            new(Device.ID.Odor3, new ActuatorCapabilities(
                 ActuatorCapabilities.OdorantValveClose
             )),
         })) },
     { "set6", ("sets Odor1 [flow = 10 sccm, odorant ON=2 sec]", new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+            new(Device.ID.Odor1, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 10f),
                 KeyValuePair.Create(Device.Controller.OdorantValve, 2000f)
             ))

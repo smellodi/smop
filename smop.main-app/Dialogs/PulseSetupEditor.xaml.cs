@@ -305,7 +305,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         }
         else
         {
-            var pulseChannelProps = new List<PulseChannelProps>() { new PulseChannelProps(1, 10f, true) };
+            var pulseChannelProps = new List<PulseChannelProps>() { new(1, 10f, true) };
             for (int i = 2; i <= PulseChannels.MaxCount; i++)
             {
                 pulseChannelProps.Add(new PulseChannelProps(i, 0f, false));

@@ -17,17 +17,11 @@ public class COMUtils : IDisposable
     /// <summary>
     /// Port descriptor
     /// </summary>
-    public class Port
+    public class Port(string name, string? description, string? manufacturer)
     {
-        public string Name { get; }
-        public string? Description { get; }
-        public string? Manufacturer { get; }
-        public Port(string name, string? description, string? manufacturer)
-        {
-            Name = name;
-            Description = description;
-            Manufacturer = manufacturer;
-        }
+        public string Name { get; } = name;
+        public string? Description { get; } = description;
+        public string? Manufacturer { get; } = manufacturer;
     }
 
     /// <summary>

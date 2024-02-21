@@ -10,7 +10,7 @@ namespace Smop.MainApp.Controls;
 
 public partial class PulseGeneratorSettings : UserControl
 {
-    public PulseSetup? Setup => _setup;
+    public PulseSetup? Setup { get; private set; } = null;
 
     public event EventHandler? Changed;
 
@@ -22,7 +22,6 @@ public partial class PulseGeneratorSettings : UserControl
     // Internal
 
     string? _setupFileName = null;
-    PulseSetup? _setup = null;
 
     private void LoadPulseSetup(string filename)
     {
@@ -39,14 +38,14 @@ public partial class PulseGeneratorSettings : UserControl
             return;
         }
 
-        _setup = PulseSetup.Load(filename);
-        if (_setup == null)
+        Setup = PulseSetup.Load(filename);
+        if (Setup == null)
         {
             return;
         }
         else if (chkRandomize.IsChecked == true)
         {
-            _setup.Randomize();
+            Setup.Randomize();
         }
 
         _setupFileName = filename;

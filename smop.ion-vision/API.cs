@@ -649,7 +649,6 @@ public class API : IMinimalAPI
             return new Response<Confirm>(null, ex.Message);
         }
     }
-    private Task<Response<Confirm>> Set(string path) => Set<object>(path);
 
     private async Task<Response<U>> Create<T, U>(string path, T? param, bool preserveParamCase = false, bool preserveResponseCase = false)
         where T : class

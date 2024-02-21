@@ -42,15 +42,15 @@ internal class FileSimulator : Simulator
 
     // Internal
 
-    long DEBOUNCE_INTERVAL = 500_0000; // 500 ms
-    int READING_DELAY = 200; // ms; this is need to avoid a crash if the file is not yet closed by the counterpart
+    const long DEBOUNCE_INTERVAL = 500_0000; // 500 ms
+    const int READING_DELAY = 200; // ms; this is need to avoid a crash if the file is not yet closed by the counterpart
 
-    FileSystemWatcher _watcher;
-    string _input;
-    string _output;
+    readonly FileSystemWatcher _watcher;
+    readonly string _input;
+    readonly string _output;
 
-    FileStream? _inputStream;
-    FileStream? _outputStream;
+    readonly FileStream? _inputStream;
+    readonly FileStream? _outputStream;
 
     long _lastChangeTimestamp = 0;
 

@@ -38,7 +38,7 @@ internal class OdorDisplayController
 
         return Send(new SetActuators(new Actuator[]
         {
-            new Actuator(Device.ID.Base, new ActuatorCapabilities(
+            new(Device.ID.Base, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, humidifierFlow),
                 KeyValuePair.Create(Device.Controller.DilutionAirFlow, dilutionAirFlow),
                 ActuatorCapabilities.OdorantValveOpenPermanently

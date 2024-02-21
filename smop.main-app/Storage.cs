@@ -63,15 +63,9 @@ public class Storage : INotifyPropertyChanged
         }
     }
 
-    public SimulationTarget Simulating
-    {
-        get => _simulating;
-    }
+    public SimulationTarget Simulating { get; private set; } = SimulationTarget.Nothing;
 
-    public bool HasSimulatingComponents
-    {
-        get => _simulating != SimulationTarget.Nothing;
-    }
+    public bool HasSimulatingComponents => Simulating != SimulationTarget.Nothing;
 
     public double ZoomLevel
     {
@@ -101,9 +95,9 @@ public class Storage : INotifyPropertyChanged
 
     public void AddSimulatingTarget(SimulationTarget target)
     {
-        if (!_simulating.HasFlag(target))
+        if (!Simulating.HasFlag(target))
         {
-            _simulating |= target;
+            Simulating |= target;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSimulatingComponents)));
         }
     }
@@ -180,8 +174,6 @@ public class Storage : INotifyPropertyChanged
 
     SetupType _setupType = SetupType.Undefined;
     Navigation _setupPage = Navigation.Exit;
-
-    SimulationTarget _simulating = SimulationTarget.Nothing;
     double _zoomLevel;
 
     private Storage()

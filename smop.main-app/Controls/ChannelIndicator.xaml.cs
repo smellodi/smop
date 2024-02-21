@@ -222,7 +222,7 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
         }
     }
 
-    public SolidColorBrush HeaderColor => new SolidColorBrush(ChannelID switch
+    public SolidColorBrush HeaderColor => new(ChannelID switch
     {
         Device.ID.Base => (Color)Application.Current.FindResource("ColorLight"),
         Device.ID.DilutionAir => ((Color)Application.Current.FindResource("ColorLight")).Darker(15),

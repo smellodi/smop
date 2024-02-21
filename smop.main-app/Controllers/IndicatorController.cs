@@ -8,13 +8,8 @@ using System.Windows.Threading;
 
 namespace Smop.MainApp.Controllers;
 
-public class IndicatorController
+public class IndicatorController(LiveData graph)
 {
-    public IndicatorController(LiveData graph)
-    {
-        _graph = graph;
-    }
-
     public async Task Create(Dispatcher dispatcher, Panel stpOdorDisplayIndicators, Panel smellInspContainer)
     {
         await IndicatorFactory.OdorDisplay(indicator => dispatcher.Invoke(() =>
@@ -125,7 +120,7 @@ public class IndicatorController
     readonly Storage _storage = Storage.Instance;
     readonly Dictionary<string, ChannelIndicator> _indicators = new();
 
-    readonly LiveData _graph;
+    readonly LiveData _graph = graph;
 
     ChannelIndicator? _currentIndicator = null;
     int _smellInspResistor = 0;

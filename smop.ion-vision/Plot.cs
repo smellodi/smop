@@ -122,9 +122,10 @@ public class Plot
 
     private static void CreateAxis(Canvas canvas, Rect rc)
     {
+        /*
         double width = canvas.ActualWidth;
         double height = canvas.ActualHeight;
-        /*
+
         int offset = 2;
         int lbOffset = 25;
 

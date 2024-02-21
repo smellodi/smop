@@ -125,7 +125,7 @@ internal static class SensorExt
             .Matches(name, "[A-Z][0-9a-z_]+")
             .Select(m => m.Groups[0].Value)
             .Where(p => p != "Sensor");
-        return matches.Count() > 0 ? string.Join(" ", matches) : name;
+        return matches.Any() ? string.Join(" ", matches) : name;
     }
 }
 

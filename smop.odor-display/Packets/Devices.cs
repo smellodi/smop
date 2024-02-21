@@ -10,7 +10,7 @@ public class Devices : Response
     public bool HasBaseModule => _payload![0] != 0;
     public bool HasDilutionModule => _payload![10] != 0;
 
-    public bool HasOdorModule(int index) => index < MaxOdorModuleCount ? _payload![index + 1] != 0 : false;
+    public bool HasOdorModule(int index) => index < MaxOdorModuleCount && _payload![index + 1] != 0;
 
     public static Devices? From(Response response)
     {

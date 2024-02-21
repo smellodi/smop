@@ -6,11 +6,11 @@ namespace Smop.OdorDisplay;
 /// <summary>
 /// The request used internally in <see cref="CommPort"/> to match responses with the corresponding requests
 /// </summary>
-internal class TimedRequest
+internal class TimedRequest(Type type)
 {
     public static int WaitInterval => 500;
 
-    public Type Type { get; }
+    public Type Type { get; } = type;
 
     /// <summary>
     /// Stores the response packet received from the port
@@ -19,11 +19,6 @@ internal class TimedRequest
 
     public long Duration => (System.Diagnostics.Stopwatch.GetTimestamp() - _timestamp) / 10000;
     public bool IsValid => Duration < WaitInterval;
-
-    public TimedRequest(Type type)
-    {
-        Type = type;
-    }
 
     /// <summary>
     /// Waits until <see cref="SetResponse(Response)"/> is called.

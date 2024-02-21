@@ -5,17 +5,11 @@ namespace Smop.MainApp.Controls;
 
 public partial class ProgressPlot : UserControl
 {
-    public class MeasureModel
-    {
-        public int ID { get; set; }
-        public double Value { get; set; }
-    }
-
     public ProgressPlot()
     {
         InitializeComponent();
 
-        _scatter = new ScottPlot.Plottable.ScatterPlot(new double[] { 0 }, new double[] { 0 })
+        _scatter = new ScottPlot.Plottable.ScatterPlot([0], [0])
         {
             Color = LINE_COLOR,
             MarkerSize = 2f
@@ -36,7 +30,7 @@ public partial class ProgressPlot : UserControl
     {
         _data.Clear();
 
-        _scatter.Update(new double[] { 0 }, new double[] { 0 });
+        _scatter.Update([0], [0]);
 
         chart.Plot.AxisAuto();
         chart.Render();
@@ -63,6 +57,12 @@ public partial class ProgressPlot : UserControl
 
 
     // Internal 
+
+    private class MeasureModel
+    {
+        public int ID { get; set; }
+        public double Value { get; set; }
+    }
 
     static readonly System.Drawing.Color LINE_COLOR = System.Drawing.Color.FromArgb(16, 160, 255);
 

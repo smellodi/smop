@@ -90,7 +90,7 @@ public abstract class Packet
         }
 
         result.AddRange(TwoBytes.ToArray(Length));
-        result.AddRange(_payload ?? new byte[] { });
+        result.AddRange(_payload ?? Array.Empty<byte>());
 
         result.Add(_checksum);
 

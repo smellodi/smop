@@ -30,5 +30,5 @@ public static class ScreenLogger
     [DllImport("kernel32.dll")]
     static extern IntPtr GetConsoleWindow();
 
-    static bool _isConsoleApp = GetConsoleWindow() != IntPtr.Zero;
+    static readonly bool _isConsoleApp = GetConsoleWindow() != IntPtr.Zero;
 }

@@ -9,7 +9,7 @@ using System.Windows.Data;
 namespace Smop.MainApp.Controls;
 
 [ValueConversion(typeof(string), typeof(bool))]
-public class StringToBoolConverter : IValueConverter
+file class StringToBoolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

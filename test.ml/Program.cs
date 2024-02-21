@@ -51,19 +51,19 @@ ml.Parameter = Smop.IonVision.SimulatedData.ParameterDefinition;
 ml.RecipeReceived += (s, e) => Print(e);
 
 await Task.Delay(300);
-ml.Config(new string[] { Source.DMS }, new ChannelProps[]
+await ml.Config(new string[] { Source.DMS }, new ChannelProps[]
 {
-    new ChannelProps(0, "nButanol", new() { { "maxFlow", "80" } }),
-    new ChannelProps(1, "IPA", new() { { "maxFlow", "80" } }),
+    new(0, "nButanol", new() { { "maxFlow", "80" } }),
+    new(1, "IPA", new() { { "maxFlow", "80" } }),
 });
 await Task.Delay(300);
 
 var commands = new Dictionary<string, (string, Action?)>()
 {
     { "check", ("checks the connection status", () => Print(ml.IsConnected)) },
-    { "dms", ("send DMS data to ML", () => ml.Publish(Smop.IonVision.SimulatedData.ScanResult) ) },
-    { "snt", ("send SNT data to ML", () => ml.Publish(Smop.SmellInsp.SerialPortEmulator.GenerateData() ) ) },
-    { "pid", ("send PID data to ML", () => ml.Publish(68.2f) ) },
+    { "dms", ("send DMS data to ML", () => _ = ml.Publish(Smop.IonVision.SimulatedData.ScanResult) ) },
+    { "snt", ("send SNT data to ML", () => _ = ml.Publish(Smop.SmellInsp.SerialPortEmulator.GenerateData() ) ) },
+    { "pid", ("send PID data to ML", () => _ = ml.Publish(68.2f) ) },
     { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },
 };

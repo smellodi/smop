@@ -8,13 +8,8 @@ namespace Smop.OdorDisplay;
 /// <summary>
 /// This class is used to emulate communication with the device via <see cref="CommPort"/>
 /// </summary>
-public class SerialPortEmulator : ISerialPort, System.IDisposable
+internal class SerialPortEmulator : ISerialPort, System.IDisposable
 {
-    /// <summary>
-    /// ms
-    /// </summary>
-    public static int SamplingFrequency { get; set; } = 100;
-
     public bool IsOpen { get; private set; } = false;
 
     public SerialPortEmulator()
@@ -97,7 +92,7 @@ public class SerialPortEmulator : ISerialPort, System.IDisposable
     readonly Queue<Request> _requests = new();
     readonly Queue<byte[]> _responses = new();
 
-    readonly System.Timers.Timer _dataTimer = new(SamplingFrequency);
+    readonly System.Timers.Timer _dataTimer = new(CommPort.SamplingInterval);
     readonly System.Diagnostics.Stopwatch _stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
     readonly HashSet<(long, Device.ID, Device.Controller)> _valveCloseEvents = new();

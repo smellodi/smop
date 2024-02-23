@@ -17,6 +17,11 @@ public class CommPort
     public static CommPort Instance => _instance ??= new();
 
     /// <summary>
+    /// ms
+    /// </summary>
+    public static int SamplingInterval { get; set; } = 100;
+
+    /// <summary>
     /// Fires when COM port is opened
     /// </summary>
     public event EventHandler? Opened;

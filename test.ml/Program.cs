@@ -62,7 +62,7 @@ var commands = new Dictionary<string, (string, Action?)>()
 {
     { "check", ("checks the connection status", () => Print(ml.IsConnected)) },
     { "dms", ("send DMS data to ML", () => _ = ml.Publish(Smop.IonVision.SimulatedData.ScanResult) ) },
-    { "snt", ("send SNT data to ML", () => _ = ml.Publish(Smop.SmellInsp.SerialPortEmulator.GenerateData() ) ) },
+    { "snt", ("send SNT data to ML", () => _ = ml.Publish(Smop.SmellInsp.SimulatedData.Generate() ) ) },
     { "pid", ("send PID data to ML", () => _ = ml.Publish(68.2f) ) },
     { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },

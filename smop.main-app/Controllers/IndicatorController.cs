@@ -135,13 +135,13 @@ public class IndicatorController(LiveData graph)
         else if (chi.Source.StartsWith("od"))
         {
             interval = (double)(_storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ?
-                OdorDisplay.SerialPortEmulator.SamplingFrequency :
+                OdorDisplay.CommPort.SamplingInterval :
                 OdorDisplay.Device.DataMeasurementInterval)
                 / 1000;
         }
         else if (chi.Source.StartsWith("snt"))
         {
-            interval = SmellInsp.ISerialPort.Interval;
+            interval = SmellInsp.CommPort.SamplingInterval;
         }
 
         _graph.Reset(interval, baseValue);

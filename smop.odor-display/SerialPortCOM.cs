@@ -9,7 +9,7 @@ namespace Smop.OdorDisplay;
 /// testing the <see cref="Smop.OdorDisplay"/> module without opening a real serial port
 /// (we use <see cref="SerialPortEmulator"/> for this purpose).
 /// </summary>
-public class SerialPortCOM : ISerialPort
+internal class SerialPortCOM : ISerialPort
 {
     public bool IsOpen => _port.IsOpen;
 

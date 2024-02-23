@@ -4,10 +4,34 @@ using System.Threading;
 
 namespace Smop.SmellInsp;
 
+public static class SimulatedData
+{
+    public static Data Generate()
+    {
+        var resistance = new float[64];
+        for (int i = 0; i < resistance.Length; i++)
+        {
+            resistance[i] = 4.6f + Random.Range(0.3f);
+        }
+        return new Data(
+            resistance,
+            24.6f + Random.Range(0.1f),
+            47.1f + Random.Range(0.1f)
+        );
+    }
+
+    private static class Random
+    {
+        public static float Range(float pm) => (float)((_random.NextDouble() - 0.5) * 2 * pm);
+
+        static readonly System.Random _random = new();
+    }
+}
+
 /// <summary>
 /// This class is used to emulate communication with the device via <see cref="CommPort"/>
 /// </summary>
-public class SerialPortEmulator : ISerialPort, IDisposable
+internal class SerialPortEmulator : ISerialPort, IDisposable
 {
     public bool IsOpen { get; private set; } = false;
 
@@ -42,7 +66,7 @@ public class SerialPortEmulator : ISerialPort, IDisposable
             if (_hasDataToSend)
             {
                 _hasDataToSend = false;
-                var data = GenerateData();
+                var data = SimulatedData.Generate();
                 return string.Join(SEPARATOR,
                     new string[] {
                         "start",
@@ -75,20 +99,6 @@ public class SerialPortEmulator : ISerialPort, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public static Data GenerateData()
-    {
-        var resistance = new float[64];
-        for (int i = 0; i < resistance.Length; i++)
-        {
-            resistance[i] = 4.6f + Random.Range(0.3f);
-        }
-        return new Data(
-            resistance,
-            24.6f + Random.Range(0.1f),
-            47.1f + Random.Range(0.1f)
-        );
-    }
-
     // Internal
 
     readonly static char SEPARATOR = ';';
@@ -99,12 +109,5 @@ public class SerialPortEmulator : ISerialPort, IDisposable
     bool _hasDataToSend = false;
     bool _hasInfoToSend = false;
 
-    readonly System.Timers.Timer _dataTimer = new((int)(ISerialPort.Interval * 1000));
-
-    private static class Random
-    {
-        public static float Range(float pm) => (float)((_random.NextDouble() - 0.5) * 2 * pm);
-
-        static readonly System.Random _random = new();
-    }
+    readonly System.Timers.Timer _dataTimer = new((int)(CommPort.SamplingInterval * 1000));
 }

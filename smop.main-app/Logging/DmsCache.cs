@@ -35,7 +35,7 @@ internal class DmsCache
         }
     }
 
-    public IonVision.ScanResult? Find(OdorChannels odorChannels, out string? filename)
+    public IonVision.Scan.ScanResult? Find(OdorChannels odorChannels, out string? filename)
     {
         if (!IsEnabled)
         {
@@ -47,7 +47,7 @@ internal class DmsCache
         return Find(id, out filename);
     }
 
-    public IonVision.ScanResult? Find(ML.Recipe recipe, out string? filename)
+    public IonVision.Scan.ScanResult? Find(ML.Recipe recipe, out string? filename)
     {
         if (!IsEnabled)
         {
@@ -65,7 +65,7 @@ internal class DmsCache
         return null;
     }
 
-    public string? Save(OdorChannels odorChannels, IonVision.ScanResult scan)
+    public string? Save(OdorChannels odorChannels, IonVision.Scan.ScanResult scan)
     {
         if (!IsEnabled)
         {
@@ -78,7 +78,7 @@ internal class DmsCache
         return filename;
     }
 
-    public string? Save(ML.Recipe recipe, IonVision.ScanResult scan)
+    public string? Save(ML.Recipe recipe, IonVision.Scan.ScanResult scan)
     {
         if (!IsEnabled)
         {
@@ -106,7 +106,7 @@ internal class DmsCache
     private static string ToId(IEnumerable<string> list) => string.Join('x', list);
     private static string ToFilename(string id) => $"dms_{id}.json";
 
-    private IonVision.ScanResult? Find(string id, out string? filename)
+    private IonVision.Scan.ScanResult? Find(string id, out string? filename)
     {
         filename = ToFilename(id);
         var cachedFilename = Path.Combine(_subfolder, filename);
@@ -115,14 +115,14 @@ internal class DmsCache
         {
             using StreamReader reader = new(cachedFilename);
             var json = reader.ReadToEnd();
-            return JsonSerializer.Deserialize<IonVision.ScanResult>(json);
+            return JsonSerializer.Deserialize<IonVision.Scan.ScanResult>(json);
         }
 
         filename = null;
         return null;
     }
 
-    private string Save(string id, IonVision.ScanResult scan)
+    private string Save(string id, IonVision.Scan.ScanResult scan)
     {
         string filename = ToFilename(id);
         var cachedFilename = Path.Combine(_subfolder, filename);

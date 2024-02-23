@@ -1,10 +1,12 @@
-﻿using Smop.MainApp.Logging;
+﻿using Smop.Common;
+using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
+using IV = Smop.IonVision;
 
 namespace Smop.MainApp.Controllers;
 
@@ -17,15 +19,15 @@ public class OdorReproducerController
     public record class Config(
         ML.Communicator MLComm,
         OdorChannelConfig[] TargetFlows,
-        IonVision.MeasurementData TargetDMS,
+        IV.Scan.MeasurementData TargetDMS,
         System.Windows.Size DataSize
     );
 
     public OdorChannel[] OdorChannels => _odorChannels.ToArray();
     public int CurrentStep { get; private set; } = 0;
 
-    public event EventHandler<IonVision.ScanResult>? ScanFinished;
-    public event EventHandler<IonVision.ScopeResult>? ScopeScanFinished;
+    public event EventHandler<IV.Scan.ScanResult>? ScanFinished;
+    public event EventHandler<IV.Defs.ScopeResult>? ScopeScanFinished;
     public event EventHandler? MlComputationStarted;
     public event EventHandler? ENoseStarted;
     public event EventHandler<double>? ENoseProgressChanged;
@@ -99,10 +101,10 @@ public class OdorReproducerController
                     var waitingTime = OdorDisplayController.CalcWaitingTime(recipe.Channels?.Select(ch => ch.Flow));
                     await Task.Delay((int)(waitingTime * 1000));
 
-                    if (await CollectData(recipe.Usv) is IonVision.Scan dmsScan)
+                    if (await CollectData(recipe.Usv) is IV.Scan.IScan dmsScan)
                     {
                         SendDmsScanToML(dmsScan);
-                        if (dmsScan is IonVision.ScanResult fullScan)
+                        if (dmsScan is IV.Scan.ScanResult fullScan)
                         {
                             var filename = _dmsCache.Save(recipe, fullScan);
                             _nlog.Info(LogIO.Text("Cache", "Write", filename));
@@ -146,11 +148,11 @@ public class OdorReproducerController
         return LogIO.Text("Recipe", string.Join(" ", fields));
     }
 
-    private async Task<IonVision.Scan?> CollectData(float usv)
+    private async Task<IV.Scan.IScan?> CollectData(float usv)
     {
         _canSendFrequentData = true;
 
-        IonVision.Scan? dmsScan = null;
+        IV.Scan.IScan? dmsScan = null;
 
         if (App.IonVision != null)
         {
@@ -177,14 +179,14 @@ public class OdorReproducerController
         return dmsScan;
     }
 
-    private void SendDmsScanToML(IonVision.Scan dmsScan)
+    private void SendDmsScanToML(IV.Scan.IScan dmsScan)
     {
-        if (dmsScan is IonVision.ScopeResult scopeScan)
+        if (dmsScan is IV.Defs.ScopeResult scopeScan)
         {
             _ = _ml.Publish(scopeScan);
             ScopeScanFinished?.Invoke(this, scopeScan);
         }
-        else if (dmsScan is IonVision.ScanResult fullScan)
+        else if (dmsScan is IV.Scan.ScanResult fullScan)
         {
             _ = _ml.Publish(fullScan);
             ScanFinished?.Invoke(this, fullScan);
@@ -193,7 +195,7 @@ public class OdorReproducerController
         MlComputationStarted?.Invoke(this, EventArgs.Empty);
     }
 
-    private async Task<IonVision.Scan?> MakeDmsScan(IonVision.Communicator ionVision, float usv)
+    private async Task<IV.Scan.IScan?> MakeDmsScan(IonVision.Communicator ionVision, float usv)
     {
         if (ionVision == null)
             return null;
@@ -202,7 +204,7 @@ public class OdorReproducerController
 
         if (usv > 0)
         {
-            if (!LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.ScopeParameters? scopeParams) || scopeParams == null)
+            if (!LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IV.Defs.ScopeParameters? scopeParams) || scopeParams == null)
                 return null;
 
             await Task.Delay(150);
@@ -226,7 +228,7 @@ public class OdorReproducerController
             await ionVision.WaitScanToFinish(progress => ENoseProgressChanged?.Invoke(this, progress));
 
             await Task.Delay(300);
-            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.ScanResult? scan);
+            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IV.Scan.ScanResult? scan);
 
             return scan;
         }

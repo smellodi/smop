@@ -1,37 +1,7 @@
-﻿namespace Smop.IonVision;
+﻿namespace Smop.IonVision.Scan;
 
-public record class Scan();
+public interface IScan { }
 
-public record class ErrorRegister(
-    bool ambientPressureR1Under,
-    bool ambientPressureR1Over,
-    bool ambientHumidityR1Under,
-    bool ambientHumidityR1Over,
-    bool ambientTemperatureR1Under,
-    bool ambientTemperatureR1Over,
-    bool fetTemperatureR1Under,
-    bool fetTemperatureR1Over,
-    bool sampleFlowR1Under,
-    bool sampleFlowR1Over,
-    bool sampleTemperatureR1Under,
-    bool sampleTemperatureR1Over,
-    bool samplePressureR1Under,
-    bool samplePressureR1Over,
-    bool sampleHumidityR1Under,
-    bool sampleHumidityR1Over,
-    bool sensorFlowR1Under,
-    bool sensorFlowR1Over,
-    bool sensorTemperatureR1Under,
-    bool sensorTemperatureR1Over,
-    bool sensorPressureR1Under,
-    bool sensorPressureR1Over,
-    bool sensorHumidityR1Under,
-    bool sensorHumidityR1Over,
-    bool sampleHeaterTemperatureR1Under,
-    bool sampleHeaterTemperatureR1Over,
-    bool sensorHeaterTemperatureR1Under,
-    bool sensorHeaterTemperatureR1Over
-);
 public record class RangeAvg(
     double Avg,
     double Min,
@@ -50,7 +20,7 @@ public record class FlowDetector(
     RangeAvg PumpPWM
 ) : Detector(Temperature, Pressure, Humidity);
 public record class SystemData(
-    ErrorRegister ErrorRegister,
+    Defs.ErrorRegister ErrorRegister,
     RangeAvg FetTemperature,
     FlowDetector Sample,
     FlowDetector Sensor,
@@ -79,4 +49,4 @@ public record class ScanResult(
     int FormatVersion,
     SystemData SystemData,
     MeasurementData MeasurementData
-) : Scan;
+) : IScan;

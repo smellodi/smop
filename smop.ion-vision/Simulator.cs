@@ -1,4 +1,5 @@
 ﻿using Fleck;
+using Smop.IonVision.Defs;
 using Smop.Common;
 using System;
 using System.Collections.Generic;
@@ -7,7 +8,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
-using static Smop.IonVision.API;
 
 namespace Smop.IonVision;
 
@@ -152,8 +152,8 @@ internal class Simulator : IMinimalAPI
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
-    public Task<Response<ParameterDefinition>> GetParameterDefinition(Parameter parameter) =>
-        Task.FromResult(new Response<ParameterDefinition>(
+    public Task<Response<Param.ParameterDefinition>> GetParameterDefinition(Parameter parameter) =>
+        Task.FromResult(new Response<Param.ParameterDefinition>(
             _currentParameter == null ? null : SimulatedData.ParameterDefinition,
             _currentParameter != null ? null : "No parameter is set as current"));
 
@@ -251,14 +251,14 @@ internal class Simulator : IMinimalAPI
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
-    public Task<Response<ScanResult>> GetLatestResult()
+    public Task<Response<Scan.ScanResult>> GetLatestResult()
     {
         if (_latestResult == null)
         {
-            return Task.FromResult(new Response<ScanResult>(null, "Scan was not yet performed"));
+            return Task.FromResult(new Response<Scan.ScanResult>(null, "Scan was not yet performed"));
         }
 
-        return Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new SimpleComment() }, null));
+        return Task.FromResult(new Response<Scan.ScanResult>(_latestResult with { Comments = _comments ?? new SimpleComment() }, null));
     }
 
     public Task<Response<string[]>> GetProjectResults(string name)
@@ -385,7 +385,7 @@ internal class Simulator : IMinimalAPI
 
     Project? _currentProject = null;
     Parameter? _currentParameter = null;
-    ScanResult? _latestResult = null;
+    Scan.ScanResult? _latestResult = null;
     object? _comments = null;
 
     ScopeStatus _scopeStatus = new(-1);
@@ -405,7 +405,7 @@ internal class Simulator : IMinimalAPI
         }
     }
 
-    private ScanResult RandomizeScanData(ScanResult data)
+    private Scan.ScanResult RandomizeScanData(Scan.ScanResult data)
     {
         var mdata = data.MeasurementData;
         return data with

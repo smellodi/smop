@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Smop.IonVision;
+namespace Smop.IonVision.Defs;
 
 public record class Err(
     string? Message,
@@ -80,7 +80,7 @@ public record class SearchResultMeta(
 );
 public record class SearchResult(
     SearchResultMeta Meta,
-    ScanResult[] Results
+    Scan.ScanResult[] Results
 );
 
 public record class ListOfIDs(
@@ -162,7 +162,7 @@ public record class ScopeResult(
     float[] Ucv,
     float[] IntensityTop,
     float[] IntensityBottom
-) : Scan;
+) : Scan.IScan;
 public record class ScopeParameters(
     float UcvStart,
     float UcvStop,
@@ -190,4 +190,45 @@ public record class RangeValue(
 public record class PumpDirectControl(
     bool Enabled,
     int DutyCycle
+);
+
+public record class PID(
+    float P,
+    float I,
+    float D,
+    float IMaxWindup,
+    float IMinWindup,
+    float Hysteresis,
+    float Setpoint
+);
+
+public record class ErrorRegister(
+    bool AmbientPressureR1Under,
+    bool AmbientPressureR1Over,
+    bool AmbientHumidityR1Under,
+    bool AmbientHumidityR1Over,
+    bool AmbientTemperatureR1Under,
+    bool AmbientTemperatureR1Over,
+    bool FetTemperatureR1Under,
+    bool FetTemperatureR1Over,
+    bool SampleFlowR1Under,
+    bool SampleFlowR1Over,
+    bool SampleTemperatureR1Under,
+    bool SampleTemperatureR1Over,
+    bool SamplePressureR1Under,
+    bool SamplePressureR1Over,
+    bool SampleHumidityR1Under,
+    bool SampleHumidityR1Over,
+    bool SensorFlowR1Under,
+    bool SensorFlowR1Over,
+    bool SensorTemperatureR1Under,
+    bool SensorTemperatureR1Over,
+    bool SensorPressureR1Under,
+    bool SensorPressureR1Over,
+    bool SensorHumidityR1Under,
+    bool SensorHumidityR1Over,
+    bool SampleHeaterTemperatureR1Under,
+    bool SampleHeaterTemperatureR1Over,
+    bool SensorHeaterTemperatureR1Under,
+    bool SensorHeaterTemperatureR1Over
 );

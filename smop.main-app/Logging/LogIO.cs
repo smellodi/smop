@@ -43,7 +43,7 @@ internal static class LogIO
     /// <param name="action">IonVision's method name or action that was called.
     /// Preferrably, the text should be formated using the PascalCase format.</param>
     /// <returns>Flag of error</returns>
-    public static bool Add<T>(IonVision.API.Response<T> response, string action) =>
+    public static bool Add<T>(IonVision.Response<T> response, string action) =>
         Add(response, action, out T? _);
 
     /// <summary>
@@ -55,17 +55,17 @@ internal static class LogIO
     /// Preferrably, the text should be formated using the PascalCase format.</param>
     /// <param name="resp">The response passed through</param>
     /// <returns>Flag of error</returns>
-    public static bool Add<T>(IonVision.API.Response<T> response, string action, out T? resp)
+    public static bool Add<T>(IonVision.Response<T> response, string action, out T? resp)
     {
         if (response.Success)
         {
             var value = response.Value switch
             {
                 null => "-",
-                IonVision.Confirm _ => "OK",
-                IonVision.SystemInfo info => $"v{info.CurrentVersion}",
-                IonVision.ScanResult scan => $"{scan.MeasurementData.Ucv.Length}x{scan.MeasurementData.Usv.Length}",
-                IonVision.ParameterDefinition paramDef => paramDef.Name,
+                IonVision.Defs.Confirm _ => "OK",
+                IonVision.Defs.SystemInfo info => $"v{info.CurrentVersion}",
+                IonVision.Scan.ScanResult scan => $"{scan.MeasurementData.Ucv.Length}x{scan.MeasurementData.Usv.Length}",
+                IonVision.Param.ParameterDefinition paramDef => paramDef.Name,
                 string[] arr => string.Join("; ", arr),
                 _ => response.Value.ToString()
             };

@@ -24,8 +24,8 @@ public class Communicator : IDisposable
         }
     }
 
-    public IonVision.ParameterDefinition? Parameter { get; set; } = null;
-    public IonVision.ScopeParameters? ScopeParameters { get; set; } = null;
+    public IonVision.Param.ParameterDefinition? Parameter { get; set; } = null;
+    public IonVision.Defs.ScopeParameters? ScopeParameters { get; set; } = null;
 
     public event EventHandler<Status>? StatusChanged;
     public event EventHandler<Recipe>? RecipeReceived;
@@ -49,7 +49,7 @@ public class Communicator : IDisposable
 
         if (isSimulating)
         {
-            IonVision.DispatchOnce.Do(1, () =>
+            Common.DispatchOnce.Do(1, () =>
             {
                 _simulator = type == Type.Tcp ? new TcpSimulator() : new FileSimulator();
             });
@@ -70,7 +70,7 @@ public class Communicator : IDisposable
         }
     }
 
-    public async Task Publish(IonVision.ScanResult scan)
+    public async Task Publish(IonVision.Scan.ScanResult scan)
     {
         if (Parameter == null)
         {
@@ -96,7 +96,7 @@ public class Communicator : IDisposable
         }
     }
 
-    public async Task Publish(IonVision.ScopeResult scan)
+    public async Task Publish(IonVision.Defs.ScopeResult scan)
     {
         if (ScopeParameters == null)
         {

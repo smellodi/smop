@@ -120,7 +120,7 @@ public partial class Setup : Page, IPage<object?>
     readonly List<string> _smellInspLog = new();
     readonly List<string> _odorDisplayLog = new();
 
-    readonly List<MeasurementData> _dmsScans = new();
+    readonly List<IonVision.Scan.MeasurementData> _dmsScans = new();
     readonly RadioButton[] _dmsPlotTypes;
 
     bool _isInitilized = false;

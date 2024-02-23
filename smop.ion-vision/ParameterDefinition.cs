@@ -1,16 +1,7 @@
-﻿#pragma warning disable CS8618
+﻿using Smop.IonVision.Defs;
 
-namespace Smop.IonVision;
+namespace Smop.IonVision.Param;
 
-public record class PID(
-    float P,
-    float I,
-    float D,
-    float IMaxWindup,
-    float IMinWindup,
-    float Hysteresis,
-    float Setpoint
-);
 public record class RangePID(
     float Min,
     float Max,

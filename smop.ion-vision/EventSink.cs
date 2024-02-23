@@ -11,7 +11,7 @@ namespace Smop.IonVision;
 /// <summary>
 /// Implements WebSocket API
 /// </summary>
-public class EventSink : IDisposable
+internal class EventSink : IDisposable
 {
     #region Event args
 
@@ -87,7 +87,7 @@ public class EventSink : IDisposable
         float SensorFlowControl,
         float SampleHeaterTemperatureControl,
         float SensorHeaterTemperatureControl);
-    public record class CurrentParameter(Parameter NewParameter);
+    public record class CurrentParameter(Defs.Parameter NewParameter);
     public record class CurrentProject(string NewProject);
     public record class ProjectEdit(string NewProject);
 
@@ -199,7 +199,7 @@ public class EventSink : IDisposable
     /// <summary>
     /// A scope scan has finished. This message includes the scan results. A new scope scan will be started automatically and scope mode will continue until manually stopped.
     /// </summary>
-    public event EventHandler<TimedEventArgs<ScopeResult>>? ScopeDataReceived;
+    public event EventHandler<TimedEventArgs<Defs.ScopeResult>>? ScopeDataReceived;
     /// <summary>
     /// The scope parameters have changed. The new parameters are included in the message.
     /// </summary>
@@ -227,7 +227,7 @@ public class EventSink : IDisposable
     /// <summary>
     /// A parameter preset on the device has been edited. The edited version can be fetched through the HTTP API.
     /// </summary>
-    public event EventHandler<TimedEventArgs<Parameter>>? ParameterEdited;
+    public event EventHandler<TimedEventArgs<Defs.Parameter>>? ParameterEdited;
     /// <summary>
     /// The list of parameters available on the device has changed. The new list must be fetched through the HTTP API as it can be long.
     /// </summary>
@@ -429,7 +429,7 @@ public class EventSink : IDisposable
             else if (message.Type == "scope.stopped")
                 ScopeStopped?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "scope.data")
-                ScopeDataReceived?.Invoke(this, new TimedEventArgs<ScopeResult>(message));
+                ScopeDataReceived?.Invoke(this, new TimedEventArgs<Defs.ScopeResult>(message));
             else if (message.Type == "scope.parametersChanged")
                 ScopeParametersChanged?.Invoke(this, new TimedEventArgs<ScopeParameters>(message));
             else if (message.Type == "parameter.currentChanged")
@@ -443,7 +443,7 @@ public class EventSink : IDisposable
             else if (message.Type == "parameter.preloadFinished")
                 ParameterPreloadFinished?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "parameter.edited")
-                ParameterEdited?.Invoke(this, new TimedEventArgs<Parameter>(message));
+                ParameterEdited?.Invoke(this, new TimedEventArgs<Defs.Parameter>(message));
             else if (message.Type == "parameter.listChanged")
                 ParameterListChanged?.Invoke(this, new TimedEventArgs(message));
             else if (message.Type == "project.currentChanged")

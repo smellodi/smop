@@ -1,4 +1,5 @@
 using Smop.Common;
+using Smop.IonVision.Defs;
 using System;
 using System.Threading.Tasks;
 
@@ -14,9 +15,14 @@ public class Communicator : IDisposable
 
     public Settings Settings { get; }
 
-    public Communicator(string? settingsFilename = null, bool isSimulator = false)
+    public Communicator(string? settingsFilename = null, bool isSimulator = false, string? ip = null)
     {
         Settings = settingsFilename == null ? new() : new(settingsFilename);
+        if (ip != null)
+        {
+            Settings.IP = ip;
+        }
+
         _api = isSimulator ? new Simulator() : new API(Settings.IP);
         _events = new(isSimulator ? "127.0.0.1" : Settings.IP);
         _events.ScanProgressChanged += (s, e) => ScanProgress?.Invoke(this, e.Data.Progress);
@@ -37,40 +43,44 @@ public class Communicator : IDisposable
 
     /// <summary>Retrieves system status</summary>
     /// <returns>System status</returns>
-    public Task<API.Response<SystemStatus>> GetSystemStatus() => _api.GetSystemStatus();
+    public Task<Response<SystemStatus>> GetSystemStatus() => _api.GetSystemStatus();
 
     /// <summary>Retrieves system info</summary>
     /// <returns>System info</returns>
-    public Task<API.Response<SystemInfo>> GetSystemInfo() => _api.GetSystemInfo();
+    public Task<Response<SystemInfo>> GetSystemInfo() => _api.GetSystemInfo();
 
     /// <summary>Retrieves user</summary>
     /// <returns>User name</returns>
-    public Task<API.Response<User>> GetUser() => _api.GetUser();
+    public Task<Response<User>> GetUser() => _api.GetUser();
 
     /// <summary>Sets user</summary>
     /// <returns>Error message, if any</returns>
-    public Task<API.Response<Confirm>> SetUser() => _api.SetUser(new User(Settings.User));
+    public Task<Response<Confirm>> SetUser() => _api.SetUser(new User(Settings.User));
 
     /// <summary>Retrieves a list of project names</summary>
     /// <returns>Project names</returns>
-    public Task<API.Response<string[]>> GetProjects() => _api.GetProjects();
+    public Task<Response<string[]>> GetProjects() => _api.GetProjects();
 
     /// <summary>Retrieves a list of projects</summary>
     /// <param name="name">Project name</param>
     /// <returns>Project definitions</returns>
-    public Task<API.Response<Project>> GetProjectDefinition(string name) => _api.GetProjectDefinition(name);
+    public Task<Response<Project>> GetProjectDefinition(string name) => _api.GetProjectDefinition(name);
 
     /// <summary>Retrieves a list of parameters</summary>
     /// <returns>Parameters</returns>
-    public Task<API.Response<Parameter[]>> GetParameters() => _api.GetParameters();
+    public Task<Response<Parameter[]>> GetParameters() => _api.GetParameters();
 
     /// <summary>Retrieves the current project</summary>
     /// <returns>Project</returns>
-    public Task<API.Response<ProjectAsName>> GetProject() => _api.GetProject();
+    public Task<Response<ProjectAsName>> GetProject() => _api.GetProject();
+
+    /// <summary>Sets the SMOP project as active</summary>
+    /// <returns>Error message if the project was not set as active</returns>
+    public async Task<Response<Confirm>> SetProject(ProjectAsName project) => await _api.SetProject(project);
 
     /// <summary>Sets the SMOP project as active and waiting until it is loaded</summary>
     /// <returns>Error message if the project was not set as active</returns>
-    public async Task<API.Response<Confirm>> SetProjectAndWait()
+    public async Task<Response<Confirm>> SetProjectAndWait()
     {
         _projectIsReady = false;
         var response = await _api.SetProject(new ProjectAsName(Settings.Project));
@@ -87,17 +97,17 @@ public class Communicator : IDisposable
 
     /// <summary>Retrieves the current parameter definition</summary>
     /// <returns>Parameter definition</returns>
-    public Task<API.Response<ParameterDefinition>> GetParameterDefinition() =>
+    public Task<Response<Param.ParameterDefinition>> GetParameterDefinition() =>
         _api.GetParameterDefinition(new Parameter(Settings.ParameterId, Settings.ParameterName));
 
 
     /// <summary>Retrieves the current parameter</summary>
     /// <returns>Parameter</returns>
-    public Task<API.Response<ParameterAsNameAndId>> GetParameter() => _api.GetParameter();
+    public Task<Response<ParameterAsNameAndId>> GetParameter() => _api.GetParameter();
 
     /// <summary>Sets the SMOP project parameter and preloads it immediately</summary>
     /// <returns>Error message if the project parameter was not set</returns>
-    public async Task<API.Response<Confirm>> SetParameterAndPreload()
+    public async Task<Response<Confirm>> SetParameterAndPreload()
     {
         _parameterIsReady = false;
         _parameterWasPreloaded = false;
@@ -124,32 +134,32 @@ public class Communicator : IDisposable
 
     /// <summary>Starts a new scan</summary>
     /// <returns>Error message if the scan was not started</returns>
-    public Task<API.Response<Confirm>> StartScan() => _api.StartScan();
+    public Task<Response<Confirm>> StartScan() => _api.StartScan();
 
     /// <summary>Retrieves scan progress</summary>
     /// <returns>Scan progress</returns>
-    public Task<API.Response<ScanProgress>> GetScanProgress() => _api.GetScanProgress();
+    public Task<Response<ScanProgress>> GetScanProgress() => _api.GetScanProgress();
 
     /// <summary>Sets a marker for the latest scan result</summary>
     /// <param name="comment">Comment to set</param>
     /// <returns>Error message, if any</returns>
-    public Task<API.Response<Confirm>> SetScanResultComment(object comment) => _api.SetScanComments(comment);
+    public Task<Response<Confirm>> SetScanResultComment(object comment) => _api.SetScanComments(comment);
 
     /// <summary>Retrieves the latest scanning result</summary>
     /// <returns>Scanning result, if any</returns>
-    public Task<API.Response<ScanResult>> GetScanResult() => _api.GetLatestResult();
+    public Task<Response<Scan.ScanResult>> GetScanResult() => _api.GetLatestResult();
 
     /// <summary>Retrieves all project scanning result</summary>
     /// <returns>Array of scanning results</returns>
-    public Task<API.Response<string[]>> GetProjectResults() => _api.GetProjectResults(Settings.Project);
+    public Task<Response<string[]>> GetProjectResults() => _api.GetProjectResults(Settings.Project);
 
     /// <summary>Retrieves the system clock</summary>
     /// <returns>Clock</returns>
-    public Task<API.Response<Clock>> GetClock() => _api.GetClock();
+    public Task<Response<Clock>> GetClock() => _api.GetClock();
 
     /// <summary>Sets the system clock to the clock of the machine running this code</summary>
     /// <returns>Confirmation message</returns>
-    public Task<API.Response<Confirm>> SetClock() => _api.SetClock(new ClockToSet(
+    public Task<Response<Confirm>> SetClock() => _api.SetClock(new ClockToSet(
             DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
             "Europe/Helsinki",
             false
@@ -157,28 +167,28 @@ public class Communicator : IDisposable
 
     /// <summary>Check if the device is in scope mode</summary>
     /// <returns>Scope status</returns>
-    public Task<API.Response<ScopeStatus>> CheckScopeMode() => _api.CheckScopeMode();
+    public Task<Response<ScopeStatus>> CheckScopeMode() => _api.CheckScopeMode();
 
     /// <summary>Set the device to the scope mode</summary>
     /// <returns>Confirmation message</returns>
-    public Task<API.Response<Confirm>> EnableScopeMode() => _api.EnableScopeMode();
+    public Task<Response<Confirm>> EnableScopeMode() => _api.EnableScopeMode();
 
     /// <summary>Move the device back to idle</summary>
     /// <returns>Confirmation message</returns>
-    public Task<API.Response<Confirm>> DisableScopeMode() => _api.DisableScopeMode();
+    public Task<Response<Confirm>> DisableScopeMode() => _api.DisableScopeMode();
 
     /// <summary>Retrieves the latest scope result</summary>
     /// <returns>Scope result</returns>
-    public Task<API.Response<ScopeResult>> GetScopeResult() => _api.GetScopeResult();
+    public Task<Response<ScopeResult>> GetScopeResult() => _api.GetScopeResult();
 
     /// <summary>Retrieves the scope parameters</summary>
     /// <returns>Scope parameters</returns>
-    public Task<API.Response<ScopeParameters>> GetScopeParameters() => _api.GetScopeParameters();
+    public Task<Response<ScopeParameters>> GetScopeParameters() => _api.GetScopeParameters();
 
     /// <summary>Sets the scope parameters</summary>
     /// <param name="parameters">Scope parameters</param>
     /// <returns>Confirmation message</returns>
-    public Task<API.Response<Confirm>> SetScopeParameters(ScopeParameters parameters) => _api.SetScopeParameters(parameters);
+    public Task<Response<Confirm>> SetScopeParameters(ScopeParameters parameters) => _api.SetScopeParameters(parameters);
 
     // Helpers
 

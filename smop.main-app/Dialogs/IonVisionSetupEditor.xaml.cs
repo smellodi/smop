@@ -1,4 +1,4 @@
-﻿using Smop.MainApp.Utils;
+﻿using Smop.Common;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -50,15 +50,15 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
 
     public void Dispose()
     {
-        _ivAPI?.Dispose();
+        _ivComm?.Dispose();
         GC.SuppressFinalize(this);
     }
 
     // Internal
 
-    IonVision.API? _ivAPI;
+    IonVision.Communicator? _ivComm;
     IonVision.Settings? _ivSettings;
-    IonVision.Parameter[] _parameters = Array.Empty<IonVision.Parameter>();
+    IonVision.Defs.Parameter[] _parameters = Array.Empty<IonVision.Defs.Parameter>();
 
     private async Task Connect()
     {
@@ -75,10 +75,10 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IP)));
 
-            _ivAPI = new IonVision.API(IP);
+            _ivComm = new IonVision.Communicator(tblFileName.Text, IP == "" || IP.ToLower() == "localhost" || IP == "127.0.0.1");
 
             await Task.Delay(150);
-            var status = await _ivAPI.GetSystemStatus();
+            var status = await _ivComm.GetSystemStatus();
             if (!status.Success)
             {
                 MsgBox.Error(Title, "Cannot connect to IonVision.");
@@ -86,7 +86,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
             else
             {
                 await Task.Delay(150);
-                var user = await _ivAPI.GetUser();
+                var user = await _ivComm.GetUser();
                 if (user?.Success == true)
                 {
                     User = user?.Value?.Name ?? "";
@@ -94,7 +94,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
                 }
 
                 await Task.Delay(150);
-                var projects = await _ivAPI.GetProjects();
+                var projects = await _ivComm.GetProjects();
                 if (projects?.Success == true && projects.Value?.Length > 0)
                 {
                     cmbProjects.IsEnabled = true;
@@ -122,7 +122,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
 
     private async void Projects_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        if (_ivAPI == null || _ivSettings == null)
+        if (_ivComm == null || _ivSettings == null)
         {
             return;
         }
@@ -137,7 +137,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
         var projectName = cmbProjects.SelectedItem.ToString();
         if (!string.IsNullOrEmpty(projectName))
         {
-            var result = await _ivAPI.SetProject(new IonVision.ProjectAsName(projectName));
+            var result = await _ivComm.SetProject(new IonVision.Defs.ProjectAsName(projectName));
             if (result.Success)
             {
                 bdrWait.Visibility = Visibility.Visible;
@@ -149,7 +149,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
                     await Task.Delay(100);
                 }*/
 
-                var defs = await _ivAPI.GetProjectDefinition(projectName);
+                var defs = await _ivComm.GetProjectDefinition(projectName);
 
                 if (defs?.Success == true && defs.Value?.Parameters.Length > 0)
                 {

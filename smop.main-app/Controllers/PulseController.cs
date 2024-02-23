@@ -1,5 +1,5 @@
-﻿using Smop.MainApp.Logging;
-using Smop.MainApp.Utils;
+﻿using Smop.Common;
+using Smop.MainApp.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -288,7 +288,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         }
     }
 
-    private static IonVision.API.Response<T> HandleIonVisionError<T>(IonVision.API.Response<T> response, string action)
+    private static IonVision.Response<T> HandleIonVisionError<T>(IonVision.Response<T> response, string action)
     {
         var error = !response.Success ? response.Error : "OK";
         _nlog.Info(Logging.LogIO.Text(action, "Error", error));

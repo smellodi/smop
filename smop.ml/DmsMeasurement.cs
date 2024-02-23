@@ -1,16 +1,14 @@
-﻿using Smop.IonVision;
-
-namespace Smop.ML;
+﻿namespace Smop.ML;
 
 internal record class ScanSetup(
-    RangeStep Usv,
-    RangeStep Ucv
+    IonVision.Param.RangeStep Usv,
+    IonVision.Param.RangeStep Ucv
 );
 internal record class ScanConditions(
-    RangeAvg Flow,
-    RangeAvg Temperature,
-    RangeAvg Pressure,
-    RangeAvg Humidity
+    IonVision.Scan.RangeAvg Flow,
+    IonVision.Scan.RangeAvg Temperature,
+    IonVision.Scan.RangeAvg Pressure,
+    IonVision.Scan.RangeAvg Humidity
 );
 internal record class ScanData(
     float[] Positive,
@@ -23,7 +21,7 @@ internal record class DmsMeasurement(
     ScanData Data
 ) : Content(ML.Source.DMS)
 {
-    public static DmsMeasurement From(ScanResult scan, ParameterDefinition paramDefinition) => new(
+    public static DmsMeasurement From(IonVision.Scan.ScanResult scan, IonVision.Param.ParameterDefinition paramDefinition) => new(
         new ScanSetup(
             paramDefinition.MeasurementParameters.SteppingControl.Usv,
             paramDefinition.MeasurementParameters.SteppingControl.Ucv
@@ -43,7 +41,7 @@ internal record class DmsMeasurement(
 
 internal record class ScopeSetup(
     float Usv,
-    RangeStep Ucv
+    IonVision.Param.RangeStep Ucv
 );
 
 internal record class DmsMeasurementScope(
@@ -51,10 +49,10 @@ internal record class DmsMeasurementScope(
     ScanData Data
 ) : Content(ML.Source.DMS)
 {
-    public static DmsMeasurementScope From(ScopeResult scopeResult, ScopeParameters parameters) => new(
+    public static DmsMeasurementScope From(IonVision.Defs.ScopeResult scopeResult, IonVision.Defs.ScopeParameters parameters) => new(
         new ScopeSetup(
             parameters.Usv,
-            new RangeStep(parameters.UcvStart, parameters.UcvStop, scopeResult.IntensityTop.Length)
+            new IonVision.Param.RangeStep(parameters.UcvStart, parameters.UcvStop, scopeResult.IntensityTop.Length)
         ),
         new ScanData(
             scopeResult.IntensityTop,

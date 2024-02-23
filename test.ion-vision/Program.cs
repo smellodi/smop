@@ -1,4 +1,7 @@
 ﻿using Smop.IonVision;
+using Smop.IonVision.Defs;
+using Smop.IonVision.Param;
+using Smop.IonVision.Scan;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -55,9 +58,10 @@ List<MeasurementData> scanDataList = new();
 ParameterDefinition? scanParamDefinition = isSimulating ? SimulatedData.ParameterDefinition : null;
 List<ScopeResult> scopeDataList = new();
 ScopeParameters? scopeParamDefinition = isSimulating ? SimulatedData.ScopeParameters : null;
+ScopeParameters scopeParam500 = (scopeParamDefinition ?? SimulatedData.ScopeParameters) with { Usv = 500 };
 
 var ionVision = new Communicator("IonVision-Tietotalo.json", isSimulating);
-ionVision.ScanProgress += (s, e) => Print(new API.Response<ScanProgress>(new(e, new()), null));
+ionVision.ScanProgress += (s, e) => Print(new Response<ScanProgress>(new(e, new()), null));
 ionVision.ScopeResult += (s, e) => scopeDataList.Add(e);
 
 if (!await Connect(ionVision))
@@ -112,8 +116,7 @@ var commands = new Dictionary<string, (string, Func<Task>)>()
     { "sq", ("disabled scope mode", async () => Print(await ionVision.DisableScopeMode())) },
     { "scr", ("gets the latest scope result", async () => Print(await ionVision.GetScopeResult())) },
     { "scgp", ("retrieves scope parameters", async () => Print(await ionVision.GetScopeParameters())) },
-    { "scsp", ("sets scope parameters", async () =>
-        Print(await ionVision.SetScopeParameters(SimulatedData.ScopeParameters with { Usv = 500 }))) },
+    { "scsp", ("sets scope parameters", async () => Print(await ionVision.SetScopeParameters(scopeParam500))) },
     { "scplot", ("shows the last scope result as a plot", async () => {
         ShowScopePlot(Plot.ComparisonOperation.None);
         await Task.CompletedTask;
@@ -215,7 +218,7 @@ async Task GetNewScan()
     await Task.Delay(150);
     await ionVision.StartScan();
 
-    API.Response<ScanProgress> progress;
+    Response<ScanProgress> progress;
     do
     {
         await Task.Delay(1000);
@@ -233,7 +236,7 @@ async Task GetNewScan()
 
 async Task GetNewScopeScan()
 {
-    await ionVision.SetScopeParameters(SimulatedData.ScopeParameters with { Usv = 500 });
+    await ionVision.SetScopeParameters(scopeParam500);
 
     await Task.Delay(150);
     var result = await ionVision.EnableScopeMode();
@@ -335,7 +338,7 @@ void ToggleOutputCut()
     Console.Write($"[EVT]: {type} : {msg}\nCommand: ");
 }*/
 
-void Print<T>(API.Response<T> response)
+void Print<T>(Response<T> response)
 {
     if (response.Success)
     {

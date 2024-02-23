@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Smop.IonVision.Defs;
+using Smop.IonVision.Param;
+using System;
 using System.Linq;
 
 namespace Smop.IonVision;
@@ -17,7 +19,7 @@ public static class SimulatedData
     const float VB_START = -6;
     const float VB_STOP = -6;
 
-    public static User User = new();
+    public static User User { get; set; } = new();
     public static readonly Parameter Parameter1 = new("daa1c397-ebd0-4920-b405-5c6029d45fdd", "Fast scan");
     public static readonly Parameter Parameter2 = new("8036cca5-0677-475c-aa7f-1c9202d94b85", "Slow scan");
     public static readonly Project Project1 = new("Oleg fast scan", new Parameter[] { Parameter1, Parameter2 });
@@ -32,20 +34,20 @@ public static class SimulatedData
             new SampleSensor(
                 90,
                 new RangePID(0.2f, 2, new PID(0.7f, 1, 0.5f, 200, -200, 0.02f, 0.5f)),
-                new Range(10, 45),
-                new Range(900, 1200),
-                new Range(0, 40),
+                new Defs.Range(10, 45),
+                new Defs.Range(900, 1200),
+                new Defs.Range(0, 40),
                 new RangePID(0, 90, new PID(1, 0.1f, 0.1f, 2, -2, 0.1f, 35)),
                 0
             ),
-            new Ambient(new Range(0, 30), new Range(900, 1300), new Range(0, 40)),
-            new Miscellaneous(new Range(0, 80)),
+            new Ambient(new Defs.Range(0, 30), new Defs.Range(900, 1300), new Defs.Range(0, 40)),
+            new Miscellaneous(new Defs.Range(0, 80)),
             new SampleSensor(
                 90,
                 new RangePID(2, 6, new PID(1, 2, 1, 200, -200, 0.03f, 4.5f)),
-                new Range(10, 45),
-                new Range(800, 1200),
-                new Range(0, 40),
+                new Defs.Range(10, 45),
+                new Defs.Range(800, 1200),
+                new Defs.Range(0, 40),
                 new RangePID(0, 80, new PID(1, 0.1f, 0.1f, 2, -2, 0.1f, 35)),
                 0
             )
@@ -83,7 +85,7 @@ public static class SimulatedData
         Description = "Another fake param"
     };
 
-    public static ScanResult ScanResult => new(
+    public static Scan.ScanResult ScanResult => new(
         Guid.NewGuid().ToString(),
         User.Name,
         DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
@@ -92,7 +94,7 @@ public static class SimulatedData
         Project1.Name,
         new(),
         3,
-        new SystemData(
+        new Scan.SystemData(
             new ErrorRegister(false, false, false, false, false, false,
                 false, false,
                 true, false, false, false, false, false, false, false,
@@ -101,29 +103,29 @@ public static class SimulatedData
                 false, false
             ),
             new(0, 17657, 0),
-            new FlowDetector(
+            new Scan.FlowDetector(
                 new(0.11, 301.26, 0),
                 new(21.81, 0, 21.75),
                 new(1100, 21.78, 1018.5),
                 new(20.12, 0.67, 17.84),
                 new(90, 30, 90)
             ),
-            new FlowDetector(
+            new Scan.FlowDetector(
                 new(3.92, 578.74, 3.29),
                 new(21.68, 589.82, 21.6),
                 new(1019.96, 21.68, 960.51),
                 new(17.4, 2.16, 0.93),
                 new(90, 1, 90)
             ),
-            new Detector(
+            new Scan.Detector(
                 new(26, 589.82, 25.94),
                 new(1017.33, 25.99, 1017.12),
                 new(17.34, 99.34, 17.24)
             )
         ),
-        new MeasurementData(
+        new Scan.MeasurementData(
             true,
-            _usv.Steps * _ucv.Steps,
+            Usv.Steps * Ucv.Steps,
             MakeArray(GetImitatedPixel),
             MakeArray((x, y) => 100f * x),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
@@ -135,19 +137,19 @@ public static class SimulatedData
         )
     );
 
-    public static ScopeParameters ScopeParameters = new(-3, 11, 400, -6, 1000, 220, 1024, 90, 90, 0, 0);
+    public static ScopeParameters ScopeParameters { get; set; } = new(-3, 11, 400, -6, 1000, 220, 1024, 90, 90, 0, 0);
 
     public static ScopeResult ScopeResult => new(
         ScopeParameters.Usv,
         MakeArrayLine(0, (x, y) => ScopeParameters.UcvStart + x * (ScopeParameters.UcvStop - ScopeParameters.UcvStart)),
-        MakeArrayLine((ScopeParameters.Usv - _usv.Min) / (_usv.Max - _usv.Min), GetImitatedPixel),
+        MakeArrayLine((ScopeParameters.Usv - Usv.Min) / (Usv.Max - Usv.Min), GetImitatedPixel),
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 
     // Internal
 
-    static RangeStep _usv => ParameterDefinition.MeasurementParameters.SteppingControl.Usv; // shortcut
-    static RangeStep _ucv => ParameterDefinition.MeasurementParameters.SteppingControl.Ucv; // shortcut
+    static RangeStep Usv => ParameterDefinition.MeasurementParameters.SteppingControl.Usv; // shortcut
+    static RangeStep Ucv => ParameterDefinition.MeasurementParameters.SteppingControl.Ucv; // shortcut
 
     static readonly float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
     static readonly float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };

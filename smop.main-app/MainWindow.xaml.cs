@@ -1,7 +1,7 @@
-﻿using Smop.MainApp.Dialogs;
+﻿using Smop.Common;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Pages;
-using Smop.MainApp.Utils;
 using Smop.OdorDisplay.Packets;
 using System.Collections.Generic;
 using System.Threading.Tasks;

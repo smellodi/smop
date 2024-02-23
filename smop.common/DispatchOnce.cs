@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Smop.IonVision;
+namespace Smop.Common;
 
 /// <summary>
 /// Use <see cref="Do(double, Action)"/> static method of this class to execute a delayed action

@@ -9,7 +9,7 @@ public class IonVisionLogger : Logger<IonVisionLogger.Record>, ILog
     {
         public string Json { get; }
 
-        public Record(IonVision.ScanResult data) : base()
+        public Record(IonVision.Scan.ScanResult data) : base()
         {
             Json = JsonSerializer.Serialize(data, serializationOptions);
         }
@@ -31,7 +31,7 @@ public class IonVisionLogger : Logger<IonVisionLogger.Record>, ILog
 
     public string Name => "dms";
 
-    public void Add(IonVision.ScanResult data)
+    public void Add(IonVision.Scan.ScanResult data)
     {
         if (IsEnabled)
         {

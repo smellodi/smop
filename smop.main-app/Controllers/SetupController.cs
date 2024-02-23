@@ -21,9 +21,9 @@ public class SetupController
     public event EventHandler<LogHandlerArgs>? LogOD;
     public event EventHandler<float>? ScanProgress;
 
-    public IonVision.ParameterDefinition? ParamDefinition { get; private set; } = null;
-    public IonVision.ScopeParameters? ScopeParameters { get; private set; } = null;
-    public IonVision.ScanResult? DmsScan { get; private set; } = null;
+    public IonVision.Param.ParameterDefinition? ParamDefinition { get; private set; } = null;
+    public IonVision.Defs.ScopeParameters? ScopeParameters { get; private set; } = null;
+    public IonVision.Scan.ScanResult? DmsScan { get; private set; } = null;
 
     public bool HasInitializationFinished { get; private set; } = false;
 
@@ -133,7 +133,7 @@ public class SetupController
         var projectName = ionVision.Settings.Project;
         LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{projectName}' project..."));
 
-        LogIO.Add(await ionVision.GetProject(), "GetProject", out IonVision.ProjectAsName? responseGetProject);
+        LogIO.Add(await ionVision.GetProject(), "GetProject", out IonVision.Defs.ProjectAsName? responseGetProject);
         if (responseGetProject?.Project != projectName)
         {
             await Task.Delay(300);
@@ -157,7 +157,7 @@ public class SetupController
         var paramName = ionVision.Settings.ParameterName;
         LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{paramName}' parameter..."));
 
-        LogIO.Add(await ionVision.GetParameter(), "GetParameter", out IonVision.ParameterAsNameAndId? getParameterResponse);
+        LogIO.Add(await ionVision.GetParameter(), "GetParameter", out IonVision.Defs.ParameterAsNameAndId? getParameterResponse);
 
         bool hasParameterLoaded = getParameterResponse?.Parameter.Id == ionVision.Settings.ParameterId;
         if (!hasParameterLoaded)
@@ -181,12 +181,12 @@ public class SetupController
         if (App.ML != null)
         {
             LogDms?.Invoke(this, new LogHandlerArgs($"Retrieving the parameter..."));
-            LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IonVision.ParameterDefinition? paramDefinition);
+            LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IonVision.Param.ParameterDefinition? paramDefinition);
             ParamDefinition = paramDefinition;
 
             await Task.Delay(300);
 
-            LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.ScopeParameters? scopeParameters);
+            LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.Defs.ScopeParameters? scopeParameters);
             ScopeParameters = scopeParameters;
 
             if (paramDefinition != null)
@@ -358,7 +358,7 @@ public class SetupController
             });
 
             await Task.Delay(300);
-            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.ScanResult? scan);
+            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.Scan.ScanResult? scan);
             DmsScan = scan;
 
             if (scan != null)

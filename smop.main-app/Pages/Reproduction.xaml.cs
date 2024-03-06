@@ -250,7 +250,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         var stateText = new List<string>();
         if (hasNoActiveElement)
         {
-            tblRecipeName.Text = "Final recipe:";
+            //tblRecipeName.Text = "Final recipe:";
             stateText.Add("Finished");
         }
         if (isActiveML)
@@ -335,7 +335,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeRMSE.Text = "r = " + recipe.MinRMSE.ToString("0.####");
         tblRecipeIteration.Text = $"iteration #{_proc?.CurrentStep + 1}";
 
-        if (!string.IsNullOrEmpty(recipe.Name))
+        if (!string.IsNullOrEmpty(recipe.Name) && recipe.MinRMSE >= 0 && recipe.MinRMSE < 100000)
         {
             crtRMSE.Add(recipe.MinRMSE);
         }

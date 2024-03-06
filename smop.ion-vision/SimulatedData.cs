@@ -146,6 +146,10 @@ public static class SimulatedData
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 
+    public record class ImitatedLineGains(float Main, float Second, float WideUp1, float WideUp2);
+
+    public static ImitatedLineGains LineGains { get; set; } = new ImitatedLineGains(100, 40, 100, 90);
+
     // Internal
 
     static RangeStep Usv => ParameterDefinition.MeasurementParameters.SteppingControl.Usv; // shortcut
@@ -157,7 +161,7 @@ public static class SimulatedData
 
     private static T[] MakeArray<T>(Func<float, float, T> callback)
     {
-        HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
+        //HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
 
         var config = ParameterDefinition?.MeasurementParameters.SteppingControl;
         var rowCount = config?.Usv.Steps ?? DATA_ROWS;
@@ -175,7 +179,7 @@ public static class SimulatedData
 
     private static T[] MakeArrayLine<T>(float usvRatio, Func<float, float, T> callback)
     {
-        HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
+        //HyperbolaParams = new Random().NextDouble() < 0.5 ? HyperbolaParams1 : HyperbolaParams2;
         usvRatio = Math.Max(usvRatio, 0);
 
         var config = ParameterDefinition?.MeasurementParameters.SteppingControl;
@@ -223,12 +227,12 @@ public static class SimulatedData
         new float[]
         {
             // The strongests line
-            (100f - 40f * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
+            (LineGains.Main - 0.5f * LineGains.Main * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
             // Another line
-            (40f - 40f * y) * Hyperbola(x, y, HyperbolaParams[0], HyperbolaParams[1], HyperbolaParams[2]),
+            (LineGains.Second - LineGains.Second * y) * Hyperbola(x, y, HyperbolaParams[0], HyperbolaParams[1], HyperbolaParams[2]),
             // Wide line up
-            (100f - 100f * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
+            (LineGains.WideUp1 - LineGains.WideUp1 * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
             // Second wide line up
-            (90f - 90f * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
+            (LineGains.WideUp2 - LineGains.WideUp2 * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
         }.Max();
 }

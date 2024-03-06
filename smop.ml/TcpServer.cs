@@ -66,7 +66,6 @@ internal class TcpServer : Server
     private void Server_ConnectionEvent(object sender, TcpConnectionServerEventArgs args)
     {
         var status = args.ConnectionEventType == PHS.Networking.Enums.ConnectionEventType.Connected ? Status.Connected : Status.Disconnected;
-        ScreenLogger.Print($"[MlServer] {status}: {args.Connection?.TcpClient?.Client?.LocalEndPoint}");
 
         if (status == Status.Connected)
         {
@@ -80,6 +79,7 @@ internal class TcpServer : Server
         }
 
         _client = status == Status.Connected ? args.Connection : null;
+        ScreenLogger.Print($"[MlServer] {status}: {args.Connection?.TcpClient?.Client?.LocalEndPoint}");
 
         StatusChanged?.Invoke(this, status);
 
@@ -109,10 +109,12 @@ internal class TcpServer : Server
                         await Task.Delay(1000);
                     }
                 }
-                catch (Exception) { }
+                catch (System.Net.Sockets.SocketException) { }
 
                 _connectionCheckTaskCancellation = null;
                 _connectionCheckTask = null;
+
+                await Task.Delay(300);
 
             }, _connectionCheckTaskCancellation.Token);
         }

@@ -5,7 +5,7 @@ namespace Smop.ML;
 
 public class Communicator : IDisposable
 {
-    public static bool IsDemo => true;
+    public static bool IsDemo => false;
 
     public enum Type
     {

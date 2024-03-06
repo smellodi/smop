@@ -38,7 +38,7 @@
                                     VerticalAlignment="Center"/>
         </Grid>
 
-        <StackPanel Visibility="Collapsed">
+        <StackPanel>
             <Separator/>
             <Label Style="{StaticResource Section}"
                    Content="ML settings:"/>

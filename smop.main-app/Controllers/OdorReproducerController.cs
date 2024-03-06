@@ -181,6 +181,8 @@ public class OdorReproducerController
 
     private void SendDmsScanToML(IV.Scan.IScan dmsScan)
     {
+        MlComputationStarted?.Invoke(this, EventArgs.Empty);
+
         if (dmsScan is IV.Defs.ScopeResult scopeScan)
         {
             _ = _ml.Publish(scopeScan);
@@ -191,11 +193,9 @@ public class OdorReproducerController
             _ = _ml.Publish(fullScan);
             ScanFinished?.Invoke(this, fullScan);
         }
-
-        MlComputationStarted?.Invoke(this, EventArgs.Empty);
     }
 
-    private async Task<IV.Scan.IScan?> MakeDmsScan(IonVision.Communicator ionVision, float usv)
+    private async Task<IV.Scan.IScan?> MakeDmsScan(IV.Communicator ionVision, float usv)
     {
         if (ionVision == null)
             return null;

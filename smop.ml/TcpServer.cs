@@ -1,6 +1,7 @@
 using Smop.Common;
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Tcp.NET.Server;
 using Tcp.NET.Server.Events.Args;
@@ -33,12 +34,17 @@ internal class TcpServer : Server
     {
         _server.StopAsync();
         _server.Dispose();
+        _connectionCheckTask?.Wait();
+        _connectionCheckTask?.Dispose();
+        _connectionCheckTaskCancellation?.Dispose();
         GC.SuppressFinalize(this);
     }
 
     // Internal
 
     readonly TcpNETServer _server;
+    Task? _connectionCheckTask;
+    CancellationTokenSource? _connectionCheckTaskCancellation;
 
     ConnectionTcpServer? _client = null;
 
@@ -62,7 +68,53 @@ internal class TcpServer : Server
         var status = args.ConnectionEventType == PHS.Networking.Enums.ConnectionEventType.Connected ? Status.Connected : Status.Disconnected;
         ScreenLogger.Print($"[MlServer] {status}: {args.Connection?.TcpClient?.Client?.LocalEndPoint}");
 
+        if (status == Status.Connected)
+        {
+            _connectionCheckTaskCancellation?.Cancel();
+            try
+            {
+                _connectionCheckTask?.Wait();
+                _connectionCheckTask = null;
+            }
+            catch (Exception) { }
+        }
+
         _client = status == Status.Connected ? args.Connection : null;
+
         StatusChanged?.Invoke(this, status);
+
+        if (status == Status.Connected)
+        {
+            // The following routine sends \0 byte every second to the client. This is the only way to keep tracking whether the client is still connected,
+            // as the native server's mechanism to detect disconnection does no function if ping-pong functionality is disabled (and we want it to be disabled,
+            // otherwise it constantly sends a string to ML client)
+
+            _connectionCheckTaskCancellation = new();
+            _connectionCheckTask = Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+
+                try
+                {
+                    while (_server.IsServerRunning)
+                    {
+                        var isConnected = args.Connection?.TcpClient?.Client?.Connected ?? false;
+                        if (!isConnected)
+                            break;
+
+                        var isAbleToSendData = args.Connection?.TcpClient?.Client?.Send(new byte[] { 0 }) > 0;
+                        if (!isAbleToSendData)
+                            break;
+
+                        await Task.Delay(1000);
+                    }
+                }
+                catch (Exception) { }
+
+                _connectionCheckTaskCancellation = null;
+                _connectionCheckTask = null;
+
+            }, _connectionCheckTaskCancellation.Token);
+        }
     }
 }

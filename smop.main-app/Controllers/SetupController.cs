@@ -281,7 +281,8 @@ public class SetupController
                 .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
                 .Select(odorChannel => new ML.ChannelProps((int)odorChannel.ID, odorChannel.Name, odorChannel.Propeties)).ToArray(),
             settings.Reproduction_MaxIterations,
-            settings.Reproduction_Threshold
+            settings.Reproduction_Threshold,
+            settings.Reproduction_Algorithm
         );
 
         await Task.Delay(300);

@@ -50,7 +50,7 @@ var ml = new Communicator(commType, isSimulating);
 ml.Parameter = Smop.IonVision.SimulatedData.ParameterDefinition;
 ml.RecipeReceived += (s, e) => Print(e);
 
-await Task.Delay(300);
+await Task.Delay(300);  
 await ml.Config(new string[] { Source.DMS }, new ChannelProps[]
 {
     new(0, "nButanol", new() { { "maxFlow", "80" } }),

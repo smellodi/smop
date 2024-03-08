@@ -14,6 +14,10 @@ internal static class PacketType
 internal record class Packet(string Type, object Content);
 
 // Here come definitions of the packet's Content
+public enum Algorithm
+{
+    Basic
+}
 
 public static class Source
 {
@@ -59,7 +63,7 @@ public record class Recipe(string Name, int IsFinal, float MinRMSE, float Usv, C
 }
 
 internal record class Printer(ChannelProps[] Channels);
-internal record class Config(string[] Sources, Printer Printer, int MaxIterationNumber, float Threshold);
+internal record class Config(string[] Sources, Printer Printer, int MaxIterationNumber, float Threshold, string Algorithm);
 
 internal record class Content(string Source);
 

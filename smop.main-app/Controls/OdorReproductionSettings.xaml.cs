@@ -37,6 +37,16 @@ public partial class OdorReproductionSettings : UserControl
         set => cclMLConnIndicator.IsConnected = value;
     }
 
+    public static string Algorithm
+    {
+        get => Properties.Settings.Default.Reproduction_Algorithm;
+        set
+        {
+            Properties.Settings.Default.Reproduction_Algorithm = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
     public static int MaxIterations
     {
         get => Properties.Settings.Default.Reproduction_MaxIterations;
@@ -98,6 +108,9 @@ public partial class OdorReproductionSettings : UserControl
     public OdorReproductionSettings()
     {
         InitializeComponent();
+
+        cmbAlgorithm.ItemsSource = Enum.GetNames(typeof(ML.Algorithm));
+        cmbAlgorithm.SelectedValue = nameof(ML.Algorithm.Basic);
 
         DataContext = this;
     }

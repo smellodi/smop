@@ -42,6 +42,17 @@
             <Separator/>
             <Label Style="{StaticResource Section}"
                    Content="ML settings:"/>
+            <UserControl x:Name="uscAlgorithm"
+                         Style="{StaticResource Setting}"
+                         Tag="Algorithm">
+                <ComboBox x:Name="cmbAlgorithm"
+                          Margin="-2,0"
+                          FontSize="14">
+                    <ComboBox.SelectedItem>
+                        <Binding Path="Algorithm" UpdateSourceTrigger="PropertyChanged"/>
+                    </ComboBox.SelectedItem>
+                </ComboBox>
+            </UserControl>
             <UserControl x:Name="uscMaxIterationNumber"
                          Style="{StaticResource Setting}"
                          Tag="Max iterations">

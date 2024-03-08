@@ -332,8 +332,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         {
             tblRecipeName.Text = recipe.Name + ":";
         }
-        tblRecipeRMSE.Text = "r = " + recipe.MinRMSE.ToString("0.####");
-        tblRecipeIteration.Text = $"iteration #{_proc?.CurrentStep + 1}";
+        tblRecipeRMSE.Text = recipe.MinRMSE < 100000 ? "r = " + recipe.MinRMSE.ToString("0.####") : "";
+        tblRecipeIteration.Text = $"measurement #{_proc?.CurrentStep + 1}";
 
         if (!string.IsNullOrEmpty(recipe.Name) && recipe.MinRMSE >= 0 && recipe.MinRMSE < 100000)
         {
@@ -341,18 +341,18 @@ public partial class Reproduction : Page, IPage<Navigation>
         }
 
         // Clear the table leaving only the header row
-        var tableElements = new UIElement[grdRecipeChannels.Children.Count];
-        grdRecipeChannels.Children.CopyTo(tableElements, 0);
-        foreach (var el in tableElements)
-        {
-            if (Grid.GetRow(el) > 0)
-            {
-                grdRecipeChannels.Children.Remove(el);
-            }
-        }
-
         if (recipe.Channels != null)
         {
+            var tableElements = new UIElement[grdRecipeChannels.Children.Count];
+            grdRecipeChannels.Children.CopyTo(tableElements, 0);
+            foreach (var el in tableElements)
+            {
+                if (Grid.GetRow(el) > 0)
+                {
+                    grdRecipeChannels.Children.Remove(el);
+                }
+            }
+
             int rowIndex = 1;
             foreach (var channel in recipe.Channels)
             {

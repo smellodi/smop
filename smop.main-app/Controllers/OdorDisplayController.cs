@@ -125,15 +125,24 @@ internal class OdorDisplayController
         if (flows == null)
             return CLEANUP_DURATION;
 
-        var minFlow = flows.Any() ? flows.Min() : 0;
+        double result;
 
-        var validFlow = flows.Where(flow => flow >= MIN_VALID_FLOW);
-        var minValidFlow = validFlow.Any() ? validFlow.Min() : 0;
+        if (Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay))
+        {
+            result = 1;
+        }
+        else
+        {
+            var minFlow = flows.Any() ? flows.Min() : 0;
 
-        var slowestFlow = Math.Min(minFlow, minValidFlow);
-        var result = slowestFlow < MIN_VALID_FLOW ?
-            CLEANUP_DURATION :
-            3.38 + 28.53 * Math.Exp(-slowestFlow * 0.2752);     // based on approximation in https://mycurvefit.com/ using Atte's data
+            var validFlow = flows.Where(flow => flow >= MIN_VALID_FLOW);
+            var minValidFlow = validFlow.Any() ? validFlow.Min() : 0;
+
+            var slowestFlow = Math.Min(minFlow, minValidFlow);
+            result = slowestFlow < MIN_VALID_FLOW ?
+                CLEANUP_DURATION :
+                3.38 + 28.53 * Math.Exp(-slowestFlow * 0.2752);     // based on approximation in https://mycurvefit.com/ using Atte's data
+        }
 
         _nlog.Info(LogIO.Text("OD", "Waiting", result.ToString("0.#")));
         return result;

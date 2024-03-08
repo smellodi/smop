@@ -56,13 +56,13 @@ public class Communicator : IDisposable
         }
     }
 
-    public async Task Config(string[] sources, ChannelProps[] channels, int maxInteractions = 0, float threshold = 0)
+    public async Task Config(string[] sources, ChannelProps[] channels, int maxInteractions = 0, float threshold = 0, string algorithm = "")
     {
         _lastAction = "Config";
 
         if (!IsDemo)
         {
-            await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels), maxInteractions, threshold)));
+            await _server.SendAsync(new Packet(PacketType.Config, new Config(sources, new Printer(channels), maxInteractions, threshold, algorithm)));
         }
         else if (_simulator != null)
         {

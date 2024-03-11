@@ -89,7 +89,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
         ConfigureChannelTable(odorChannels, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle, 1);
 
-        DisplayRecipeInfo(new ML.Recipe("", 0, 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
+        DisplayRecipeInfo(new ML.Recipe("", false, 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
 
         SetActiveElement(ActiveElement.ML);
         SetConnectionColor(cclMLStatus, config.MLComm.IsConnected);
@@ -276,9 +276,9 @@ public partial class Reproduction : Page, IPage<Navigation>
             DisplayRecipeInfo(recipe);
             _proc?.ExecuteRecipe(recipe);
 
-            SetActiveElement(recipe.Finished ? ActiveElement.None : ActiveElement.OdorDisplay);
+            SetActiveElement(recipe.IsFinal ? ActiveElement.None : ActiveElement.OdorDisplay);
 
-            if (recipe.Finished)
+            if (recipe.IsFinal)
                 adaAnimation.Visibility = Visibility.Collapsed;
             else
                 adaAnimation.Next();
@@ -376,7 +376,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
         }
 
-        btnQuit.Content = recipe.Finished ? "Return" : "Interrupt";
+        btnQuit.Content = recipe.IsFinal ? "Return" : "Interrupt";
     }
 
     private void SetConnectionColor(ConnectionCircle ccl, bool isConnected) => Dispatcher.Invoke(() => ccl.IsConnected = isConnected);

@@ -16,7 +16,7 @@ internal record class Packet(string Type, object Content);
 // Here come definitions of the packet's Content
 public enum Algorithm
 {
-    Basic
+    RMSE
 }
 
 public static class Source
@@ -30,10 +30,8 @@ public static class Source
 public record class ChannelProps(int Id, string Odor, Dictionary<string, string> Props);
 
 public record class ChannelRecipe(int Id, float Flow, float Duration, float? Temperature = null);
-public record class Recipe(string Name, int IsFinal, float MinRMSE, float Usv, ChannelRecipe[]? Channels)
+public record class Recipe(string Name, bool IsFinal, float MinRMSE, float Usv, ChannelRecipe[]? Channels)
 {
-    public bool Finished => IsFinal != 0;
-
     public Actuator[] ToOdorPrinterActuators()
     {
         var actuators = new List<Actuator>();

@@ -129,7 +129,7 @@ internal abstract class Simulator : IDisposable
                 var usv = USE_SCOPE_MODE ? 400 + _step * 20 : 0;
                 bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
-                var recipe = new Recipe("Normal", isFinished ? 1 : 0, rmse, usv,
+                var recipe = new Recipe("Normal", isFinished, rmse, usv,
                     _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 ScreenLogger.Print("[MlSimul] recipe sent");

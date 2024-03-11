@@ -87,7 +87,7 @@ public class OdorReproducerController
         }
 
         // schedule new scan
-        if (!recipe.Finished)
+        if (!recipe.IsFinal)
         {
             if (cachedDmsScan != null)
             {
@@ -140,7 +140,7 @@ public class OdorReproducerController
 
     public string RecipeToString(ML.Recipe recipe)
     {
-        var fields = new List<string>() { "Received", recipe.Name, recipe.Finished ? "Final" : "Continues", recipe.MinRMSE.ToString("0.####") };
+        var fields = new List<string>() { "Received", recipe.Name, recipe.IsFinal ? "Final" : "Continues", recipe.MinRMSE.ToString("0.####") };
         if (recipe.Channels != null)
         {
             fields.AddRange(recipe.Channels.Select(ch => $"{_odorChannels.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));

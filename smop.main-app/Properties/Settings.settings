@@ -44,10 +44,10 @@
     <Setting Name="Comm_IonVision_IgnoreVersionWarning" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Reproduction_Threshold" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">0.1</Value>
+    <Setting Name="Reproduction_ML_Threshold" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0.5</Value>
     </Setting>
-    <Setting Name="Reproduction_MaxIterations" Type="System.Int32" Scope="User">
+    <Setting Name="Reproduction_ML_MaxIterations" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">6</Value>
     </Setting>
     <Setting Name="Reproduction_Odors" Type="System.String" Scope="User">
@@ -65,7 +65,10 @@
     <Setting Name="Reproduction_UseDmsCache" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="Reproduction_Algorithm" Type="System.String" Scope="User">
+    <Setting Name="Reproduction_ML_Algorithm" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Reproduction_ML_CmdParams" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

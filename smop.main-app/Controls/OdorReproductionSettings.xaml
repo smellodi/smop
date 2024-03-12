@@ -26,7 +26,7 @@
     <StackPanel>
         <Grid>
             <Label Style="{StaticResource Section}"
-                   Content="ML connection:"/>
+                   Content="ML settings:"/>
             <TextBlock x:Name="tblMLStatus"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Right"
@@ -39,9 +39,13 @@
         </Grid>
 
         <StackPanel>
-            <Separator/>
-            <Label Style="{StaticResource Section}"
-                   Content="ML settings:"/>
+            <UserControl x:Name="uscCmdParams"
+                         Style="{StaticResource Setting}"
+                         Tag="Command-line params">
+                <TextBox x:Name="txbCmdParams"
+                         Style="{StaticResource Value}"
+                         Text="{Binding CmdParams}"/>
+            </UserControl>
             <UserControl x:Name="uscAlgorithm"
                          Style="{StaticResource Setting}"
                          Tag="Algorithm">
@@ -90,7 +94,7 @@
             </UserControl>
         </StackPanel>
 
-        <Separator/>
+        <!--Separator/>
         <Label Style="{StaticResource Section}"
                Content="DMS settings:"/>
         <UserControl x:Name="uscUseDmsCache"
@@ -99,7 +103,7 @@
             <CheckBox x:Name="chkUseDmsCache"
                       IsChecked="{Binding UseDmsCache}"
                       VerticalAlignment="Center"/>
-        </UserControl>
+        </UserControl-->
 
         <!--Separator/>
         <Label Style="{StaticResource Section}"

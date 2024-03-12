@@ -192,25 +192,25 @@ namespace Smop.MainApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0.1")]
-        public float Reproduction_Threshold {
+        [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
+        public float Reproduction_ML_Threshold {
             get {
-                return ((float)(this["Reproduction_Threshold"]));
+                return ((float)(this["Reproduction_ML_Threshold"]));
             }
             set {
-                this["Reproduction_Threshold"] = value;
+                this["Reproduction_ML_Threshold"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("6")]
-        public int Reproduction_MaxIterations {
+        public int Reproduction_ML_MaxIterations {
             get {
-                return ((int)(this["Reproduction_MaxIterations"]));
+                return ((int)(this["Reproduction_ML_MaxIterations"]));
             }
             set {
-                this["Reproduction_MaxIterations"] = value;
+                this["Reproduction_ML_MaxIterations"] = value;
             }
         }
         
@@ -277,12 +277,24 @@ namespace Smop.MainApp.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string Reproduction_Algorithm {
+        public string Reproduction_ML_Algorithm {
             get {
-                return ((string)(this["Reproduction_Algorithm"]));
+                return ((string)(this["Reproduction_ML_Algorithm"]));
             }
             set {
-                this["Reproduction_Algorithm"] = value;
+                this["Reproduction_ML_Algorithm"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Reproduction_ML_CmdParams {
+            get {
+                return ((string)(this["Reproduction_ML_CmdParams"]));
+            }
+            set {
+                this["Reproduction_ML_CmdParams"] = value;
             }
         }
     }

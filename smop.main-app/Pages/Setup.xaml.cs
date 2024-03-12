@@ -49,6 +49,7 @@ public partial class Setup : Page, IPage<object?>
         DataContext = this;
 
         ((App)Application.Current).AddCleanupAction(_ctrl.ShutDown);
+        ((App)Application.Current).AddCleanupAction(() => { App.ML?.Dispose(); });
     }
 
     public void Init(SetupType type, bool odorDisplayRequiresCleanup)
@@ -64,6 +65,8 @@ public partial class Setup : Page, IPage<object?>
                 _ctrl.AcquireOdorChannelsInfo();
                 _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
             }
+
+            App.ML?.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
 
             _doesOdorDisplayRequireCleanup = odorDisplayRequiresCleanup;
         }
@@ -158,7 +161,7 @@ public partial class Setup : Page, IPage<object?>
             btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
             btnMeasureSample.IsEnabled = !_isOdorDisplayCleaningRunning;
 
-            odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "none";
+            odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;
             odorReproductionSettings.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
 
@@ -381,6 +384,11 @@ public partial class Setup : Page, IPage<object?>
         lblENoseProgress.Content = "0%";
 
         UpdateUI();
+
+        if (App.ML != null && App.ML.CmdParams != Properties.Settings.Default.Reproduction_ML_CmdParams)
+        {
+            App.ML.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
+        }
 
         await _ctrl.MeasureSample();
 

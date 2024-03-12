@@ -1,5 +1,4 @@
 ﻿using Smop.MainApp.Controllers;
-using Smop.MainApp.Logging;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -37,32 +36,42 @@ public partial class OdorReproductionSettings : UserControl
         set => cclMLConnIndicator.IsConnected = value;
     }
 
-    public static string Algorithm
+    public static string CmdParams
     {
-        get => Properties.Settings.Default.Reproduction_Algorithm;
+        get => Properties.Settings.Default.Reproduction_ML_CmdParams;
         set
         {
-            Properties.Settings.Default.Reproduction_Algorithm = value;
+            Properties.Settings.Default.Reproduction_ML_CmdParams = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public static string Algorithm
+    {
+        get => Properties.Settings.Default.Reproduction_ML_Algorithm;
+        set
+        {
+            Properties.Settings.Default.Reproduction_ML_Algorithm = value;
             Properties.Settings.Default.Save();
         }
     }
 
     public static int MaxIterations
     {
-        get => Properties.Settings.Default.Reproduction_MaxIterations;
+        get => Properties.Settings.Default.Reproduction_ML_MaxIterations;
         set
         {
-            Properties.Settings.Default.Reproduction_MaxIterations = value;
+            Properties.Settings.Default.Reproduction_ML_MaxIterations = value;
             Properties.Settings.Default.Save();
         }
     }
 
     public static float Threshold
     {
-        get => Properties.Settings.Default.Reproduction_Threshold;
+        get => Properties.Settings.Default.Reproduction_ML_Threshold;
         set
         {
-            Properties.Settings.Default.Reproduction_Threshold = value;
+            Properties.Settings.Default.Reproduction_ML_Threshold = value;
             Properties.Settings.Default.Save();
         }
     }
@@ -77,11 +86,12 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
+    /*
     public static bool UseDmsCache
     {
         get => DmsCache.IsEnabled;
         set => DmsCache.IsEnabled = value;
-    }
+    }*/
 
     /*public float SniffingDelay
     {
@@ -113,6 +123,8 @@ public partial class OdorReproductionSettings : UserControl
         cmbAlgorithm.SelectedValue = nameof(ML.Algorithm.RMSE);
 
         DataContext = this;
+
+        txbCmdParams.IsEnabled = ML.Communicator.CanLaunchML;
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Smop.ML;
@@ -6,6 +7,7 @@ namespace Smop.ML;
 public class Communicator : IDisposable
 {
     public static bool IsDemo => false;
+    public static bool CanLaunchML => System.IO.File.Exists(ML_EXECUTABLE);
 
     public enum Type
     {
@@ -31,6 +33,7 @@ public class Communicator : IDisposable
     public event EventHandler<Recipe>? RecipeReceived;
     public event EventHandler<ErrorEventHandlerArgs>? Error;
 
+    public string CmdParams { get; private set; } = "";
     public bool IsConnected => _server.IsClientConnected;
     public string ConnectionMean { get; }
 
@@ -53,6 +56,39 @@ public class Communicator : IDisposable
             {
                 _simulator = type == Type.Tcp ? new TcpSimulator() : new FileSimulator();
             });
+        }
+    }
+
+    public void LaunchMlExe(string cmdParams)
+    {
+        if (_simulator != null || !System.IO.File.Exists(ML_EXECUTABLE))
+        {
+            return;
+        }
+
+        if (_mlExe != null)
+        {
+            _mlExe.Kill();
+            Task.Delay(1000).Wait();
+        }
+
+        try
+        {
+            _mlExe = new Process
+            {
+                EnableRaisingEvents = true
+            };
+            _mlExe.StartInfo.FileName = ML_EXECUTABLE;
+            _mlExe.StartInfo.Arguments = cmdParams;
+            _mlExe.Exited += (s, e) => _mlExe = null;
+            _mlExe.Start();
+
+            CmdParams = cmdParams;
+        }
+        catch (Exception ex)
+        {
+            Common.ScreenLogger.Print($"[ML] Cannot start ML executable: {ex.Message}");
+            _mlExe = null;
         }
     }
 
@@ -144,15 +180,21 @@ public class Communicator : IDisposable
     {
         _lastAction = "Dispose";
 
+        _mlExe?.Dispose();
         _server.Dispose();
         _simulator?.Dispose();
+
         GC.SuppressFinalize(this);
     }
 
     // Internal
 
+    const string ML_EXECUTABLE = "smop_ml.exe";
+
     readonly Server _server;
 
     Simulator? _simulator = null;
     string _lastAction = "Init";
+
+    Process? _mlExe = null;
 }

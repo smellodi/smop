@@ -11,19 +11,22 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <RootNamespace>Smop.MainApp</RootNamespace>
-    <Authors>Oleg Spakov</Authors>
-    <Company>Tampere University</Company>
-    <PackageId>smop</PackageId>
     <AssemblyName>smop</AssemblyName>
-    <Description>Smellodi Odor Printer</Description>
+    <AssemblyTitle>Smellodi Odor Printer</AssemblyTitle>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.2</Version>
+    <Authors>Oleg Špakov</Authors>
+    <Company>Tampere University</Company>
+    <Title>SMOP: Smellodi Odor Printer</Title>
+    <Description>Main app of Smellodi Odor Printer</Description>
+    <Copyright>(c) 2023-2024</Copyright>
+    <ApplicationIcon>Assets\icons\main.ico</ApplicationIcon>
+    <PackageId>smop</PackageId>
     <PackageIcon>main.png</PackageIcon>
     <PackageVersion>2.0</PackageVersion>
-    <Copyright>(c) 2023</Copyright>
-    <ApplicationIcon>Assets\icons\main.ico</ApplicationIcon>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <Version>1.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
+    <PackageProjectUrl>https://github.com/smellodi/smop</PackageProjectUrl>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
@@ -32,10 +35,12 @@
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <NoWarn>1701;1702</NoWarn>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <NoWarn>1701;1702;IDE0040</NoWarn>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>

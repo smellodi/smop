@@ -77,7 +77,7 @@
                 <TextBox x:Name="txbThreshold"
                          Style="{StaticResource Value}">
                     <TextBox.Text>
-                        <Binding Path="Threshold" UpdateSourceTrigger="PropertyChanged" StringFormat="0.####">
+                        <Binding Path="Threshold" UpdateSourceTrigger="LostFocus" StringFormat="0.##">
                             <Binding.ValidationRules>
                                 <utils:RangeRule Min="0" IsInteger="False"/>
                             </Binding.ValidationRules>

@@ -193,13 +193,14 @@ public partial class MainWindow : Window
                 "F2 - forces the test to finish\n\n" +
                 "Any page\n" +
                 "Ctrl + Scroll - zooms UI in/out\n" +
+                "Page Up/Down - zooms UI in/out\n" +
                 "F11 - toggles full screen\n");
         }
-        else if (e.Key == Key.OemMinus)
+        else if (e.Key == Key.PageDown)
         {
             _storage.ZoomOut();
         }
-        else if (e.Key == Key.OemPlus)
+        else if (e.Key == Key.PageUp)
         {
             _storage.ZoomIn();
         }

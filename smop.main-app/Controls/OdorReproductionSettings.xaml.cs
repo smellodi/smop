@@ -120,7 +120,7 @@ public partial class OdorReproductionSettings : UserControl
         InitializeComponent();
 
         cmbAlgorithm.ItemsSource = Enum.GetNames(typeof(ML.Algorithm));
-        cmbAlgorithm.SelectedValue = nameof(ML.Algorithm.RMSE);
+        cmbAlgorithm.SelectedValue = nameof(ML.Algorithm.Euclidean);
 
         DataContext = this;
 

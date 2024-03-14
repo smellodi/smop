@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ScottPlot;
+using System.Collections.Generic;
 using System.Windows.Controls;
 
 namespace Smop.MainApp.Controls;
@@ -9,6 +10,13 @@ public partial class ProgressPlot : UserControl
     {
         InitializeComponent();
 
+        var color = (System.Windows.Media.Color)FindResource("ColorLight");
+        chart.Plot.Style(
+            figureBackground: System.Drawing.Color.Gray,
+            dataBackground: System.Drawing.Color.FromArgb(color.A, color.R, color.G, color.B));
+        chart.Plot.Margins(x: .1, y: .1);
+        chart.Plot.ManualDataArea(new PixelPadding(1, 1, 1, 1));
+
         _scatter = new ScottPlot.Plottable.ScatterPlot([0], [0])
         {
             Color = LINE_COLOR,
@@ -16,11 +24,15 @@ public partial class ProgressPlot : UserControl
         };
 
         chart.Plot.Add(_scatter);
+        chart.Plot.Grid(false);
+        chart.Plot.Frameless(false);
 
         chart.Plot.XAxis.SetSizeLimit(0, 0, 0);
         chart.Plot.XAxis.Line(false);
+        chart.Plot.XAxis.Ticks(false);
         chart.Plot.YAxis.SetSizeLimit(0, 0, 0);
         chart.Plot.YAxis.Line(false);
+        chart.Plot.YAxis.Ticks(false);
 
         chart.Plot.XAxis2.Hide();
         chart.Plot.YAxis2.Hide();

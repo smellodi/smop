@@ -45,6 +45,8 @@ public partial class LiveData : UserControl
 
         chart.Plot.XAxis2.Hide();
         chart.Plot.YAxis2.Hide();
+
+        chart.Refresh();
     }
 
     public void Empty()

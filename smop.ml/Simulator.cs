@@ -31,17 +31,18 @@ internal abstract class Simulator : IDisposable
     int _sntSampleCount = 0;
 
     const float FLOW_DURATION_ENDLESS = -1;
-    const float RMSE = 0.2f;
+    const float RMSE = 2.5f;
     const int SNT_SAMPLE_MAX_COUNT = 10;
 
     protected abstract Task SendData(string data);
 
     protected async void ParseJson(string json)
     {
-        ScreenLogger.Print("[MlSimul] received: " + json.Max(700));
-
         try
         {
+            json = json[json.IndexOf('{')..];
+            ScreenLogger.Print("[MlSimul] received: " + json.Max(700));
+
             if (Communicator.IsDemo)
             {
                 await HandleDemoPacket(json);
@@ -127,7 +128,7 @@ internal abstract class Simulator : IDisposable
                 _step++;
                 var rmse = RMSE / _step;
                 var usv = USE_SCOPE_MODE ? 400 + _step * 20 : 0;
-                bool isFinished = rmse < _threshold || _step >= _maxSteps;
+                bool isFinished = rmse < _threshold || _step > _maxSteps;
 
                 var recipe = new Recipe("Normal", isFinished, rmse, usv,
                     _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());

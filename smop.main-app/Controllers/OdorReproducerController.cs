@@ -25,6 +25,9 @@ public class OdorReproducerController
 
     public OdorChannel[] OdorChannels => _odorChannels.ToArray();
     public int CurrentStep { get; private set; } = 0;
+    public float BestRMSE { get; private set; } = 10000;
+    public float[] BestFlows { get; private set; }
+    public float[] RecipeFlows { get; private set; }
 
     public event EventHandler<IV.Scan.ScanResult>? ScanFinished;
     public event EventHandler<IV.Defs.ScopeResult>? ScopeScanFinished;
@@ -50,6 +53,9 @@ public class OdorReproducerController
         {
             _smellInsp.Data += SmellInsp_Data;
         }
+
+        BestFlows = config.TargetFlows.Select(flow => 0f).ToArray();
+        RecipeFlows = config.TargetFlows.Select(flow => 0f).ToArray();
     }
 
     public void ShutDownFlows()
@@ -86,6 +92,13 @@ public class OdorReproducerController
                 COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "release odors");
         }
 
+        // update the solution
+        if (recipe.RMSE < BestRMSE)
+        {
+            BestRMSE = recipe.RMSE;
+            BestFlows = RecipeFlows.Select(f => f).ToArray();
+        }
+
         // schedule new scan
         if (!recipe.IsFinal)
         {
@@ -115,8 +128,11 @@ public class OdorReproducerController
         }
         else
         {
+            BestFlows = recipe.Channels?.Select(c => c.Flow).ToArray() ?? RecipeFlows;
             System.Media.SystemSounds.Beep.Play();
         }
+
+        RecipeFlows = recipe.Channels?.Select(c => c.Flow).ToArray() ?? RecipeFlows;
     }
 
     // Internal
@@ -140,7 +156,7 @@ public class OdorReproducerController
 
     public string RecipeToString(ML.Recipe recipe)
     {
-        var fields = new List<string>() { "Received", recipe.Name, recipe.IsFinal ? "Final" : "Continues", recipe.MinRMSE.ToString("0.####") };
+        var fields = new List<string>() { "Received", recipe.Name, recipe.IsFinal ? "Final" : "Continues", recipe.RMSE.ToString("0.####") };
         if (recipe.Channels != null)
         {
             fields.AddRange(recipe.Channels.Select(ch => $"{_odorChannels.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));

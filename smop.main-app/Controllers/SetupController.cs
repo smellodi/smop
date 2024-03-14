@@ -275,7 +275,8 @@ public class SetupController
         }
 
         var settings = Properties.Settings.Default;
-        _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_ML_MaxIterations, settings.Reproduction_ML_Threshold));
+        _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_ML_MaxIterations, settings.Reproduction_ML_Threshold,
+            settings.Reproduction_ML_Algorithm));
 
         await App.ML.Config(dataSources.ToArray(), _odorChannels
                 .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))

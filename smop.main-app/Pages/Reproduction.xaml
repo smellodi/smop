@@ -13,15 +13,22 @@
       Unloaded="Page_Unloaded">
 
     <Page.Resources>
-        <Style x:Key="RecipeChannel" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+        <Style x:Key="RecipeValue" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="RecipeLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Padding" Value="0,0,8,0"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="RecipeChannelLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
-            <Setter Property="Padding" Value="0,0,8,0"/>
-        </Style>
-        <Style x:Key="RecipeChannelHeader" TargetType="Label" BasedOn="{StaticResource RecipeChannelLabel}">
+        <Style x:Key="FlowsHeader" TargetType="Label" BasedOn="{StaticResource RecipeLabel}">
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
             <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style x:Key="PlotHeader" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
         </Style>
         <Style x:Key="OdorDisplayMeasurement" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -44,6 +51,9 @@
             <Setter Property="Foreground" Value="#444"/>
             <Setter Property="TextAlignment" Value="Right"/>
             <Setter Property="Margin" Value="4"/>
+        </Style>
+        <Style x:Key="PlotPanel" TargetType="StackPanel">
+            <Setter Property="Margin" Value="16,0"/>
         </Style>
     </Page.Resources>
 
@@ -70,16 +80,21 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="1" Grid.Column="0">
+            <StackPanel Grid.Row="1" Grid.Column="0"
+                        Margin="0,0,22,0">
                 <Grid x:Name="grdODChannels"
                       HorizontalAlignment="Right"
-                      Margin="0,38,4,0">
+                      Margin="0,30,4,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -99,8 +114,57 @@
                     <TextBlock Grid.Row="1" Grid.Column="1"
                                Style="{StaticResource OdorDisplayMeasurement}"
                                Text="0"/>
-                    
+
+                    <Label Grid.Row="2" Grid.Column="0"
+                           Style="{StaticResource OdorDisplayMeasurementLabel}"
+                           Content="T Gas:"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1"
+                               Style="{StaticResource OdorDisplayMeasurement}"
+                               Text="-"/>
+
+                    <Label Grid.Row="3" Grid.Column="0"
+                           Style="{StaticResource OdorDisplayMeasurementLabel}"
+                           Content="T eNose:"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1"
+                               Style="{StaticResource OdorDisplayMeasurement}"
+                               Text="-"/>
+
                     <!-- gas flow measurement elements are created in the code -->
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Row="1" Grid.Column="0"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,22,0">
+                <Label Style="{StaticResource PlotHeader}"
+                       Content="Search space"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="19"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="tblOdor2" Grid.Row="0" Grid.Column="0"
+                               VerticalAlignment="Center"
+                               RenderTransformOrigin="0.5,0.5">
+                        <TextBlock.LayoutTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="-90"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </TextBlock.LayoutTransform>
+                    </TextBlock>
+                    <local:SearchSpace2D x:Name="crtSearchSpace" Grid.Row="0" Grid.Column="1"
+                                         Width="140"
+                                         Height="140" />
+                    <TextBlock x:Name="tblOdor1" Grid.Row="1" Grid.Column="1"
+                               HorizontalAlignment="Center"/>
                 </Grid>
             </StackPanel>
 
@@ -218,8 +282,8 @@
                           Margin="4,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="20"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
@@ -228,32 +292,26 @@
                         </Grid.RowDefinitions>
                         
                         <Label Grid.Row="0" Grid.Column="0"
-                               Style="{StaticResource RecipeChannelHeader}"
-                               Content="Odor"/>
-                        <Label Grid.Row="0" Grid.Column="1"
-                               Style="{StaticResource RecipeChannelHeader}"
+                               Style="{StaticResource FlowsHeader}"
                                Content="Flow"/>
+                        <Label Grid.Row="0" Grid.Column="1"
+                               Style="{StaticResource FlowsHeader}"
+                               Content="Current"/>
                         <Label Grid.Row="0" Grid.Column="2"
-                               Style="{StaticResource RecipeChannelHeader}"
-                               Content="t"/>
+                               Style="{StaticResource FlowsHeader}"
+                               Content="Best"/>
                         <Label Grid.Row="0" Grid.Column="3"
-                               Style="{StaticResource RecipeChannelHeader}"
-                               Content="T°"/>
+                               Style="{StaticResource FlowsHeader}"
+                               Content=""/>
                         <Label Grid.Row="0" Grid.Column="4"
-                               Style="{StaticResource RecipeChannelHeader}"
-                               Content="Target flow"/>
+                               Style="{StaticResource FlowsHeader}"
+                               Content="Target"/>
                         <!-- filled in code -->
                     </Grid>
-                    <TextBlock x:Name="tblRecipeRMSE"
-                               FontStyle="Italic"
-                               TextAlignment="Center"
-                               Margin="0,8,0,0"/>
-                    <TextBlock x:Name="tblRecipeIteration"
-                               FontStyle="Italic"
-                               TextAlignment="Center"/>
-                    <local:ProgressPlot x:Name="crtRMSE"
-                             Height="40"
-                             Width="200"/>
+                    <ProgressBar x:Name="prbProgress" 
+                                 Height="3"
+                                 BorderThickness="0"
+                                 Margin="0,8,0,0"/>
                 </StackPanel>
             </StackPanel>
 
@@ -261,14 +319,27 @@
                         Margin="12,0,0,0"
                         VerticalAlignment="Top"
                         HorizontalAlignment="Left">
-                <Label>Actual DMS scan</Label>
+                <WrapPanel>
+                    <Label Style="{StaticResource PlotHeader}"
+                           HorizontalAlignment="Left"
+                           Content="Last DMS"
+                           Padding="5,5,12,5"/>
+                    <Label x:Name="lblScanInfo"
+                           VerticalAlignment="Bottom"/>
+                </WrapPanel>
                 <Canvas x:Name="cnvDmsScan"
                         Background="{StaticResource BrushPanelLightest}"
                         Height="73"
-                        Width="182"
-                        Margin="0,0,0,12"/>
+                        Width="182"/>
 
-                <Label>Target DMS scan</Label>
+                <TextBlock x:Name="tblRecipeIteration"
+                           FontStyle="Italic"
+                           TextAlignment="Center"
+                           Margin="0,0,0,12"/>
+
+                <Label Style="{StaticResource PlotHeader}"
+                       HorizontalAlignment="Left"
+                       Content="Target DMS"/>
                 <Canvas x:Name="cnvDmsTargetScan"
                         Background="{StaticResource BrushPanelLightest}"
                         Height="73"
@@ -277,14 +348,32 @@
             
             <Grid Grid.Row="1" Grid.Column="1"
                   HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  Margin="0,-386,109,0">
+                  VerticalAlignment="Top"
+                  Margin="0,-20,109,0">
                 <local:ActiveDeviceAnimation x:Name="adaAnimation"/>
             </Grid>
 
+            <WrapPanel Grid.Row="2" Grid.ColumnSpan="10"
+                       HorizontalAlignment="Center">
+                <StackPanel Style="{StaticResource PlotPanel}">
+                    <Label Style="{StaticResource PlotHeader}"
+                               Content="Measurement RMSE"/>
+                    <local:ProgressPlot x:Name="crtRMSE"
+                             Height="40"
+                             Width="200"/>
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource PlotPanel}">
+                    <Label Style="{StaticResource PlotHeader}"
+                               Content="Best RMSE"/>
+                    <local:ProgressPlot x:Name="crtBestRMSE"
+                             Height="40"
+                             Width="200"/>
+                </StackPanel>
+            </WrapPanel>
         </Grid>
 
-        <StackPanel Grid.Row="3"
+        <StackPanel Grid.Row="4"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center">
             <Button x:Name="btnQuit"

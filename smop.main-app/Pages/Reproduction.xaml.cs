@@ -4,6 +4,7 @@ using Smop.MainApp.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -24,8 +25,8 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         _inactiveElementStyle = FindResource("Element") as Style;
         _activeElementStyle = FindResource("ActiveElement") as Style;
-        _recipeChannelStyle = FindResource("RecipeChannel") as Style;
-        _recipeChannelLabelStyle = FindResource("RecipeChannelLabel") as Style;
+        _recipeValueStyle = FindResource("RecipeValue") as Style;
+        _recipeLabelStyle = FindResource("RecipeLabel") as Style;
         _odChannelStyle = FindResource("OdorDisplayMeasurement") as Style;
         _odChannelLabelStyle = FindResource("OdorDisplayMeasurementLabel") as Style;
 
@@ -38,15 +39,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Connected);
 
         _proc = new OdorReproducerController(config);
-        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => new IonVision.Plot().Create(cnvDmsScan,
-            (int)config.DataSize.Height,
-            (int)config.DataSize.Width,
-            e.MeasurementData.IntensityTop,
-            theme: PLOT_THEME));
-        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => new IonVision.Plot().Create(cnvDmsScan,
-            1, e.IntensityTop.Length,
-            e.IntensityTop,
-            theme: PLOT_THEME));
+        _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => HandleScanFinished(e, config.DataSize));
+        _proc.ScopeScanFinished += (s, e) => Dispatcher.Invoke(() => HandleScanFinished(e));
         _proc.MlComputationStarted += (s, e) => Dispatcher.Invoke(() =>
         {
             SetActiveElement(ActiveElement.ML);
@@ -71,12 +65,31 @@ public partial class Reproduction : Page, IPage<Navigation>
         imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
 
         tblRecipeName.Text = "";
-        tblRecipeRMSE.Text = "";
         tblRecipeIteration.Text = "";
+        
+        lblScanInfo.Content = "";
 
         adaAnimation.Visibility = Visibility.Visible;
+        prbProgress.Value = 0;
+        prbProgress.Maximum = (Properties.Settings.Default.Reproduction_ML_MaxIterations + 1) * 5;  // this may change in future
 
         crtRMSE.Reset();
+        crtBestRMSE.Reset();
+        cnvDmsScan.Children.Clear();
+
+        crtSearchSpace.Reset();
+        if (Storage.Instance.Simulating.HasFlag(SimulationTarget.ML))
+        {
+            crtSearchSpace.RmseThreshold = 0.1f;
+        }
+        if (Storage.Instance.Simulating.HasFlag(SimulationTarget.IonVision))
+        {
+            crtSearchSpace.RmseThreshold = 2.5f;
+        }
+        crtSearchSpace.Add(0, config.TargetFlows[0].Flow, config.TargetFlows[1].Flow, System.Drawing.Color.Black);
+
+        tblOdor1.Text = _proc.OdorChannels[0].Name;
+        tblOdor2.Text = _proc.OdorChannels[1].Name;
 
         DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
             new IonVision.Plot().Create(cnvDmsTargetScan,
@@ -87,7 +100,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
-        ConfigureChannelTable(odorChannels, grdRecipeChannels, _recipeChannelLabelStyle, _recipeChannelStyle, 1);
+        ConfigureChannelTable(odorChannels, grdRecipeChannels, _recipeLabelStyle, _recipeValueStyle, 1);
 
         DisplayRecipeInfo(new ML.Recipe("", false, 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
 
@@ -107,9 +120,13 @@ public partial class Reproduction : Page, IPage<Navigation>
         ENose = 4
     }
 
+    record class ScanEnvInfo(double Temperatore);
+
     const int MEASUREMENT_ROW_PID = 0;
     const int MEASUREMENT_ROW_HUMIDITY = 1;
-    const int MEASUREMENT_ROW_FIRST_ODOR_CHANNEL = 2;
+    const int MEASUREMENT_ROW_TEMPERATURE_GAS = 2;
+    const int MEASUREMENT_ROW_TEMPERATURE_ENOSE = 3;
+    const int MEASUREMENT_ROW_FIRST_ODOR_CHANNEL = 5;
 
     readonly KeyValuePair<double, Color>[] PLOT_THEME = new Dictionary<double, Color>()
     {
@@ -122,8 +139,8 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     readonly Style? _activeElementStyle;
     readonly Style? _inactiveElementStyle;
-    readonly Style? _recipeChannelStyle;
-    readonly Style? _recipeChannelLabelStyle;
+    readonly Style? _recipeValueStyle;
+    readonly Style? _recipeLabelStyle;
     readonly Style? _odChannelStyle;
     readonly Style? _odChannelLabelStyle;
 
@@ -187,25 +204,12 @@ public partial class Reproduction : Page, IPage<Navigation>
         foreach (var odorChannel in odorChannels)
         {
             grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-
-            var lbl = new Label()
-            {
-                Content = odorChannel.Name,
-                Style = labelStyle,
-            };
-            Grid.SetRow(lbl, grid.RowDefinitions.Count - 1);
-            Grid.SetColumn(lbl, 0);
-            grid.Children.Add(lbl);
-
-            var tbl = new TextBlock()
-            {
-                Style = valueStyle,
-            };
-            Grid.SetRow(tbl, grid.RowDefinitions.Count - 1);
-            Grid.SetColumn(tbl, 1);
-            grid.Children.Add(tbl);
+            AddLabel(grid, odorChannel.Name, grid.RowDefinitions.Count - 1, 0, labelStyle);
+            AddTextBlock(grid, "", grid.RowDefinitions.Count - 1, 1, valueStyle);
         }
 
+        // RMSE row
+        grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 36 });
     }
 
     private void SetActiveElement(ActiveElement el)
@@ -230,11 +234,6 @@ public partial class Reproduction : Page, IPage<Navigation>
         prbENoseProgress.Value = 0;
         lblENoseProgress.Content = "";
 
-        tblRecipeName.Visibility = BoolToVisible(!isActiveML);
-        grdRecipeChannels.Visibility = BoolToVisible(!isActiveML);
-        tblRecipeRMSE.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
-        tblRecipeIteration.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
-
         cnvDmsScan.Visibility = BoolToVisible(App.IonVision != null);
         cnvDmsTargetScan.Visibility = BoolToVisible(App.IonVision != null);
 
@@ -250,7 +249,6 @@ public partial class Reproduction : Page, IPage<Navigation>
         var stateText = new List<string>();
         if (hasNoActiveElement)
         {
-            //tblRecipeName.Text = "Final recipe:";
             stateText.Add("Finished");
         }
         if (isActiveML)
@@ -269,12 +267,40 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeState.Text = string.Join(". ", stateText) + ".";
     }
 
+    private void HandleScanFinished(IonVision.Scan.ScanResult scan, Size size)
+    {
+        new IonVision.Plot().Create(cnvDmsScan,
+                    (int)size.Height,
+                    (int)size.Width,
+                    scan.MeasurementData.IntensityTop,
+                    theme: PLOT_THEME);
+        DisplayScanInfo();
+        DisplayScanEnvInfo(new ScanEnvInfo(scan.SystemData.Sample.Temperature.Avg));
+    }
+    private void HandleScanFinished(IonVision.Defs.ScopeResult scan)
+    {
+        new IonVision.Plot().Create(cnvDmsScan,
+                    1, scan.IntensityTop.Length,
+                    scan.IntensityTop,
+                    theme: PLOT_THEME);
+        DisplayScanInfo();
+    }
+
     private void HandleRecipe(object? sender, ML.Recipe recipe)
     {
         Dispatcher.Invoke(() =>
         {
+            if (_proc == null)
+                return;
+
+            if (recipe.RMSE < 10000)
+            {
+                DisplayScanInfo(recipe.RMSE);    // update the previous scan RMSE
+                crtSearchSpace.Add(recipe.RMSE, _proc.RecipeFlows);
+            }
+
+            _proc.ExecuteRecipe(recipe);
             DisplayRecipeInfo(recipe);
-            _proc?.ExecuteRecipe(recipe);
 
             SetActiveElement(recipe.IsFinal ? ActiveElement.None : ActiveElement.OdorDisplay);
 
@@ -283,6 +309,31 @@ public partial class Reproduction : Page, IPage<Navigation>
             else
                 adaAnimation.Next();
         });
+    }
+
+    private void DisplayScanInfo(float rmse = 0)
+    {
+        if (_proc == null)
+            return;
+
+        var flowsStr = _proc.RecipeFlows.Select(flow => flow.ToString("F1"));
+        var info = string.Join(' ', flowsStr);
+        if (rmse > 0)
+        {
+            info += $", r={rmse:F3}";
+        }
+        lblScanInfo.Content = info;
+
+        if (rmse == 0)  // only when the scan just finished
+        {
+            tblRecipeIteration.Text = $"measurement #{_proc.CurrentStep}";
+        }
+    }
+
+    private void DisplayScanEnvInfo(ScanEnvInfo info)
+    {
+        if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_TEMPERATURE_ENOSE, 1) is TextBlock tempEnoseEl)
+            tempEnoseEl.Text = info.Temperatore.ToString("0.0") + "°";
     }
 
     private void DisplayODState(ODPackets.Data data)
@@ -303,6 +354,13 @@ public partial class Reproduction : Page, IPage<Navigation>
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_HUMIDITY, 1) is TextBlock humidityEl)
                         humidityEl.Text = humidity.Percent.ToString("0.0") + " %";
+                }
+
+                value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.OdorSourceThermometer);
+                if (value != null && value is ODPackets.ThermometerValue thermometer)
+                {
+                    if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_TEMPERATURE_GAS, 1) is TextBlock tempGasEl)
+                        tempGasEl.Text = thermometer.Celsius.ToString("0.0") + "°";
                 }
             }
             else
@@ -328,16 +386,32 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     private void DisplayRecipeInfo(ML.Recipe recipe)
     {
+        if (_proc == null || _procConfig == null)
+            return;
+
         if (!string.IsNullOrEmpty(recipe.Name))
         {
             tblRecipeName.Text = recipe.Name + ":";
-        }
-        tblRecipeRMSE.Text = recipe.MinRMSE < 100000 ? "r = " + recipe.MinRMSE.ToString("0.####") : "";
-        tblRecipeIteration.Text = $"measurement #{_proc?.CurrentStep + 1}";
 
-        if (!string.IsNullOrEmpty(recipe.Name) && recipe.MinRMSE >= 0 && recipe.MinRMSE < 100000)
+            // Dirty hack to get the current search ID from the recipe name
+            var re = new Regex(@"#(\d+)");
+            var matches = re.Matches(recipe.Name);
+            if (matches.Count == 0)
+            {
+                prbProgress.Value = prbProgress.Maximum;
+            }
+            else
+            {
+                int iterationId = matches.Count == 1 ? 0 : int.Parse(matches[0].Captures[0].Value[1..]);
+                int searchId = int.Parse(matches[^1].Captures[0].Value[1..]);
+                prbProgress.Value = iterationId * 5 + searchId;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(recipe.Name) && recipe.RMSE >= 0 && recipe.RMSE < 100000)
         {
-            crtRMSE.Add(recipe.MinRMSE);
+            crtRMSE.Add(recipe.RMSE);
+            crtBestRMSE.Add(_proc.BestRMSE);
         }
 
         // Clear the table leaving only the header row
@@ -357,24 +431,25 @@ public partial class Reproduction : Page, IPage<Navigation>
             foreach (var channel in recipe.Channels)
             {
                 var id = (ODDevice.ID)channel.Id;
-                var lbl = new Label()
-                {
-                    Content = _proc?.OdorChannels.FirstOrDefault(odorChannel => odorChannel.ID == id)?.Name ?? id.ToString(),
-                    Style = _recipeChannelLabelStyle,
-                };
-                Grid.SetRow(lbl, rowIndex);
-                Grid.SetColumn(lbl, 0);
-                grdRecipeChannels.Children.Add(lbl);
+                var label = _proc.OdorChannels.FirstOrDefault(odorChannel => odorChannel.ID == id)?.Name ?? id.ToString();
+                AddLabel(grdRecipeChannels, label, rowIndex, 0, _recipeLabelStyle);
 
-                AddToTable(channel.Flow >= 0 ? channel.Flow.ToString("0.#") : "-", rowIndex, 1);
-                AddToTable(channel.Duration >= 0 ? channel.Duration.ToString("0.##") : "-", rowIndex, 2);
-                AddToTable(channel.Temperature > 0 ? channel.Duration.ToString("0.##") : "-", rowIndex, 3);
-                AddToTable(_procConfig?.TargetFlows.FirstOrDefault(channelConfig => channelConfig.ID == id) is
-                    OdorReproducerController.OdorChannelConfig targetFlow ? targetFlow.Flow.ToString("0.#") : "-", rowIndex, 4);
+                AddTextBlock(grdRecipeChannels, channel.Flow >= 0 ? channel.Flow.ToString("0.#") : "-", rowIndex, 1, _recipeValueStyle);
+                AddTextBlock(grdRecipeChannels, _proc.BestFlows[rowIndex - 1].ToString("0.#") ?? "-", rowIndex, 2, _recipeValueStyle);
+                AddTextBlock(grdRecipeChannels, _procConfig.TargetFlows.FirstOrDefault(channelConfig => channelConfig.ID == id) is
+                    OdorReproducerController.OdorChannelConfig targetFlow ? targetFlow.Flow.ToString("0.#") : "-", rowIndex, 4, _recipeValueStyle);
 
                 rowIndex++;
             }
         }
+
+        // Add RMSE info
+        var settings = Properties.Settings.Default;
+        var lastRowId = grdRecipeChannels.RowDefinitions.Count - 1;
+        AddLabel(grdRecipeChannels, "RMSE", lastRowId, 0, _recipeLabelStyle);
+        if (_proc.BestRMSE < 10000)
+            AddTextBlock(grdRecipeChannels, _proc.BestRMSE.ToString("0.###"), lastRowId, 2, _recipeValueStyle);
+        AddTextBlock(grdRecipeChannels, settings.Reproduction_ML_Threshold.ToString("0.###"), lastRowId, 4, _recipeValueStyle);
 
         btnQuit.Content = recipe.IsFinal ? "Return" : "Interrupt";
     }
@@ -394,16 +469,28 @@ public partial class Reproduction : Page, IPage<Navigation>
         _procConfig = null;
     }
 
-    void AddToTable(string text, int row, int column)
+    private static void AddTextBlock(Grid grid, string text, int row, int column, Style? style)
     {
         var tbl = new TextBlock()
         {
             Text = text,
-            Style = _recipeChannelStyle,
+            Style = style,
         };
         Grid.SetRow(tbl, row);
         Grid.SetColumn(tbl, column);
-        grdRecipeChannels.Children.Add(tbl);
+        grid.Children.Add(tbl);
+    }
+
+    private static void AddLabel(Grid grid, string text, int row, int column, Style? style)
+    {
+        var lbl = new Label()
+        {
+            Content = text,
+            Style = style,
+        };
+        Grid.SetRow(lbl, row);
+        Grid.SetColumn(lbl, column);
+        grid.Children.Add(lbl);
     }
 
     // UI

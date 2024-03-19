@@ -1,15 +1,10 @@
 # SMELLODI Odor Printer (SMOP)
 
+The main application that control all communication modules.
+
 Implements the following procedures:
 - Pulse generator
 - Odor reproduction using ML
-
-## Dependencies
-
-NuGet packages:
-- ScottPlot.WPF
-- NLog
-- WpfAnimatedGif 
 
 ## Connecting to devices
 
@@ -128,5 +123,3 @@ Note that PID values will be streaming into the ML module of "Send PID value" fl
 Click the "Start" button to feed the measured odor to the Machine Learning module and start the odor reproduction loop.
 The reproduction will be finished after the ML module sends a flag indicating a sufficiently stable level of 
 the reproduction model.
-
-**NOTE** Currently, the application is in DEMO mode meaning the data exchange protocol between SMOP and ML modules is simplified.

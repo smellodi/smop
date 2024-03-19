@@ -14,19 +14,12 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="7.0.0" />
-    <PackageReference Include="System.Management" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Smop.Common\Smop.Common.csproj" />
     <ProjectReference Include="..\smop.ion-vision\Smop.IonVision.csproj" />
     <ProjectReference Include="..\smop.smell-insp\Smop.SmellInsp.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="FTD2XX_NET">
-      <HintPath>..\FTD2XX_NET_v1.2.0\FTD2XX_NET.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

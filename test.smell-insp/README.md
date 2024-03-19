@@ -1,4 +1,4 @@
-# SMELLODI odor printer (SMOP): `Smod.SmellInsp` module testing app
+# SMELLODI odor printer (SMOP): `Smop.SmellInsp` module testing app
 
 ## Usage
 

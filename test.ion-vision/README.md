@@ -1,4 +1,4 @@
-# SMELLODI odor printer (SMOP): `Smod.IonVision` module testing app
+# SMELLODI odor printer (SMOP): `Smop.IonVision` module testing app
 
 ## Usage
 

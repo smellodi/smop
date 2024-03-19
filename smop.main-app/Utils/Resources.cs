@@ -34,7 +34,7 @@ internal static class Resources
             var linkTimeUtc = epoch.AddSeconds(secondsSince1970);
 
             var localTime = TimeZoneInfo.ConvertTimeFromUtc(linkTimeUtc, TimeZoneInfo.Local);
-            result.Add(localTime.ToString("(yyyy.MM.dd hh.mm)"));
+            result.Add(localTime.ToString("(yyyy.MM.dd HH.mm)"));
         }
         catch { }
 

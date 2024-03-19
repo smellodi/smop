@@ -1,4 +1,4 @@
-# SMELLODI odor printer (SMOP): `Smod.ML` module testing app
+# SMELLODI odor printer (SMOP): `Smop.ML` module testing app
 
 ## Usage
 

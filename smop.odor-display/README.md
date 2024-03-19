@@ -1,14 +1,7 @@
 # SMELLODI odor printer (SMOP): Multichannel Odor Display communication module
 
+Communicated with the Multichannel Odor Display devices via a COM port.
+
 ## Testing
 
 Use `test.odor-display` console app to test the module
-
-## Dependencies
-
-NuGet packages:
-- System.IO.Ports
-- System.Management
-
-External:
-- FTDI 2XX .NET library

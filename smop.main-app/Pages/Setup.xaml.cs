@@ -1,4 +1,5 @@
-﻿using Smop.IonVision;
+﻿using Smop.Common;
+using Smop.IonVision;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils;
@@ -123,7 +124,7 @@ public partial class Setup : Page, IPage<object?>
     readonly List<string> _smellInspLog = new();
     readonly List<string> _odorDisplayLog = new();
 
-    readonly List<IonVision.Scan.MeasurementData> _dmsScans = new();
+    readonly List<IonVision.Scan.ScanResult> _dmsScans = new();
     readonly RadioButton[] _dmsPlotTypes;
 
     bool _isInitilized = false;
@@ -150,7 +151,7 @@ public partial class Setup : Page, IPage<object?>
         {
             bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
             bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
-            bool isSntReady = _ctrl.IsSntScanComplete || isDmsReady;
+            bool isSntReady = _ctrl.SntSample != null || isDmsReady;
 
             btnStart.IsEnabled =
                 isODReady &&
@@ -167,7 +168,7 @@ public partial class Setup : Page, IPage<object?>
 
             prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
             prbDMSBusy.Visibility = _isDMSInitRunning ? Visibility.Visible : Visibility.Hidden;
-            prbSNTBusy.Visibility = _isCollectingData && !_ctrl.IsSntScanComplete ? Visibility.Visible : Visibility.Hidden;
+            prbSNTBusy.Visibility = _isCollectingData ? Visibility.Visible : Visibility.Hidden;
         }
 
         _dmsPlotTypes[(int)Plot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
@@ -220,7 +221,7 @@ public partial class Setup : Page, IPage<object?>
                     cnvDmsScan,
                     _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                    _dmsScans[^1].IntensityTop,
+                    _dmsScans[^1].MeasurementData.IntensityTop,
                     theme: PLOT_THEME
                 );
             else
@@ -233,8 +234,8 @@ public partial class Setup : Page, IPage<object?>
                     cnvDmsScan,
                     _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps,
                     _ctrl.ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps,
-                    _dmsScans[^1].IntensityTop,
-                    _dmsScans[^2].IntensityTop,
+                    _dmsScans[^1].MeasurementData.IntensityTop,
+                    _dmsScans[^2].MeasurementData.IntensityTop,
                     compOp,
                     PLOT_THEME
                 );
@@ -394,7 +395,7 @@ public partial class Setup : Page, IPage<object?>
 
         if (_ctrl.DmsScan != null)
         {
-            _dmsScans.Add(_ctrl.DmsScan.MeasurementData);
+            _dmsScans.Add(_ctrl.DmsScan);
 
             if (_dmsPlotType == Plot.ComparisonOperation.None || _dmsScans.Count > 1)
             {
@@ -432,8 +433,13 @@ public partial class Setup : Page, IPage<object?>
                     dataSize = new(sc.Ucv.Steps, sc.Usv.Steps);
                 }
 
-                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(),
-                    _dmsScans.Count > 0 ? _dmsScans[^1] : null, dataSize));
+                IMeasurement? targetMeasurement = null;
+                if (_dmsScans.Count > 0)
+                    targetMeasurement = _dmsScans[^1];
+                else if (_ctrl.SntSample != null)
+                    targetMeasurement = _ctrl.SntSample;
+
+                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), targetMeasurement, dataSize));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

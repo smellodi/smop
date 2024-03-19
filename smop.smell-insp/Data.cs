@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Smop.Common;
+using System.Collections.Generic;
 
 namespace Smop.SmellInsp;
 
@@ -11,7 +12,7 @@ public enum Command
     GET_INFO
 }
 
-public record class Data(float[] Resistances, float Temperature, float Humidity)
+public record class Data(float[] Resistances, float Temperature, float Humidity) : IMeasurement
 {
     public static int ResistantCount => 64;
 

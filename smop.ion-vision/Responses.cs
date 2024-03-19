@@ -162,7 +162,7 @@ public record class ScopeResult(
     float[] Ucv,
     float[] IntensityTop,
     float[] IntensityBottom
-) : Scan.IScan;
+) : Common.IMeasurement;
 public record class ScopeParameters(
     float UcvStart,
     float UcvStop,

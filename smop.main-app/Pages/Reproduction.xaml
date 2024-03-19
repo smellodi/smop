@@ -316,32 +316,26 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel x:Name="sptDMSs" Grid.Row="1" Grid.Column="2"
+            <StackPanel x:Name="sptMeasurements" Grid.Row="1" Grid.Column="2"
                         Margin="12,0,0,0"
                         VerticalAlignment="Top"
                         HorizontalAlignment="Left">
-                <WrapPanel>
-                    <Label Style="{StaticResource PlotHeader}"
-                           HorizontalAlignment="Left"
-                           Content="Last DMS"
-                           Padding="5,5,12,5"/>
-                    <Label x:Name="lblScanInfo"
-                           VerticalAlignment="Bottom"/>
-                </WrapPanel>
-                <Canvas x:Name="cnvDmsScan"
+                <Label Style="{StaticResource PlotHeader}"
+                        HorizontalAlignment="Left"
+                        Content="Last measurement"
+                        Padding="5,5,12,5"/>
+                <Canvas x:Name="cnvMeasurement"
                         Background="{StaticResource BrushPanelLightest}"
                         Height="73"
                         Width="182"/>
 
-                <TextBlock x:Name="tblRecipeIteration"
-                           FontStyle="Italic"
-                           TextAlignment="Center"
-                           Margin="0,0,0,12"/>
+                <Label x:Name="lblMeasurementInfo"
+                       Margin="0,0,0,12"/>
 
                 <Label Style="{StaticResource PlotHeader}"
                        HorizontalAlignment="Left"
-                       Content="Target DMS"/>
-                <Canvas x:Name="cnvDmsTargetScan"
+                       Content="Target measurement"/>
+                <Canvas x:Name="cnvTargetMeasurement"
                         Background="{StaticResource BrushPanelLightest}"
                         Height="73"
                         Width="182"/>

@@ -24,10 +24,11 @@ public class SetupController
     public IonVision.Param.ParameterDefinition? ParamDefinition { get; private set; } = null;
     public IonVision.Defs.ScopeParameters? ScopeParameters { get; private set; } = null;
     public IonVision.Scan.ScanResult? DmsScan { get; private set; } = null;
+    public SmellInsp.Data? SntSample { get; private set; } = null;
 
     public bool HasInitializationFinished { get; private set; } = false;
 
-    public bool IsSntScanComplete => _sntSamples.Count >= SNT_MAX_DATA_COUNT;
+    public bool IsSntScanComplete => SntSample != null;
 
     public void AcquireOdorChannelsInfo()
     {
@@ -223,22 +224,20 @@ public class SetupController
         _pidSamples.Clear();
 
         _odorDisplay.Data += OdorDisplay_Data;
-        _smellInsp.Data += SmellInsp_Data;
 
         List<Task> scans = new();
         if (App.IonVision != null)
         {
             scans.Add(MakeDmsScan(App.IonVision));
         }
-        else if (_smellInsp.IsOpen)     // remove "else" to measure from BOTH ENOSES
+        else if (_sntDataCollector.IsEnabled)     // remove "else" to measure from BOTH ENOSES
         {
-            scans.Add(CollectSntSamples());
+            scans.Add(GetSntSample());
         }
 
         await Task.WhenAll(scans);
 
         _odorDisplay.Data -= OdorDisplay_Data;
-        _smellInsp.Data -= SmellInsp_Data;
 
         if (!COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors"))
             return;
@@ -256,7 +255,7 @@ public class SetupController
         {
             dataSources.Add(ML.Source.DMS);
         }
-        else if (_smellInsp.IsOpen)
+        else if (_sntDataCollector.IsEnabled)
         {
             dataSources.Add(ML.Source.SNT);
         }
@@ -294,10 +293,9 @@ public class SetupController
         {
             await App.ML.Publish(DmsScan);
         }
-        else if (_sntSamples.Count > 0)
+        else if (SntSample != null)
         {
-            SmellInsp.Data meanSample = SmellInsp.Data.GetMean(_sntSamples);
-            await App.ML.Publish(meanSample);
+            await App.ML.Publish(SntSample);
         }
 
         if (settings.Reproduction_UsePID)
@@ -311,18 +309,16 @@ public class SetupController
 
     // Internal
 
-    const int SNT_MAX_DATA_COUNT = 3;
     const int PID_MAX_DATA_COUNT = 30;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(SetupController));
 
     readonly Storage _storage = Storage.Instance;
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
-    readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
+    readonly SmellInsp.DataCollector _sntDataCollector = new();
 
     readonly OdorDisplayController _odController = new();
 
-    readonly List<SmellInsp.Data> _sntSamples = new();
     readonly List<float> _pidSamples = new();
 
     readonly DmsCache _dmsCache = new();
@@ -375,20 +371,24 @@ public class SetupController
             LogDms?.Invoke(this, new LogHandlerArgs("Failed to retrieve the scanning result"));
     }
 
-    private async Task CollectSntSamples()
+    private async Task GetSntSample()
     {
-        _sntSamples.Clear();
-
         LogSnt?.Invoke(this, new LogHandlerArgs($"Collecting SNT samples..."));
 
-        while (_sntSamples.Count < SNT_MAX_DATA_COUNT)
+        SntSample = await _sntDataCollector.Collect((count, progress) =>
         {
-            await Task.Delay(1000);
-            LogSnt?.Invoke(this, new LogHandlerArgs($"Collected {_sntSamples.Count}/{SNT_MAX_DATA_COUNT} samples...", true));
-            ScanProgress?.Invoke(this, 100 * _sntSamples.Count / SNT_MAX_DATA_COUNT);
-        }
+            LogSnt?.Invoke(this, new LogHandlerArgs($"Collected {count} samples...", true));
+            ScanProgress?.Invoke(this, progress);
+        });
 
-        LogSnt?.Invoke(this, new LogHandlerArgs($"Samples collected.", true));
+        if (SntSample != null)
+        {
+            LogSnt?.Invoke(this, new LogHandlerArgs($"Samples collected.", true));
+        }
+        else
+        {
+            LogSnt?.Invoke(this, new LogHandlerArgs($"Failed to collect SNT samples.", true));
+        }
     }
 
     private async void OdorDisplay_Data(object? sender, ODPackets.Data data)
@@ -406,17 +406,6 @@ public class SetupController
                         break;
                     }
                 }
-            }
-        });
-    }
-
-    private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
-    {
-        await COMHelper.Do(() =>
-        {
-            if (_sntSamples.Count < SNT_MAX_DATA_COUNT)
-            {
-                _sntSamples.Add(data);
             }
         });
     }

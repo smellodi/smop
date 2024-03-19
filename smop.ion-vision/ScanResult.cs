@@ -1,7 +1,5 @@
 ﻿namespace Smop.IonVision.Scan;
 
-public interface IScan { }
-
 public record class RangeAvg(
     double Avg,
     double Min,
@@ -49,4 +47,4 @@ public record class ScanResult(
     int FormatVersion,
     SystemData SystemData,
     MeasurementData MeasurementData
-) : IScan;
+) : Common.IMeasurement;

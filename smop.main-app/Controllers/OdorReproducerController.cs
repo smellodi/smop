@@ -19,7 +19,7 @@ public class OdorReproducerController
     public record class Config(
         ML.Communicator MLComm,
         OdorChannelConfig[] TargetFlows,
-        IV.Scan.MeasurementData? TargetDMS,
+        IMeasurement? TargetMeasurement,
         System.Windows.Size DataSize
     );
 
@@ -31,6 +31,7 @@ public class OdorReproducerController
 
     public event EventHandler<IV.Scan.ScanResult>? ScanFinished;
     public event EventHandler<IV.Defs.ScopeResult>? ScopeScanFinished;
+    public event EventHandler<SmellInsp.Data>? SntCollected;
     public event EventHandler? MlComputationStarted;
     public event EventHandler? ENoseStarted;
     public event EventHandler<double>? ENoseProgressChanged;
@@ -49,11 +50,6 @@ public class OdorReproducerController
 
         _odorDisplay.Data += OdorDisplay_Data;
 
-        if (App.IonVision == null && _smellInsp.IsOpen)
-        {
-            _smellInsp.Data += SmellInsp_Data;
-        }
-
         BestFlows = config.TargetFlows.Select(flow => 0f).ToArray();
         RecipeFlows = config.TargetFlows.Select(flow => 0f).ToArray();
     }
@@ -70,11 +66,6 @@ public class OdorReproducerController
     public void CleanUp()
     {
         _odorDisplay.Data -= OdorDisplay_Data;
-
-        if (App.IonVision == null && _smellInsp.IsOpen)
-        {
-            _smellInsp.Data -= SmellInsp_Data;
-        }
     }
 
     public void ExecuteRecipe(ML.Recipe recipe)
@@ -105,7 +96,7 @@ public class OdorReproducerController
             if (cachedDmsScan != null)
             {
                 _nlog.Info(LogIO.Text("Cache", "Read", dmsFilename));
-                DispatchOnce.Do(2, () => SendDmsScanToML(cachedDmsScan));
+                DispatchOnce.Do(2, () => SendMeasurementToML(cachedDmsScan));
             }
             else
             {
@@ -114,10 +105,11 @@ public class OdorReproducerController
                     var waitingTime = OdorDisplayController.CalcWaitingTime(recipe.Channels?.Select(ch => ch.Flow));
                     await Task.Delay((int)(waitingTime * 1000));
 
-                    if (await CollectData(recipe.Usv) is IV.Scan.IScan dmsScan)
+                    var measurement = await CollectData(recipe.Usv);
+                    if (measurement != null)
                     {
-                        SendDmsScanToML(dmsScan);
-                        if (dmsScan is IV.Scan.ScanResult fullScan)
+                        SendMeasurementToML(measurement);
+                        if (measurement is IV.Scan.ScanResult fullScan)
                         {
                             var filename = _dmsCache.Save(recipe, fullScan);
                             _nlog.Info(LogIO.Text("Cache", "Write", filename));
@@ -137,21 +129,17 @@ public class OdorReproducerController
 
     // Internal
 
-    const int SNT_MAX_DATA_COUNT = 3;
-
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger("Reproducer");
 
     readonly OdorChannels _odorChannels = new();
     readonly DmsCache _dmsCache = new();
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
-    readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
+    readonly SmellInsp.DataCollector _sntDataCollector = new();
 
     readonly OdorDisplayController _odController = new();
 
     readonly ML.Communicator _ml;
-
-    readonly List<SmellInsp.Data> _sntSamples = new();
 
     bool _canSendFrequentData = false;
 
@@ -165,61 +153,55 @@ public class OdorReproducerController
         return LogIO.Text("Recipe", string.Join(" ", fields));
     }
 
-    private async Task<IV.Scan.IScan?> CollectData(float usv)
+    private async Task<IMeasurement?> CollectData(float usv)
     {
         _canSendFrequentData = true;
 
-        IV.Scan.IScan? dmsScan = null;
+        IMeasurement? result = null;
 
         if (App.IonVision != null)
         {
-            dmsScan = await MakeDmsScan(App.IonVision, usv);
+            result = await MakeDmsScan(App.IonVision, usv);
         }
         else
         {
-            _sntSamples.Clear();
-
             ENoseStarted?.Invoke(this, EventArgs.Empty);
-            while (_sntSamples.Count < SNT_MAX_DATA_COUNT)
-            {
-                await Task.Delay(1000);
-                ENoseProgressChanged?.Invoke(this, 100 * _sntSamples.Count / SNT_MAX_DATA_COUNT);
-            }
-            await Task.Delay(300);
-            MlComputationStarted?.Invoke(this, EventArgs.Empty);
+            result = await _sntDataCollector.Collect((count, progress) =>
+                ENoseProgressChanged?.Invoke(this, progress));
 
-            SmellInsp.Data meanSample = SmellInsp.Data.GetMean(_sntSamples);
-            _ = _ml.Publish(meanSample);
+            await Task.Delay(300);
         }
 
         _canSendFrequentData = false;
 
         ShutDownFlows();
 
-        return dmsScan;
+        return result;
     }
 
-    private void SendDmsScanToML(IV.Scan.IScan dmsScan)
+    private void SendMeasurementToML(IMeasurement measurement)
     {
         MlComputationStarted?.Invoke(this, EventArgs.Empty);
 
-        if (dmsScan is IV.Defs.ScopeResult scopeScan)
+        if (measurement is IV.Defs.ScopeResult dmsScopeScan)
         {
-            _ = _ml.Publish(scopeScan);
-            ScopeScanFinished?.Invoke(this, scopeScan);
+            _ = _ml.Publish(dmsScopeScan);
+            ScopeScanFinished?.Invoke(this, dmsScopeScan);
         }
-        else if (dmsScan is IV.Scan.ScanResult fullScan)
+        else if (measurement is IV.Scan.ScanResult dmsFullScan)
         {
-            _ = _ml.Publish(fullScan);
-            ScanFinished?.Invoke(this, fullScan);
+            _ = _ml.Publish(dmsFullScan);
+            ScanFinished?.Invoke(this, dmsFullScan);
+        }
+        else if (measurement is SmellInsp.Data snt)
+        {
+            _ = _ml.Publish(snt);
+            SntCollected?.Invoke(this, snt);
         }
     }
 
-    private async Task<IV.Scan.IScan?> MakeDmsScan(IV.Communicator ionVision, float usv)
+    private async Task<IMeasurement?> MakeDmsScan(IV.Communicator ionVision, float usv)
     {
-        if (ionVision == null)
-            return null;
-
         ENoseStarted?.Invoke(this, EventArgs.Empty);
 
         if (usv > 0)
@@ -271,17 +253,6 @@ public class OdorReproducerController
                     _ = _ml.Publish(pid.Volts);
                     break;
                 }
-            }
-        });
-    }
-
-    private async void SmellInsp_Data(object? sender, SmellInsp.Data e)
-    {
-        await COMHelper.Do(() =>
-        {
-            if (_canSendFrequentData)
-            {
-                _sntSamples.Add(e);
             }
         });
     }

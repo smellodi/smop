@@ -1,5 +1,4 @@
 ﻿using Smop.Common;
-using Smop.IonVision;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils;

@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LinqStatistics" Version="2.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\smop.ion-vision\Smop.IonVision.csproj" />
   </ItemGroup>
 

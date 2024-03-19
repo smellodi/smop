@@ -47,12 +47,12 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         _usb.Inserted += (s, e) => Dispatcher.Invoke(() =>
         {
-            UpdatePortList(cmbOdorDisplayCommPort, OdorDisplay.COMUtils.SMOPPort);
+            UpdatePortList(cmbOdorDisplayCommPort, Common.COMUtils.OdorDisplayPort);
             UpdatePortList(cmbSmellInspCommPort);
         });
         _usb.Removed += (s, e) => Dispatcher.Invoke(() =>
         {
-            UpdatePortList(cmbOdorDisplayCommPort, OdorDisplay.COMUtils.SMOPPort);
+            UpdatePortList(cmbOdorDisplayCommPort, Common.COMUtils.OdorDisplayPort);
             UpdatePortList(cmbSmellInspCommPort);
         });
 
@@ -70,7 +70,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     readonly System.Windows.Media.Imaging.BitmapImage _greenButtonImage;
 
-    readonly OdorDisplay.COMUtils _usb = new();
+    readonly Common.COMUtils _usb = new();
     readonly Storage _storage = Storage.Instance;
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
@@ -79,7 +79,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     string IonVisionSetupFilename = "Properties/IonVision.json";
     IonVision.Communicator? _ionVision = null;
 
-    private static void UpdatePortList(ComboBox cmb, OdorDisplay.COMUtils.Port? defaultPort = null)
+    private static void UpdatePortList(ComboBox cmb, Common.COMUtils.Port? defaultPort = null)
     {
         var current = cmb.SelectedValue ?? defaultPort?.Name;
 

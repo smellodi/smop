@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
@@ -95,7 +94,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         if (config.TargetMeasurement is IonVision.Scan.ScanResult dms)
         {
             DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-                new IonVision.Plot().Create(cnvTargetMeasurement,
+                new Plot().Create(cnvTargetMeasurement,
                     (int)config.DataSize.Height,
                     (int)config.DataSize.Width,
                     dms.MeasurementData.IntensityTop,
@@ -103,8 +102,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         }
         else if (config.TargetMeasurement is SmellInsp.Data snt)
         {
-            // TODO
-            int a = 0;
+            DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
+                new Plot().Create(cnvTargetMeasurement,
+                    1, snt.Resistances.Length,
+                    snt.Resistances,
+                    theme: PLOT_THEME)));
         }
 
         var odorChannels = _proc.OdorChannels;
@@ -275,25 +277,30 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     private void HandleScanFinished(IonVision.Scan.ScanResult scan, Size size)
     {
-        new IonVision.Plot().Create(cnvMeasurement,
+        new Plot().Create(cnvMeasurement,
                     (int)size.Height,
                     (int)size.Width,
                     scan.MeasurementData.IntensityTop,
                     theme: PLOT_THEME);
-        DisplayScanInfo();
+        DisplayMeasurementInfo();
         DisplayMeasurementEnvInfo(new MeasurementEnvInfo(scan.SystemData.Sample.Temperature.Avg));
     }
     private void HandleScanFinished(IonVision.Defs.ScopeResult scan)
     {
-        new IonVision.Plot().Create(cnvMeasurement,
+        new Plot().Create(cnvMeasurement,
                     1, scan.IntensityTop.Length,
                     scan.IntensityTop,
                     theme: PLOT_THEME);
-        DisplayScanInfo();
+        DisplayMeasurementInfo();
     }
 
     private void HandleSntCollected(SmellInsp.Data snt)
     {
+        new Plot().Create(cnvMeasurement,
+                    1, snt.Resistances.Length,
+                    snt.Resistances,
+                    theme: PLOT_THEME);
+        DisplayMeasurementInfo();
         DisplayMeasurementEnvInfo(new MeasurementEnvInfo(snt.Temperature));
     }
 
@@ -306,7 +313,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
             if (recipe.RMSE < 10000)
             {
-                DisplayScanInfo(recipe.RMSE);    // update the previous scan RMSE
+                DisplayMeasurementInfo(recipe.RMSE);    // update the previous scan RMSE
                 crtSearchSpace.Add(recipe.RMSE, _proc.RecipeFlows);
             }
 
@@ -322,14 +329,13 @@ public partial class Reproduction : Page, IPage<Navigation>
         });
     }
 
-    private void DisplayScanInfo(float rmse = 0)
+    private void DisplayMeasurementInfo(float rmse = 0)
     {
         if (_proc == null)
             return;
 
         var flowsStr = _proc.RecipeFlows.Select(flow => flow.ToString("F1"));
-        var id = rmse == 0 ? _proc.CurrentStep : _proc.CurrentStep + 1;     // proc step number not yet increased when the scan just finished
-        var info = $"#{id}:   " + string.Join(' ', flowsStr);
+        var info = $"#{_proc.CurrentStep}:   " + string.Join(' ', flowsStr);
         if (rmse > 0)
         {
             info += $", r={rmse:F3}";

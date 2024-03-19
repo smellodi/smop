@@ -1,5 +1,6 @@
 ﻿//#define SHOW_PORT_DEBUG
 
+using Smop.Common;
 using Smop.OdorDisplay;
 using Smop.OdorDisplay.Packets;
 using System.Windows.Threading;
@@ -107,7 +108,7 @@ else foreach (var port in ports)
     }
 Console.WriteLine("");
 
-COMUtils.Port? smopCOMPort = COMUtils.SMOPPort;
+COMUtils.Port? smopCOMPort = COMUtils.OdorDisplayPort;
 if (smopCOMPort != null)
 {
     Console.WriteLine($"Looks like {smopCOMPort.Name} is the port you should use\n");

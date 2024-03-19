@@ -28,8 +28,6 @@ public class SetupController
 
     public bool HasInitializationFinished { get; private set; } = false;
 
-    public bool IsSntScanComplete => SntSample != null;
-
     public void AcquireOdorChannelsInfo()
     {
         var channelIDs = new List<OdorDisplay.Device.ID>();

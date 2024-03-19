@@ -1,4 +1,5 @@
-﻿using Smop.IonVision;
+﻿using Smop.Common;
+using Smop.IonVision;
 using Smop.IonVision.Defs;
 using Smop.IonVision.Param;
 using Smop.IonVision.Scan;

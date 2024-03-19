@@ -26,14 +26,14 @@ var commands = new Dictionary<string, (string, Command?)>()
 
 // COM port listener
 
-Smop.OdorDisplay.COMUtils _com = new();
+Smop.Common.COMUtils _com = new();
 _com.Inserted += (s, e) => Dispatcher.CurrentDispatcher.Invoke(() =>
 {
     Console.WriteLine($"[COM] port '{e.Name}' is available now ({e.Description}, by {e.Manufacturer})");
 });
 
 Console.WriteLine("Available ports:");
-var ports = Smop.OdorDisplay.COMUtils.Ports;
+var ports = Smop.Common.COMUtils.Ports;
 if (ports.Length == 0)
 {
     Console.WriteLine("  none");

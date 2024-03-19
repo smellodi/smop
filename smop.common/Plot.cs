@@ -9,7 +9,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
-namespace Smop.IonVision;
+namespace Smop.Common;
 
 public class Plot
 {

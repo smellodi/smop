@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
 
-namespace Smop.IonVision;
+namespace Smop.Common;
 
 internal static class PlotColorTheme
 {

@@ -7,7 +7,7 @@
     <RootNamespace>Smop.OdorDisplay</RootNamespace>
     <Authors>Oleg Spakov</Authors>
     <Company>Tampere University</Company>
-    <Description>Smellodi Odor Printer [Comm module]</Description>
+    <Description>Smellodi Odor Printer [Odor Display module]</Description>
     <Copyright>(c) 2023</Copyright>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>

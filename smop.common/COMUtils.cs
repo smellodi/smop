@@ -1,5 +1,4 @@
 ﻿using FTD2XX_NET;
-using Smop.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using System.IO.Ports;
 using System.Linq;
 using System.Management;
 
-namespace Smop.OdorDisplay;
+namespace Smop.Common;
 
 /// <summary>
 /// COM port utils: list of available ports, and firing events when this list changes.
@@ -41,7 +40,7 @@ public class COMUtils : IDisposable
     /// <summary>
     /// Most likely SMOP port, i.e. the one that has a known description
     /// </summary>
-    public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Manufacturer?.Contains("TUNI") ?? false);
+    public static Port? OdorDisplayPort => Ports.FirstOrDefault(port => port.Manufacturer?.Contains("TUNI") ?? false);
     //public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Description?.Contains("Smellodi") ?? false);
 
     public COMUtils()
@@ -72,7 +71,7 @@ public class COMUtils : IDisposable
 
     static Port[]? _cachedPorts = null;
 
-    List<ManagementEventWatcher> _watchers = new();
+    readonly List<ManagementEventWatcher> _watchers = new();
 
     private void Listen(string source, string target, ActionType actionType)
     {
@@ -207,7 +206,7 @@ public class COMUtils : IDisposable
             ScreenLogger.Print("USB ERROR: " + ex.Message);
         }
 
-        return ports?.ToArray() ?? new Port[] { };
+        return ports?.ToArray() ?? Array.Empty<Port>();
     }
 
     private static Port? CreateCOMPort(PropertyDataCollection props)
@@ -236,20 +235,10 @@ public class COMUtils : IDisposable
     }
 
     // Debugging
-
+    /*
     static HashSet<string> PropsToPrint = new() { "Caption", "Description", "Manufacturer", "Name", "Service" };
     static HashSet<string> ManufacturersToPrint = new() { "microsoft" };
     static HashSet<string> ManufacturersNotToPrint = new() { "microsoft", "standard", "(standard", "intel", "acer", "rivet", "nvidia", "realtek", "generic" };
-    /*
-    static COMUtils()
-    {
-        ScreenLogger.Print("==== PnP devices ===");
-        using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' OR Caption LIKE '%Smellodi%'");
-        var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
-        foreach (var rec in records)
-            PrintProperties(rec.Properties);
-        ScreenLogger.Print("====================");
-    }*/
 
     static void PrintProperties(PropertyDataCollection props)
     {
@@ -291,5 +280,16 @@ public class COMUtils : IDisposable
             }
         }
         ScreenLogger.Print();
-    }
+    }*/
+
+    /*
+    static COMUtils()
+    {
+        ScreenLogger.Print("==== PnP devices ===");
+        using var pnp = new ManagementObjectSearcher("SELECT * FROM Win32_PnPEntity WHERE Caption LIKE '%(COM%' OR Caption LIKE '%Smellodi%'");
+        var records = pnp.Get().Cast<ManagementBaseObject>().ToArray();
+        foreach (var rec in records)
+            PrintProperties(rec.Properties);
+        ScreenLogger.Print("====================");
+    }*/
 }

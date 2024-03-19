@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Smop.Common\Smop.Common.csproj" />
     <ProjectReference Include="..\smop.odor-display\Smop.OdorDisplay.csproj" />
   </ItemGroup>
 

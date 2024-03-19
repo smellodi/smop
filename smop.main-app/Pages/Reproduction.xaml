@@ -138,7 +138,8 @@
                         HorizontalAlignment="Right"
                         Margin="0,0,22,0">
                 <Label Style="{StaticResource PlotHeader}"
-                       Content="Search space"/>
+                       Content="Search space"
+                       Margin="19,0,0,0"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="19"/>
@@ -315,7 +316,7 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Grid.Column="2"
+            <StackPanel x:Name="sptDMSs" Grid.Row="1" Grid.Column="2"
                         Margin="12,0,0,0"
                         VerticalAlignment="Top"
                         HorizontalAlignment="Left">

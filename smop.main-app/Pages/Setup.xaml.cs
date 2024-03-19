@@ -432,7 +432,8 @@ public partial class Setup : Page, IPage<object?>
                     dataSize = new(sc.Ucv.Steps, sc.Usv.Steps);
                 }
 
-                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), _dmsScans[^1], dataSize));
+                Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(),
+                    _dmsScans.Count > 0 ? _dmsScans[^1] : null, dataSize));
             }
         }
         else if (_storage.SetupType == SetupType.PulseGenerator)

@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Smop.Common\Smop.Common.csproj" />
     <ProjectReference Include="..\smop.ion-vision\Smop.IonVision.csproj" />
+    <ProjectReference Include="..\smop.odor-display\Smop.OdorDisplay.csproj" />
     <ProjectReference Include="..\smop.smell-insp\Smop.SmellInsp.csproj" />
   </ItemGroup>
 

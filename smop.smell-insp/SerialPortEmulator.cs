@@ -6,12 +6,34 @@ namespace Smop.SmellInsp;
 
 public static class SimulatedData
 {
+    public record class SimulatedResponseGains(float First, float Second);
+
+    public static SimulatedResponseGains Gains = new(8, 6);
+
     public static Data Generate()
     {
-        var resistance = new float[64];
+        var resistance = new float[Data.ResistantCount];
         for (int i = 0; i < resistance.Length; i++)
         {
-            resistance[i] = 4.6f + Random.Range(0.3f);
+            resistance[i] = i switch
+            {
+                1 => 0.1f * Gains.First + Random.Range(0.3f),
+                5 => 0.35f * Gains.First + Random.Range(0.3f),
+                9 => 0.8f * Gains.First + Random.Range(0.3f),
+                13 => 1.0f * Gains.First + Random.Range(0.3f),
+
+                2 => 0.1f * Gains.Second + Random.Range(0.3f),
+                6 => 0.35f * Gains.Second + Random.Range(0.3f),
+                10 => 0.8f * Gains.Second + Random.Range(0.3f),
+                14 => 1.0f * Gains.Second + Random.Range(0.3f),
+
+                0 => 0.05f * Gains.First + 0.05f * Gains.Second + Random.Range(0.3f),
+                4 => 0.1f * Gains.First + 0.05f * Gains.Second + Random.Range(0.3f),
+                8 => 0.1f * Gains.First + 0.2f * Gains.Second + Random.Range(0.3f),
+                12 => 0.5f * Gains.First + 0.5f * Gains.Second + Random.Range(0.3f),
+
+                _ => 4.6f + Random.Range(0.3f)
+            };
         }
         return new Data(
             resistance,

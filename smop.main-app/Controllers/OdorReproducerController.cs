@@ -19,7 +19,7 @@ public class OdorReproducerController
     public record class Config(
         ML.Communicator MLComm,
         OdorChannelConfig[] TargetFlows,
-        IV.Scan.MeasurementData TargetDMS,
+        IV.Scan.MeasurementData? TargetDMS,
         System.Windows.Size DataSize
     );
 
@@ -137,7 +137,7 @@ public class OdorReproducerController
 
     // Internal
 
-    const int SNT_MAX_DATA_COUNT = 10;
+    const int SNT_MAX_DATA_COUNT = 3;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger("Reproducer");
 
@@ -151,8 +151,9 @@ public class OdorReproducerController
 
     readonly ML.Communicator _ml;
 
+    readonly List<SmellInsp.Data> _sntSamples = new();
+
     bool _canSendFrequentData = false;
-    int _sntSamplesCount = 0;
 
     public string RecipeToString(ML.Recipe recipe)
     {
@@ -176,16 +177,19 @@ public class OdorReproducerController
         }
         else
         {
+            _sntSamples.Clear();
+
             ENoseStarted?.Invoke(this, EventArgs.Empty);
-            while (_sntSamplesCount < SNT_MAX_DATA_COUNT)
+            while (_sntSamples.Count < SNT_MAX_DATA_COUNT)
             {
                 await Task.Delay(1000);
-                ENoseProgressChanged?.Invoke(this, 100 * _sntSamplesCount / SNT_MAX_DATA_COUNT);
+                ENoseProgressChanged?.Invoke(this, 100 * _sntSamples.Count / SNT_MAX_DATA_COUNT);
             }
             await Task.Delay(300);
             MlComputationStarted?.Invoke(this, EventArgs.Empty);
 
-            _sntSamplesCount = 0;
+            SmellInsp.Data meanSample = SmellInsp.Data.GetMean(_sntSamples);
+            _ = _ml.Publish(meanSample);
         }
 
         _canSendFrequentData = false;
@@ -277,8 +281,7 @@ public class OdorReproducerController
         {
             if (_canSendFrequentData)
             {
-                _sntSamplesCount++;
-                _ = _ml.Publish(e);
+                _sntSamples.Add(e);
             }
         });
     }

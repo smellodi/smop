@@ -146,9 +146,9 @@ public static class SimulatedData
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 
-    public record class ImitatedLineGains(float Main, float Second, float WideUp1, float WideUp2);
+    public record class SimulatedLineGains(float Main, float Second, float WideUp1, float WideUp2);
 
-    public static ImitatedLineGains LineGains { get; set; } = new ImitatedLineGains(100, 40, 100, 90);
+    public static SimulatedLineGains LineGains { get; set; } = new SimulatedLineGains(100, 40, 100, 90);
 
     // Internal
 

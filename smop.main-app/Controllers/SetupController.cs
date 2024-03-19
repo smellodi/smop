@@ -296,10 +296,8 @@ public class SetupController
         }
         else if (_sntSamples.Count > 0)
         {
-            foreach (var sample in _sntSamples)
-            {
-                await App.ML.Publish(sample);
-            }
+            SmellInsp.Data meanSample = SmellInsp.Data.GetMean(_sntSamples);
+            await App.ML.Publish(meanSample);
         }
 
         if (settings.Reproduction_UsePID)
@@ -313,7 +311,7 @@ public class SetupController
 
     // Internal
 
-    const int SNT_MAX_DATA_COUNT = 10;
+    const int SNT_MAX_DATA_COUNT = 3;
     const int PID_MAX_DATA_COUNT = 30;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(SetupController));

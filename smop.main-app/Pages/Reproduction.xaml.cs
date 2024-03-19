@@ -63,6 +63,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         imgDms.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
         imgSnt.Visibility = App.IonVision == null && SmellInsp.CommPort.Instance.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+        sptDMSs.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Hidden;
 
         tblRecipeName.Text = "";
         tblRecipeIteration.Text = "";
@@ -91,12 +92,15 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblOdor1.Text = _proc.OdorChannels[0].Name;
         tblOdor2.Text = _proc.OdorChannels[1].Name;
 
-        DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-            new IonVision.Plot().Create(cnvDmsTargetScan,
-                (int)config.DataSize.Height,
-                (int)config.DataSize.Width,
-                config.TargetDMS.IntensityTop,
-                theme: PLOT_THEME)));
+        if (config.TargetDMS != null)
+        {
+            DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
+                new IonVision.Plot().Create(cnvDmsTargetScan,
+                    (int)config.DataSize.Height,
+                    (int)config.DataSize.Width,
+                    config.TargetDMS.IntensityTop,
+                    theme: PLOT_THEME)));
+        }
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);

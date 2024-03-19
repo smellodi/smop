@@ -162,9 +162,15 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
                             else if (cap.Key == Device.Controller.OdorantFlow)
                             {
                                 if (actuator.DeviceID == Device.ID.Odor1)
+                                {
                                     IonVision.SimulatedData.LineGains = IonVision.SimulatedData.LineGains with { WideUp1 = 20 + 80 * cap.Value / 0.5f }; // 0.5 == 50 scc
+                                    SmellInsp.SimulatedData.Gains = SmellInsp.SimulatedData.Gains with { First = 8 + 800 * cap.Value / 0.5f }; // 0.5 == 50 scc
+                                }
                                 else if (actuator.DeviceID == Device.ID.Odor2)
+                                {
                                     IonVision.SimulatedData.LineGains = IonVision.SimulatedData.LineGains with { WideUp2 = 20 + 70 * cap.Value / 0.5f };
+                                    SmellInsp.SimulatedData.Gains = SmellInsp.SimulatedData.Gains with { Second = 8 + 500 * cap.Value / 0.5f }; // 0.5 == 50 scc
+                                }
                             }
                             deviceState.Capabilities[cap.Key] = cap.Value;
                         }

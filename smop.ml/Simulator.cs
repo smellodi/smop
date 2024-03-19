@@ -28,11 +28,11 @@ internal abstract class Simulator : IDisposable
     int _maxSteps = 20;
 
     int _step = 0;
-    int _sntSampleCount = 0;
+    //int _sntSampleCount = 0;
 
     const float FLOW_DURATION_ENDLESS = -1;
     const float RMSE = 2.5f;
-    const int SNT_SAMPLE_MAX_COUNT = 10;
+    //const int SNT_SAMPLE_MAX_COUNT = 10;
 
     protected abstract Task SendData(string data);
 
@@ -108,12 +108,16 @@ internal abstract class Simulator : IDisposable
 
             if (content.Source == Source.SNT)
             {
-                _sntSampleCount++;
+                if (!_hasDmsSource)
+                {
+                    createRecipe = true;
+                }
+                /*_sntSampleCount++;
                 if (!_hasDmsSource && _sntSampleCount == SNT_SAMPLE_MAX_COUNT)
                 {
                     createRecipe = true;
                     _sntSampleCount = 0;
-                }
+                }*/
             }
 
             if (content.Source == Source.DMS)
@@ -123,7 +127,7 @@ internal abstract class Simulator : IDisposable
 
             if (createRecipe)
             {
-                await Task.Delay(2000);
+                await Task.Delay(1000);
 
                 _step++;
                 var rmse = RMSE / _step;

@@ -214,9 +214,12 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         foreach (var odorChannel in odorChannels)
         {
-            grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-            AddLabel(grid, odorChannel.Name, grid.RowDefinitions.Count - 1, 0, labelStyle);
-            AddTextBlock(grid, "", grid.RowDefinitions.Count - 1, 1, valueStyle);
+            if (!string.IsNullOrEmpty(odorChannel.Name))
+            {
+                grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+                AddLabel(grid, odorChannel.Name, grid.RowDefinitions.Count - 1, 0, labelStyle);
+                AddTextBlock(grid, "", grid.RowDefinitions.Count - 1, 1, valueStyle);
+            }
         }
 
         // RMSE row

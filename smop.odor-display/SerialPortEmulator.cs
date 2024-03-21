@@ -198,23 +198,24 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
                     true,       // Base
                     true, true, // Odor1 and Odor2
                     false, false, false, false, false, false, false,    // Odor 3-9
-                    false //true // Dilution
+                    true        // Dilution
                 }).ToArray());
             }
             else if (req.Type == Type.QueryCapabilities)
             {
                 var queryCaps = req as QueryCapabilities;
                 var isBase = queryCaps!.Device == Device.ID.Base;
+                var isDilutionAir = queryCaps!.Device == Device.ID.DilutionAir;
                 _responses.Enqueue(new Capabilities(new Dictionary<Device.Capability, bool> {
-                    { Device.Capability.PID, isBase },
-                    { Device.Capability.BeadThermistor, false },
-                    { Device.Capability.ChassisThermometer, isBase },
-                    { Device.Capability.OdorSourceThermometer, isBase },
+                    { Device.Capability.PID, isBase || isDilutionAir },
+                    { Device.Capability.BeadThermistor, isDilutionAir },
+                    { Device.Capability.ChassisThermometer, isBase || isDilutionAir },
+                    { Device.Capability.OdorSourceThermometer, !isDilutionAir },
                     { Device.Capability.GeneralPurposeThermometer, isBase },
                     { Device.Capability.OutputAirHumiditySensor, isBase },
                     { Device.Capability.InputAirHumiditySensor, isBase },
-                    { Device.Capability.PressureSensor, isBase },
-                    { Device.Capability.OdorantFlowSensor, true },
+                    { Device.Capability.PressureSensor, !isDilutionAir },
+                    { Device.Capability.OdorantFlowSensor, !isDilutionAir },
                     { Device.Capability.DilutionAirFlowSensor, isBase },
                     { Device.Capability.OdorantValveSensor, true },
                     { Device.Capability.OutputValveSensor, isBase },
@@ -310,6 +311,8 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
             measurements.Add(new Measurement(id, new SensorValue[]
             {
                 new GasValue(Device.Sensor.OdorantFlowSensor, odorCaps[Device.Controller.OdorantFlow] * flowConverter + Random.Range(0.0005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
+                new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
+                new PressureValue(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
                 new ValveValue(Device.Sensor.OdorantValveSensor, odorCaps[Device.Controller.OdorantValve] != 0),
             }));
         }

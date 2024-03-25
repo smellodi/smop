@@ -297,5 +297,17 @@ namespace Smop.MainApp.Properties {
                 this["Reproduction_ML_CmdParams"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int Reproduction_SntSampleCount {
+            get {
+                return ((int)(this["Reproduction_SntSampleCount"]));
+            }
+            set {
+                this["Reproduction_SntSampleCount"] = value;
+            }
+        }
     }
 }

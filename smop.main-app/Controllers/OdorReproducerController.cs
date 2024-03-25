@@ -47,6 +47,7 @@ public class OdorReproducerController
         _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));
 
         var settings = Properties.Settings.Default;
+        _sntDataCollector.SampleCount = settings.Reproduction_SntSampleCount;
 
         _odorDisplay.Data += OdorDisplay_Data;
 

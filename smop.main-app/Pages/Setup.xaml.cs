@@ -76,6 +76,13 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
 
+        var measSource = Controls.OdorReproductionSettings.MeasurementSouce.None;
+        if (App.IonVision != null)
+            measSource |= Controls.OdorReproductionSettings.MeasurementSouce.DMS;
+        if (_smellInsp.IsOpen)
+            measSource |= Controls.OdorReproductionSettings.MeasurementSouce.SNT;
+        odorReproductionSettings.SetMeasurementSource(measSource);
+
         if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 3)
             grdStatuses.RowDefinitions.RemoveAt(1);
 

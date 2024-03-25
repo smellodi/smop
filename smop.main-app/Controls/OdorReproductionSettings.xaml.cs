@@ -24,6 +24,9 @@ file class StringToBoolConverter : IValueConverter
 
 public partial class OdorReproductionSettings : UserControl
 {
+    [Flags]
+    public enum MeasurementSouce { None = 0, DMS = 1, SNT = 2 };
+
     public string MLStatus
     {
         get => tblMLStatus.Text;
@@ -86,12 +89,21 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    /*
+    public int SntSampleCount
+    {
+        get => Properties.Settings.Default.Reproduction_SntSampleCount;
+        set
+        {
+            Properties.Settings.Default.Reproduction_SntSampleCount = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
     public static bool UseDmsCache
     {
-        get => DmsCache.IsEnabled;
-        set => DmsCache.IsEnabled = value;
-    }*/
+        get => Logging.DmsCache.IsEnabled;
+        set => Logging.DmsCache.IsEnabled = value;
+    }
 
     /*public float SniffingDelay
     {
@@ -125,6 +137,12 @@ public partial class OdorReproductionSettings : UserControl
         DataContext = this;
 
         txbCmdParams.IsEnabled = ML.Communicator.CanLaunchML;
+    }
+
+    public void SetMeasurementSource(MeasurementSouce sources)
+    {
+        uscSntSampleCount.Visibility = sources.HasFlag(MeasurementSouce.SNT) ? Visibility.Visible : Visibility.Collapsed;
+        uscUseDmsCache.Visibility = sources.HasFlag(MeasurementSouce.DMS) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)

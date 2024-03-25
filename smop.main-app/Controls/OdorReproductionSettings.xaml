@@ -85,30 +85,40 @@
                     </TextBox.Text>
                 </TextBox>
             </UserControl>
-            <UserControl x:Name="uscSendPID"
+            <!--UserControl x:Name="uscSendPID"
                          Style="{StaticResource Setting}"
                          Tag="Send PID values">
                 <CheckBox x:Name="chkSendPID"
                           IsChecked="{Binding SendPID}"
                           VerticalAlignment="Center"/>
-            </UserControl>
+            </UserControl-->
         </StackPanel>
 
-        <!--Separator/>
+        <Separator/>
         <Label Style="{StaticResource Section}"
-               Content="DMS settings:"/>
+               Content="eNose settings:"/>
+        <UserControl x:Name="uscSntSampleCount"
+                     Style="{StaticResource Setting}"
+                     Tag="SNT sample count">
+            <TextBox x:Name="txbSntSampleCount" Grid.Column="0"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="SntSampleCount" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="1" IsInteger="True"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </UserControl>
         <UserControl x:Name="uscUseDmsCache"
                      Style="{StaticResource Setting}"
-                     Tag="Use cache">
+                     Tag="Cache DMS scans">
             <CheckBox x:Name="chkUseDmsCache"
                       IsChecked="{Binding UseDmsCache}"
                       VerticalAlignment="Center"/>
-        </UserControl-->
-
-        <!--Separator/>
-        <Label Style="{StaticResource Section}"
-               Content="eNose settings:"/>
-        <UserControl x:Name="uscSniffingDelay"
+        </UserControl>
+        <!--UserControl x:Name="uscSniffingDelay"
                      Style="{StaticResource Setting}"
                      Tag="Sniffing delay, seconds">
             <TextBox x:Name="txbSniffingDelay" Grid.Column="0"

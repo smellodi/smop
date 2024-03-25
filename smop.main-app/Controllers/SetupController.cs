@@ -373,6 +373,9 @@ public class SetupController
     {
         LogSnt?.Invoke(this, new LogHandlerArgs($"Collecting SNT samples..."));
 
+        var settings = Properties.Settings.Default;
+        _sntDataCollector.SampleCount = settings.Reproduction_SntSampleCount;
+
         SntSample = await _sntDataCollector.Collect((count, progress) =>
         {
             LogSnt?.Invoke(this, new LogHandlerArgs($"Collected {count} samples...", true));

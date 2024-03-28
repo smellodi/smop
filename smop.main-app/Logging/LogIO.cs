@@ -64,8 +64,8 @@ internal static class LogIO
                 null => "-",
                 IonVision.Defs.Confirm _ => "OK",
                 IonVision.Defs.SystemInfo info => $"v{info.CurrentVersion}",
-                IonVision.Scan.ScanResult scan => $"{scan.MeasurementData.Ucv.Length}x{scan.MeasurementData.Usv.Length}",
-                IonVision.Param.ParameterDefinition paramDef => paramDef.Name,
+                IonVision.Defs.ScanResult scan => $"{scan.MeasurementData.Ucv.Length}x{scan.MeasurementData.Usv.Length}",
+                IonVision.Defs.ParameterDefinition paramDef => paramDef.Name,
                 string[] arr => string.Join("; ", arr),
                 _ => response.Value.ToString()
             };

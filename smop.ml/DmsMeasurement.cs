@@ -1,14 +1,16 @@
-﻿namespace Smop.ML;
+﻿using IVDefs = Smop.IonVision.Defs;
+
+namespace Smop.ML;
 
 internal record class ScanSetup(
-    IonVision.Param.RangeStep Usv,
-    IonVision.Param.RangeStep Ucv
+    IVDefs.RangeStep Usv,
+    IVDefs.RangeStep Ucv
 );
 internal record class ScanConditions(
-    IonVision.Scan.RangeAvg Flow,
-    IonVision.Scan.RangeAvg Temperature,
-    IonVision.Scan.RangeAvg Pressure,
-    IonVision.Scan.RangeAvg Humidity
+    IVDefs.RangeAvg Flow,
+    IVDefs.RangeAvg Temperature,
+    IVDefs.RangeAvg Pressure,
+    IVDefs.RangeAvg Humidity
 );
 internal record class ScanData(
     float[] Positive,
@@ -21,7 +23,7 @@ internal record class DmsMeasurement(
     ScanData Data
 ) : Content(ML.Source.DMS)
 {
-    public static DmsMeasurement From(IonVision.Scan.ScanResult scan, IonVision.Param.ParameterDefinition paramDefinition) => new(
+    public static DmsMeasurement From(IVDefs.ScanResult scan, IVDefs.ParameterDefinition paramDefinition) => new(
         new ScanSetup(
             paramDefinition.MeasurementParameters.SteppingControl.Usv,
             paramDefinition.MeasurementParameters.SteppingControl.Ucv
@@ -41,7 +43,7 @@ internal record class DmsMeasurement(
 
 internal record class ScopeSetup(
     float Usv,
-    IonVision.Param.RangeStep Ucv
+    IVDefs.RangeStep Ucv
 );
 
 internal record class DmsMeasurementScope(
@@ -49,10 +51,10 @@ internal record class DmsMeasurementScope(
     ScanData Data
 ) : Content(ML.Source.DMS)
 {
-    public static DmsMeasurementScope From(IonVision.Defs.ScopeResult scopeResult, IonVision.Defs.ScopeParameters parameters) => new(
+    public static DmsMeasurementScope From(IVDefs.ScopeResult scopeResult, IVDefs.ScopeParameters parameters) => new(
         new ScopeSetup(
             parameters.Usv,
-            new IonVision.Param.RangeStep(parameters.UcvStart, parameters.UcvStop, scopeResult.IntensityTop.Length)
+            new IVDefs.RangeStep(parameters.UcvStart, parameters.UcvStop, scopeResult.IntensityTop.Length)
         ),
         new ScanData(
             scopeResult.IntensityTop,

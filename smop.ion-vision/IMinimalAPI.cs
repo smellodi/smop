@@ -16,14 +16,14 @@ internal interface IMinimalAPI : IDisposable
     Task<Response<ProjectAsName>> GetProject();
     Task<Response<Project>> GetProjectDefinition(string project);
     Task<Response<Confirm>> SetProject(ProjectAsName project);
-    Task<Response<Param.ParameterDefinition>> GetParameterDefinition(Parameter parameter);
+    Task<Response<Defs.ParameterDefinition>> GetParameterDefinition(Parameter parameter);
     Task<Response<ParameterAsNameAndId>> GetParameter();
     Task<Response<Confirm>> SetParameter(ParameterAsId parameter);
     Task<Response<Confirm>> PreloadParameter();
     Task<Response<Confirm>> StartScan();
     Task<Response<ScanProgress>> GetScanProgress();
     Task<Response<Confirm>> SetScanComments(object comment);
-    Task<Response<Scan.ScanResult>> GetLatestResult();
+    Task<Response<ScanResult>> GetLatestResult();
     Task<Response<string[]>> GetProjectResults(string project);
     Task<Response<Clock>> GetClock();
     Task<Response<Confirm>> SetClock(ClockToSet clock);

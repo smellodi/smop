@@ -1,6 +1,4 @@
-﻿using Smop.IonVision.Defs;
-
-namespace Smop.IonVision.Param;
+﻿namespace Smop.IonVision.Defs;
 
 public record class RangePID(
     float Min,

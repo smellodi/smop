@@ -134,17 +134,17 @@ internal class API : IMinimalAPI
     /// <summary>Creates a new parameter</summary>
     /// <param name="parameter">New parameter definition</param>
     /// <returns>Parameter as name</returns>
-    public Task<Response<ParameterAsId>> CreateParameter(Param.ParameterDefinition parameter) => Create<Param.ParameterDefinition, ParameterAsId>("parameter", parameter, true);
+    public Task<Response<ParameterAsId>> CreateParameter(Defs.ParameterDefinition parameter) => Create<Defs.ParameterDefinition, ParameterAsId>("parameter", parameter, true);
 
     /// <summary>Retrieves the parameter definition</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Parameter definition</returns>
-    public Task<Response<Param.ParameterDefinition>> GetParameterDefinition(Defs.Parameter parameter) => Get<Param.ParameterDefinition>($"parameter/{parameter.Id}", true);
+    public Task<Response<Defs.ParameterDefinition>> GetParameterDefinition(Defs.Parameter parameter) => Get<Defs.ParameterDefinition>($"parameter/{parameter.Id}", true);
 
     /// <summary>Creates a new parameter (valid only if no scan was performed with this parameter)</summary>
     /// <param name="parameter">Parameter definition</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> UpdateParameterDefinition(Param.ParameterDefinition parameter) => Set($"parameter/{parameter.Id}", parameter, true);
+    public Task<Response<Confirm>> UpdateParameterDefinition(Defs.ParameterDefinition parameter) => Set($"parameter/{parameter.Id}", parameter, true);
 
     /// <summary>Deletes the parameter</summary>
     /// <param name="parameter">Parameter</param>
@@ -179,7 +179,7 @@ internal class API : IMinimalAPI
     /// <summary>Retrieves the parameter template</summary>
     /// <param name="name">template name</param>
     /// <returns>Template as the parameter definition</returns>
-    public Task<Response<Param.ParameterDefinition>> GetParameterTemplate(string name) => Get<Param.ParameterDefinition>($"parameterTemplate/{name}");
+    public Task<Response<Defs.ParameterDefinition>> GetParameterTemplate(string name) => Get<Defs.ParameterDefinition>($"parameterTemplate/{name}");
 
     /// <summary>Retrieves the parameter template metadata</summary>
     /// <param name="name">template name</param>
@@ -456,7 +456,7 @@ internal class API : IMinimalAPI
 
     /// <summary>Retrieves the latest scan</summary>
     /// <returns>Scan data</returns>
-    public Task<Response<Scan.ScanResult>> GetLatestResult() => Get<Scan.ScanResult>("results/latest");
+    public Task<Response<Defs.ScanResult>> GetLatestResult() => Get<Defs.ScanResult>("results/latest");
 
     /// <summary>Retrieves gases of the latest scan</summary>
     /// <returns>Gases</returns>
@@ -465,7 +465,7 @@ internal class API : IMinimalAPI
     /// <summary>Retrieves the scan</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Scan data</returns>
-    public Task<Response<Scan.ScanResult>> GetResult(string id) => Get<Scan.ScanResult>($"results/id/{id}");
+    public Task<Response<Defs.ScanResult>> GetResult(string id) => Get<Defs.ScanResult>($"results/id/{id}");
 
     /// <summary>Deletes the scan</summary>
     /// <param name="id">Scan id</param>

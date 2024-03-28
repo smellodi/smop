@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
+using IVDefs = Smop.IonVision.Defs;
 
 namespace Smop.MainApp.Controllers;
 
@@ -21,8 +22,8 @@ public class SetupController
     public event EventHandler<LogHandlerArgs>? LogOD;
     public event EventHandler<float>? ScanProgress;
 
-    public IonVision.Param.ParameterDefinition? ParamDefinition { get; private set; } = null;
-    public IonVision.Defs.ScopeParameters? ScopeParameters { get; private set; } = null;
+    public IVDefs.ParameterDefinition? ParamDefinition { get; private set; } = null;
+    public IVDefs.ScopeParameters? ScopeParameters { get; private set; } = null;
     public Common.IMeasurement? DmsScan { get; private set; } = null;
     public SmellInsp.Data? SntSample { get; private set; } = null;
 
@@ -132,7 +133,7 @@ public class SetupController
         var projectName = ionVision.Settings.Project;
         LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{projectName}' project..."));
 
-        LogIO.Add(await ionVision.GetProject(), "GetProject", out IonVision.Defs.ProjectAsName? responseGetProject);
+        LogIO.Add(await ionVision.GetProject(), "GetProject", out IVDefs.ProjectAsName? responseGetProject);
         if (responseGetProject?.Project != projectName)
         {
             await Task.Delay(300);
@@ -156,7 +157,7 @@ public class SetupController
         var paramName = ionVision.Settings.ParameterName;
         LogDms?.Invoke(this, new LogHandlerArgs($"Loading '{paramName}' parameter..."));
 
-        LogIO.Add(await ionVision.GetParameter(), "GetParameter", out IonVision.Defs.ParameterAsNameAndId? getParameterResponse);
+        LogIO.Add(await ionVision.GetParameter(), "GetParameter", out IVDefs.ParameterAsNameAndId? getParameterResponse);
 
         bool hasParameterLoaded = getParameterResponse?.Parameter.Id == ionVision.Settings.ParameterId;
         if (!hasParameterLoaded)
@@ -180,12 +181,12 @@ public class SetupController
         if (App.ML != null)
         {
             LogDms?.Invoke(this, new LogHandlerArgs($"Retrieving the parameter..."));
-            LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IonVision.Param.ParameterDefinition? paramDefinition);
+            LogIO.Add(await ionVision.GetParameterDefinition(), "GetParameterDefinition", out IVDefs.ParameterDefinition? paramDefinition);
             ParamDefinition = paramDefinition;
 
             await Task.Delay(300);
 
-            LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.Defs.ScopeParameters? scopeParameters);
+            LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IVDefs.ScopeParameters? scopeParameters);
             ScopeParameters = scopeParameters;
 
             if (paramDefinition != null)
@@ -288,11 +289,11 @@ public class SetupController
 
         _nlog.Info(LogIO.Text("ML", "InitialMeasurements"));
 
-        if (DmsScan is IonVision.Scan.ScanResult fullScan)
+        if (DmsScan is IVDefs.ScanResult fullScan)
         {
             await App.ML.Publish(fullScan);
         }
-        else if (DmsScan is IonVision.Defs.ScopeResult scopeScan)
+        else if (DmsScan is IVDefs.ScopeResult scopeScan)
         {
             await App.ML.Publish(scopeScan);
         }
@@ -376,7 +377,7 @@ public class SetupController
 
         await Task.Delay(300);
 
-        LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.Scan.ScanResult? scan);
+        LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IVDefs.ScanResult? scan);
 
         if (scan != null)
         {
@@ -392,7 +393,7 @@ public class SetupController
 
     private async Task<Common.IMeasurement?> MeasureDmsSingleSV(IonVision.Communicator ionVision, float usv)
     {
-        if (!LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.Defs.ScopeParameters? scopeParams) || scopeParams == null)
+        if (!LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IVDefs.ScopeParameters? scopeParams) || scopeParams == null)
         {
             LogDms?.Invoke(this, new LogHandlerArgs("Failed to get scope parameters."));
             return null;

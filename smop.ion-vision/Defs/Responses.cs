@@ -80,7 +80,7 @@ public record class SearchResultMeta(
 );
 public record class SearchResult(
     SearchResultMeta Meta,
-    Scan.ScanResult[] Results
+    ScanResult[] Results
 );
 
 public record class ListOfIDs(

@@ -84,7 +84,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblOdor1.Text = _proc.OdorChannels[0].Name;
         tblOdor2.Text = _proc.OdorChannels[1].Name;
 
-        if (config.TargetMeasurement is IonVision.Scan.ScanResult dms)
+        if (config.TargetMeasurement is IonVision.Defs.ScanResult dms)
         {
             DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
                 new Plot().Create(cnvTargetMeasurement,
@@ -279,7 +279,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblRecipeState.Text = string.Join(". ", stateText) + ".";
     }
 
-    private void HandleScanFinished(IonVision.Scan.ScanResult scan, Size size)
+    private void HandleScanFinished(IonVision.Defs.ScanResult scan, Size size)
     {
         new Plot().Create(cnvMeasurement,
                     (int)size.Height,

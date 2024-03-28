@@ -26,7 +26,7 @@ public class Communicator : IDisposable
         }
     }
 
-    public IonVision.Param.ParameterDefinition? Parameter { get; set; } = null;
+    public IonVision.Defs.ParameterDefinition? Parameter { get; set; } = null;
     public IonVision.Defs.ScopeParameters? ScopeParameters { get; set; } = null;
 
     public event EventHandler<Status>? StatusChanged;
@@ -106,7 +106,7 @@ public class Communicator : IDisposable
         }
     }
 
-    public async Task Publish(IonVision.Scan.ScanResult scan)
+    public async Task Publish(IonVision.Defs.ScanResult scan)
     {
         if (Parameter == null)
         {

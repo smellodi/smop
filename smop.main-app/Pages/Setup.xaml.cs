@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -131,7 +130,7 @@ public partial class Setup : Page, IPage<object?>
     readonly List<string> _smellInspLog = new();
     readonly List<string> _odorDisplayLog = new();
 
-    readonly List<IonVision.Scan.ScanResult> _dmsScans = new();
+    readonly List<IonVision.Defs.ScanResult> _dmsScans = new();
     readonly RadioButton[] _dmsPlotTypes;
 
     bool _isInitilized = false;
@@ -400,7 +399,7 @@ public partial class Setup : Page, IPage<object?>
 
         await _ctrl.MeasureSample();
 
-        if (_ctrl.DmsScan is IonVision.Scan.ScanResult fullScan)
+        if (_ctrl.DmsScan is IonVision.Defs.ScanResult fullScan)
         {
             _dmsScans.Add(fullScan);
 
@@ -443,7 +442,7 @@ public partial class Setup : Page, IPage<object?>
                 var dataSize = new Size();
 
                 IMeasurement? targetMeasurement = null;
-                if (_ctrl.DmsScan is IonVision.Scan.ScanResult fullScan)
+                if (_ctrl.DmsScan is IonVision.Defs.ScanResult fullScan)
                 {
                     targetMeasurement = fullScan;
                     if (_ctrl.ParamDefinition != null)

@@ -152,8 +152,8 @@ internal class Simulator : IMinimalAPI
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
-    public Task<Response<Param.ParameterDefinition>> GetParameterDefinition(Parameter parameter) =>
-        Task.FromResult(new Response<Param.ParameterDefinition>(
+    public Task<Response<Defs.ParameterDefinition>> GetParameterDefinition(Parameter parameter) =>
+        Task.FromResult(new Response<Defs.ParameterDefinition>(
             _currentParameter == null ? null : SimulatedData.ParameterDefinition,
             _currentParameter != null ? null : "No parameter is set as current"));
 
@@ -251,14 +251,14 @@ internal class Simulator : IMinimalAPI
         return Task.FromResult(new Response<Confirm>(new Confirm(), null));
     }
 
-    public Task<Response<Scan.ScanResult>> GetLatestResult()
+    public Task<Response<ScanResult>> GetLatestResult()
     {
         if (_latestResult == null)
         {
-            return Task.FromResult(new Response<Scan.ScanResult>(null, "Scan was not yet performed"));
+            return Task.FromResult(new Response<ScanResult>(null, "Scan was not yet performed"));
         }
 
-        return Task.FromResult(new Response<Scan.ScanResult>(_latestResult with { Comments = _comments ?? new SimpleComment() }, null));
+        return Task.FromResult(new Response<ScanResult>(_latestResult with { Comments = _comments ?? new SimpleComment() }, null));
     }
 
     public Task<Response<string[]>> GetProjectResults(string name)
@@ -385,7 +385,7 @@ internal class Simulator : IMinimalAPI
 
     Project? _currentProject = null;
     Parameter? _currentParameter = null;
-    Scan.ScanResult? _latestResult = null;
+    ScanResult? _latestResult = null;
     object? _comments = null;
 
     ScopeStatus _scopeStatus = new(-1);
@@ -405,7 +405,7 @@ internal class Simulator : IMinimalAPI
         }
     }
 
-    private Scan.ScanResult RandomizeScanData(Scan.ScanResult data)
+    private ScanResult RandomizeScanData(ScanResult data)
     {
         var mdata = data.MeasurementData;
         return data with

@@ -97,7 +97,7 @@ public class Communicator : IDisposable
 
     /// <summary>Retrieves the current parameter definition</summary>
     /// <returns>Parameter definition</returns>
-    public Task<Response<Param.ParameterDefinition>> GetParameterDefinition() =>
+    public Task<Response<Defs.ParameterDefinition>> GetParameterDefinition() =>
         _api.GetParameterDefinition(new Parameter(Settings.ParameterId, Settings.ParameterName));
 
 
@@ -147,7 +147,7 @@ public class Communicator : IDisposable
 
     /// <summary>Retrieves the latest scanning result</summary>
     /// <returns>Scanning result, if any</returns>
-    public Task<Response<Scan.ScanResult>> GetScanResult() => _api.GetLatestResult();
+    public Task<Response<ScanResult>> GetScanResult() => _api.GetLatestResult();
 
     /// <summary>Retrieves all project scanning result</summary>
     /// <returns>Array of scanning results</returns>

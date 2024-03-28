@@ -29,7 +29,7 @@ public class OdorReproducerController
     public float[] BestFlows { get; private set; }
     public float[] RecipeFlows { get; private set; }
 
-    public event EventHandler<IV.Scan.ScanResult>? ScanFinished;
+    public event EventHandler<IV.Defs.ScanResult>? ScanFinished;
     public event EventHandler<IV.Defs.ScopeResult>? ScopeScanFinished;
     public event EventHandler<SmellInsp.Data>? SntCollected;
     public event EventHandler? MlComputationStarted;
@@ -110,7 +110,7 @@ public class OdorReproducerController
                     if (measurement != null)
                     {
                         SendMeasurementToML(measurement);
-                        if (measurement is IV.Scan.ScanResult fullScan)
+                        if (measurement is IV.Defs.ScanResult fullScan)
                         {
                             var filename = _dmsCache.Save(recipe, fullScan);
                             _nlog.Info(LogIO.Text("Cache", "Write", filename));
@@ -189,7 +189,7 @@ public class OdorReproducerController
             _ = _ml.Publish(dmsScopeScan);
             ScopeScanFinished?.Invoke(this, dmsScopeScan);
         }
-        else if (measurement is IV.Scan.ScanResult dmsFullScan)
+        else if (measurement is IV.Defs.ScanResult dmsFullScan)
         {
             _ = _ml.Publish(dmsFullScan);
             ScanFinished?.Invoke(this, dmsFullScan);
@@ -231,7 +231,7 @@ public class OdorReproducerController
             await ionVision.WaitScanToFinish(progress => ENoseProgressChanged?.Invoke(this, progress));
 
             await Task.Delay(300);
-            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IV.Scan.ScanResult? scan);
+            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IV.Defs.ScanResult? scan);
 
             return scan;
         }

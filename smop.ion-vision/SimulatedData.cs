@@ -1,5 +1,5 @@
 ﻿using Smop.IonVision.Defs;
-using Smop.IonVision.Param;
+using Smop.IonVision.Defs;
 using System;
 using System.Linq;
 
@@ -85,7 +85,7 @@ public static class SimulatedData
         Description = "Another fake param"
     };
 
-    public static Scan.ScanResult ScanResult => new(
+    public static ScanResult ScanResult => new(
         Guid.NewGuid().ToString(),
         User.Name,
         DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
@@ -94,7 +94,7 @@ public static class SimulatedData
         Project1.Name,
         new(),
         3,
-        new Scan.SystemData(
+        new SystemData(
             new ErrorRegister(false, false, false, false, false, false,
                 false, false,
                 true, false, false, false, false, false, false, false,
@@ -103,27 +103,27 @@ public static class SimulatedData
                 false, false
             ),
             new(0, 17657, 0),
-            new Scan.FlowDetector(
+            new FlowDetector(
                 new(0.11, 301.26, 0),
                 new(21.81, 0, 21.75),
                 new(1100, 21.78, 1018.5),
                 new(20.12, 0.67, 17.84),
                 new(90, 30, 90)
             ),
-            new Scan.FlowDetector(
+            new FlowDetector(
                 new(3.92, 578.74, 3.29),
                 new(21.68, 589.82, 21.6),
                 new(1019.96, 21.68, 960.51),
                 new(17.4, 2.16, 0.93),
                 new(90, 1, 90)
             ),
-            new Scan.Detector(
+            new Detector(
                 new(26, 589.82, 25.94),
                 new(1017.33, 25.99, 1017.12),
                 new(17.34, 99.34, 17.24)
             )
         ),
-        new Scan.MeasurementData(
+        new MeasurementData(
             true,
             Usv.Steps * Ucv.Steps,
             MakeArray(GetImitatedPixel),

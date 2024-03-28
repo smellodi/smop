@@ -1,4 +1,4 @@
-﻿namespace Smop.IonVision.Scan;
+﻿namespace Smop.IonVision.Defs;
 
 public record class RangeAvg(
     double Avg,
@@ -18,7 +18,7 @@ public record class FlowDetector(
     RangeAvg PumpPWM
 ) : Detector(Temperature, Pressure, Humidity);
 public record class SystemData(
-    Defs.ErrorRegister ErrorRegister,
+    ErrorRegister ErrorRegister,
     RangeAvg FetTemperature,
     FlowDetector Sample,
     FlowDetector Sensor,

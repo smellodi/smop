@@ -358,9 +358,9 @@ internal class Simulator : IMinimalAPI
     // Internal
 
     const double SCAN_DURATION = 2500;                 // ms
-    const double SCAN_PROGRESS_STEP_DURATION = 300;    // ms
+    const double SCAN_PROGRESS_STEP_DURATION = 200;    // ms
     const double SCOPE_DURATION = 2000;                // ms
-    const double SCOPE_PROGRESS_STEP_DURATION = 100;        // ms
+    const double SCOPE_PROGRESS_STEP_DURATION = 200;        // ms
 
     readonly WebSocketServer _wsServer;
     readonly List<IWebSocketConnection> _sockets = new();

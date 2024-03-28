@@ -111,13 +111,27 @@
                 </TextBox.Text>
             </TextBox>
         </UserControl>
-        <UserControl x:Name="uscUseDmsCache"
+        <UserControl x:Name="uscDmsSingleSV"
+                     Style="{StaticResource Setting}"
+                     Tag="DMS single Us">
+            <TextBox x:Name="txbDmsSingleSV" Grid.Column="0"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="DmsSingleSV" UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </UserControl>
+        <!--UserControl x:Name="uscUseDmsCache"
                      Style="{StaticResource Setting}"
                      Tag="Cache DMS scans">
             <CheckBox x:Name="chkUseDmsCache"
                       IsChecked="{Binding UseDmsCache}"
                       VerticalAlignment="Center"/>
-        </UserControl>
+        </UserControl-->
         <!--UserControl x:Name="uscSniffingDelay"
                      Style="{StaticResource Setting}"
                      Tag="Sniffing delay, seconds">

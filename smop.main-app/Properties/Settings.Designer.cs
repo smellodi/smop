@@ -309,5 +309,17 @@ namespace Smop.MainApp.Properties {
                 this["Reproduction_SntSampleCount"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float Reproduction_DmsSingleSV {
+            get {
+                return ((float)(this["Reproduction_DmsSingleSV"]));
+            }
+            set {
+                this["Reproduction_DmsSingleSV"] = value;
+            }
+        }
     }
 }

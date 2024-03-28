@@ -6,6 +6,10 @@ namespace Smop.MainApp.Controls;
 
 public partial class SearchSpace2D : UserControl
 {
+    /// <summary>
+    /// RMSE above this threshold is shown as the possibly smallest dot.
+    /// RMSE below this threshold starts growing in size.
+    /// </summary>
     public float RmseThreshold { get; set; } = 10;
     public float BubbleMinRadius { get; set; } = 1.5f;
     public float BubbleMaxRadius { get; set; } = 5f;

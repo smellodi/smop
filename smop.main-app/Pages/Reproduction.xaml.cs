@@ -78,14 +78,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         cnvMeasurement.Children.Clear();
 
         crtSearchSpace.Reset();
-        if (Storage.Instance.Simulating.HasFlag(SimulationTarget.ML))
-        {
-            crtSearchSpace.RmseThreshold = 0.1f;
-        }
-        if (Storage.Instance.Simulating.HasFlag(SimulationTarget.IonVision))
-        {
-            crtSearchSpace.RmseThreshold = 2.5f;
-        }
+        crtSearchSpace.RmseThreshold = 3 * Properties.Settings.Default.Reproduction_ML_Threshold;
         crtSearchSpace.Add(0, config.TargetFlows[0].Flow, config.TargetFlows[1].Flow, System.Drawing.Color.Black);
 
         tblOdor1.Text = _proc.OdorChannels[0].Name;
@@ -98,6 +91,14 @@ public partial class Reproduction : Page, IPage<Navigation>
                     (int)config.DataSize.Height,
                     (int)config.DataSize.Width,
                     dms.MeasurementData.IntensityTop,
+                    theme: PLOT_THEME)));
+        }
+        else if (config.TargetMeasurement is IonVision.Defs.ScopeResult dmsSingleSV)
+        {
+            DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
+                new Plot().Create(cnvTargetMeasurement,
+                    1, dmsSingleSV.IntensityTop.Length,
+                    dmsSingleSV.IntensityTop,
                     theme: PLOT_THEME)));
         }
         else if (config.TargetMeasurement is SmellInsp.Data snt)
@@ -288,6 +289,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         DisplayMeasurementInfo();
         DisplayMeasurementEnvInfo(new MeasurementEnvInfo(scan.SystemData.Sample.Temperature.Avg));
     }
+
     private void HandleScanFinished(IonVision.Defs.ScopeResult scan)
     {
         new Plot().Create(cnvMeasurement,

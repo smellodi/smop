@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -399,14 +400,21 @@ public partial class Setup : Page, IPage<object?>
 
         await _ctrl.MeasureSample();
 
-        if (_ctrl.DmsScan != null)
+        if (_ctrl.DmsScan is IonVision.Scan.ScanResult fullScan)
         {
-            _dmsScans.Add(_ctrl.DmsScan);
+            _dmsScans.Add(fullScan);
 
             if (_dmsPlotType == Plot.ComparisonOperation.None || _dmsScans.Count > 1)
             {
                 ShowDmsPlot();
             }
+        }
+        else if (_ctrl.DmsScan is IonVision.Defs.ScopeResult scopeScan)
+        {
+            new Plot().Create(cnvDmsScan,
+                1, scopeScan.IntensityTop.Length,
+                scopeScan.IntensityTop,
+                theme: PLOT_THEME);
         }
 
         btnMeasureSample.IsEnabled = true;
@@ -433,17 +441,26 @@ public partial class Setup : Page, IPage<object?>
                 _ctrl.EnumOdorChannels(odorChannel => targetFlows.Add(new(odorChannel.ID, odorChannel.Flow)));
 
                 var dataSize = new Size();
-                if (_ctrl.ParamDefinition != null)
-                {
-                    var sc = _ctrl.ParamDefinition.MeasurementParameters.SteppingControl;
-                    dataSize = new(sc.Ucv.Steps, sc.Usv.Steps);
-                }
 
                 IMeasurement? targetMeasurement = null;
-                if (_dmsScans.Count > 0)
-                    targetMeasurement = _dmsScans[^1];
+                if (_ctrl.DmsScan is IonVision.Scan.ScanResult fullScan)
+                {
+                    targetMeasurement = fullScan;
+                    if (_ctrl.ParamDefinition != null)
+                    {
+                        var sc = _ctrl.ParamDefinition.MeasurementParameters.SteppingControl;
+                        dataSize = new(sc.Ucv.Steps, sc.Usv.Steps);
+                    }
+                }
+                else if (_ctrl.DmsScan is IonVision.Defs.ScopeResult scopeScan)
+                {
+                    targetMeasurement = scopeScan;
+                    dataSize = new(scopeScan.Ucv.Length, 1);
+                }
                 else if (_ctrl.SntSample != null)
+                {
                     targetMeasurement = _ctrl.SntSample;
+                }
 
                 Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), targetMeasurement, dataSize));
             }

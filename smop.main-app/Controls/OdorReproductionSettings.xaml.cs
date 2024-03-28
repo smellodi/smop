@@ -89,7 +89,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public int SntSampleCount
+    public static int SntSampleCount
     {
         get => Properties.Settings.Default.Reproduction_SntSampleCount;
         set
@@ -99,11 +99,21 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
-    public static bool UseDmsCache
+    public static float DmsSingleSV
+    {
+        get => Properties.Settings.Default.Reproduction_DmsSingleSV;
+        set
+        {
+            Properties.Settings.Default.Reproduction_DmsSingleSV = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    /*public static bool UseDmsCache
     {
         get => Logging.DmsCache.IsEnabled;
         set => Logging.DmsCache.IsEnabled = value;
-    }
+    }*/
 
     /*public float SniffingDelay
     {
@@ -142,7 +152,8 @@ public partial class OdorReproductionSettings : UserControl
     public void SetMeasurementSource(MeasurementSouce sources)
     {
         uscSntSampleCount.Visibility = sources.HasFlag(MeasurementSouce.SNT) ? Visibility.Visible : Visibility.Collapsed;
-        uscUseDmsCache.Visibility = sources.HasFlag(MeasurementSouce.DMS) ? Visibility.Visible : Visibility.Collapsed;
+        uscDmsSingleSV.Visibility = sources.HasFlag(MeasurementSouce.DMS) ? Visibility.Visible : Visibility.Collapsed;
+        //uscUseDmsCache.Visibility = sources.HasFlag(MeasurementSouce.DMS) ? Visibility.Visible : Visibility.Collapsed;
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)

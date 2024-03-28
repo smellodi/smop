@@ -23,7 +23,7 @@ public class SetupController
 
     public IonVision.Param.ParameterDefinition? ParamDefinition { get; private set; } = null;
     public IonVision.Defs.ScopeParameters? ScopeParameters { get; private set; } = null;
-    public IonVision.Scan.ScanResult? DmsScan { get; private set; } = null;
+    public Common.IMeasurement? DmsScan { get; private set; } = null;
     public SmellInsp.Data? SntSample { get; private set; } = null;
 
     public bool HasInitializationFinished { get; private set; } = false;
@@ -248,6 +248,8 @@ public class SetupController
         if (App.ML == null)
             return;
 
+        var settings = Properties.Settings.Default;
+
         var dataSources = new List<string>();
         if (App.IonVision != null)
         {
@@ -268,10 +270,9 @@ public class SetupController
         }
         if (ScopeParameters != null)
         {
-            App.ML.ScopeParameters = ScopeParameters;
+            App.ML.ScopeParameters = ScopeParameters with { Usv = settings.Reproduction_DmsSingleSV };
         }
 
-        var settings = Properties.Settings.Default;
         _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_ML_MaxIterations, settings.Reproduction_ML_Threshold,
             settings.Reproduction_ML_Algorithm));
 
@@ -287,9 +288,13 @@ public class SetupController
 
         _nlog.Info(LogIO.Text("ML", "InitialMeasurements"));
 
-        if (DmsScan != null)
+        if (DmsScan is IonVision.Scan.ScanResult fullScan)
         {
-            await App.ML.Publish(DmsScan);
+            await App.ML.Publish(fullScan);
+        }
+        else if (DmsScan is IonVision.Defs.ScopeResult scopeScan)
+        {
+            await App.ML.Publish(scopeScan);
         }
         else if (SntSample != null)
         {
@@ -333,40 +338,96 @@ public class SetupController
         }
         else
         {
-            if (!LogIO.Add(await ionVision.StartScan(), "StartScan"))
+            var settings = Properties.Settings.Default;
+
+            if (settings.Reproduction_DmsSingleSV > 0)
             {
-                LogDms?.Invoke(this, new LogHandlerArgs("Failed to start sample scan."));
-                return;
+                DmsScan = await MeasureDmsSingleSV(ionVision, settings.Reproduction_DmsSingleSV);
             }
-
-            LogDms?.Invoke(this, new LogHandlerArgs("Scanning..."));
-
-            await ionVision.WaitScanToFinish(progress =>
+            else
             {
-                LogDms?.Invoke(this, new LogHandlerArgs(
-                    progress < 100 ?
-                    $"Scanning... {progress} %" :
-                    "Scanning finished.", true
-                ));
-                ScanProgress?.Invoke(this, progress);
-            });
-
-            await Task.Delay(300);
-            LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.Scan.ScanResult? scan);
-            DmsScan = scan;
-
-            if (scan != null)
-            {
-                filename = _dmsCache.Save(_odorChannels, scan);
-                if (filename != null)
-                {
-                    _nlog.Info(LogIO.Text("Cache", "Write", filename));
-                }
+                DmsScan = await MeasureDmsFull(ionVision);
             }
         }
 
         if (DmsScan == null)
             LogDms?.Invoke(this, new LogHandlerArgs("Failed to retrieve the scanning result"));
+    }
+
+    private async Task<Common.IMeasurement?> MeasureDmsFull(IonVision.Communicator ionVision)
+    {
+        if (!LogIO.Add(await ionVision.StartScan(), "StartScan"))
+        {
+            LogDms?.Invoke(this, new LogHandlerArgs("Failed to start sample scan."));
+            return null;
+        }
+
+        LogDms?.Invoke(this, new LogHandlerArgs("Scanning..."));
+
+        await ionVision.WaitScanToFinish(progress =>
+        {
+            LogDms?.Invoke(this, new LogHandlerArgs(
+                progress < 100 ?
+                $"Scanning... {progress} %" :
+                "Scanning finished.", true
+            ));
+            ScanProgress?.Invoke(this, progress);
+        });
+
+        await Task.Delay(300);
+
+        LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IonVision.Scan.ScanResult? scan);
+
+        if (scan != null)
+        {
+            var filename = _dmsCache.Save(_odorChannels, scan);
+            if (filename != null)
+            {
+                _nlog.Info(LogIO.Text("Cache", "Write", filename));
+            }
+        }
+
+        return scan;
+    }
+
+    private async Task<Common.IMeasurement?> MeasureDmsSingleSV(IonVision.Communicator ionVision, float usv)
+    {
+        if (!LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IonVision.Defs.ScopeParameters? scopeParams) || scopeParams == null)
+        {
+            LogDms?.Invoke(this, new LogHandlerArgs("Failed to get scope parameters."));
+            return null;
+        }
+
+        await Task.Delay(150);
+        if (!LogIO.Add(await ionVision.SetScopeParameters(scopeParams with { Usv = usv }), "SetScopeParameters"))
+        {
+            LogDms?.Invoke(this, new LogHandlerArgs("Failed to set scope parameters."));
+            return null;
+        }
+
+        await Task.Delay(150);
+        if (!LogIO.Add(await ionVision.EnableScopeMode(), "EnableScopeMode"))
+        {
+            LogDms?.Invoke(this, new LogHandlerArgs("Failed to enabled scope mode."));
+            return null;
+        }
+
+        LogDms?.Invoke(this, new LogHandlerArgs("Scanning..."));
+        await Task.Delay(150);
+        var scan = await ionVision.WaitScopeScanToFinish(progress =>
+        {
+            LogDms?.Invoke(this, new LogHandlerArgs(
+                progress < 100 ?
+                $"Scanning... {progress} %" :
+                "Scanning finished.", true
+            ));
+            ScanProgress?.Invoke(this, progress);
+        });
+
+        await Task.Delay(150);
+        LogIO.Add(await ionVision.DisableScopeMode(), "DisableScopeMode");
+
+        return scan;
     }
 
     private async Task GetSntSample()

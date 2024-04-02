@@ -6,40 +6,48 @@ namespace Smop.SmellInsp;
 
 public static class SimulatedData
 {
-    public record class GasImpact(float First, float Second);
-
-    public static GasImpact Gains { get; set; } = new(8, 6);
+    public static float[] Gains { get; set; } = new float[Common.OdorPrinter.MaxOdorCount] { 8, 6, 5, 0, 0 };
 
     public static Data Generate()
     {
+        float SumAll(int sensorIndex)
+        {
+            float result = 0;
+            for (int i = 0; i < Gains.Length; i++)
+            {
+                result += _impacts[i][sensorIndex] * Gains[i];
+            }
+            return result;
+        }
+
         var resistance = new float[Data.ResistantCount];
         for (int i = 0; i < resistance.Length; i++)
         {
             resistance[i] = i switch
             {
-                >= 2 and <= 4 => _impacts.Gas1[10] * Gains.First + _impacts.Gas2[10] * Gains.Second + Random.Range(0.3f) + TS(100),
-                >= 5 and <= 7 => _impacts.Gas1[2] * Gains.First + _impacts.Gas2[2] * Gains.Second + Random.Range(0.3f) + TS(10),
-                >= 8 and <= 10 => _impacts.Gas1[1] * Gains.First + _impacts.Gas2[1] * Gains.Second + Random.Range(0.3f) + TS(3),
-                >= 11 and <= 13 => _impacts.Gas1[0] * Gains.First + _impacts.Gas2[0] * Gains.Second + Random.Range(0.3f) + TS(30),
-                >= 21 and <= 23 => _impacts.Gas1[8] * Gains.First + _impacts.Gas2[8] * Gains.Second + Random.Range(0.3f) + TS(40),
-                >= 24 and <= 26 => _impacts.Gas1[5] * Gains.First + _impacts.Gas2[5] * Gains.Second + Random.Range(0.3f) + TS(500),
-                >= 27 and <= 29 => _impacts.Gas1[4] * Gains.First + _impacts.Gas2[4] * Gains.Second + Random.Range(0.3f) + TS(30),
-                >= 34 and <= 36 => _impacts.Gas1[13] * Gains.First + _impacts.Gas2[13] * Gains.Second + Random.Range(0.3f) + TS(10),
-                >= 37 and <= 39 => _impacts.Gas1[9] * Gains.First + _impacts.Gas2[9] * Gains.Second + Random.Range(0.3f) + TS(2),
-                >= 40 and <= 42 => _impacts.Gas1[6] * Gains.First + _impacts.Gas2[6] * Gains.Second + Random.Range(0.3f) + TS(200),
-                >= 43 and <= 45 => _impacts.Gas1[3] * Gains.First + _impacts.Gas2[3] * Gains.Second + Random.Range(0.3f) + TS(6),
-                >= 50 and <= 52 => _impacts.Gas1[14] * Gains.First + _impacts.Gas2[14] * Gains.Second + Random.Range(0.3f) + TS(20),
-                >= 53 and <= 55 => _impacts.Gas1[12] * Gains.First + _impacts.Gas2[12] * Gains.Second + Random.Range(0.3f) + TS(30),
-                >= 56 and <= 58 => _impacts.Gas1[11] * Gains.First + _impacts.Gas2[11] * Gains.Second + Random.Range(0.3f) + TS(100),
-                >= 59 and <= 61 => _impacts.Gas1[7] * Gains.First + _impacts.Gas2[7] * Gains.Second + Random.Range(0.3f) + TS(20),
+                >= 2 and <= 4 => SumAll(10) + Random.Range(0.3f) + TS(100),
+                >= 5 and <= 7 => SumAll(2) + Random.Range(0.3f) + TS(10),
+                >= 8 and <= 10 => SumAll(1) + Random.Range(0.3f) + TS(3),
+                >= 11 and <= 13 => SumAll(0) + Random.Range(0.3f) + TS(30),
+                >= 21 and <= 23 => SumAll(8) + Random.Range(0.3f) + TS(40),
+                >= 24 and <= 26 => SumAll(5) + Random.Range(0.3f) + TS(500),
+                >= 27 and <= 29 => SumAll(4) + Random.Range(0.3f) + TS(30),
+                >= 34 and <= 36 => SumAll(13) + Random.Range(0.3f) + TS(10),
+                >= 37 and <= 39 => SumAll(9) + Random.Range(0.3f) + TS(2),
+                >= 40 and <= 42 => SumAll(6) + Random.Range(0.3f) + TS(200),
+                >= 43 and <= 45 => SumAll(3) + Random.Range(0.3f) + TS(6),
+                >= 50 and <= 52 => SumAll(14) + Random.Range(0.3f) + TS(20),
+                >= 53 and <= 55 => SumAll(12) + Random.Range(0.3f) + TS(30),
+                >= 56 and <= 58 => SumAll(11) + Random.Range(0.3f) + TS(100),
+                >= 59 and <= 61 => SumAll(7) + Random.Range(0.3f) + TS(20),
 
                 _ => 4.6f + Random.Range(0.3f)
             };
         }
         return new Data(
             resistance,
-            24.6f + Random.Range(0.1f),
-            47.1f + Random.Range(0.1f)
+            24.6f + Random.Range(0.1f), // Temperature
+            47.1f + Random.Range(0.1f)  // Humidity
         );
     }
 
@@ -52,12 +60,14 @@ public static class SimulatedData
         static readonly System.Random _random = new();
     }
 
-    private record class FeatureImpact(float[] Gas1, float[] Gas2);
-
-    static readonly FeatureImpact _impacts = new(
+    static readonly float[][] _impacts = new float[Common.OdorPrinter.MaxOdorCount][]
+    {
         new float[15] { 0.1f, 0.3f, 0f, 0f, 0.9f, 1f, 0.1f, 0f, 0.2f, 0f, 0f, 0.6f, 0f, 0.8f, 0f},
-        new float[15] { 0f, 0.1f, 0f, 0.8f, 0.4f, 0f, 0.3f, 0f, 0f, 0.8f, 1f, 0.2f, 0f, 0f, 0.5f}
-    );
+        new float[15] { 0f, 0.1f, 0f, 0.8f, 0.4f, 0f, 0.3f, 0f, 0f, 0.8f, 1f, 0.2f, 0f, 0f, 0.5f},
+        new float[15] { 0.4f, 0.6f, 0.2f, 0f, 0.9f, 0,2f, 0f, 0.1f, 0.1f, 0f, 0.5f, 1f, 1f, 0.1f},
+        new float[15] { 0.3f, 0.9f, 0.9f, 0f, 0f, 0.5f, 0f, 1f, 0f, 0.1f, 0.4f, 0.8f, 0f, 0.8f, 0.1f},
+        new float[15] { 0.5f, 0f, 0f, 0.1f, 0.9f, 0.5f, 0f, 0.7f, 1f, 0.1f, 0f, 0f, 0.4f, 0.4f, 0f},
+    };
 
     static readonly long _start = DateTime.Now.Ticks;
 

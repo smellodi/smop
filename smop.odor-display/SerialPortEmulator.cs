@@ -163,13 +163,28 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
                             {
                                 if (actuator.DeviceID == Device.ID.Odor1)
                                 {
-                                    IonVision.SimulatedData.LineGains = IonVision.SimulatedData.LineGains with { WideUp1 = 20 + 80 * cap.Value / 0.5f }; // 0.5 == 50 scc
-                                    SmellInsp.SimulatedData.Gains = SmellInsp.SimulatedData.Gains with { First = 8 + 800 * cap.Value / 0.5f }; // 0.5 == 50 scc
+                                    IonVision.SimulatedData.LineGains.Components[0] = 5 + 95 * cap.Value / 0.5f; // 0.5 == 50 scc
+                                    SmellInsp.SimulatedData.Gains[0] = 8 + 800 * cap.Value / 0.5f; // 0.5 == 50 scc
                                 }
                                 else if (actuator.DeviceID == Device.ID.Odor2)
                                 {
-                                    IonVision.SimulatedData.LineGains = IonVision.SimulatedData.LineGains with { WideUp2 = 20 + 70 * cap.Value / 0.5f };
-                                    SmellInsp.SimulatedData.Gains = SmellInsp.SimulatedData.Gains with { Second = 8 + 500 * cap.Value / 0.5f }; // 0.5 == 50 scc
+                                    IonVision.SimulatedData.LineGains.Components[1] = 5 + 85 * cap.Value / 0.5f;
+                                    SmellInsp.SimulatedData.Gains[1] = 6 + 500 * cap.Value / 0.5f; // 0.5 == 50 scc
+                                }
+                                else if (actuator.DeviceID == Device.ID.Odor3)
+                                {
+                                    IonVision.SimulatedData.LineGains.Components[2] = 0 + 40 * cap.Value / 0.5f;
+                                    SmellInsp.SimulatedData.Gains[2] = 5 + 300 * cap.Value / 0.5f; // 0.5 == 50 scc
+                                }
+                                else if (actuator.DeviceID == Device.ID.Odor4)
+                                {
+                                    IonVision.SimulatedData.LineGains.Components[3] = 0 + 60 * cap.Value / 0.5f;
+                                    SmellInsp.SimulatedData.Gains[3] = 0 + 400 * cap.Value / 0.5f; // 0.5 == 50 scc
+                                }
+                                else if (actuator.DeviceID == Device.ID.Odor5)
+                                {
+                                    IonVision.SimulatedData.LineGains.Components[4] = 0 + 55 * cap.Value / 0.5f;
+                                    SmellInsp.SimulatedData.Gains[4] = 0 + 550 * cap.Value / 0.5f; // 0.5 == 50 scc
                                 }
                             }
                             deviceState.Capabilities[cap.Key] = cap.Value;
@@ -197,7 +212,7 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
                 _responses.Enqueue(new Devices(new bool[] {
                     true,       // Base
                     true, true, // Odor1 and Odor2
-                    false, false, false, false, false, false, false,    // Odor 3-9
+                    true, false, false, false, false, false, false,    // Odor 3-9
                     true        // Dilution
                 }).ToArray());
             }

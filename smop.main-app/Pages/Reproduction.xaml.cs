@@ -77,12 +77,27 @@ public partial class Reproduction : Page, IPage<Navigation>
         crtBestRMSE.Reset();
         cnvMeasurement.Children.Clear();
 
+        // Limitation: only two odors
         crtSearchSpace.Reset();
         crtSearchSpace.RmseThreshold = 3 * Properties.Settings.Default.Reproduction_ML_Threshold;
-        crtSearchSpace.Add(0, config.TargetFlows[0].Flow, config.TargetFlows[1].Flow, System.Drawing.Color.Black);
+        crtSearchSpace.Add(0, config.TargetFlows.Select(tf => tf.Flow).ToArray(), System.Drawing.Color.Black);
 
-        tblOdor1.Text = _proc.OdorChannels[0].Name;
-        tblOdor2.Text = _proc.OdorChannels[1].Name;
+        // Limitation: only two odors
+        tblOdor1.Text = _proc.OdorChannels.Length > 0 ? _proc.OdorChannels[0].Name : "";
+        tblOdor2.Text = _proc.OdorChannels.Length > 1 ? _proc.OdorChannels[1].Name : "";
+        grdSearchSpace.Visibility = config.TargetFlows.Length == 2 ? Visibility.Visible : Visibility.Collapsed;
+        scvSearchSpace.Visibility = config.TargetFlows.Length > 2 ? Visibility.Visible : Visibility.Collapsed;
+
+        if (config.TargetFlows.Length > 2)
+        {
+            grdSearchSpaceTable.RowDefinitions.Clear();
+            grdSearchSpaceTable.ColumnDefinitions.Clear();
+
+            for (int i = 0; i < _proc.OdorChannels.Length; i++)
+                grdSearchSpaceTable.ColumnDefinitions.Add(new ColumnDefinition());
+
+            AddFlowsRecordToSearchSpaceTable(_proc.OdorChannels.Select(oc => oc.Name).ToArray());
+        }
 
         if (config.TargetMeasurement is IonVision.Defs.ScanResult dms)
         {
@@ -148,6 +163,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         { 0.4, (Color)Application.Current.FindResource("ColorDark") },
         { 1, (Color)Application.Current.FindResource("ColorDarkDarker") },
     }.ToArray();
+
+    readonly Brush BRUSH_DARK = (Brush)Application.Current.FindResource("BrushPanelLight");
+    readonly Brush BRUSH_LIGHT = (Brush)Application.Current.FindResource("BrushPanelLightest");
+    readonly Brush FONT_DARK = (Brush)Application.Current.FindResource("BrushFontDark");
+    readonly Brush FONT_LIGHT = (Brush)Application.Current.FindResource("BrushFont");
 
     readonly Style? _activeElementStyle;
     readonly Style? _inactiveElementStyle;
@@ -225,6 +245,25 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         // RMSE row
         grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 36 });
+    }
+
+    private void AddFlowsRecordToSearchSpaceTable(string[] flows)
+    {
+        grdSearchSpaceTable.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+        for (int i = 0; i < flows.Length; i++)
+        {
+            var value = new TextBlock() { Text = flows[i], Padding = new Thickness(2) };
+            if (grdSearchSpaceTable.RowDefinitions.Count == 1)
+            {
+                value.FontWeight = FontWeights.SemiBold;
+            }
+            value.Background = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? BRUSH_DARK : BRUSH_LIGHT;
+            value.Foreground = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? FONT_DARK : FONT_DARK;
+            Grid.SetColumn(value, i);
+            Grid.SetRow(value, grdSearchSpaceTable.RowDefinitions.Count - 1);
+            grdSearchSpaceTable.Children.Add(value);
+        }
+        scvSearchSpace.ScrollToBottom();
     }
 
     private void SetActiveElement(ActiveElement el)
@@ -319,7 +358,14 @@ public partial class Reproduction : Page, IPage<Navigation>
             if (recipe.RMSE < 10000)
             {
                 DisplayMeasurementInfo(recipe.RMSE);    // update the previous scan RMSE
-                crtSearchSpace.Add(recipe.RMSE, _proc.RecipeFlows);
+                if (grdSearchSpace.Visibility == Visibility.Visible)
+                {
+                    crtSearchSpace.Add(recipe.RMSE, _proc.RecipeFlows);
+                }
+                else
+                {
+                    AddFlowsRecordToSearchSpaceTable(_proc.RecipeFlows.Select(f => f.ToString("F1")).ToArray());
+                }
             }
 
             _proc.ExecuteRecipe(recipe);

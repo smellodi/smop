@@ -9,8 +9,6 @@ namespace Smop.ML;
 
 internal abstract class Simulator : IDisposable
 {
-    public static readonly bool USE_SCOPE_MODE = true;
-
     public abstract void Dispose();
 
 
@@ -24,6 +22,7 @@ internal abstract class Simulator : IDisposable
 
     int[] _channelIDs = new int[2] { (int)Device.ID.Odor1, (int)Device.ID.Odor2 };
     bool _hasDmsSource = false;
+    float _usv = 0;
     float _threshold = 0.015f;
     int _maxSteps = 20;
 
@@ -74,10 +73,9 @@ internal abstract class Simulator : IDisposable
 
         _step++;
         var rmse = RMSE / _step;
-        var usv = USE_SCOPE_MODE ? 400 + _step * 20 : 0;
         bool isFinished = rmse < _threshold || _step >= _maxSteps;
 
-        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse, usv };
+        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse, _usv };
         json = JsonSerializer.Serialize(recipe);
         ScreenLogger.Print("[MlSimul] recipe sent");
         await SendData(json);
@@ -123,6 +121,12 @@ internal abstract class Simulator : IDisposable
             if (content.Source == Source.DMS)
             {
                 createRecipe = true;
+                try
+                {
+                    var dms = JsonSerializer.Deserialize<DmsMeasurementScope>(json, _serializerOptions)!;
+                    _usv = dms.Setup.Usv;
+                }
+                catch { }   // not a scope, so _usv stays 0
             }
 
             if (createRecipe)
@@ -131,10 +135,9 @@ internal abstract class Simulator : IDisposable
 
                 _step++;
                 var rmse = RMSE / _step;
-                var usv = USE_SCOPE_MODE ? 400 + _step * 20 : 0;
                 bool isFinished = rmse < _threshold || _step > _maxSteps;
 
-                var recipe = new Recipe("Normal", isFinished, rmse, usv,
+                var recipe = new Recipe("Normal", isFinished, rmse, _usv,
                     _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 ScreenLogger.Print("[MlSimul] recipe sent");

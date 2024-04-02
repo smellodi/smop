@@ -311,8 +311,8 @@ public class Plot
 
         int count = values.Length;
 
-        var minValue = Math.Min(-10, values.Min());
-        var maxValue = Math.Max(100, values.Max());
+        var minValue = Math.Min(-1, values.Min());
+        var maxValue = Math.Max(10, values.Max());
         var range = maxValue - minValue;
 
         double xp = 0;

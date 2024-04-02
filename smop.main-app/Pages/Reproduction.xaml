@@ -140,7 +140,7 @@
                 <Label Style="{StaticResource PlotHeader}"
                        Content="Search space"
                        Margin="19,0,0,0"/>
-                <Grid>
+                <Grid x:Name="grdSearchSpace">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="19"/>
                         <ColumnDefinition/>
@@ -167,6 +167,15 @@
                     <TextBlock x:Name="tblOdor1" Grid.Row="1" Grid.Column="1"
                                HorizontalAlignment="Center"/>
                 </Grid>
+                <ScrollViewer x:Name="scvSearchSpace" 
+                              Height="120"
+                              Padding="1"
+                              HorizontalScrollBarVisibility="Auto"
+                              Background="{StaticResource BrushBorder}">
+                    <Grid x:Name="grdSearchSpaceTable"
+                          Background="{StaticResource BrushPanelLightest}"/>
+                </ScrollViewer>
+
             </StackPanel>
 
             <StackPanel Grid.Row="1" Grid.Column="1">

@@ -49,7 +49,23 @@ public partial class SearchSpace2D : UserControl
         chart.Render();
     }
 
-    public void Add(float rmse, float flow1, float flow2, System.Drawing.Color? color = null)
+    public void Add(float rmse, float[] flows, System.Drawing.Color? color = null)
+    {
+        if (flows.Length < 2)
+            return;
+
+        // Limitation: only two odors
+        Add(rmse, flows[0], flows[1], color);
+    }
+
+
+    // Internal 
+
+    static readonly System.Drawing.Color DOT_COLOR = System.Drawing.Color.FromArgb(16, 160, 255);
+
+    readonly ScottPlot.Plottable.BubblePlot _bubbles;
+
+    private void Add(float rmse, float flow1, float flow2, System.Drawing.Color? color = null)
     {
         var weight = Math.Pow(rmse < RmseThreshold ? (RmseThreshold - rmse) / RmseThreshold : 0, 1.5);
         var radius = rmse >= RmseThreshold ? BubbleMinRadius :
@@ -61,19 +77,4 @@ public partial class SearchSpace2D : UserControl
         chart.Plot.AxisAuto();
         chart.Render();
     }
-
-    public void Add(float rmse, float[] flows, System.Drawing.Color? color = null)
-    {
-        if (flows.Length < 2)
-            return;
-
-        Add(rmse, flows[0], flows[1], color);
-    }
-
-
-    // Internal 
-
-    static readonly System.Drawing.Color DOT_COLOR = System.Drawing.Color.FromArgb(16, 160, 255);
-
-    readonly ScottPlot.Plottable.BubblePlot _bubbles;
 }

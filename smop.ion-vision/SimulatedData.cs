@@ -146,9 +146,9 @@ public static class SimulatedData
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 
-    public record class SimulatedLineGains(float Main, float Second, float WideUp1, float WideUp2);
+    public record class SimulatedLineGains(float Water, float[] Components);
 
-    public static SimulatedLineGains LineGains { get; set; } = new SimulatedLineGains(100, 40, 100, 90);
+    public static SimulatedLineGains LineGains { get; set; } = new SimulatedLineGains(100, new float[Common.OdorPrinter.MaxOdorCount] { 100, 90, 40, 0, 0 });
 
     // Internal
 
@@ -157,7 +157,7 @@ public static class SimulatedData
 
     static readonly float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
     static readonly float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };
-    static float[] HyperbolaParams = HyperbolaParams1;
+    static readonly float[] HyperbolaParams3 = new float[] { 0.4f, 0.5f, 0.05f };
 
     private static T[] MakeArray<T>(Func<float, float, T> callback)
     {
@@ -224,15 +224,15 @@ public static class SimulatedData
     /// <param name="y">0..1</param>
     /// <returns>Pixels value</returns>
     private static float GetImitatedPixel(float x, float y) =>
-        new float[]
+        new float[1 + Common.OdorPrinter.MaxOdorCount]
         {
-            // The strongests line
-            (LineGains.Main - 0.5f * LineGains.Main * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
-            // Another line
-            (LineGains.Second - LineGains.Second * y) * Hyperbola(x, y, HyperbolaParams[0], HyperbolaParams[1], HyperbolaParams[2]),
-            // Wide line up
-            (LineGains.WideUp1 - LineGains.WideUp1 * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
-            // Second wide line up
-            (LineGains.WideUp2 - LineGains.WideUp2 * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
+            // The water/moisture line
+            (LineGains.Water - 0.5f * LineGains.Water * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
+
+            (LineGains.Components[0] - LineGains.Components[0] * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
+            (LineGains.Components[1] - LineGains.Components[1] * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
+            (LineGains.Components[2] - LineGains.Components[2] * y) * Hyperbola(x, y, HyperbolaParams1[0], HyperbolaParams1[1], HyperbolaParams1[2]),
+            (LineGains.Components[3] - LineGains.Components[3] * y) * Hyperbola(x, y, HyperbolaParams2[0], HyperbolaParams2[1], HyperbolaParams2[2]),
+            (LineGains.Components[4] - LineGains.Components[4] * y) * Hyperbola(x, y, HyperbolaParams3[0], HyperbolaParams3[1], HyperbolaParams3[2]),
         }.Max();
 }

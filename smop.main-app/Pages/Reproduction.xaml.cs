@@ -73,7 +73,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         prbProgress.Value = 0;
         prbProgress.Maximum = (Properties.Settings.Default.Reproduction_ML_MaxIterations + 1) * config.TrialsPerIteration;
 
-        crtDistance.Reset();
+        crtTrialDistance.Reset();
         crtBestDistance.Reset();
         cnvMeasurement.Children.Clear();
 
@@ -82,21 +82,24 @@ public partial class Reproduction : Page, IPage<Navigation>
         crtSearchSpace.DistanceThreshold = 3 * Properties.Settings.Default.Reproduction_ML_Threshold;
         crtSearchSpace.Add(0, config.TargetFlows.Select(tf => tf.Flow).ToArray(), System.Drawing.Color.Black);
 
-        // Limitation: only two odors
         tblOdor1.Text = _proc.OdorChannels.Length > 0 ? _proc.OdorChannels[0].Name : "";
         tblOdor2.Text = _proc.OdorChannels.Length > 1 ? _proc.OdorChannels[1].Name : "";
+
         grdSearchSpace.Visibility = config.TargetFlows.Length == 2 ? Visibility.Visible : Visibility.Collapsed;
         scvSearchSpace.Visibility = config.TargetFlows.Length > 2 ? Visibility.Visible : Visibility.Collapsed;
+
+        grdSearchSpaceTable.Children.Clear();
+        _distanceCell = null;
 
         if (config.TargetFlows.Length > 2)
         {
             grdSearchSpaceTable.RowDefinitions.Clear();
             grdSearchSpaceTable.ColumnDefinitions.Clear();
 
-            for (int i = 0; i < _proc.OdorChannels.Length; i++)
+            for (int i = 0; i < _proc.OdorChannels.Length + 1; i++)     // 1 extra column for the distance
                 grdSearchSpaceTable.ColumnDefinitions.Add(new ColumnDefinition());
 
-            AddFlowsRecordToSearchSpaceTable(_proc.OdorChannels.Select(oc => oc.Name).ToArray());
+            AddFlowsRecordToSearchSpaceTable(_proc.OdorChannels.Select(oc => oc.Name).ToArray(), "Dist");
         }
 
         if (config.TargetMeasurement is IonVision.Defs.ScanResult dms)
@@ -183,6 +186,8 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     ActiveElement _activeElement = ActiveElement.None;
 
+    TextBlock? _distanceCell = null;
+
     private Style? BoolToStyle(bool isActive) => isActive ? _activeElementStyle : _inactiveElementStyle;
 
     private static Visibility BoolToVisible(bool isVisible) => isVisible ? Visibility.Visible : Visibility.Hidden;
@@ -247,22 +252,47 @@ public partial class Reproduction : Page, IPage<Navigation>
         grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 36 });
     }
 
-    private void AddFlowsRecordToSearchSpaceTable(string[] flows)
+    private void AddFlowsRecordToSearchSpaceTable(string[] flows, string distance)
     {
-        grdSearchSpaceTable.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-        for (int i = 0; i < flows.Length; i++)
+        TextBlock AddValue(string value, int column)
         {
-            var value = new TextBlock() { Text = flows[i], Padding = new Thickness(2) };
+            var tbl = new TextBlock() { Text = value.ToString(), Padding = new Thickness(2) };
             if (grdSearchSpaceTable.RowDefinitions.Count == 1)
             {
-                value.FontWeight = FontWeights.SemiBold;
+                tbl.FontWeight = FontWeights.Bold;
             }
-            value.Background = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? BRUSH_DARK : BRUSH_LIGHT;
-            value.Foreground = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? FONT_DARK : FONT_DARK;
-            Grid.SetColumn(value, i);
-            Grid.SetRow(value, grdSearchSpaceTable.RowDefinitions.Count - 1);
-            grdSearchSpaceTable.Children.Add(value);
+            tbl.Background = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? BRUSH_DARK : BRUSH_LIGHT;
+            tbl.Foreground = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? FONT_DARK : FONT_DARK;
+            Grid.SetColumn(tbl, column);
+            Grid.SetRow(tbl, grdSearchSpaceTable.RowDefinitions.Count - 1);
+            grdSearchSpaceTable.Children.Add(tbl);
+
+            return tbl;
         }
+
+        if (_distanceCell != null)
+            _distanceCell.Text = distance;
+
+        if (flows.Length == 0)   // only the distance was updated
+        {
+            return;
+        }
+
+        grdSearchSpaceTable.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+
+        for (int i = 0; i < flows.Length; i++)
+        {
+            AddValue(flows[i], i);
+        }
+
+        _distanceCell = AddValue("-", flows.Length);
+
+        if (grdSearchSpaceTable.RowDefinitions.Count == 1)  // this is a header
+        {
+            _distanceCell.Text = distance;
+            _distanceCell = null;
+        }
+
         scvSearchSpace.ScrollToBottom();
     }
 
@@ -364,7 +394,8 @@ public partial class Reproduction : Page, IPage<Navigation>
                 }
                 else
                 {
-                    AddFlowsRecordToSearchSpaceTable(_proc.RecipeFlows.Select(f => f.ToString("F1")).ToArray());
+                    string[] flows = recipe.IsFinal ? Array.Empty<string>() : _proc.RecipeFlows.Select(f => f.ToString("F0")).ToArray();
+                    AddFlowsRecordToSearchSpaceTable(flows, recipe.Distance.ToString("F2"));
                 }
             }
 
@@ -474,7 +505,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         if (!string.IsNullOrEmpty(recipe.Name) && recipe.Distance >= 0 && recipe.Distance < 100000)
         {
-            crtDistance.Add(recipe.Distance);
+            crtTrialDistance.Add(recipe.Distance);
             crtBestDistance.Add(_proc.BestDistance);
         }
 

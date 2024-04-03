@@ -169,6 +169,7 @@
                 </Grid>
                 <ScrollViewer x:Name="scvSearchSpace" 
                               Height="120"
+                              MaxWidth="200"
                               Padding="1"
                               HorizontalScrollBarVisibility="Auto"
                               Background="{StaticResource BrushBorder}">
@@ -362,7 +363,7 @@
                 <StackPanel Style="{StaticResource PlotPanel}">
                     <Label Style="{StaticResource PlotHeader}"
                                Content="Trial similarity"/>
-                    <local:ProgressPlot x:Name="crtDistance"
+                    <local:ProgressPlot x:Name="crtTrialDistance"
                              Height="40"
                              Width="200"/>
                 </StackPanel>

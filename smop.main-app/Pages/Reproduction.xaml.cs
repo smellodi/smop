@@ -71,15 +71,15 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         adaAnimation.Visibility = Visibility.Visible;
         prbProgress.Value = 0;
-        prbProgress.Maximum = (Properties.Settings.Default.Reproduction_ML_MaxIterations + 1) * 5;  // this may change in future
+        prbProgress.Maximum = (Properties.Settings.Default.Reproduction_ML_MaxIterations + 1) * config.TrialsPerIteration;
 
-        crtRMSE.Reset();
-        crtBestRMSE.Reset();
+        crtDistance.Reset();
+        crtBestDistance.Reset();
         cnvMeasurement.Children.Clear();
 
         // Limitation: only two odors
         crtSearchSpace.Reset();
-        crtSearchSpace.RmseThreshold = 3 * Properties.Settings.Default.Reproduction_ML_Threshold;
+        crtSearchSpace.DistanceThreshold = 3 * Properties.Settings.Default.Reproduction_ML_Threshold;
         crtSearchSpace.Add(0, config.TargetFlows.Select(tf => tf.Flow).ToArray(), System.Drawing.Color.Black);
 
         // Limitation: only two odors
@@ -129,7 +129,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
         ConfigureChannelTable(odorChannels, grdRecipeChannels, _recipeLabelStyle, _recipeValueStyle, 1);
 
-        DisplayRecipeInfo(new ML.Recipe("", false, 0, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
+        DisplayRecipeInfo(new ML.Recipe("", false, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
 
         SetActiveElement(ActiveElement.ML);
         SetConnectionColor(cclMLStatus, config.MLComm.IsConnected);
@@ -243,7 +243,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
         }
 
-        // RMSE row
+        // Distance row
         grid.RowDefinitions.Add(new RowDefinition() { MinHeight = 36 });
     }
 
@@ -355,12 +355,12 @@ public partial class Reproduction : Page, IPage<Navigation>
             if (_proc == null)
                 return;
 
-            if (recipe.RMSE < 10000)
+            if (recipe.Distance < 10000)
             {
-                DisplayMeasurementInfo(recipe.RMSE);    // update the previous scan RMSE
+                DisplayMeasurementInfo(recipe.Distance);    // update the previous scan distance from the target scan
                 if (grdSearchSpace.Visibility == Visibility.Visible)
                 {
-                    crtSearchSpace.Add(recipe.RMSE, _proc.RecipeFlows);
+                    crtSearchSpace.Add(recipe.Distance, _proc.RecipeFlows);
                 }
                 else
                 {
@@ -380,16 +380,16 @@ public partial class Reproduction : Page, IPage<Navigation>
         });
     }
 
-    private void DisplayMeasurementInfo(float rmse = 0)
+    private void DisplayMeasurementInfo(float distance = 0)
     {
         if (_proc == null)
             return;
 
         var flowsStr = _proc.RecipeFlows.Select(flow => flow.ToString("F1"));
         var info = $"#{_proc.CurrentStep}:   " + string.Join(' ', flowsStr);
-        if (rmse > 0)
+        if (distance > 0)
         {
-            info += $", r={rmse:F3}";
+            info += $", r={distance:F3}";
         }
         lblMeasurementInfo.Content = info;
     }
@@ -468,14 +468,14 @@ public partial class Reproduction : Page, IPage<Navigation>
             {
                 int iterationId = matches.Count == 1 ? 0 : int.Parse(matches[0].Captures[0].Value[1..]);
                 int searchId = int.Parse(matches[^1].Captures[0].Value[1..]);
-                prbProgress.Value = iterationId * 5 + searchId;
+                prbProgress.Value = iterationId * _procConfig.TrialsPerIteration + searchId;
             }
         }
 
-        if (!string.IsNullOrEmpty(recipe.Name) && recipe.RMSE >= 0 && recipe.RMSE < 100000)
+        if (!string.IsNullOrEmpty(recipe.Name) && recipe.Distance >= 0 && recipe.Distance < 100000)
         {
-            crtRMSE.Add(recipe.RMSE);
-            crtBestRMSE.Add(_proc.BestRMSE);
+            crtDistance.Add(recipe.Distance);
+            crtBestDistance.Add(_proc.BestDistance);
         }
 
         // Clear the table leaving only the header row
@@ -507,12 +507,12 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
         }
 
-        // Add RMSE info
+        // Add distance info
         var settings = Properties.Settings.Default;
         var lastRowId = grdRecipeChannels.RowDefinitions.Count - 1;
-        AddLabel(grdRecipeChannels, "RMSE", lastRowId, 0, _recipeLabelStyle);
-        if (_proc.BestRMSE < 10000)
-            AddTextBlock(grdRecipeChannels, _proc.BestRMSE.ToString("0.###"), lastRowId, 2, _recipeValueStyle);
+        AddLabel(grdRecipeChannels, "Distance", lastRowId, 0, _recipeLabelStyle);
+        if (_proc.BestDistance < 10000)
+            AddTextBlock(grdRecipeChannels, _proc.BestDistance.ToString("0.###"), lastRowId, 2, _recipeValueStyle);
         AddTextBlock(grdRecipeChannels, settings.Reproduction_ML_Threshold.ToString("0.###"), lastRowId, 4, _recipeValueStyle);
 
         btnQuit.Content = recipe.IsFinal ? "Return" : "Interrupt";

@@ -22,7 +22,7 @@ internal abstract class Simulator : IDisposable
 
     int[] _channelIDs = new int[2] { (int)Device.ID.Odor1, (int)Device.ID.Odor2 };
     bool _hasDmsSource = false;
-    float _usv = 0;
+    //float _usv = 0;
     float _threshold = 0.015f;
     int _maxSteps = 20;
 
@@ -30,7 +30,7 @@ internal abstract class Simulator : IDisposable
     //int _sntSampleCount = 0;
 
     const float FLOW_DURATION_ENDLESS = -1;
-    const float RMSE = 2.5f;
+    const float DISTANCE = 2.5f;
     //const int SNT_SAMPLE_MAX_COUNT = 10;
 
     protected abstract Task SendData(string data);
@@ -72,10 +72,10 @@ internal abstract class Simulator : IDisposable
         await Task.Delay(2000);
 
         _step++;
-        var rmse = RMSE / _step;
-        bool isFinished = rmse < _threshold || _step >= _maxSteps;
+        var distance = DISTANCE / _step;
+        bool isFinished = distance < _threshold || _step >= _maxSteps;
 
-        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, rmse, _usv };
+        var recipe = new float[] { isFinished ? 1 : 0, 7 + _step * 2, 25 - _step * 2, distance };
         json = JsonSerializer.Serialize(recipe);
         ScreenLogger.Print("[MlSimul] recipe sent");
         await SendData(json);
@@ -121,12 +121,12 @@ internal abstract class Simulator : IDisposable
             if (content.Source == Source.DMS)
             {
                 createRecipe = true;
-                try
+                /* try
                 {
                     var dms = JsonSerializer.Deserialize<DmsMeasurementScope>(json, _serializerOptions)!;
                     _usv = dms.Setup.Usv;
                 }
-                catch { }   // not a scope, so _usv stays 0
+                catch { }   // not a scope, so _usv stays 0 */
             }
 
             if (createRecipe)
@@ -134,10 +134,10 @@ internal abstract class Simulator : IDisposable
                 await Task.Delay(1000);
 
                 _step++;
-                var rmse = RMSE / _step;
-                bool isFinished = rmse < _threshold || _step > _maxSteps;
+                var distance = DISTANCE / _step;
+                bool isFinished = distance < _threshold || _step > _maxSteps;
 
-                var recipe = new Recipe("Normal", isFinished, rmse, _usv,
+                var recipe = new Recipe("Normal", isFinished, distance, 
                     _channelIDs.Select(c => new ChannelRecipe(c, 10 + _step * 2, FLOW_DURATION_ENDLESS)).ToArray());
                 json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
                 ScreenLogger.Print("[MlSimul] recipe sent");

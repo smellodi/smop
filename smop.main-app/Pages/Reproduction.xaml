@@ -361,16 +361,16 @@
                        HorizontalAlignment="Center">
                 <StackPanel Style="{StaticResource PlotPanel}">
                     <Label Style="{StaticResource PlotHeader}"
-                               Content="Measurement RMSE"/>
-                    <local:ProgressPlot x:Name="crtRMSE"
+                               Content="Trial similarity"/>
+                    <local:ProgressPlot x:Name="crtDistance"
                              Height="40"
                              Width="200"/>
                 </StackPanel>
 
                 <StackPanel Style="{StaticResource PlotPanel}">
                     <Label Style="{StaticResource PlotHeader}"
-                               Content="Best RMSE"/>
-                    <local:ProgressPlot x:Name="crtBestRMSE"
+                               Content="Best similarity"/>
+                    <local:ProgressPlot x:Name="crtBestDistance"
                              Height="40"
                              Width="200"/>
                 </StackPanel>

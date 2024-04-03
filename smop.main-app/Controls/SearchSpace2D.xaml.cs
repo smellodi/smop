@@ -7,10 +7,10 @@ namespace Smop.MainApp.Controls;
 public partial class SearchSpace2D : UserControl
 {
     /// <summary>
-    /// RMSE above this threshold is shown as the possibly smallest dot.
-    /// RMSE below this threshold starts growing in size.
+    /// Distance above this threshold is shown as the possibly smallest dot.
+    /// Distance below this threshold starts growing in size.
     /// </summary>
-    public float RmseThreshold { get; set; } = 10;
+    public float DistanceThreshold { get; set; } = 10;
     public float BubbleMinRadius { get; set; } = 1.5f;
     public float BubbleMaxRadius { get; set; } = 5f;
 
@@ -49,13 +49,13 @@ public partial class SearchSpace2D : UserControl
         chart.Render();
     }
 
-    public void Add(float rmse, float[] flows, System.Drawing.Color? color = null)
+    public void Add(float distance, float[] flows, System.Drawing.Color? color = null)
     {
         if (flows.Length < 2)
             return;
 
         // Limitation: only two odors
-        Add(rmse, flows[0], flows[1], color);
+        Add(distance, flows[0], flows[1], color);
     }
 
 
@@ -65,10 +65,10 @@ public partial class SearchSpace2D : UserControl
 
     readonly ScottPlot.Plottable.BubblePlot _bubbles;
 
-    private void Add(float rmse, float flow1, float flow2, System.Drawing.Color? color = null)
+    private void Add(float distance, float flow1, float flow2, System.Drawing.Color? color = null)
     {
-        var weight = Math.Pow(rmse < RmseThreshold ? (RmseThreshold - rmse) / RmseThreshold : 0, 1.5);
-        var radius = rmse >= RmseThreshold ? BubbleMinRadius :
+        var weight = Math.Pow(distance < DistanceThreshold ? (DistanceThreshold - distance) / DistanceThreshold : 0, 1.5);
+        var radius = distance >= DistanceThreshold ? BubbleMinRadius :
             BubbleMinRadius + (BubbleMaxRadius - BubbleMinRadius) * weight;
 
         var dotColor = color ?? DOT_COLOR;

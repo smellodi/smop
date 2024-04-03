@@ -16,16 +16,20 @@ public class OdorReproducerController
         OdorDisplay.Device.ID ID,
         float Flow
     );
+
     public record class Config(
         ML.Communicator MLComm,
         OdorChannelConfig[] TargetFlows,
         IMeasurement? TargetMeasurement,
         System.Windows.Size DataSize
-    );
+    )
+    {
+        public int TrialsPerIteration => 1 + (int)Math.Pow(2, TargetFlows.Length);  // check the smop-ml Matlab code 
+    }
 
     public OdorChannel[] OdorChannels => _odorChannels.ToArray();
     public int CurrentStep { get; private set; } = 0;
-    public float BestRMSE { get; private set; } = 10000;
+    public float BestDistance { get; private set; } = 10000;
     public float[] BestFlows { get; private set; }
     public float[] RecipeFlows { get; private set; }
 
@@ -85,9 +89,9 @@ public class OdorReproducerController
         }
 
         // update the solution
-        if (recipe.RMSE < BestRMSE)
+        if (recipe.Distance < BestDistance)
         {
-            BestRMSE = recipe.RMSE;
+            BestDistance = recipe.Distance;
             BestFlows = RecipeFlows.Select(f => f).ToArray();
         }
 
@@ -106,7 +110,8 @@ public class OdorReproducerController
                     var waitingTime = OdorDisplayController.CalcWaitingTime(recipe.Channels?.Select(ch => ch.Flow));
                     await Task.Delay((int)(waitingTime * 1000));
 
-                    var measurement = await CollectData(recipe.Usv);
+                    var settings = Properties.Settings.Default;
+                    var measurement = await CollectData(settings.Reproduction_DmsSingleSV); // recipe.Usv
                     if (measurement != null)
                     {
                         SendMeasurementToML(measurement);
@@ -146,7 +151,7 @@ public class OdorReproducerController
 
     public string RecipeToString(ML.Recipe recipe)
     {
-        var fields = new List<string>() { "Received", recipe.Name, recipe.IsFinal ? "Final" : "Continues", recipe.RMSE.ToString("0.####") };
+        var fields = new List<string>() { "Received", recipe.Name, recipe.IsFinal ? "Final" : "Continues", recipe.Distance.ToString("0.####") };
         if (recipe.Channels != null)
         {
             fields.AddRange(recipe.Channels.Select(ch => $"{_odorChannels.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));

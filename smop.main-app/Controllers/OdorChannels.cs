@@ -29,7 +29,7 @@ public class OdorChannel : INotifyPropertyChanged
     }
 
     public OdorDisplay.Device.ID ID { get; }
-    public Dictionary<string, string> Propeties { get; } = new() { { "maxFlow", "50" } };
+    public Dictionary<string, object> Propeties { get; } = new() { { "maxFlow", 50 } };
 
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -71,7 +71,9 @@ public class OdorChannels : IEnumerable<OdorChannel>
             {
                 var props = odors.ContainsKey(id) ? odors[id] : $"{id}";
                 var p = props.Split(SEPARATOR_VALUES);
-                _items.Add(new OdorChannel(id, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 });
+                var channel = new OdorChannel(id, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 };
+                SetProperties(channel);
+                _items.Add(channel);
             }
         }
         else
@@ -79,7 +81,9 @@ public class OdorChannels : IEnumerable<OdorChannel>
             foreach (var odor in odors)
             {
                 var p = odor.Value.Split(SEPARATOR_VALUES);
-                _items.Add(new OdorChannel(odor.Key, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 });
+                var channel = new OdorChannel(odor.Key, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 };
+                SetProperties(channel);
+                _items.Add(channel);
             }
         }
     }
@@ -131,4 +135,17 @@ public class OdorChannels : IEnumerable<OdorChannel>
     readonly List<OdorChannel> _items = new();
 
     IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);
+
+    private void SetProperties(OdorChannel channel)
+    {
+        var criticalFlow = channel.Name.ToLower() switch
+        {
+            "ipa" => 55,
+            "ethanol" => 65,
+            "nbutanol" => 70,
+            _ => 100,
+        };
+
+        channel.Propeties.Add("criticalFlow", criticalFlow);
+    }
 }

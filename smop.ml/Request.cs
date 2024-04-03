@@ -27,10 +27,10 @@ public static class Source
 }
 
 
-public record class ChannelProps(int Id, string Odor, Dictionary<string, string> Props);
+public record class ChannelProps(int Id, string Odor, Dictionary<string, object> Props);
 
 public record class ChannelRecipe(int Id, float Flow, float Duration, float? Temperature = null);
-public record class Recipe(string Name, bool IsFinal, float RMSE, float Usv, ChannelRecipe[]? Channels)
+public record class Recipe(string Name, bool IsFinal, float Distance, ChannelRecipe[]? Channels)
 {
     public Actuator[] ToOdorPrinterActuators()
     {

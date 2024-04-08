@@ -437,7 +437,11 @@ public partial class Setup : Page, IPage<object?>
                 UpdateUI();
 
                 var targetFlows = new List<OdorReproducerController.OdorChannelConfig>();
-                _ctrl.EnumOdorChannels(odorChannel => targetFlows.Add(new(odorChannel.ID, odorChannel.Flow)));
+                _ctrl.EnumOdorChannels(odorChannel =>
+                {
+                    if (!string.IsNullOrWhiteSpace(odorChannel.Name))
+                        targetFlows.Add(new(odorChannel.ID, odorChannel.Flow));
+                });
 
                 var dataSize = new Size();
 

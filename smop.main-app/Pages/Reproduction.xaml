@@ -204,7 +204,7 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-                    <Image x:Name="imgGas"
+                    <!--Image x:Name="imgGas"
                            Width="72"
                            gif:ImageBehavior.AnimatedSource="/Assets/images/gas.gif"
                            Margin="30,-30"
@@ -214,7 +214,13 @@
                                 <RotateTransform Angle="90"/>
                             </TransformGroup>
                         </Image.RenderTransform>
-                    </Image>
+                    </Image-->
+                    <Grid Width="150">
+                        <Image x:Name="imgTubeFull"
+                               gif:ImageBehavior.AnimatedSource="/Assets/images/tube.gif"/>
+                        <Image x:Name="imgTubeEmpty"
+                               Source="/Assets/images/tube.png"/>
+                    </Grid>
                     <Border x:Name="brdENoses"
                             Style="{StaticResource Element}">
                         <Grid x:Name="grdENose" VerticalAlignment="Center">
@@ -336,6 +342,7 @@
                         Padding="5,5,12,5"/>
                 <Canvas x:Name="cnvMeasurement"
                         Background="{StaticResource BrushPanelLightest}"
+                        HorizontalAlignment="Left"
                         Height="73"
                         Width="182"/>
 
@@ -347,6 +354,7 @@
                        Content="Target measurement"/>
                 <Canvas x:Name="cnvTargetMeasurement"
                         Background="{StaticResource BrushPanelLightest}"
+                        HorizontalAlignment="Left"
                         Height="73"
                         Width="182"/>
             </StackPanel>

@@ -151,7 +151,8 @@ public class OdorReproducerController
 
     public string RecipeToString(ML.Recipe recipe)
     {
-        var fields = new List<string>() { "Received", recipe.Name, recipe.IsFinal ? "Final" : "Continues", recipe.Distance.ToString("0.####") };
+        var name = recipe.Name.Replace(' ', '_');
+        var fields = new List<string>() { "Received", name, recipe.IsFinal ? "Final" : "Continues", recipe.Distance.ToString("0.####") };
         if (recipe.Channels != null)
         {
             fields.AddRange(recipe.Channels.Select(ch => $"{_odorChannels.NameFromID((OdorDisplay.Device.ID)ch.Id)} {ch.Flow}"));

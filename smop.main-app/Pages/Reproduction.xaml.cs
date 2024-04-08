@@ -89,7 +89,6 @@ public partial class Reproduction : Page, IPage<Navigation>
         scvSearchSpace.Visibility = config.TargetFlows.Length > 2 ? Visibility.Visible : Visibility.Collapsed;
 
         grdSearchSpaceTable.Children.Clear();
-        _distanceCell = null;
 
         if (config.TargetFlows.Length > 2)
         {
@@ -132,7 +131,11 @@ public partial class Reproduction : Page, IPage<Navigation>
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
         ConfigureChannelTable(odorChannels, grdRecipeChannels, _recipeLabelStyle, _recipeValueStyle, 1);
 
-        DisplayRecipeInfo(new ML.Recipe("", false, 0, odorChannels.Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1)).ToArray()));
+        DisplayRecipeInfo(new ML.Recipe("", false, 0, odorChannels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
+            .Select(odorChannel => new ML.ChannelRecipe((int)odorChannel.ID, -1, -1))
+            .ToArray()
+        ));
 
         SetActiveElement(ActiveElement.ML);
         SetConnectionColor(cclMLStatus, config.MLComm.IsConnected);
@@ -185,8 +188,6 @@ public partial class Reproduction : Page, IPage<Navigation>
     OdorReproducerController.Config? _procConfig = null;
 
     ActiveElement _activeElement = ActiveElement.None;
-
-    TextBlock? _distanceCell = null;
 
     private Style? BoolToStyle(bool isActive) => isActive ? _activeElementStyle : _inactiveElementStyle;
 
@@ -254,7 +255,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     private void AddFlowsRecordToSearchSpaceTable(string[] flows, string distance)
     {
-        TextBlock AddValue(string value, int column)
+        void AddValue(string value, int column)
         {
             var tbl = new TextBlock() { Text = value.ToString(), Padding = new Thickness(2) };
             if (grdSearchSpaceTable.RowDefinitions.Count == 1)
@@ -266,12 +267,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             Grid.SetColumn(tbl, column);
             Grid.SetRow(tbl, grdSearchSpaceTable.RowDefinitions.Count - 1);
             grdSearchSpaceTable.Children.Add(tbl);
-
-            return tbl;
         }
-
-        if (_distanceCell != null)
-            _distanceCell.Text = distance;
 
         if (flows.Length == 0)   // only the distance was updated
         {
@@ -285,13 +281,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             AddValue(flows[i], i);
         }
 
-        _distanceCell = AddValue("-", flows.Length);
-
-        if (grdSearchSpaceTable.RowDefinitions.Count == 1)  // this is a header
-        {
-            _distanceCell.Text = distance;
-            _distanceCell = null;
-        }
+        AddValue(distance, flows.Length);
 
         scvSearchSpace.ScrollToBottom();
     }
@@ -311,7 +301,8 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         brdOdorDisplay.Style = BoolToStyle(isActiveOD);
 
-        imgGas.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
+        imgTubeFull.Visibility = BoolToVisible(isActiveOD || hasNoActiveElement);
+        imgTubeEmpty.Visibility = BoolToVisible(!isActiveOD && !hasNoActiveElement);
 
         brdENoses.Style = BoolToStyle(isActiveENose);
         prbENoseProgress.Visibility = BoolToVisible(isActiveENose);

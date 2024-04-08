@@ -155,9 +155,9 @@ public static class SimulatedData
     static RangeStep Usv => ParameterDefinition.MeasurementParameters.SteppingControl.Usv; // shortcut
     static RangeStep Ucv => ParameterDefinition.MeasurementParameters.SteppingControl.Ucv; // shortcut
 
-    static readonly float[] HyperbolaParams1 = new float[] { 0.4f, 0.5f, 0.1f };
+    static readonly float[] HyperbolaParams1 = new float[] { 0.4f, 0.45f, 0.11f };
     static readonly float[] HyperbolaParams2 = new float[] { 0.4f, 0.55f, 0.07f };
-    static readonly float[] HyperbolaParams3 = new float[] { 0.4f, 0.5f, 0.05f };
+    static readonly float[] HyperbolaParams3 = new float[] { 0.4f, 0.65f, 0.05f };
 
     private static T[] MakeArray<T>(Func<float, float, T> callback)
     {

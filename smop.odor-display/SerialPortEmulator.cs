@@ -212,7 +212,7 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
                 _responses.Enqueue(new Devices(new bool[] {
                     true,       // Base
                     true, true, // Odor1 and Odor2
-                    true, false, false, false, false, false, false,    // Odor 3-9
+                    true, true, true, false, false, false, false,    // Odor 3-9
                     true        // Dilution
                 }).ToArray());
             }

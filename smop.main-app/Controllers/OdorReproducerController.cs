@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 using IV = Smop.IonVision;
+using Smop.MainApp.Dialogs;
 
 namespace Smop.MainApp.Controllers;
 
@@ -57,6 +58,8 @@ public class OdorReproducerController
 
         BestFlows = config.TargetFlows.Select(flow => 0f).ToArray();
         RecipeFlows = config.TargetFlows.Select(flow => 0f).ToArray();
+
+        _canLogOdorDisplayData = !Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay);
     }
 
     public void ShutDownFlows()
@@ -132,6 +135,16 @@ public class OdorReproducerController
         {
             BestFlows = recipe.Channels?.Select(c => c.Flow).ToArray() ?? RecipeFlows;
             System.Media.SystemSounds.Beep.Play();
+
+            if (_odorDisplayLogger.HasRecords)
+            {
+                var result = Logger.Save(new ILog[] { _odorDisplayLogger });
+                if (result == SavingResult.None)
+                {
+                    MsgBox.Warn(App.Current.MainWindow.Title, "No data to save", MsgBox.Button.OK);
+                }
+                _odorDisplayLogger.Clear();
+            }
         }
 
         RecipeFlows = recipe.Channels?.Select(c => c.Flow).ToArray() ?? RecipeFlows;
@@ -146,12 +159,14 @@ public class OdorReproducerController
 
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.DataCollector _sntDataCollector = new();
+    readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
 
     readonly OdorDisplayController _odController = new();
 
     readonly ML.Communicator _ml;
 
     bool _canSendFrequentData = false;
+    bool _canLogOdorDisplayData;
 
     public string RecipeToString(ML.Recipe recipe)
     {
@@ -254,6 +269,11 @@ public class OdorReproducerController
     {
         await COMHelper.Do(() =>
         {
+            if (_canLogOdorDisplayData)
+            {
+                _odorDisplayLogger.Add(e);
+            }
+
             OdorDisplayData?.Invoke(this, e);
 
             if (!_canSendFrequentData || !Properties.Settings.Default.Reproduction_UsePID)

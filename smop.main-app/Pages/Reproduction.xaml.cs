@@ -263,7 +263,7 @@ public partial class Reproduction : Page, IPage<Navigation>
                 tbl.FontWeight = FontWeights.Bold;
             }
             tbl.Background = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? BRUSH_DARK : BRUSH_LIGHT;
-            tbl.Foreground = (grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? FONT_DARK : FONT_DARK;
+            tbl.Foreground = /*(grdSearchSpaceTable.RowDefinitions.Count % 2) == 0 ? FONT_LIGHT : */FONT_DARK;
             Grid.SetColumn(tbl, column);
             Grid.SetRow(tbl, grdSearchSpaceTable.RowDefinitions.Count - 1);
             grdSearchSpaceTable.Children.Add(tbl);

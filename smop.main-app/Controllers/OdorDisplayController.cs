@@ -156,7 +156,7 @@ internal class OdorDisplayController
 
         double result;
 
-        if (!Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay))
+        if (Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay))
         {
             result = 0.2;
         }

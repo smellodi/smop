@@ -215,7 +215,7 @@
                             </TransformGroup>
                         </Image.RenderTransform>
                     </Image-->
-                    <Grid Width="150">
+                    <Grid Width="130">
                         <Image x:Name="imgTubeFull"
                                gif:ImageBehavior.AnimatedSource="/Assets/images/tube.gif"/>
                         <Image x:Name="imgTubeEmpty"

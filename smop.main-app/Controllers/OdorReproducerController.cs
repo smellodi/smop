@@ -98,23 +98,27 @@ public class OdorReproducerController
         // schedule new scan
         if (!recipe.IsFinal)
         {
+            var cleanupDurationMs = OdorDisplayController.CalcCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
+            var cleanupDuration = (int)(cleanupDurationMs * 1000);
+
             if (cachedDmsScan != null)
             {
                 _nlog.Info(LogIO.Text("Cache", "Read", dmsFilename));
-                DispatchOnce.Do(2, () => SendMeasurementToML(cachedDmsScan));
+                _ = SendMeasurementToML(cachedDmsScan, cleanupDuration);
             }
             else
             {
                 Task.Run(async () =>
                 {
-                    var waitingTime = OdorDisplayController.CalcWaitingTime(recipe.Channels?.Select(ch => ch.Flow));
-                    await Task.Delay((int)(waitingTime * 1000));
+                    var saturationDurationMs = OdorDisplayController.CalcSaturationDuration(recipe.Channels?.Select(ch => ch.Flow));
+                    await Task.Delay((int)(saturationDurationMs * 1000));
 
                     var settings = Properties.Settings.Default;
                     var measurement = await CollectData(settings.Reproduction_DmsSingleSV); // recipe.Usv
+
                     if (measurement != null)
                     {
-                        SendMeasurementToML(measurement);
+                        await SendMeasurementToML(measurement, cleanupDuration);
                         if (measurement is IV.Defs.ScanResult fullScan)
                         {
                             var filename = _dmsCache.Save(recipe, fullScan);
@@ -186,24 +190,27 @@ public class OdorReproducerController
         return result;
     }
 
-    private void SendMeasurementToML(IMeasurement measurement)
+    private async Task SendMeasurementToML(IMeasurement measurement, int cleanupDuration)
     {
         MlComputationStarted?.Invoke(this, EventArgs.Empty);
 
         if (measurement is IV.Defs.ScopeResult dmsScopeScan)
         {
-            _ = _ml.Publish(dmsScopeScan);
             ScopeScanFinished?.Invoke(this, dmsScopeScan);
+            await Task.Delay(cleanupDuration);
+            _ = _ml.Publish(dmsScopeScan);
         }
         else if (measurement is IV.Defs.ScanResult dmsFullScan)
         {
-            _ = _ml.Publish(dmsFullScan);
             ScanFinished?.Invoke(this, dmsFullScan);
+            await Task.Delay(cleanupDuration);
+            _ = _ml.Publish(dmsFullScan);
         }
         else if (measurement is SmellInsp.Data snt)
         {
-            _ = _ml.Publish(snt);
             SntCollected?.Invoke(this, snt);
+            await Task.Delay(cleanupDuration);
+            _ = _ml.Publish(snt);
         }
     }
 

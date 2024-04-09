@@ -215,9 +215,10 @@ public class SetupController
         var flows = _odorChannels
             .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString())
             .Select(odorChannel => odorChannel.Flow);
-        var waitingTime = OdorDisplayController.CalcWaitingTime(flows);
-        LogOD?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {waitingTime:F1}s for the mixture to stabilize..."));
-        await Task.Delay((int)(waitingTime * 1000));
+
+        var saturationDuration = OdorDisplayController.CalcSaturationDuration(flows);
+        LogOD?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {saturationDuration:F1}s for the mixture to stabilize..."));
+        await Task.Delay((int)(saturationDuration * 1000));
         LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
 
         _pidSamples.Clear();
@@ -241,7 +242,10 @@ public class SetupController
         if (!COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors"))
             return;
 
-        await Task.Delay(300);
+        var cleanupDuration = OdorDisplayController.CalcCleanupDuration(flows);
+        LogOD?.Invoke(this, new LogHandlerArgs($"Odors stopped, cleaning up {cleanupDuration:F1}s..."));
+        await Task.Delay((int)(cleanupDuration * 1000));
+        LogOD?.Invoke(this, new LogHandlerArgs("Done."));
     }
 
     public async Task ConfigureML()

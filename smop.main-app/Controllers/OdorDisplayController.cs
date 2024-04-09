@@ -120,10 +120,10 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public static double CalcWaitingTime(IEnumerable<float>? flows)
+    public static double CalcSaturationDuration(IEnumerable<float>? flows)
     {
         if (flows == null)
-            return CLEANUP_DURATION;
+            return MAX_SATURATION_DURATION;
 
         double result;
 
@@ -140,8 +140,30 @@ internal class OdorDisplayController
 
             var slowestFlow = Math.Min(minFlow, minValidFlow);
             result = slowestFlow < MIN_VALID_FLOW ?
-                CLEANUP_DURATION :
-                3.38 + 28.53 * Math.Exp(-slowestFlow * 0.2752);     // based on approximation in https://mycurvefit.com/ using Atte's data
+                MAX_SATURATION_DURATION :
+                //3.38 + 28.53 * Math.Exp(-0.2752 * slowestFlow);     // based on approximation in https://mycurvefit.com/ using Atte's data
+                4 + 12 * Math.Exp(-0.12 * slowestFlow);               // longer waiting duration than according to Atte's data model
+        }
+
+        _nlog.Info(LogIO.Text("OD", "Waiting", result.ToString("0.#")));
+        return result;
+    }
+        
+    public static double CalcCleanupDuration(IEnumerable<float>? flows)
+    {
+        if (flows == null)
+            return MIN_CLEANUP_DURATION;
+
+        double result;
+
+        if (!Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay))
+        {
+            result = 0.2;
+        }
+        else
+        {
+            var maxFlow = flows.Any() ? flows.Max() : 0;
+            result = 2.5 + 0.8 * Math.Exp(0.03 * maxFlow);   // Just some model
         }
 
         _nlog.Info(LogIO.Text("OD", "Waiting", result.ToString("0.#")));
@@ -151,7 +173,8 @@ internal class OdorDisplayController
     // Internal
 
     static readonly float MIN_VALID_FLOW = 1.5f;
-    static readonly float CLEANUP_DURATION = 10f;
+    static readonly float MAX_SATURATION_DURATION = 12f;
+    static readonly float MIN_CLEANUP_DURATION = 3f;
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));
 

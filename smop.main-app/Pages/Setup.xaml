@@ -15,9 +15,22 @@
     <Page.Resources>
         <Style x:Key="BusyDevice" TargetType="{x:Type ProgressBar}" BasedOn="{StaticResource {x:Type ProgressBar}}">
             <Setter Property="VerticalAlignment" Value="Bottom"/>
-            <Setter Property="Height" Value="3"/>
+            <Setter Property="Height" Value="5"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="IsIndeterminate" Value="True"/>
+            <Setter Property="Margin" Value="0,0,0,-6"/>
+        </Style>
+        <Style x:Key="SidePanel" TargetType="{x:Type Border}">
+            <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="4"/>
+        </Style>
+        <Style x:Key="LogHeader" TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Background" Value="{StaticResource BrushPanel}"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFont}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
         </Style>
     </Page.Resources>
 
@@ -40,12 +53,10 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="250"/>
                 <ColumnDefinition/>
+                <ColumnDefinition Width="250"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
-                BorderBrush="{StaticResource BrushBorder}"
-                BorderThickness="1"
-                Padding="4">
+            <Border Grid.Column="0" Style="{StaticResource SidePanel}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
@@ -58,113 +69,12 @@
 
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
 
-                    <Grid x:Name="grdStatuses" Grid.Row="2">
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-
-                        <Grid x:Name="grdODStatus" Grid.Row="0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-
-                            <Separator Grid.Row="0" Margin="0,8,0,0"/>
-                            <Grid Grid.Row="1">
-                                <Label Grid.Column="0"
-                                       Style="{StaticResource Section}"
-                                       Content="Odor Display events:"/>
-                                <ProgressBar x:Name="prbODBusy"
-                                             Style="{StaticResource BusyDevice}"/>
-                            </Grid>
-                            <Border Grid.Row="2"
-                                    BorderThickness="1"
-                                    BorderBrush="{StaticResource BrushBorderLight}">
-                                <ScrollViewer x:Name="scvODStatus" 
-                                              Padding="0,2"
-                                              VerticalScrollBarVisibility="Auto" 
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <TextBlock Name="tblODStatus"
-                                               TextWrapping="Wrap"
-                                               Padding="6,0,0,0">
-                                        <Run Text="The device is ready"/>
-                                    </TextBlock>
-                                </ScrollViewer>
-                            </Border>
-                        </Grid>
-
-                        <Grid x:Name="grdDmsStatus" Grid.Row="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-
-                            <Separator Grid.Row="0" Margin="0,8,0,0"/>
-                            <Grid Grid.Row="1">
-                                <Label Grid.Column="0"
-                                   Style="{StaticResource Section}"
-                                   Content="DMS events:"/>
-                                <ProgressBar x:Name="prbDMSBusy" Grid.Column="1"
-                                             Style="{StaticResource BusyDevice}"/>
-                            </Grid>
-                            <Border Grid.Row="2"
-                                    BorderThickness="1"
-                                    BorderBrush="{StaticResource BrushBorderLight}">
-                                <ScrollViewer x:Name="scvDmsStatus"
-                                              Padding="0,2"
-                                              VerticalScrollBarVisibility="Auto" 
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <TextBlock Name="tblDmsStatus"
-                                               TextWrapping="Wrap"
-                                               Padding="6,0,0,0">
-                                        <Run Text="Initializing..."/>
-                                    </TextBlock>
-                                </ScrollViewer>
-                            </Border>
-                        </Grid>
-
-                        <Grid x:Name="grdSntStatus" Grid.Row="2">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-
-                            <Separator Grid.Row="0" Margin="0,8,0,0"/>
-                            <Grid Grid.Row="1">
-                                <Label Grid.Column="0"
-                                   Style="{StaticResource Section}"
-                                   Content="SNT events:"/>
-                                <ProgressBar x:Name="prbSNTBusy" Grid.Column="1"
-                                             Style="{StaticResource BusyDevice}"/>
-                            </Grid>
-                            <Border Grid.Row="2"
-                                    BorderThickness="1"
-                                    BorderBrush="{StaticResource BrushBorderLight}">
-                                <ScrollViewer x:Name="scvSntStatus" 
-                                              Padding="0,2"
-                                              VerticalScrollBarVisibility="Auto" 
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <TextBlock Name="tblSntStatus"
-                                               TextWrapping="Wrap"
-                                               Padding="6,0,0,0">
-                                        <Run Text="The device is ready"/>
-                                    </TextBlock>
-                                </ScrollViewer>
-                            </Border>
-                        </Grid>
-                    </Grid>
-
                     <Button x:Name="btnMeasureSample" Grid.Row="3"
-                        Visibility="Collapsed"
-                        Margin="0,8,0,0"
-                        VerticalAlignment="Bottom"
-                        Content="Measure the target odor"
-                        Click="MeasureSample_Click"/>
+                            Visibility="Collapsed"
+                            Margin="0,8,0,0"
+                            VerticalAlignment="Bottom"
+                            Content="Measure the target odor"
+                            Click="MeasureSample_Click"/>
                 </Grid>
             </Border>
 
@@ -222,6 +132,104 @@
 
                 <local:LiveData x:Name="lmsGraph" Grid.Row="1"
                     Margin="0,12,0,0"/>
+            </Grid>
+
+            <Grid x:Name="grdStatuses" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <Grid x:Name="grdODStatus" Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="1">
+                        <Label Grid.Column="0"
+                               Style="{StaticResource LogHeader}"
+                               Content="Odor Display events:"/>
+                        <ProgressBar x:Name="prbODBusy"
+                                     Style="{StaticResource BusyDevice}"/>
+                    </Grid>
+                    <Border Grid.Row="2"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BrushBorderLight}">
+                        <ScrollViewer x:Name="scvODStatus" 
+                                      Padding="0,2"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <TextBlock Name="tblODStatus"
+                                       TextWrapping="Wrap"
+                                       Padding="6,0,0,0">
+                                    <Run Text="The device is ready"/>
+                            </TextBlock>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="grdDmsStatus" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="1">
+                        <Label Grid.Column="0"
+                               Style="{StaticResource LogHeader}"
+                               Content="DMS events:"/>
+                        <ProgressBar x:Name="prbDMSBusy" Grid.Column="1"
+                                     Style="{StaticResource BusyDevice}"/>
+                    </Grid>
+                    <Border Grid.Row="2"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BrushBorderLight}">
+                        <ScrollViewer x:Name="scvDmsStatus"
+                                      Padding="0,2"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <TextBlock Name="tblDmsStatus"
+                                       TextWrapping="Wrap"
+                                       Padding="6,0,0,0">
+                                    <Run Text="Initializing..."/>
+                            </TextBlock>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
+
+                <Grid x:Name="grdSntStatus" Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="1">
+                        <Label Grid.Column="0"
+                               Style="{StaticResource LogHeader}"
+                               Content="SNT events:"/>
+                        <ProgressBar x:Name="prbSNTBusy" Grid.Column="1"
+                                     Style="{StaticResource BusyDevice}"/>
+                    </Grid>
+                    <Border Grid.Row="2"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BrushBorderLight}">
+                        <ScrollViewer x:Name="scvSntStatus" 
+                                      Padding="0,2"
+                                      VerticalScrollBarVisibility="Auto" 
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <TextBlock Name="tblSntStatus"
+                                       TextWrapping="Wrap"
+                                       Padding="6,0,0,0">
+                                    <Run Text="The device is ready"/>
+                            </TextBlock>
+                        </ScrollViewer>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
 

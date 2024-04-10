@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -9,6 +10,8 @@ namespace Smop.MainApp.Dialogs;
 
 public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDisposable
 {
+    public string Filename { get; private set; } = "";
+
     public string IP { get; private set; } = "";
 
     public string? User { get; private set; }
@@ -33,11 +36,13 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
         DataContext = this;
     }
 
-    public void Load(string? filename)
+    public void Load(string filename)
     {
         tblFileName.Text = filename;
 
         _ivSettings = new IonVision.Settings(filename);
+
+        Filename = filename;
 
         IP = _ivSettings.IP;
         User = _ivSettings.User;
@@ -66,7 +71,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
         {
             bdrWait.Visibility = Visibility.Visible;
 
-            IP = InputBox.Show(Title, "Please connect IonVision device with USB cable, then type its IP address and click 'OK'.", IP) ?? "";
+            IP = InputBox.Show(Title, "Make sure IonVision device is reachable over the local network, then type its IP address and click 'OK'.", IP) ?? "";
             if (string.IsNullOrEmpty(IP))
             {
                 Close();
@@ -120,6 +125,22 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
         DialogResult = true;
     }
 
+    private void SaveAs_Click(object sender, RoutedEventArgs e)
+    {
+        var sfd = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "JSON files|*.json",
+            FileName = System.IO.Path.GetFileName(Filename),
+            InitialDirectory = System.IO.Path.GetDirectoryName(Filename)
+        };
+
+        if (sfd.ShowDialog() ?? false)
+        {
+            Filename = Utils.IoHelper.GetShortestFilePath(sfd.FileName);
+            DialogResult = true;
+        }
+    }
+
     private async void Projects_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
         if (_ivComm == null || _ivSettings == null)
@@ -168,6 +189,7 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
                     }
 
                     btnSave.IsEnabled = true;
+                    btnSaveAs.IsEnabled = true;
                 }
                 else
                 {

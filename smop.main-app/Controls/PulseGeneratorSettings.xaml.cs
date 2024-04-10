@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Smop.Common;
 using Smop.MainApp.Controllers;
+using Smop.MainApp.Utils;
 using System;
 using System.IO;
 using System.Windows;
@@ -74,12 +75,7 @@ public partial class PulseGeneratorSettings : UserControl
 
         if (ofd.ShowDialog() ?? false)
         {
-            var filename = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, ofd.FileName);
-            if (filename.StartsWith(".."))
-            {
-                filename = ofd.FileName;
-            }
-
+            var filename = IoHelper.GetShortestFilePath(ofd.FileName);
             LoadPulseSetup(filename);
         }
     }

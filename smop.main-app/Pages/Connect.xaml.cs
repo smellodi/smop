@@ -376,7 +376,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 _storage.AddSimulatingTarget(SimulationTarget.All);
             }
 
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Simulator", _storage.Simulating));
+            _nlog.Info(LogIO.Text(Timestamp.Ms, "Simulator", _storage.Simulating));
         }
     }
 
@@ -421,17 +421,9 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         if (ofd.ShowDialog() ?? false)
         {
-            var filename = Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, ofd.FileName);
-            if (filename.StartsWith(".."))
-            {
-                IonVisionSetupFilename = ofd.FileName;
-            }
-            else
-            {
-                IonVisionSetupFilename = filename;
-            }
+            IonVisionSetupFilename = IoHelper.GetShortestFilePath(ofd.FileName);
 
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "DMS", "SetupFile", IonVisionSetupFilename));
+            _nlog.Info(LogIO.Text(Timestamp.Ms, "DMS", "SetupFile", IonVisionSetupFilename));
 
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
             txbIonVisionIP.Text = ivSettings.IP;
@@ -448,7 +440,13 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         setupDialog.Load(IonVisionSetupFilename);
         if (setupDialog.ShowDialog() == true)
         {
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "DMS", "SetupEdited"));
+            IonVisionSetupFilename = setupDialog.Filename;
+
+            _nlog.Info(LogIO.Text(Timestamp.Ms, "DMS", "SetupEdited", IonVisionSetupFilename));
+
+            var settings = Properties.Settings.Default;
+            settings.Comm_IonVision_SetupFilename = IonVisionSetupFilename;
+            settings.Save();
 
             var ivSettings = new IonVision.Settings(IonVisionSetupFilename)
             {
@@ -458,6 +456,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                 ParameterId = setupDialog.ParameterId
             };
             ivSettings.Save();
+
+            txbIonVisionIP.Text = ivSettings.IP;
         }
     }
 

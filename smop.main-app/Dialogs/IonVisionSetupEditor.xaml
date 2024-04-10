@@ -98,6 +98,11 @@
                     IsEnabled="False"
                     Click="Save_Click"/>
             <Control Style="{StaticResource HorizontalSpacer}"/>
+            <Button x:Name="btnSaveAs" Style="{StaticResource Next}"
+                    Content="Save as..."
+                    IsEnabled="False"
+                    Click="SaveAs_Click"/>
+            <Control Style="{StaticResource HorizontalSpacer}"/>
             <Button Style="{StaticResource Next}" 
                     Content="Cancel"
                     IsCancel="True"/>

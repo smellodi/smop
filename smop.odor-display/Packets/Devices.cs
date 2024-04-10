@@ -28,14 +28,14 @@ public class Devices : Response
     {
         var flags = new List<string>()
         {
-            $"Base module: {HasBaseModule.AsFlag()}",
+            $"Base={HasBaseModule.AsFlag()}",
         };
         for (int i = 0; i < MaxOdorModuleCount; i++)
         {
-            flags.Add($"Odor{i + 1}: {HasOdorModule(i).AsFlag()}");
+            flags.Add($"Odor{i + 1}={HasOdorModule(i).AsFlag()}");
         }
-        flags.Add($"Dilution module: {HasDilutionModule.AsFlag()}");
-        return $"{_type}\n    {string.Join("\n    ", flags)}";
+        flags.Add($"Dilution={HasDilutionModule.AsFlag()}");
+        return $"{_type} {string.Join(" ", flags)}";
     }
 
     // Internal

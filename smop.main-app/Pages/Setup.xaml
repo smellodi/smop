@@ -83,7 +83,7 @@
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
 
                     <Button x:Name="btnMeasureSample" Grid.Row="3"
-                            Visibility="Collapsed"
+                            IsEnabled="False"
                             Margin="0,8,0,0"
                             VerticalAlignment="Bottom"
                             Content="Measure the target odor"

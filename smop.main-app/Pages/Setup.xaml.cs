@@ -165,8 +165,8 @@ public partial class Setup : Page, IPage<object?>
                 (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
                 brdENoseProgress.Visibility != Visibility.Visible;
-            btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
-            btnMeasureSample.IsEnabled = !_isOdorDisplayCleaningRunning;
+            //btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
+            btnMeasureSample.IsEnabled = (_ionVisionIsReady || App.IonVision == null) && !_isOdorDisplayCleaningRunning;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;

@@ -144,7 +144,7 @@ public class OdorReproducerController
                 {
                     MsgBox.Warn(App.Current.MainWindow.Title, "No data to save", MsgBox.Button.OK);
                 }
-                else if (App.LogFileName is string logFilename)
+                else if (result == SavingResult.Save && App.LogFileName is string logFilename)
                 {
                     var logFolder = LogLocation.Instance.Folder;
                     File.Copy(logFilename, Path.Combine(logFolder, "events.txt"));

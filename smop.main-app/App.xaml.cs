@@ -53,7 +53,12 @@ public partial class App : Application
             FileName = "${basedir}/logs/logfile.txt",
             ArchiveOldFileOnStartup = true,
             MaxArchiveFiles = 10,
-            Layout = Logging.LogIO.Text("${longdate}", "${logger}", "${callsite-linenumber}", "${message}", "${exception:format=ToString}")
+            Layout = Logging.LogIO.Text(
+                "${logger}",
+                "${callsite-filename:includeSourcePath=False}:${callsite-linenumber}",
+                "${time}",
+                "${message}",
+                "${exception:format=ToString}")
             //Layout = "${longdate} ${callsite}:${callsite-linenumber} ${message}${exception:format=ToString}"
         };
         var logdebug = new NLog.Targets.DebugSystemTarget("logdebug")

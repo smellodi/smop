@@ -11,12 +11,27 @@ public partial class App : Application
 
     public static IonVision.Communicator? IonVision { get; set; } = null;
     public static ML.Communicator? ML { get; set; } = null;
+    public static string? LogFileName
+    {
+        get
+        {
+            if (_logfile == null)
+                return null;
+
+            var str = _logfile.FileName.Render(NLog.LogEventInfo.CreateNullEvent());
+            var p = str.Split("\\");
+            p[^1] = p[^1][1..].Replace("/", "\\");
+            return string.Join("\\", p);
+        }
+    }
 
     #endregion
 
     public void AddCleanupAction(Action action) => _cleanupActions.Push(action);
 
     // Internal
+
+    static NLog.Targets.FileTarget? _logfile = null;
 
     readonly System.Collections.Generic.Stack<Action> _cleanupActions = new();
 
@@ -33,11 +48,11 @@ public partial class App : Application
         // Configure the logger
         var config = new NLog.Config.LoggingConfiguration();
 
-        var logfile = new NLog.Targets.FileTarget("File")
+        _logfile = new NLog.Targets.FileTarget("File")
         {
             FileName = "${basedir}/logs/logfile.txt",
             ArchiveOldFileOnStartup = true,
-            MaxArchiveFiles = 5,
+            MaxArchiveFiles = 10,
             Layout = Logging.LogIO.Text("${longdate}", "${logger}", "${callsite-linenumber}", "${message}", "${exception:format=ToString}")
             //Layout = "${longdate} ${callsite}:${callsite-linenumber} ${message}${exception:format=ToString}"
         };
@@ -47,7 +62,7 @@ public partial class App : Application
         };
 
         config.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, logdebug);
-        config.AddRule(NLog.LogLevel.Debug, NLog.LogLevel.Fatal, logfile);
+        config.AddRule(NLog.LogLevel.Debug, NLog.LogLevel.Fatal, _logfile);
 
         NLog.LogManager.Configuration = config;
 

@@ -278,7 +278,7 @@ public class SetupController
             App.ML.ScopeParameters = ScopeParameters with { Usv = settings.Reproduction_DmsSingleSV };
         }
 
-        _nlog.Info(LogIO.Text("ML", "Config", settings.Reproduction_ML_MaxIterations, settings.Reproduction_ML_Threshold,
+        _nlog.Info(LogIO.Text(Timestamp.Ms, "ML", "Config", settings.Reproduction_ML_MaxIterations, settings.Reproduction_ML_Threshold,
             settings.Reproduction_ML_Algorithm));
 
         await App.ML.Config(dataSources.ToArray(), _odorChannels
@@ -291,7 +291,7 @@ public class SetupController
 
         await Task.Delay(300);
 
-        _nlog.Info(LogIO.Text("ML", "InitialMeasurements"));
+        _nlog.Info(LogIO.Text(Timestamp.Ms, "ML", "InitialMeasurements"));
 
         if (DmsScan is IVDefs.ScanResult fullScan)
         {
@@ -339,7 +339,7 @@ public class SetupController
 
         if (DmsScan != null)
         {
-            _nlog.Info(LogIO.Text("Cache", "Read", filename));
+            _nlog.Info(LogIO.Text(Timestamp.Ms, "Cache", "Read", filename));
         }
         else
         {
@@ -388,7 +388,7 @@ public class SetupController
             var filename = _dmsCache.Save(_odorChannels, scan);
             if (filename != null)
             {
-                _nlog.Info(LogIO.Text("Cache", "Write", filename));
+                _nlog.Info(LogIO.Text(Timestamp.Ms, "Cache", "Write", filename));
             }
         }
 

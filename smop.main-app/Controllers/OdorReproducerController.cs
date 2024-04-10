@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 using IV = Smop.IonVision;
 using Smop.MainApp.Dialogs;
+using System.IO;
 
 namespace Smop.MainApp.Controllers;
 
@@ -49,7 +50,7 @@ public class OdorReproducerController
         _dmsCache.SetSubfolder((int)config.DataSize.Height, (int)config.DataSize.Width);
 
         var targetText = config.TargetFlows.Select(flow => $"{_odorChannels.NameFromID(flow.ID)} {flow.Flow}");
-        _nlog.Info(LogIO.Text("Target", string.Join(" ", targetText)));
+        _nlog.Info(LogIO.Text(Timestamp.Ms, "Target", string.Join(" ", targetText)));
 
         var settings = Properties.Settings.Default;
         _sntDataCollector.SampleCount = settings.Reproduction_SntSampleCount;
@@ -59,7 +60,7 @@ public class OdorReproducerController
         BestFlows = config.TargetFlows.Select(flow => 0f).ToArray();
         RecipeFlows = config.TargetFlows.Select(flow => 0f).ToArray();
 
-        _canLogOdorDisplayData = !Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay);
+        _canLogOdorDisplayData = Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay);
     }
 
     public void ShutDownFlows()
@@ -79,7 +80,7 @@ public class OdorReproducerController
     public void ExecuteRecipe(ML.Recipe recipe)
     {
         CurrentStep++;
-        _nlog.Info(RecipeToString(recipe));
+        _nlog.Info(LogIO.Text(Timestamp.Ms.ToString(), RecipeToString(recipe)));
 
         var cachedDmsScan = _dmsCache.Find(recipe, out string? dmsFilename);
 
@@ -106,7 +107,7 @@ public class OdorReproducerController
 
             if (cachedDmsScan != null)
             {
-                _nlog.Info(LogIO.Text("Cache", "Read", dmsFilename));
+                _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Cache", "Read", dmsFilename));
                 _ = SendMeasurementToML(cachedDmsScan, cleanupDuration);
             }
             else
@@ -125,7 +126,7 @@ public class OdorReproducerController
                         if (measurement is IV.Defs.ScanResult fullScan)
                         {
                             var filename = _dmsCache.Save(recipe, fullScan);
-                            _nlog.Info(LogIO.Text("Cache", "Write", filename));
+                            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Cache", "Write", filename));
                         }
                     }
                 });
@@ -142,6 +143,11 @@ public class OdorReproducerController
                 if (result == SavingResult.None)
                 {
                     MsgBox.Warn(App.Current.MainWindow.Title, "No data to save", MsgBox.Button.OK);
+                }
+                else if (App.LogFileName is string logFilename)
+                {
+                    var logFolder = LogLocation.Instance.Folder;
+                    File.Copy(logFilename, Path.Combine(logFolder, "events.txt"));
                 }
                 _odorDisplayLogger.Clear();
             }

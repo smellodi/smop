@@ -34,7 +34,7 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
             var names = new List<string>
             {
                 "Timestamp",
-                "Device timestamp"
+                "DeviceTimestamp"
             };
             foreach (Measurement m in data.Measurements)
             {

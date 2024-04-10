@@ -31,7 +31,7 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
         {
             var record = new Record(type, data);
             _records.Add(record);
-            _nlog.Info(record);
+            _nlog.Info(Utils.Timestamp.Ms.ToString(), record);
         }
     }
 

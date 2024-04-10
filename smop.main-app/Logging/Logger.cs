@@ -45,26 +45,26 @@ public static class Logger
             return SavingResult.None;
         }
 
-        var logLocation = new LogLocation();
+        var logLocation = LogLocation.Instance;
         var result = logLocation.PromptToSave();
 
         if (result == SavingResult.Save)
         {
             logLocation.EnsureLocationExists();
-            var failsFailedToSave = new List<string>();
+            var failedToSave = new List<string>();
 
             foreach (var log in logs)
             {
                 var filename = logLocation.GetFileName(log.Name);
                 if (!log.Save(filename))
                 {
-                    failsFailedToSave.Add(filename);
+                    failedToSave.Add(filename);
                 }
             }
 
-            if (failsFailedToSave.Count > 0)
+            if (failedToSave.Count > 0)
             {
-                var listOfFiles = string.Join('\n', failsFailedToSave);
+                var listOfFiles = string.Join('\n', failedToSave);
                 if (MsgBox.Ask(
                     $"{Application.Current.MainWindow.Title} - Logger",
                     $"Failed to save the following files\\n'{listOfFiles}':\n\nRetry?",
@@ -146,22 +146,11 @@ public abstract class Logger<T> where T : RecordBase
     }
 }
 
-file class LogLocation
+public class LogLocation
 {
+    public static LogLocation Instance => _instance ??= new();
+
     public string Folder => Path.Combine(_rootFolder, _folderName);
-
-    public LogLocation()
-    {
-        var settings = Properties.Settings.Default;
-        _rootFolder = settings.Logger_Folder;
-
-        if (string.IsNullOrEmpty(_rootFolder) || !Directory.Exists(_rootFolder))
-        {
-            _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        }
-
-        _folderName = $"{DateTime.Now:u}".ToPath();
-    }
 
     public SavingResult PromptToSave()
     {
@@ -208,6 +197,8 @@ file class LogLocation
 
     // Internal
 
+    static LogLocation? _instance = null;
+
     readonly string SaveInto = "Save data into";
     readonly string PressChange = "Press 'Change' to set another destination file";
     readonly string PressDiscard = "Press 'Discard' to discard data";
@@ -215,6 +206,19 @@ file class LogLocation
 
     string _rootFolder;
     string _folderName;
+
+    protected LogLocation()
+    {
+        var settings = Properties.Settings.Default;
+        _rootFolder = settings.Logger_Folder;
+
+        if (string.IsNullOrEmpty(_rootFolder) || !Directory.Exists(_rootFolder))
+        {
+            _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        }
+
+        _folderName = $"{DateTime.Now:u}".ToPath();
+    }
 
     private bool AskFolderName()
     {

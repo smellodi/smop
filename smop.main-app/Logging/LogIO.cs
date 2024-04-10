@@ -16,7 +16,7 @@ internal static class LogIO
     public static string Text(params object?[] objs) => string.Join(LOG_DELIM, objs);
 
     /// <summary>
-    /// Logs a result of calling a method from an OdorDisplay of SmellInsp
+    /// Logs a result of calling a method from an OdorDisplay or SmellInsp
     /// </summary>
     /// <param name="result">OdorDisplays of SmellInsp's method calling result</param>
     /// <param name="action">OdorDisplays of SmellInsp's method name or action that was called.
@@ -29,9 +29,9 @@ internal static class LogIO
         action = string.Join("", action.Split(' ').Select(p => char.ToUpper(p[0]) + p[1..]));
 
         if (isOK)
-            _nlog.Info(Text(source, action, "OK"));
+            _nlog.Info(Text(Utils.Timestamp.Ms, source, action, "OK"));
         else
-            _nlog.Error(Text(source, action, result.Error, result.Reason));
+            _nlog.Error(Text(Utils.Timestamp.Ms, source, action, result.Error, result.Reason));
         return isOK;
     }
 
@@ -69,11 +69,14 @@ internal static class LogIO
                 string[] arr => string.Join("; ", arr),
                 _ => response.Value.ToString()
             };
-            _nlog.Info(Text("DMS", action, "OK", value));
+            if (value == "OK")
+                _nlog.Info(Text(Utils.Timestamp.Ms, "DMS", action, "Success"));
+            else
+                _nlog.Info(Text(Utils.Timestamp.Ms, "DMS", action, "Success", value));
         }
         else
         {
-            _nlog.Error(Text("DMS", action, "Error", response.Error));
+            _nlog.Error(Text(Utils.Timestamp.Ms, "DMS", action, "Error", response.Error));
         }
 
         resp = response.Value;

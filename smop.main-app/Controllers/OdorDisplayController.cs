@@ -145,7 +145,7 @@ internal class OdorDisplayController
                 4 + 12 * Math.Exp(-0.12 * slowestFlow);               // longer waiting duration than according to Atte's data model
         }
 
-        _nlog.Info(LogIO.Text("OD", "Waiting", result.ToString("0.#")));
+        _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "OD", "Waiting", result.ToString("0.#")));
         return result;
     }
         
@@ -166,7 +166,7 @@ internal class OdorDisplayController
             result = 2.5 + 0.8 * Math.Exp(0.03 * maxFlow);   // Just some model
         }
 
-        _nlog.Info(LogIO.Text("OD", "Waiting", result.ToString("0.#")));
+        _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "OD", "Waiting", result.ToString("0.#")));
         return result;
     }
 
@@ -191,16 +191,16 @@ internal class OdorDisplayController
             SetSystem reqSystem => $"SetSystem Fans {reqSystem.Fans} PIDs {reqSystem.PIDs}",
             _ => request.ToString()
         };
-        _nlog.Info(LogIO.Text("OD", "Sent", reqText));
+        _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "OD", "Sent", reqText));
 
         var result = _odorDisplay.Request(request, out Ack? ack, out Response? response);
         resp = response;
 
         /*if (ack != null)
-            _nlog.Info(LogExt.Text("OD", "ACK", ack));
+            _nlog.Info(LogExt.Text(Utils.Timestamp.Ms, "OD", "ACK", ack));
         */
         if (result.Error == Comm.Error.Success && response != null)
-            _nlog.Info(LogIO.Text("OD", "Received", response));
+            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "OD", "Received", response));
 
         return result;
     }

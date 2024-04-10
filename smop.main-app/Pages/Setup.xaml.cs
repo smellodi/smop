@@ -270,14 +270,14 @@ public partial class Setup : Page, IPage<object?>
 
     private void ML_StatusChanged(object? sender, ML.Status e)
     {
-        _nlog.Info(Logging.LogIO.Text("ML", "Status", e));
+        _nlog.Info(Logging.LogIO.Text(Timestamp.Ms, "ML", "Status", e));
         _mlIsConnected = e == ML.Status.Connected;
         Dispatcher.Invoke(UpdateUI);
     }
 
     private void ML_Error(object? sender, ML.Communicator.ErrorEventHandlerArgs args)
     {
-        _nlog.Error(Logging.LogIO.Text("ML", "Error", args.Action, args.Error));
+        _nlog.Error(Logging.LogIO.Text(Timestamp.Ms, "ML", "Error", args.Action, args.Error));
     }
 
     // UI events

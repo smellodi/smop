@@ -32,6 +32,19 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Margin" Value="0,4,0,0"/>
         </Style>
+        <Style x:Key="StatusText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Padding" Value="6,4,0,0"/>
+        </Style>
+        <Style x:Key="StatusTextScroll" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Type ScrollViewer}}">
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="Padding" Value="0,2"/>
+        </Style>
+        <Style x:Key="StatusTextBorder" TargetType="{x:Type Border}">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLight}"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -156,15 +169,11 @@
                                      Style="{StaticResource BusyDevice}"/>
                     </Grid>
                     <Border Grid.Row="2"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource BrushBorderLight}">
+                            Style="{StaticResource StatusTextBorder}">
                         <ScrollViewer x:Name="scvODStatus" 
-                                      Padding="0,2"
-                                      VerticalScrollBarVisibility="Auto" 
-                                      HorizontalScrollBarVisibility="Disabled">
+                                      Style="{StaticResource StatusTextScroll}">
                             <TextBlock Name="tblODStatus"
-                                       TextWrapping="Wrap"
-                                       Padding="6,0,0,0">
+                                       Style="{StaticResource StatusText}">
                                     <Run Text="The device is ready"/>
                             </TextBlock>
                         </ScrollViewer>
@@ -186,15 +195,11 @@
                                      Style="{StaticResource BusyDevice}"/>
                     </Grid>
                     <Border Grid.Row="2"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource BrushBorderLight}">
+                            Style="{StaticResource StatusTextBorder}">
                         <ScrollViewer x:Name="scvDmsStatus"
-                                      Padding="0,2"
-                                      VerticalScrollBarVisibility="Auto" 
-                                      HorizontalScrollBarVisibility="Disabled">
+                                      Style="{StaticResource StatusTextScroll}">
                             <TextBlock Name="tblDmsStatus"
-                                       TextWrapping="Wrap"
-                                       Padding="6,0,0,0">
+                                       Style="{StaticResource StatusText}">
                                     <Run Text="Initializing..."/>
                             </TextBlock>
                         </ScrollViewer>
@@ -216,15 +221,11 @@
                                      Style="{StaticResource BusyDevice}"/>
                     </Grid>
                     <Border Grid.Row="2"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource BrushBorderLight}">
+                            Style="{StaticResource StatusTextBorder}">
                         <ScrollViewer x:Name="scvSntStatus" 
-                                      Padding="0,2"
-                                      VerticalScrollBarVisibility="Auto" 
-                                      HorizontalScrollBarVisibility="Disabled">
+                                      Style="{StaticResource StatusTextScroll}">
                             <TextBlock Name="tblSntStatus"
-                                       TextWrapping="Wrap"
-                                       Padding="6,0,0,0">
+                                       Style="{StaticResource StatusText}">
                                     <Run Text="The device is ready"/>
                             </TextBlock>
                         </ScrollViewer>

@@ -74,20 +74,11 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="auto"/>
                         <RowDefinition Height="auto"/>
-                        <RowDefinition/>
-                        <RowDefinition Height="auto"/>
                     </Grid.RowDefinitions>
 
                     <local:PulseGeneratorSettings x:Name="pulseGeneratorSettings" Grid.Row="0"/>
 
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
-
-                    <Button x:Name="btnMeasureSample" Grid.Row="3"
-                            IsEnabled="False"
-                            Margin="0,8,0,0"
-                            VerticalAlignment="Bottom"
-                            Content="Measure the target odor"
-                            Click="MeasureSample_Click"/>
                 </Grid>
             </Border>
 
@@ -152,6 +143,7 @@
                     <RowDefinition/>
                     <RowDefinition/>
                     <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid x:Name="grdODStatus" Grid.Row="0">
@@ -231,6 +223,21 @@
                         </ScrollViewer>
                     </Border>
                 </Grid>
+
+                <StackPanel Grid.Row="3">
+                    <Label Style="{StaticResource Section}"
+                           Content="Target odor"/>
+                    <Button x:Name="btnTargetMeasure"
+                            IsEnabled="False"
+                            Margin="0,8,0,0"
+                            Content="Measure"
+                            Click="TargetMeasure_Click"/>
+                    <Button x:Name="btnTargetLoad"
+                            IsEnabled="False"
+                            Margin="0,8,0,0"
+                            Content="Load..."
+                            Click="TargetLoad_Click"/>
+                </StackPanel>
             </Grid>
         </Grid>
 

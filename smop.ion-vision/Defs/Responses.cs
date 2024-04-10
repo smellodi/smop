@@ -175,7 +175,10 @@ public record class ScopeParameters(
     int SensorFlowControl,
     float SampleHeaterTemperatureControl,
     float SensorHeaterTemperatureControl
-);
+)
+{
+    public const int DATA_SIZE = 238;
+};
 
 public record class Range(
     float Min,

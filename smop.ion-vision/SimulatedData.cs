@@ -1,5 +1,4 @@
 ﻿using Smop.IonVision.Defs;
-using Smop.IonVision.Defs;
 using System;
 using System.Linq;
 
@@ -7,13 +6,13 @@ namespace Smop.IonVision;
 
 public static class SimulatedData
 {
-    const int DATA_ROWS = 10;
-    const int DATA_COLS = 200;
+    const int DATA_ROWS = 3;
+    const int DATA_COLS = ScopeParameters.DATA_SIZE;
     const float DATA_PP = 1000;
     const float DATA_PW = 200;
     const short DATA_SAMPLE_COUNT = 64;
-    const float USV_START = 200;
-    const float USV_STOP = 800;
+    const float USV_START = 420;
+    const float USV_STOP = 760;
     const float UCV_START = -3;
     const float UCV_STOP = 13;
     const float VB_START = -6;

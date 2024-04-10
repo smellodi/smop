@@ -6,6 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using ODPackets = Smop.OdorDisplay.Packets;
 using IVDefs = Smop.IonVision.Defs;
+using System.IO;
+using System.Text.Json;
+using Smop.MainApp.Dialogs;
+using System.Net;
 
 namespace Smop.MainApp.Controllers;
 
@@ -313,6 +317,118 @@ public class SetupController
                 await App.ML.Publish(sample);
             }
         }
+    }
+
+    public Common.IMeasurement? LoadDms(string filename)
+    {
+        Common.IMeasurement? result = null;
+
+        if (File.Exists(filename) && ParamDefinition != null)
+        {
+            bool isDmsSingleVS = Properties.Settings.Default.Reproduction_DmsSingleSV > 0;
+
+            int expectedDataSize = isDmsSingleVS ? IVDefs.ScopeParameters.DATA_SIZE : 
+                ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps * ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps;
+
+            using StreamReader reader = new(filename);
+            var json = reader.ReadToEnd();
+
+            int? loadedDataSize = null;
+            if (isDmsSingleVS)
+            {
+                try
+                {
+                    var dms = JsonSerializer.Deserialize<IVDefs.ScopeResult>(json);
+                    loadedDataSize = dms?.IntensityTop?.Length;
+                    result = dms;
+                }
+                catch { }
+            }
+            else
+            {
+                try
+                {
+                    var dms = JsonSerializer.Deserialize<IVDefs.ScanResult>(json);
+                    loadedDataSize = dms?.MeasurementData?.IntensityTop.Length;
+                    result = dms;
+                }
+                catch { }
+            }
+
+            if (loadedDataSize != expectedDataSize)
+            {
+                result = null;
+                MsgBox.Error(App.Current.MainWindow.Title, "The DMS data size does not match the size defined in the current parameter");
+            }
+
+            DmsScan = result;
+        }
+
+        return result;
+    }
+
+    public Common.IMeasurement? LoadSnt(string filename)
+    {
+        Common.IMeasurement? result = null;
+
+        if (File.Exists(filename))
+        {
+            using StreamReader reader = new(filename);
+            var txt = reader.ReadToEnd();
+            var lines = txt.Split('\n');
+
+            List<SmellInsp.Data> data = new();
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("start"))
+                {
+                    var p = line.Split(';');
+                    if (p.Length != 67)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        data.Add(new SmellInsp.Data(
+                            p[1..65].Select(float.Parse).ToArray(),
+                            float.Parse(p[65]),
+                            float.Parse(p[66])
+                        ));
+                    }
+                    catch { }
+                }
+            }
+
+            if (data.Count > 0)
+            {
+                float[] resistances = new float[64];
+                float humidity = 0;
+                float temperature = 0;
+                for (int i = 0; i < data.Count; i++)
+                {
+                    var record = data[i];
+                    for (int j = 0; j < record.Resistances.Length; j++)
+                    {
+                        resistances[j] += record.Resistances[j];
+                    }
+                    humidity += record.Humidity;
+                    temperature += record.Temperature;
+                }
+
+                for (int j = 0; j < resistances.Length; j++)
+                {
+                    resistances[j] /= data.Count;
+                }
+                humidity /= data.Count;
+                temperature /= data.Count;
+
+                SntSample = new SmellInsp.Data(resistances, temperature, humidity);
+                result = SntSample;
+            }
+        }
+
+        return result;
     }
 
     // Internal

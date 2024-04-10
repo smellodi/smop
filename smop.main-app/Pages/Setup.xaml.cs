@@ -1,6 +1,7 @@
 ﻿using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Dialogs;
+using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -165,8 +167,8 @@ public partial class Setup : Page, IPage<object?>
                 (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
                 brdENoseProgress.Visibility != Visibility.Visible;
-            //btnMeasureSample.Visibility = _ionVisionIsReady || App.IonVision == null ? Visibility.Visible : Visibility.Collapsed;
-            btnMeasureSample.IsEnabled = (_ionVisionIsReady || App.IonVision == null) && !_isOdorDisplayCleaningRunning;
+            btnTargetMeasure.IsEnabled = (_ionVisionIsReady || App.IonVision == null) && !_isOdorDisplayCleaningRunning;
+            btnTargetLoad.IsEnabled = btnTargetMeasure.IsEnabled;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;
@@ -207,7 +209,7 @@ public partial class Setup : Page, IPage<object?>
     {
         try
         {
-            ShowPlot(_dmsPlotType);
+            ShowDmsPlot(_dmsPlotType);
         }
         catch (Exception ex)
         {
@@ -215,7 +217,7 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
-    private void ShowPlot(Plot.ComparisonOperation compOp)
+    private void ShowDmsPlot(Plot.ComparisonOperation compOp)
     {
         if (_ctrl.ParamDefinition == null)
             return;
@@ -380,11 +382,11 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
-    private async void MeasureSample_Click(object sender, RoutedEventArgs e)
+    private async void TargetMeasure_Click(object sender, RoutedEventArgs e)
     {
         _isCollectingData = true;
 
-        btnMeasureSample.IsEnabled = false;
+        btnTargetMeasure.IsEnabled = false;
 
         brdENoseProgress.Visibility = Visibility.Visible;
         prbENoseProgress.Value = 0;
@@ -416,10 +418,64 @@ public partial class Setup : Page, IPage<object?>
                 theme: PLOT_THEME);
         }
 
-        btnMeasureSample.IsEnabled = true;
+        btnTargetMeasure.IsEnabled = true;
         brdENoseProgress.Visibility = Visibility.Collapsed;
 
         _isCollectingData = false;
+
+        UpdateUI();
+    }
+
+    private void TargetLoad_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateUI();
+
+        if (App.ML != null && App.ML.CmdParams != Properties.Settings.Default.Reproduction_ML_CmdParams)
+        {
+            App.ML.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
+        }
+
+        var ofd = new Microsoft.Win32.OpenFileDialog();
+        if (App.IonVision != null)
+        {
+            ofd.Filter = "JSON files|*.json|Any file|*.*";
+        }
+        else if (_smellInsp.IsOpen)
+        {
+            ofd.Filter = "Text files|*.txt|Any file|*.*";
+        }
+        else
+        {
+            ofd.Filter = "Any file|*.*";
+        }
+
+        if (ofd.ShowDialog() ?? false)
+        {
+            if (System.IO.Path.GetExtension(ofd.FileName).ToLower() == ".json")
+            {
+                var scan = _ctrl.LoadDms(ofd.FileName);
+                if (scan is IonVision.Defs.ScanResult fullScan)
+                {
+                    _dmsScans.Add(fullScan);
+
+                    if (_dmsPlotType == Plot.ComparisonOperation.None || _dmsScans.Count > 1)
+                    {
+                        ShowDmsPlot();
+                    }
+                }
+                else if (_ctrl.DmsScan is IonVision.Defs.ScopeResult scopeScan)
+                {
+                    new Plot().Create(cnvDmsScan,
+                        1, scopeScan.IntensityTop.Length,
+                        scopeScan.IntensityTop,
+                        theme: PLOT_THEME);
+                }
+            }
+            else if (System.IO.Path.GetExtension(ofd.FileName).ToLower() == ".txt")
+            {
+                _ctrl.LoadSnt(ofd.FileName);
+            }
+        }
 
         UpdateUI();
     }

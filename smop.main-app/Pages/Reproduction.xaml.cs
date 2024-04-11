@@ -86,19 +86,23 @@ public partial class Reproduction : Page, IPage<Navigation>
         tblOdor2.Text = _proc.OdorChannels.Length > 1 ? _proc.OdorChannels[1].Name : "";
 
         grdSearchSpace.Visibility = config.TargetFlows.Length == 2 ? Visibility.Visible : Visibility.Collapsed;
-        scvSearchSpace.Visibility = config.TargetFlows.Length > 2 ? Visibility.Visible : Visibility.Collapsed;
+        scvSearchSpace.Visibility = config.TargetFlows.Length != 2 ? Visibility.Visible : Visibility.Collapsed;
 
         grdSearchSpaceTable.Children.Clear();
 
-        if (config.TargetFlows.Length > 2)
+        if (config.TargetFlows.Length != 2)
         {
             grdSearchSpaceTable.RowDefinitions.Clear();
             grdSearchSpaceTable.ColumnDefinitions.Clear();
 
-            for (int i = 0; i < _proc.OdorChannels.Length + 1; i++)     // 1 extra column for the distance
+            var channelNames = _proc.OdorChannels
+                .Where(ch => !string.IsNullOrEmpty(ch.Name))
+                .Select(ch => ch.Name)
+                .ToArray();
+            for (int i = 0; i < channelNames.Length + 1; i++)     // 1 extra column for the distance
                 grdSearchSpaceTable.ColumnDefinitions.Add(new ColumnDefinition());
 
-            AddFlowsRecordToSearchSpaceTable(_proc.OdorChannels.Select(oc => oc.Name).ToArray(), "Dist");
+            AddFlowsRecordToSearchSpaceTable(channelNames, "Dist");
         }
 
         if (config.TargetMeasurement is IonVision.Defs.ScanResult dms)

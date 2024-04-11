@@ -60,7 +60,7 @@ public class OdorReproducerController
         BestFlows = config.TargetFlows.Select(flow => 0f).ToArray();
         RecipeFlows = config.TargetFlows.Select(flow => 0f).ToArray();
 
-        _canLogOdorDisplayData = Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay);
+        _canLogOdorDisplayData = !Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay);
     }
 
     public void ShutDownFlows()

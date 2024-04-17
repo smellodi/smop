@@ -9,7 +9,6 @@ using IVDefs = Smop.IonVision.Defs;
 using System.IO;
 using System.Text.Json;
 using Smop.MainApp.Dialogs;
-using System.Net;
 
 namespace Smop.MainApp.Controllers;
 
@@ -216,6 +215,9 @@ public class SetupController
         if (!COMHelper.ShowErrorIfAny(_odController.OpenChannels(_odorChannels), "release odors"))
             return;
 
+        if (!Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay))
+            _odorDisplay.Data += OdorDisplay_Data;
+
         var flows = _odorChannels
             .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString())
             .Select(odorChannel => odorChannel.Flow);
@@ -227,7 +229,7 @@ public class SetupController
 
         _pidSamples.Clear();
 
-        _odorDisplay.Data += OdorDisplay_Data;
+        _canCollectOdorDisplayData = true;
 
         List<Task> scans = new();
         if (App.IonVision != null)
@@ -241,15 +243,16 @@ public class SetupController
 
         await Task.WhenAll(scans);
 
-        _odorDisplay.Data -= OdorDisplay_Data;
+        _canCollectOdorDisplayData = false;
 
-        if (!COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors"))
-            return;
+        COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors");
 
         var cleanupDuration = OdorDisplayController.CalcCleanupDuration(flows);
         LogOD?.Invoke(this, new LogHandlerArgs($"Odors stopped, cleaning up {cleanupDuration:F1}s..."));
         await Task.Delay((int)(cleanupDuration * 1000));
         LogOD?.Invoke(this, new LogHandlerArgs("Done."));
+
+        _odorDisplay.Data -= OdorDisplay_Data;
     }
 
     public async Task ConfigureML()
@@ -439,6 +442,7 @@ public class SetupController
 
     readonly Storage _storage = Storage.Instance;
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
+    readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
     readonly SmellInsp.DataCollector _sntDataCollector = new();
 
     readonly OdorDisplayController _odController = new();
@@ -448,6 +452,8 @@ public class SetupController
     readonly DmsCache _dmsCache = new();
 
     OdorChannels _odorChannels = new();
+
+    bool _canCollectOdorDisplayData = false;
 
     private async Task MakeDmsScan(IonVision.Communicator ionVision)
     {
@@ -578,7 +584,9 @@ public class SetupController
     {
         await COMHelper.Do(() =>
         {
-            if (_pidSamples.Count < PID_MAX_DATA_COUNT)
+            _odorDisplayLogger.Add(data);
+
+            if (_canCollectOdorDisplayData && _pidSamples.Count < PID_MAX_DATA_COUNT)
             {
                 foreach (var measurement in data.Measurements)
                 {

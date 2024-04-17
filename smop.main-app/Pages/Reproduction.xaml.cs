@@ -105,31 +105,26 @@ public partial class Reproduction : Page, IPage<Navigation>
             AddFlowsRecordToSearchSpaceTable(channelNames, "Dist");
         }
 
-        if (config.TargetMeasurement is IonVision.Defs.ScanResult dms)
+        DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
         {
-            DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-                new Plot().Create(cnvTargetMeasurement,
+            _plotScale = config.TargetMeasurement switch
+            {
+                IonVision.Defs.ScanResult dms => new Plot().Create(cnvTargetMeasurement,
                     (int)config.DataSize.Height,
                     (int)config.DataSize.Width,
                     dms.MeasurementData.IntensityTop,
-                    theme: PLOT_THEME)));
-        }
-        else if (config.TargetMeasurement is IonVision.Defs.ScopeResult dmsSingleSV)
-        {
-            DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-                new Plot().Create(cnvTargetMeasurement,
+                    theme: PLOT_THEME),
+                IonVision.Defs.ScopeResult dmsSingleSV => new Plot().Create(cnvTargetMeasurement,
                     1, dmsSingleSV.IntensityTop.Length,
                     dmsSingleSV.IntensityTop,
-                    theme: PLOT_THEME)));
-        }
-        else if (config.TargetMeasurement is SmellInsp.Data snt)
-        {
-            DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
-                new Plot().Create(cnvTargetMeasurement,
+                    theme: PLOT_THEME),
+                SmellInsp.Data snt => new Plot().Create(cnvTargetMeasurement,
                     1, snt.Resistances.Length,
                     snt.Resistances,
-                    theme: PLOT_THEME)));
-        }
+                    theme: PLOT_THEME),
+                _ => 0
+            };
+        }));
 
         var odorChannels = _proc.OdorChannels;
         ConfigureChannelTable(odorChannels, grdODChannels, _odChannelLabelStyle, _odChannelStyle, MEASUREMENT_ROW_FIRST_ODOR_CHANNEL);
@@ -192,6 +187,8 @@ public partial class Reproduction : Page, IPage<Navigation>
     OdorReproducerController.Config? _procConfig = null;
 
     ActiveElement _activeElement = ActiveElement.None;
+
+    float _plotScale = 0;
 
     private Style? BoolToStyle(bool isActive) => isActive ? _activeElementStyle : _inactiveElementStyle;
 
@@ -349,7 +346,8 @@ public partial class Reproduction : Page, IPage<Navigation>
                     (int)size.Height,
                     (int)size.Width,
                     scan.MeasurementData.IntensityTop,
-                    theme: PLOT_THEME);
+                    theme: PLOT_THEME,
+                    scale: _plotScale);
         DisplayMeasurementInfo();
         DisplayMeasurementEnvInfo(new MeasurementEnvInfo(scan.SystemData.Sample.Temperature.Avg));
     }
@@ -359,7 +357,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         new Plot().Create(cnvMeasurement,
                     1, scan.IntensityTop.Length,
                     scan.IntensityTop,
-                    theme: PLOT_THEME);
+                    theme: PLOT_THEME,
+                    scale: _plotScale);
         DisplayMeasurementInfo();
     }
 
@@ -368,7 +367,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         new Plot().Create(cnvMeasurement,
                     1, snt.Resistances.Length,
                     snt.Resistances,
-                    theme: PLOT_THEME);
+                    theme: PLOT_THEME,
+                    scale: _plotScale);
         DisplayMeasurementInfo();
         DisplayMeasurementEnvInfo(new MeasurementEnvInfo(snt.Temperature));
     }

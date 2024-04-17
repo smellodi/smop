@@ -137,6 +137,8 @@ public class OdorReproducerController
             BestFlows = recipe.Channels?.Select(c => c.Flow).ToArray() ?? RecipeFlows;
             System.Media.SystemSounds.Beep.Play();
 
+            _canLogOdorDisplayData = false;
+
             if (_odorDisplayLogger.HasRecords)
             {
                 var result = Logger.Save(new ILog[] { _odorDisplayLogger });
@@ -271,21 +273,21 @@ public class OdorReproducerController
         }
     }
 
-    private async void OdorDisplay_Data(object? sender, ODPackets.Data e)
+    private async void OdorDisplay_Data(object? sender, ODPackets.Data data)
     {
         await COMHelper.Do(() =>
         {
             if (_canLogOdorDisplayData)
             {
-                _odorDisplayLogger.Add(e);
+                _odorDisplayLogger.Add(data);
             }
 
-            OdorDisplayData?.Invoke(this, e);
+            OdorDisplayData?.Invoke(this, data);
 
             if (!_canSendFrequentData || !Properties.Settings.Default.Reproduction_UsePID)
                 return;
 
-            foreach (var measurement in e.Measurements)
+            foreach (var measurement in data.Measurements)
             {
                 if (measurement.Device == OdorDisplay.Device.ID.Base &&
                     measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)

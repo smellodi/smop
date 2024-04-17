@@ -88,21 +88,24 @@ public partial class Setup : Page, IPage<object?>
         if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 3)
             grdStatuses.RowDefinitions.RemoveAt(1);
 
-        grdDmsStatus.Visibility = App.IonVision != null ? Visibility.Visible : Visibility.Collapsed;
+        if (App.IonVision == null)
+            rdfDmsStatus.Height = new GridLength(0, GridUnitType.Pixel);
 
 
         /* BOTH ENOSES
         if (!_smellInsp.IsOpen && grdStatuses.RowDefinitions.Count == 2)
             grdStatuses.RowDefinitions.RemoveAt(1);
 
-        grdSntStatus.Visibility = _smellInsp.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+        if (!_smellInsp.IsOpen)
+        rdfSntStatus.Height = new GridLength(0, GridUnitType.Pixel);
         */
 
         // SINGLE ENOSE
         if ((App.IonVision != null || !_smellInsp.IsOpen) && grdStatuses.RowDefinitions.Count == 3)
             grdStatuses.RowDefinitions.RemoveAt(2);
 
-        grdSntStatus.Visibility = App.IonVision == null && _smellInsp.IsOpen ? Visibility.Visible : Visibility.Collapsed;
+        if (App.IonVision != null || !_smellInsp.IsOpen)
+            rdfSntStatus.Height = new GridLength(0, GridUnitType.Pixel);
     }
 
     // Internal
@@ -169,6 +172,7 @@ public partial class Setup : Page, IPage<object?>
                 brdENoseProgress.Visibility != Visibility.Visible;
             btnTargetMeasure.IsEnabled = (_ionVisionIsReady || App.IonVision == null) && !_isOdorDisplayCleaningRunning;
             btnTargetLoad.IsEnabled = btnTargetMeasure.IsEnabled;
+            stpTargetOdorActions.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;

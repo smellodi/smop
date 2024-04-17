@@ -163,7 +163,8 @@ internal class OdorDisplayController
         else
         {
             var maxFlow = flows.Any() ? flows.Max() : 0;
-            result = 2.5 + 0.8 * Math.Exp(0.03 * maxFlow);   // Just some model
+            //result = 2.5 + 0.8 * Math.Exp(0.03 * maxFlow);   // Just some model: 3-6 seconds for cleanup
+            result = 0.5 + 0.2 * Math.Exp(0.04 * maxFlow);     // Just some model: 0.5-2 seconds for cleanup
         }
 
         _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "OD", "Waiting", result.ToString("0.#")));

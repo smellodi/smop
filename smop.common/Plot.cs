@@ -85,11 +85,14 @@ public class Plot
     /// <param name="compOp">Comparison operation, see <see cref="ComparisonOperation"/></param>
     /// <param name="theme">Coloring theme as a list of {level: <see cref="Color"/>} record 
     /// where levels are numbers starting from 0 and ending by 1 in ascending order
-    public void Create(Canvas canvas, int rows, int cols,
+    /// <param name="scale">Scale to apply (data range). Default is 0 (automatic scaling)</param>
+    /// <return>Plot scale (max data value)</return>
+    public float Create(Canvas canvas, int rows, int cols,
         float[] values1,
         float[]? values2 = null,
         ComparisonOperation compOp = ComparisonOperation.Difference,
-        KeyValuePair<double, Color>[]? theme = null)
+        KeyValuePair<double, Color>[]? theme = null,
+        float scale = 0)
     {
         canvas.Children.Clear();
 
@@ -99,9 +102,9 @@ public class Plot
         if (values2 is null)
         {
             if (rows == 1)
-                rc = DrawCurve(canvas, cols, values1);
+                rc = DrawCurve(canvas, cols, values1, scale);
             else
-                rc = DrawPlot(canvas, rows, cols, values1);
+                rc = DrawPlot(canvas, rows, cols, values1, scale);
         }
         else if (values1.Length == values2.Length)
         {
@@ -116,6 +119,8 @@ public class Plot
         }
 
         CreateAxis(canvas, rc);
+
+        return values1.Max() - values1.Min();
     }
 
     // Internal
@@ -218,7 +223,7 @@ public class Plot
         canvas.Children.Add(lowerStd);
     }
 
-    private static Rect DrawPlot(Canvas canvas, int rows, int cols, float[] values)
+    private static Rect DrawPlot(Canvas canvas, int rows, int cols, float[] values, float scale)
     {
         double width = canvas.ActualWidth;
         double height = canvas.ActualHeight;
@@ -231,7 +236,7 @@ public class Plot
 
         var minValue = values.Min();
         var maxValue = values.Max();
-        var range = maxValue - minValue;
+        var range = scale == 0 ? maxValue - minValue : scale;
 
         for (int y = 0; y < rows; y++)
         {
@@ -259,7 +264,7 @@ public class Plot
         for (int i = 0; i < values1.Length; i++)
             values[i] = values1[i] - values2[i];
 
-        return DrawPlot(canvas, rows, cols, values);
+        return DrawPlot(canvas, rows, cols, values, 0);
     }
 
     private Rect DrawBlandAltman(Canvas canvas, float[] values1, float[] values2)
@@ -304,7 +309,7 @@ public class Plot
         return new Rect(new Point(minValueX, minValueY), new Point(maxValueX, maxValueY));
     }
 
-    private Rect DrawCurve(Canvas canvas, int cols, float[] values)
+    private Rect DrawCurve(Canvas canvas, int cols, float[] values, float scale)
     {
         double width = canvas.ActualWidth;
         double height = canvas.ActualHeight;
@@ -313,7 +318,7 @@ public class Plot
 
         var minValue = Math.Min(-1, values.Min());
         var maxValue = Math.Max(10, values.Max());
-        var range = maxValue - minValue;
+        var range = scale == 0 ? maxValue - minValue : scale;
 
         double xp = 0;
         double yp = height - (values[0] - minValue) / range * height;

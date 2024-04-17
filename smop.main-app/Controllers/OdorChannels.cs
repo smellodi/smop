@@ -136,7 +136,7 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);
 
-    private void SetProperties(OdorChannel channel)
+    private static void SetProperties(OdorChannel channel)
     {
         var criticalFlow = channel.Name.ToLower() switch
         {

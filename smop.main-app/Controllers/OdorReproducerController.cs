@@ -102,34 +102,17 @@ public class OdorReproducerController
         // schedule new scan
         if (!recipe.IsFinal)
         {
-            var cleanupDurationMs = OdorDisplayController.CalcCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
-            var cleanupDuration = (int)(cleanupDurationMs * 1000);
-
             if (cachedDmsScan != null)
             {
-                _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Cache", "Read", dmsFilename));
+                _nlog.Info(LogIO.Text(Timestamp.Ms, "Cache", "Read", dmsFilename));
+
+                var cleanupDurationMs = OdorDisplayController.CalcCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
+                var cleanupDuration = (int)(cleanupDurationMs * 1000);
                 _ = SendMeasurementToML(cachedDmsScan, cleanupDuration);
             }
             else
             {
-                Task.Run(async () =>
-                {
-                    var saturationDurationMs = OdorDisplayController.CalcSaturationDuration(recipe.Channels?.Select(ch => ch.Flow));
-                    await Task.Delay((int)(saturationDurationMs * 1000));
-
-                    var settings = Properties.Settings.Default;
-                    var measurement = await CollectData(settings.Reproduction_DmsSingleSV); // recipe.Usv
-
-                    if (measurement != null)
-                    {
-                        await SendMeasurementToML(measurement, cleanupDuration);
-                        if (measurement is IV.Defs.ScanResult fullScan)
-                        {
-                            var filename = _dmsCache.Save(recipe, fullScan);
-                            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Cache", "Write", filename));
-                        }
-                    }
-                });
+                CollectDataAndSendToML(recipe, !IV.Simulator.IsFast);
             }
         }
         else
@@ -156,6 +139,38 @@ public class OdorReproducerController
         }
 
         RecipeFlows = recipe.Channels?.Select(c => c.Flow).ToArray() ?? RecipeFlows;
+    }
+
+    public void CollectDataAndSendToML(ML.Recipe recipe, bool useDelays)
+    {
+        Task.Run(async () =>
+        {
+            if (useDelays)
+            {
+                var saturationDurationSec = OdorDisplayController.CalcSaturationDuration(recipe.Channels?.Select(ch => ch.Flow));
+                await Task.Delay((int)(saturationDurationSec * 1000));
+            }
+
+            var settings = Properties.Settings.Default;
+            var measurement = await CollectData(settings.Reproduction_DmsSingleSV, useDelays); // recipe.Usv
+
+            if (measurement != null)
+            {
+                int cleanupDuration = 100;
+                if (useDelays)
+                {
+                    var cleanupDurationSec = OdorDisplayController.CalcCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
+                    cleanupDuration = (int)(cleanupDurationSec * 1000);
+                }
+
+                await SendMeasurementToML(measurement, cleanupDuration);
+                if (measurement is IV.Defs.ScanResult fullScan)
+                {
+                    var filename = _dmsCache.Save(recipe, fullScan);
+                    _nlog.Info(LogIO.Text(Timestamp.Ms, "Cache", "Write", filename));
+                }
+            }
+        });
     }
 
     // Internal
@@ -187,7 +202,7 @@ public class OdorReproducerController
         return LogIO.Text("Recipe", string.Join(" ", fields));
     }
 
-    private async Task<IMeasurement?> CollectData(float usv)
+    private async Task<IMeasurement?> CollectData(float usv, bool useDelays = true)
     {
         _canSendFrequentData = true;
 
@@ -203,7 +218,8 @@ public class OdorReproducerController
             result = await _sntDataCollector.Collect((count, progress) =>
                 ENoseProgressChanged?.Invoke(this, progress));
 
-            await Task.Delay(300);
+            if (useDelays)
+                await Task.Delay(300);
         }
 
         _canSendFrequentData = false;
@@ -237,7 +253,7 @@ public class OdorReproducerController
         }
     }
 
-    private async Task<IMeasurement?> MakeDmsScan(IV.Communicator ionVision, float usv)
+    private async Task<IMeasurement?> MakeDmsScan(IV.Communicator ionVision, float usv, bool useDelays = true)
     {
         ENoseStarted?.Invoke(this, EventArgs.Empty);
 
@@ -246,15 +262,18 @@ public class OdorReproducerController
             if (!LogIO.Add(await ionVision.GetScopeParameters(), "GetScopeParameters", out IV.Defs.ScopeParameters? scopeParams) || scopeParams == null)
                 return null;
 
-            await Task.Delay(150);
+            if (useDelays)
+                await Task.Delay(150);
             LogIO.Add(await ionVision.SetScopeParameters(scopeParams with { Usv = usv }), "SetScopeParameters");
 
-            await Task.Delay(150);
+            if (useDelays)
+                await Task.Delay(150);
             LogIO.Add(await ionVision.EnableScopeMode(), "EnableScopeMode");
 
             var scan = await ionVision.WaitScopeScanToFinish(progress => ENoseProgressChanged?.Invoke(this, progress));
 
-            await Task.Delay(150);
+            if (useDelays)
+                await Task.Delay(150);
             LogIO.Add(await ionVision.DisableScopeMode(), "DisableScopeMode");
 
             return scan;
@@ -266,7 +285,8 @@ public class OdorReproducerController
 
             await ionVision.WaitScanToFinish(progress => ENoseProgressChanged?.Invoke(this, progress));
 
-            await Task.Delay(300);
+            if (useDelays)
+                await Task.Delay(300);
             LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IV.Defs.ScanResult? scan);
 
             return scan;

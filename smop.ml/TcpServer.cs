@@ -86,7 +86,7 @@ internal class TcpServer : Server
         if (status == Status.Connected)
         {
             // The following routine sends \0 byte every second to the client. This is the only way to keep tracking whether the client is still connected,
-            // as the native server's mechanism to detect disconnection does no function if ping-pong functionality is disabled (and we want it to be disabled,
+            // as the native server's mechanism to detect disconnection does not function if ping-pong functionality is disabled (and we want it to be disabled,
             // otherwise it constantly sends a string to ML client)
 
             _connectionCheckTaskCancellation = new();

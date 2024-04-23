@@ -11,11 +11,22 @@ using System.Timers;
 
 namespace Smop.IonVision;
 
-internal class Simulator : IMinimalAPI
+public class Simulator : IMinimalAPI
 {
     public string Version => "1.5";
 
-    public Simulator()
+    public static bool IsFast => SCAN_DURATION == 100;
+
+    public static void MakeFast()
+    {
+        SCAN_DURATION = 100;                // ms
+        SCAN_PROGRESS_STEP_DURATION = 20;   // ms
+        SCOPE_DURATION = 100;               // ms
+        SCOPE_PROGRESS_STEP_DURATION = 20;  // ms
+        RESULT_PREPARATION_DURATION = 0.1;  // seconds
+    }
+
+    internal Simulator()
     {
         _wsServer = new WebSocketServer("ws://0.0.0.0:80");
         _wsServer.ListenerSocket.NoDelay = true;
@@ -43,7 +54,7 @@ internal class Simulator : IMinimalAPI
             _latestResult = RandomizeScanData(SimulatedData.ScanResult);
 
             Notify("scan.finished");
-            DispatchOnce.Do(1, () => Notify("scan.resultsProcessed"));
+            DispatchOnce.Do(RESULT_PREPARATION_DURATION, () => Notify("scan.resultsProcessed"));
         };
 
         _scanProgressTimer.AutoReset = true;
@@ -357,10 +368,11 @@ internal class Simulator : IMinimalAPI
 
     // Internal
 
-    const double SCAN_DURATION = 2500;                 // ms
-    const double SCAN_PROGRESS_STEP_DURATION = 200;    // ms
-    const double SCOPE_DURATION = 2000;                // ms
-    const double SCOPE_PROGRESS_STEP_DURATION = 200;        // ms
+    static int SCAN_DURATION = 2500;                 // ms
+    static int SCAN_PROGRESS_STEP_DURATION = 200;    // ms
+    static int SCOPE_DURATION = 2000;                // ms
+    static int SCOPE_PROGRESS_STEP_DURATION = 200;   // ms
+    static double RESULT_PREPARATION_DURATION = 1;   // seconds
 
     readonly WebSocketServer _wsServer;
     readonly List<IWebSocketConnection> _sockets = new();

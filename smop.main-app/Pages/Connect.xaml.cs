@@ -369,6 +369,12 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             {
                 txbIonVisionIP.Text = "simulator";
                 _storage.AddSimulatingTarget(SimulationTarget.IonVision);
+
+                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                {
+                    IonVision.Simulator.MakeFast();
+                    txbIonVisionIP.Text = "fast simulator";
+                }
             }
 
             if (e.Source == this)

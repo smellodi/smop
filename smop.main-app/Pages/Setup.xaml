@@ -239,6 +239,15 @@
         </Grid>
 
         <WrapPanel Grid.Row="2"
+                   HorizontalAlignment="Left">
+            <Button x:Name="btnCheckChemicalLevels"
+                    Style="{StaticResource Next}"
+                    IsEnabled="False"
+                    Content="Check chemical levels"
+                    Click="CheckChemicalLevels_Click"/>
+        </WrapPanel>
+        
+        <WrapPanel Grid.Row="2"
                    HorizontalAlignment="Center">
             <Button x:Name="btnStart"
                     Style="{StaticResource Next}"
@@ -247,7 +256,7 @@
                     Click="Start_Click"/>
         </WrapPanel>
 
-        <Border x:Name="brdENoseProgress" Grid.RowSpan="100" Grid.ColumnSpan="100"
+        <Border x:Name="brdMeasurementProgress" Grid.RowSpan="100" Grid.ColumnSpan="100"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Padding="12"
@@ -259,11 +268,11 @@
                        Content="Please wait while measurements are in progress..."
                        Foreground="{StaticResource BrushFont}"/>
                 <WrapPanel>
-                    <ProgressBar x:Name="prbENoseProgress"
+                    <ProgressBar x:Name="prbMeasurementProgress"
                                  Width="362"
                                  Height="12"
                                  Value="60"/>
-                    <Label x:Name="lblENoseProgress"
+                    <Label x:Name="lblMeasurementProgress"
                            VerticalAlignment="Center"
                            Margin="4,0,0,0"
                            MinWidth="38"

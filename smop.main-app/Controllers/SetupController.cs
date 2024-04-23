@@ -12,6 +12,11 @@ using Smop.MainApp.Dialogs;
 
 namespace Smop.MainApp.Controllers;
 
+public record class ChemicalLevel(string OdorName, float Level)
+{
+    public static float CriticalLevel => 90; // %
+}
+
 public class SetupController
 {
     public class LogHandlerArgs(string text, bool replaceLast = false) : EventArgs
@@ -23,7 +28,7 @@ public class SetupController
     public event EventHandler<LogHandlerArgs>? LogDms;
     public event EventHandler<LogHandlerArgs>? LogSnt;
     public event EventHandler<LogHandlerArgs>? LogOD;
-    public event EventHandler<float>? ScanProgress;
+    public event EventHandler<float>? MeasurementProgress;
 
     public IVDefs.ParameterDefinition? ParamDefinition { get; private set; } = null;
     public IVDefs.ScopeParameters? ScopeParameters { get; private set; } = null;
@@ -434,6 +439,69 @@ public class SetupController
         return result;
     }
 
+    public async Task<ChemicalLevel[]?> CheckChemicalLevels()
+    {
+        var result = new List<ChemicalLevel>();
+
+        if (!COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set humidity"))
+            return null;
+
+        _odorDisplay.Data += OdorDisplay_Data;
+
+        var enabledChannels = _odorChannels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString());
+
+        float count = 0;
+        foreach (var channel in enabledChannels)
+        {
+            var odorChannels = OdorChannels.From(enabledChannels);
+            foreach (var ch in odorChannels)
+            {
+                ch.Flow = ch.ID == channel.ID ? OdorChannels.LevelTestFlow : 0;
+            }
+
+            COMHelper.ShowErrorIfAny(_odController.OpenChannels(odorChannels), "release odors");
+
+            var saturationDuration = OdorDisplayController.CalcSaturationDuration(new float[] { 0 });   // use maximum duration
+            LogOD?.Invoke(this, new LogHandlerArgs($"{channel.Name} was released, waiting {saturationDuration:F1}s for the mixture to stabilize..."));
+            await Task.Delay((int)(saturationDuration * 1000));
+            LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
+
+            _pidSamples.Clear();
+
+            var progress = 100f * (3 * count + 1) / (3 * enabledChannels.Count());
+            MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
+
+            _canCollectOdorDisplayData = true;
+
+            await Task.Delay(2000);
+
+            _canCollectOdorDisplayData = false;
+
+            COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop the odor");
+
+            progress = 100f * (3 * count + 2) / (3 * enabledChannels.Count());
+            MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
+
+            var cleanupDuration = OdorDisplayController.CalcCleanupDuration(new float[] { 0 });     // use the maximum duration
+            LogOD?.Invoke(this, new LogHandlerArgs($"The odor was stopped, cleaning up {cleanupDuration:F1}s..."));
+            await Task.Delay((int)(cleanupDuration * 1000));
+            LogOD?.Invoke(this, new LogHandlerArgs("Done."));
+
+            progress = 100f * (3 * count + 3) / (3 * enabledChannels.Count());
+            MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
+
+            var pid = _pidSamples.Average();
+            result.Add(new(channel.Name, 100 * pid / (float)channel.Propeties["pidCheckLevel"]));
+
+            count += 1;
+        }
+
+        _odorDisplay.Data -= OdorDisplay_Data;
+
+        return result.ToArray();
+    }
+
     // Internal
 
     const int PID_MAX_DATA_COUNT = 30;
@@ -498,7 +566,7 @@ public class SetupController
                 $"Scanning... {progress} %" :
                 "Scanning finished.", true
             ));
-            ScanProgress?.Invoke(this, progress);
+            MeasurementProgress?.Invoke(this, progress);
         });
 
         await Task.Delay(300);
@@ -548,7 +616,7 @@ public class SetupController
                 $"Scanning... {progress} %" :
                 "Scanning finished.", true
             ));
-            ScanProgress?.Invoke(this, progress);
+            MeasurementProgress?.Invoke(this, progress);
         });
 
         await Task.Delay(150);
@@ -567,7 +635,7 @@ public class SetupController
         SntSample = await _sntDataCollector.Collect((count, progress) =>
         {
             LogSnt?.Invoke(this, new LogHandlerArgs($"Collected {count} samples...", true));
-            ScanProgress?.Invoke(this, progress);
+            MeasurementProgress?.Invoke(this, progress);
         });
 
         if (SntSample != null)

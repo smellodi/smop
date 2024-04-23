@@ -1,7 +1,6 @@
 ﻿using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Dialogs;
-using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -23,7 +21,7 @@ public partial class Setup : Page, IPage<object?>
     {
         InitializeComponent();
 
-        brdENoseProgress.Visibility = Visibility.Collapsed;
+        brdMeasurementProgress.Visibility = Visibility.Collapsed;
 
         _dmsPlotTypes = new RadioButton[] { rdbDmsPlotTypeSingle, rdbDmsPlotTypeDiff, rdbDmsPlotTypeBlandAltman };
         foreach (int plotType in Enum.GetValues(typeof(Plot.ComparisonOperation)))
@@ -38,10 +36,10 @@ public partial class Setup : Page, IPage<object?>
         _ctrl.LogDms += (s, e) => AddToLog(LogType.DMS, e.Text, e.ReplaceLast);
         _ctrl.LogSnt += (s, e) => AddToLog(LogType.SNT, e.Text, e.ReplaceLast);
         _ctrl.LogOD += (s, e) => AddToLog(LogType.OD, e.Text, e.ReplaceLast);
-        _ctrl.ScanProgress += (s, e) => Dispatcher.Invoke(() =>
+        _ctrl.MeasurementProgress += (s, e) => Dispatcher.Invoke(() =>
         {
-            prbENoseProgress.Value = e;
-            lblENoseProgress.Content = $"{e}%";
+            prbMeasurementProgress.Value = e;
+            lblMeasurementProgress.Content = $"{e}%";
         });
 
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
@@ -77,6 +75,8 @@ public partial class Setup : Page, IPage<object?>
 
         pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
         odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
+
+        //btnCheckChemicalLevels.Visibility = Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? Visibility.Collapsed : Visibility.Visible;
 
         var measSource = Controls.OdorReproductionSettings.MeasurementSouce.None;
         if (App.IonVision != null)
@@ -144,6 +144,7 @@ public partial class Setup : Page, IPage<object?>
     bool _isOdorDisplayCleaningRunning = false;
     bool _isDMSInitRunning = false;
     bool _isCollectingData = false;
+    bool _isCheckngChemicalLevels = false;
 
     bool _doesOdorDisplayRequireCleanup = false;
 
@@ -157,26 +158,36 @@ public partial class Setup : Page, IPage<object?>
         {
             btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) &&
                 pulseGeneratorSettings.Setup != null;
+            stpTargetOdorActions.Visibility = Visibility.Collapsed;
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
         {
             bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
             bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
             bool isSntReady = _ctrl.SntSample != null || isDmsReady;
+            bool isMeasuringSomething = brdMeasurementProgress.Visibility == Visibility.Visible;
 
             btnStart.IsEnabled =
                 isODReady &&
                 (isDmsReady || App.IonVision == null) &&
                 (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
-                brdENoseProgress.Visibility != Visibility.Visible;
-            btnTargetMeasure.IsEnabled = (_ionVisionIsReady || App.IonVision == null) && !_isOdorDisplayCleaningRunning;
+                !_isCheckngChemicalLevels &&
+                !isMeasuringSomething;
+
+            btnCheckChemicalLevels.IsEnabled = isODReady && 
+                !_isCheckngChemicalLevels &&
+                !isMeasuringSomething;
+
+            btnTargetMeasure.IsEnabled = (_ionVisionIsReady || App.IonVision == null) && 
+                !_isOdorDisplayCleaningRunning &&
+                !isMeasuringSomething;
             btnTargetLoad.IsEnabled = btnTargetMeasure.IsEnabled;
-            stpTargetOdorActions.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
+            stpTargetOdorActions.IsEnabled = !isMeasuringSomething;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;
-            odorReproductionSettings.IsEnabled = brdENoseProgress.Visibility != Visibility.Visible;
+            odorReproductionSettings.IsEnabled = !isMeasuringSomething;
 
             prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
             prbDMSBusy.Visibility = _isDMSInitRunning ? Visibility.Visible : Visibility.Hidden;
@@ -392,9 +403,9 @@ public partial class Setup : Page, IPage<object?>
 
         btnTargetMeasure.IsEnabled = false;
 
-        brdENoseProgress.Visibility = Visibility.Visible;
-        prbENoseProgress.Value = 0;
-        lblENoseProgress.Content = "0%";
+        brdMeasurementProgress.Visibility = Visibility.Visible;
+        prbMeasurementProgress.Value = 0;
+        lblMeasurementProgress.Content = "0%";
 
         UpdateUI();
 
@@ -423,7 +434,7 @@ public partial class Setup : Page, IPage<object?>
         }
 
         btnTargetMeasure.IsEnabled = true;
-        brdENoseProgress.Visibility = Visibility.Collapsed;
+        brdMeasurementProgress.Visibility = Visibility.Collapsed;
 
         _isCollectingData = false;
 
@@ -548,5 +559,33 @@ public partial class Setup : Page, IPage<object?>
     {
         _dmsPlotType = (Plot.ComparisonOperation)Enum.Parse(typeof(Plot.ComparisonOperation), (sender as RadioButton)!.Tag.ToString() ?? "0");
         ShowDmsPlot();
+    }
+
+    private async void CheckChemicalLevels_Click(object sender, RoutedEventArgs e)
+    {
+        _isCheckngChemicalLevels = true;
+
+        brdMeasurementProgress.Visibility = Visibility.Visible;
+        prbMeasurementProgress.Value = 0;
+        lblMeasurementProgress.Content = "0%";
+
+        UpdateUI();
+
+        var chemicalLevels = await _ctrl.CheckChemicalLevels();
+        var lines = chemicalLevels?.Select(gasFlow => $"{gasFlow.OdorName}: {gasFlow.Level:F1} %") ?? new string[] { "Failed to measure gas levels" };
+        var msg = string.Join("\n", lines);
+        if (chemicalLevels?.All(level => level.Level >= ChemicalLevel.CriticalLevel) ?? false)
+        {
+            MsgBox.Notify(Title, $"All odor levels are sufficient:\n\n{msg}");
+        }
+        else
+        {
+            MsgBox.Custom(Title, $"Some odor levels are insufficient:\n\n{msg}\n\nPlease add chemicals!", MsgBox.MsgIcon.Warning, null, null, MsgBox.Button.OK);
+        }
+
+        brdMeasurementProgress.Visibility = Visibility.Collapsed;
+
+        _isCheckngChemicalLevels = false;
+        UpdateUI();
     }
 }

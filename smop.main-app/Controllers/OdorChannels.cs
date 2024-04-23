@@ -34,7 +34,7 @@ public class OdorChannel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public OdorChannel(OdorDisplay.Device.ID id, string name, params KeyValuePair<string, string>[] props)
+    public OdorChannel(OdorDisplay.Device.ID id, string name, params KeyValuePair<string, object>[] props)
     {
         ID = id;
         _name = name;
@@ -53,6 +53,8 @@ public class OdorChannel : INotifyPropertyChanged
 
 public class OdorChannels : IEnumerable<OdorChannel>
 {
+    public static float LevelTestFlow => 30; // nccm
+
     public OdorChannels(OdorDisplay.Device.ID[]? ids = null)
     {
         var odorDefs = Properties.Settings.Default.Reproduction_Odors;
@@ -101,6 +103,8 @@ public class OdorChannels : IEnumerable<OdorChannel>
         settings.Save();
     }
 
+    public static OdorChannels From(IEnumerable<OdorChannel> channels) => new(channels.Select(ch => ch.ID).ToArray());
+
     public string NameFromID(OdorDisplay.Device.ID id) => _items.FirstOrDefault(odorChannel => odorChannel.ID == id)?.Name ?? id.ToString();
 
     public IEnumerator<OdorChannel> GetEnumerator() => new EnumOdorChannels(_items);
@@ -147,5 +151,15 @@ public class OdorChannels : IEnumerable<OdorChannel>
         };
 
         channel.Propeties.Add("criticalFlow", criticalFlow);
+
+        float pidLevelTest = channel.Name.ToLower() switch
+        {
+            "ipa" => 1.800f,
+            "ethanol" => 1.000f,
+            "nbutanol" => 1.200f,
+            _ => 0.100f,
+        };
+
+        channel.Propeties.Add($"pidCheckLevel", pidLevelTest);
     }
 }

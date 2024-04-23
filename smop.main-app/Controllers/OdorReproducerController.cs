@@ -112,7 +112,7 @@ public class OdorReproducerController
             }
             else
             {
-                CollectDataAndSendToML(recipe, !IV.Simulator.IsFast);
+                CollectDataAndSendToML(recipe, useDelays: !IV.Simulator.IsFast);
             }
         }
         else
@@ -191,7 +191,7 @@ public class OdorReproducerController
     bool _canSendFrequentData = false;
     bool _canLogOdorDisplayData;
 
-    public string RecipeToString(ML.Recipe recipe)
+    private string RecipeToString(ML.Recipe recipe)
     {
         var name = recipe.Name.Replace(' ', '_');
         var fields = new List<string>() { "Received", name, recipe.IsFinal ? "Final" : "Continues", recipe.Distance.ToString("0.####") };

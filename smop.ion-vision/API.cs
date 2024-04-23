@@ -33,7 +33,7 @@ internal class API : IMinimalAPI
         var host = $"http://{ip}/api";
         _client = new RestClient(host, config =>
         {
-            config.MaxTimeout = 2000;
+            config.MaxTimeout = 5000;
             config.ThrowOnAnyError = false;
         });
         _client.AddDefaultHeader("Content-Type", "application/json");

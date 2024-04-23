@@ -370,7 +370,7 @@
                        HorizontalAlignment="Center">
                 <StackPanel Style="{StaticResource PlotPanel}">
                     <Label Style="{StaticResource PlotHeader}"
-                               Content="Trial similarity"/>
+                               Content="Trial distances"/>
                     <local:ProgressPlot x:Name="crtTrialDistance"
                              Height="40"
                              Width="200"/>
@@ -378,7 +378,7 @@
 
                 <StackPanel Style="{StaticResource PlotPanel}">
                     <Label Style="{StaticResource PlotHeader}"
-                               Content="Best similarity"/>
+                               Content="Shortest distances"/>
                     <local:ProgressPlot x:Name="crtBestDistance"
                              Height="40"
                              Width="200"/>

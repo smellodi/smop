@@ -574,7 +574,7 @@ public partial class Setup : Page, IPage<object?>
         var chemicalLevels = await _ctrl.CheckChemicalLevels();
         var lines = chemicalLevels?.Select(gasFlow => $"{gasFlow.OdorName}: {gasFlow.Level:F1} %") ?? new string[] { "Failed to measure gas levels" };
         var msg = string.Join("\n", lines);
-        if (chemicalLevels?.All(level => level.Level >= ChemicalLevel.CriticalLevel) ?? false)
+        if (chemicalLevels?.All(level => level.Level >= ChemicalLevel.Threshold) ?? false)
         {
             MsgBox.Notify(Title, $"All odor levels are sufficient:\n\n{msg}");
         }

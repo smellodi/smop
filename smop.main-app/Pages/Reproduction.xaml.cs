@@ -205,8 +205,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         return null;
     }
 
-    private static T? GetMeasurement<T>(ODPackets.Measurement measurement, ODDevice.Sensor sensor)
-        where T : ODPackets.SensorValue
+    private static T? GetMeasurement<T>(ODPackets.Sensors measurement, ODDevice.Sensor sensor)
+        where T : ODPackets.Sensor.Value
     {
         T? result = default;
 
@@ -433,21 +433,21 @@ public partial class Reproduction : Page, IPage<Navigation>
             if (m.Device == ODDevice.ID.Base)
             {
                 var value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.PID);
-                if (value != null && value is ODPackets.PIDValue pid)
+                if (value != null && value is ODPackets.Sensor.PID pid)
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_PID, 1) is TextBlock pidEl)
                         pidEl.Text = (pid.Volts * 1000).ToString("0.0") + " mV";
                 }
 
                 value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.OutputAirHumiditySensor);
-                if (value != null && value is ODPackets.HumidityValue humidity)
+                if (value != null && value is ODPackets.Sensor.Humidity humidity)
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_HUMIDITY, 1) is TextBlock humidityEl)
                         humidityEl.Text = humidity.Percent.ToString("0.0") + " %";
                 }
 
                 value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.OdorSourceThermometer);
-                if (value != null && value is ODPackets.ThermometerValue thermometer)
+                if (value != null && value is ODPackets.Sensor.Thermometer thermometer)
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_TEMPERATURE_GAS, 1) is TextBlock tempGasEl)
                         tempGasEl.Text = thermometer.Celsius.ToString("0.0") + "°";
@@ -459,8 +459,8 @@ public partial class Reproduction : Page, IPage<Navigation>
                 if (GetElementInGrid(grdODChannels, row, 1) is not TextBlock flowEl)
                     continue;
 
-                var gas = GetMeasurement<ODPackets.GasValue>(m, ODDevice.Sensor.OdorantFlowSensor);
-                var valve = GetMeasurement<ODPackets.ValveValue>(m, ODDevice.Sensor.OdorantValveSensor);
+                var gas = GetMeasurement<ODPackets.Sensor.Gas>(m, ODDevice.Sensor.OdorantFlowSensor);
+                var valve = GetMeasurement<ODPackets.Sensor.Valve>(m, ODDevice.Sensor.OdorantValveSensor);
 
                 if (!(valve?.Opened ?? true))
                 {

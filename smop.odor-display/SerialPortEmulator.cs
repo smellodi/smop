@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Sensor = Smop.OdorDisplay.Packets.Sensor;
 
 namespace Smop.OdorDisplay;
 
@@ -299,22 +300,22 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
 
         var baseCaps = _state[Device.ID.Base].Capabilities;
 
-        var measurements = new List<Measurement>
+        var measurements = new List<Sensors>
         {
-            new(Device.ID.Base, new SensorValue[]
+            new(Device.ID.Base, new Sensor.Value[]
             {
-                new PIDValue(_currentPID + Random.Range(0.001f)),
-                //new BeadThermistorValue(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
-                new ThermometerValue(Device.Sensor.ChassisThermometer, baseCaps[Device.Controller.ChassisTemperature] + Random.Range(0.1f)),
-                new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
-                new ThermometerValue(Device.Sensor.GeneralPurposeThermometer, 27.0f + Random.Range(0.1f)),
-                new HumidityValue(Device.Sensor.OutputAirHumiditySensor, (baseCaps[Device.Controller.OdorantFlow] * Device.MaxBaseAirFlowRate) + Random.Range(0.07f), 27.1f + Random.Range(0.1f)),
-                new HumidityValue(Device.Sensor.InputAirHumiditySensor, 0.22f + Random.Range(0.04f), 26.6f + Random.Range(0.1f)),
-                new PressureValue(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
-                new GasValue(Device.Sensor.OdorantFlowSensor, baseCaps[Device.Controller.OdorantFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
-                new GasValue(Device.Sensor.DilutionAirFlowSensor, baseCaps[Device.Controller.DilutionAirFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
-                new ValveValue(Device.Sensor.OdorantValveSensor, baseCaps[Device.Controller.OdorantValve] != 0),
-                new ValveValue(Device.Sensor.OutputValveSensor, false),
+                new Sensor.PID(_currentPID + Random.Range(0.001f)),
+                //new Sensor.BeadThermistor(float.PositiveInfinity, 3.5f + Random.Range(0.1f)),
+                new Sensor.Thermometer(Device.Sensor.ChassisThermometer, baseCaps[Device.Controller.ChassisTemperature] + Random.Range(0.1f)),
+                new Sensor.Thermometer(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
+                new Sensor.Thermometer(Device.Sensor.GeneralPurposeThermometer, 27.0f + Random.Range(0.1f)),
+                new Sensor.Humidity(Device.Sensor.OutputAirHumiditySensor, (baseCaps[Device.Controller.OdorantFlow] * Device.MaxBaseAirFlowRate) + Random.Range(0.07f), 27.1f + Random.Range(0.1f)),
+                new Sensor.Humidity(Device.Sensor.InputAirHumiditySensor, 0.22f + Random.Range(0.04f), 21.8f + Random.Range(0.1f)),
+                new Sensor.Pressure(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
+                new Sensor.Gas(Device.Sensor.OdorantFlowSensor, baseCaps[Device.Controller.OdorantFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
+                new Sensor.Gas(Device.Sensor.DilutionAirFlowSensor, baseCaps[Device.Controller.DilutionAirFlow] + Random.Range(0.005f), 27.5f + Random.Range(0.1f), 1001.0f + Random.Range(0.5f)),
+                new Sensor.Valve(Device.Sensor.OdorantValveSensor, baseCaps[Device.Controller.OdorantValve] != 0),
+                new Sensor.Valve(Device.Sensor.OutputValveSensor, false),
             })
         };
 
@@ -323,12 +324,12 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
         {
             var id = (Device.ID)i;
             var odorCaps = _state[id].Capabilities;
-            measurements.Add(new Measurement(id, new SensorValue[]
+            measurements.Add(new Sensors(id, new Sensor.Value[]
             {
-                new GasValue(Device.Sensor.OdorantFlowSensor, odorCaps[Device.Controller.OdorantFlow] * flowConverter + Random.Range(0.0005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
-                new ThermometerValue(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
-                new PressureValue(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
-                new ValveValue(Device.Sensor.OdorantValveSensor, odorCaps[Device.Controller.OdorantValve] != 0),
+                new Sensor.Gas(Device.Sensor.OdorantFlowSensor, odorCaps[Device.Controller.OdorantFlow] * flowConverter + Random.Range(0.0005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
+                new Sensor.Thermometer(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
+                new Sensor.Pressure(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
+                new Sensor.Valve(Device.Sensor.OdorantValveSensor, odorCaps[Device.Controller.OdorantValve] != 0),
             }));
         }
 
@@ -350,10 +351,14 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
     {
         var totalOdorFlow = _state
             .Where(state => state.Key != Device.ID.Base)
-            .Select(state => state.Value.Capabilities)
-            .Where(caps => caps.ContainsKey(Device.Controller.OdorantValve) && caps.ContainsKey(Device.Controller.OdorantFlow))
-            .Where(caps => caps[Device.Controller.OdorantValve] != 0 && caps[Device.Controller.OdorantFlow] > 0)
-            .Select(caps => caps[Device.Controller.OdorantFlow])    // normalized value!
+            .Select(state => state.Value )
+            .Where(stateValue => stateValue.Capabilities.ContainsKey(Device.Controller.OdorantValve) && stateValue.Capabilities.ContainsKey(Device.Controller.OdorantFlow))
+            .Where(stateValue => stateValue.Capabilities[Device.Controller.OdorantValve] != 0 && stateValue.Capabilities[Device.Controller.OdorantFlow] > 0)
+            .Select(stateValue => stateValue.Capabilities[Device.Controller.OdorantFlow] * stateValue.DeviceID switch { 
+                Device.ID.Odor1 => 21.5f,   // IPA
+                Device.ID.Odor2 => 14.5f,   // Ethanol
+                _ => 1f
+            })    // normalized value!
             .Sum();
 
         _targetPID = BASE_PID + totalOdorFlow * Device.MaxOdoredAirFlowRate * 2 / 1000;

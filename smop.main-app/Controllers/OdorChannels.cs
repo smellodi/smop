@@ -29,7 +29,7 @@ public class OdorChannel : INotifyPropertyChanged
     }
 
     public OdorDisplay.Device.ID ID { get; }
-    public Dictionary<string, object> Propeties { get; } = new() { { "maxFlow", 50 } };
+    public Dictionary<string, object> Propeties { get; } = new();
 
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,7 +45,29 @@ public class OdorChannel : INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Computes the PID level as a percentage to the expected level given the reference flow <see cref="ChemicalLevel.TestFlow"/>.
+    /// The reference PID level is hardcoded in its "pidCheckLevel" property.
+    /// The correction formula was found empirically and may be wrong!
+    /// </summary>
+    /// <param name="pid">PID, Volts</param>
+    /// <returns>Percentage</returns>
+    public float ComputePidLevel(float pid, float temp)
+    {
+        var basePID = (float)Propeties["pidCheckLevel"];
+        var dt = temp - BASE_TEMP;
+        var correction = dt > 0 ? 
+            CORRECTION_GAIN * Math.Pow(dt, CORRECTION_POW) : 
+            -CORRECTION_GAIN * Math.Pow(-dt, CORRECTION_POW);
+        return 100 * pid / (basePID + (float)correction);
+    }
+
     // Internal
+
+    // Constants for ComputePidLevel, found empirically.. may be incorrect!
+    const double BASE_TEMP = 20.5;
+    const double CORRECTION_POW = 2.3;
+    const double CORRECTION_GAIN = 0.014;
 
     string _name;
     float _flow = 0;
@@ -53,8 +75,6 @@ public class OdorChannel : INotifyPropertyChanged
 
 public class OdorChannels : IEnumerable<OdorChannel>
 {
-    public static float LevelTestFlow => 30; // nccm
-
     public OdorChannels(OdorDisplay.Device.ID[]? ids = null)
     {
         var odorDefs = Properties.Settings.Default.Reproduction_Odors;
@@ -142,24 +162,32 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     private static void SetProperties(OdorChannel channel)
     {
-        var criticalFlow = channel.Name.ToLower() switch
+        var channelName = channel.Name.ToLower();
+        channel.Propeties.Add("maxFlow", channelName switch
+        {
+            _ => 50,
+        });
+
+        channel.Propeties.Add("criticalFlow", channelName switch
         {
             "ipa" => 55,
             "ethanol" => 65,
             "nbutanol" => 70,
             _ => 100,
-        };
+        });
 
-        channel.Propeties.Add("criticalFlow", criticalFlow);
-
-        float pidLevelTest = channel.Name.ToLower() switch
+        channel.Propeties.Add($"pidCheckLevel", channelName switch  // as of carrier gas T = OdorChannel.BASE_TEMP
         {
-            "ipa" => 1.800f,
-            "ethanol" => 1.000f,
-            "nbutanol" => 1.200f,
+            "ipa" => 1.730f,
+            "ethanol" => 1.200f,
+            "nbutanol" => 0.600f,
             _ => 0.100f,
-        };
-
-        channel.Propeties.Add($"pidCheckLevel", pidLevelTest);
+        });
     }
+}
+
+public record class ChemicalLevel(string OdorName, float Level)
+{
+    public static float TestFlow => 40; // nccm
+    public static float Threshold => 95; // %
 }

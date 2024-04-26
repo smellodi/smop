@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Sensor = Smop.OdorDisplay.Packets.Sensor;
 
 namespace Smop.MainApp.Controllers;
 
@@ -45,15 +46,15 @@ public class IndicatorController(LiveData graph)
             {
                 var value = sv switch
                 {
-                    PIDValue pid => pid.Volts * 1000,
-                    ThermometerValue temp => temp.Celsius,          // Ignored values:
-                    BeadThermistorValue beadTemp => beadTemp.Ohms,  // beadTemp.Volts
-                    HumidityValue humidity => humidity.Percent,     // humidity.Celsius
-                    PressureValue pressure => pressure.Millibars,   // pressure.Celsius
-                    GasValue gas => isBase ?                        // gas.Millibars, gas.Celsius
+                    Sensor.PID pid => pid.Volts * 1000,
+                    Sensor.Thermometer temp => temp.Celsius,          // Ignored values:
+                    Sensor.BeadThermistor beadTemp => beadTemp.Ohms,  // beadTemp.Volts
+                    Sensor.Humidity humidity => humidity.Percent,     // humidity.Celsius
+                    Sensor.Pressure pressure => pressure.Millibars,   // pressure.Celsius
+                    Sensor.Gas gas => isBase ?                        // gas.Millibars, gas.Celsius
                         gas.SLPM :
                         gas.SLPM * 1000,
-                    ValveValue valve => valve.Opened ? 1 : 0,
+                    Sensor.Valve valve => valve.Opened ? 1 : 0,
                     _ => 0
                 };
 

@@ -172,7 +172,7 @@ public static class SimulatedData
             for (int col = 0; col < colCount; col++)
                 result[row * colCount + col] = callback(
                     (float)col / (colCount - 1),
-                    (float)row / (rowCount - 1));
+                    (float)row / (rowCount - 0.5f));    // avoid row=max, as in simulation all signals vanish at this level.
         return result;
     }
 

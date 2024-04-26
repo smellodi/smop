@@ -15,7 +15,7 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
                 data.Timestamp
             };
 
-            foreach (Measurement m in data.Measurements)
+            foreach (Sensors m in data.Measurements)
             {
                 foreach (var sv in m.SensorValues)
                 {
@@ -36,7 +36,7 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
                 "Timestamp",
                 "DeviceTimestamp"
             };
-            foreach (Measurement m in data.Measurements)
+            foreach (Sensors m in data.Measurements)
             {
                 foreach (var sv in m.SensorValues)
                 {

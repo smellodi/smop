@@ -12,11 +12,6 @@ using Smop.MainApp.Dialogs;
 
 namespace Smop.MainApp.Controllers;
 
-public record class ChemicalLevel(string OdorName, float Level)
-{
-    public static float CriticalLevel => 90; // %
-}
-
 public class SetupController
 {
     public class LogHandlerArgs(string text, bool replaceLast = false) : EventArgs
@@ -233,6 +228,7 @@ public class SetupController
         LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
 
         _pidSamples.Clear();
+        _tempSamples.Clear();
 
         _canCollectOdorDisplayData = true;
 
@@ -457,7 +453,7 @@ public class SetupController
             var odorChannels = OdorChannels.From(enabledChannels);
             foreach (var ch in odorChannels)
             {
-                ch.Flow = ch.ID == channel.ID ? OdorChannels.LevelTestFlow : 0;
+                ch.Flow = ch.ID == channel.ID ? ChemicalLevel.TestFlow : 0;
             }
 
             COMHelper.ShowErrorIfAny(_odController.OpenChannels(odorChannels), "release odors");
@@ -468,6 +464,7 @@ public class SetupController
             LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
 
             _pidSamples.Clear();
+            _tempSamples.Clear();
 
             var progress = 100f * (3 * count + 1) / (3 * enabledChannels.Count());
             MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
@@ -492,7 +489,8 @@ public class SetupController
             MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
 
             var pid = _pidSamples.Average();
-            result.Add(new(channel.Name, 100 * pid / (float)channel.Propeties["pidCheckLevel"]));
+            var temp = _tempSamples.Average();
+            result.Add(new(channel.Name, channel.ComputePidLevel(pid, temp)));
 
             count += 1;
         }
@@ -516,6 +514,7 @@ public class SetupController
     readonly OdorDisplayController _odController = new();
 
     readonly List<float> _pidSamples = new();
+    readonly List<float> _tempSamples = new();
 
     readonly DmsCache _dmsCache = new();
 
@@ -658,11 +657,12 @@ public class SetupController
             {
                 foreach (var measurement in data.Measurements)
                 {
-                    if (measurement.Device == OdorDisplay.Device.ID.Base &&
-                        measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
+                    if (measurement.Device == OdorDisplay.Device.ID.Base)
                     {
-                        _pidSamples.Add(pid.Volts);
-                        break;
+                        if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.Sensor.PID pid)
+                            _pidSamples.Add(pid.Volts);
+                        if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.InputAirHumiditySensor) is ODPackets.Sensor.Humidity humidity)
+                            _tempSamples.Add(humidity.Celsius);
                     }
                 }
             }

@@ -310,7 +310,7 @@ public class OdorReproducerController
             foreach (var measurement in data.Measurements)
             {
                 if (measurement.Device == OdorDisplay.Device.ID.Base &&
-                    measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.PIDValue pid)
+                    measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.Sensor.PID pid)
                 {
                     _ = _ml.Publish(pid.Volts);
                     break;

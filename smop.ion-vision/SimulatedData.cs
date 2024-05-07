@@ -1,4 +1,5 @@
-﻿using Smop.IonVision.Defs;
+﻿using Smop.Common;
+using Smop.IonVision.Defs;
 using System;
 using System.Linq;
 
@@ -145,10 +146,6 @@ public static class SimulatedData
         MakeArrayLine(0, (x, y) => 100f * x)
     );
 
-    public record class SimulatedLineGains(float Water, float[] Components);
-
-    public static SimulatedLineGains LineGains { get; set; } = new SimulatedLineGains(100, new float[Common.OdorPrinter.MaxOdorCount] { 100, 90, 40, 0, 0 });
-
     // Internal
 
     static RangeStep Usv => ParameterDefinition.MeasurementParameters.SteppingControl.Usv; // shortcut
@@ -223,15 +220,15 @@ public static class SimulatedData
     /// <param name="y">0..1</param>
     /// <returns>Pixels value</returns>
     private static float GetImitatedPixel(float x, float y) =>
-        new float[1 + Common.OdorPrinter.MaxOdorCount]
+        new float[1 + OdorPrinter.MaxOdorCount]
         {
             // The water/moisture line
-            (LineGains.Water - 0.5f * LineGains.Water * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
+            (Simulation.DmsWaterGain - 0.5f * Simulation.DmsWaterGain * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
 
-            (LineGains.Components[0] - LineGains.Components[0] * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
-            (LineGains.Components[1] - LineGains.Components[1] * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
-            (LineGains.Components[2] - LineGains.Components[2] * y) * Hyperbola(x, y, HyperbolaParams1[0], HyperbolaParams1[1], HyperbolaParams1[2]),
-            (LineGains.Components[3] - LineGains.Components[3] * y) * Hyperbola(x, y, HyperbolaParams2[0], HyperbolaParams2[1], HyperbolaParams2[2]),
-            (LineGains.Components[4] - LineGains.Components[4] * y) * Hyperbola(x, y, HyperbolaParams3[0], HyperbolaParams3[1], HyperbolaParams3[2]),
+            (Simulation.DmsGains[0] - Simulation.DmsGains[0] * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
+            (Simulation.DmsGains[1] - Simulation.DmsGains[1] * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
+            (Simulation.DmsGains[2] - Simulation.DmsGains[2] * y) * Hyperbola(x, y, HyperbolaParams1[0], HyperbolaParams1[1], HyperbolaParams1[2]),
+            (Simulation.DmsGains[3] - Simulation.DmsGains[3] * y) * Hyperbola(x, y, HyperbolaParams2[0], HyperbolaParams2[1], HyperbolaParams2[2]),
+            (Simulation.DmsGains[4] - Simulation.DmsGains[4] * y) * Hyperbola(x, y, HyperbolaParams3[0], HyperbolaParams3[1], HyperbolaParams3[2]),
         }.Max();
 }

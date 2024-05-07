@@ -6,16 +6,14 @@ namespace Smop.SmellInsp;
 
 public static class SimulatedData
 {
-    public static float[] Gains { get; set; } = new float[Common.OdorPrinter.MaxOdorCount] { 8, 6, 5, 0, 0 };
-
     public static Data Generate()
     {
         float SumAll(int sensorIndex)
         {
             float result = 0;
-            for (int i = 0; i < Gains.Length; i++)
+            for (int i = 0; i < Common.Simulation.SntGains.Length; i++)
             {
-                result += _impacts[i][sensorIndex] * Gains[i];
+                result += _impacts[i][sensorIndex] * Common.Simulation.SntGains[i];
             }
             return result;
         }

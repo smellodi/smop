@@ -77,5 +77,11 @@
     <Setting Name="Reproduction_DmsSingleSV" Type="System.Single" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="Setup_ShowThermistors" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Setup_ShowMonometers" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

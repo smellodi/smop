@@ -11,11 +11,14 @@ namespace Smop.MainApp.Controllers;
 
 public class IndicatorController(LiveData graph)
 {
-    public async Task Create(Dispatcher dispatcher, Panel stpOdorDisplayIndicators, Panel smellInspContainer)
+    public async Task Create(Dispatcher dispatcher, Panel stpOdorDisplayIndicators, Panel smellInspContainer, 
+        bool areThermistorsVisible, bool areMonometersVisible)
     {
         await IndicatorFactory.OdorDisplay(indicator => dispatcher.Invoke(() =>
         {
             indicator.MouseDown += ChannelIndicator_MouseDown;
+            if ((indicator.IsThermistor && !areThermistorsVisible) || (indicator.IsMonometer && !areMonometersVisible))
+                indicator.Visibility = System.Windows.Visibility.Collapsed;
             stpOdorDisplayIndicators.Children.Add(indicator);
             _indicators.Add(indicator.Source, indicator);
         }));

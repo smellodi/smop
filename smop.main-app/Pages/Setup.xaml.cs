@@ -1,5 +1,6 @@
 ﻿using Smop.Common;
 using Smop.MainApp.Controllers;
+using Smop.MainApp.Controls;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils;
 using System;
@@ -22,6 +23,9 @@ public partial class Setup : Page, IPage<object?>
         InitializeComponent();
 
         brdMeasurementProgress.Visibility = Visibility.Collapsed;
+
+        chkShowThermistorIndicators.IsChecked = Properties.Settings.Default.Setup_ShowThermistors;
+        chkShowPressureIndicators.IsChecked = Properties.Settings.Default.Setup_ShowMonometers;
 
         _dmsPlotTypes = new RadioButton[] { rdbDmsPlotTypeSingle, rdbDmsPlotTypeDiff, rdbDmsPlotTypeBlandAltman };
         foreach (int plotType in Enum.GetValues(typeof(Plot.ComparisonOperation)))
@@ -78,11 +82,11 @@ public partial class Setup : Page, IPage<object?>
 
         //btnCheckChemicalLevels.Visibility = Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? Visibility.Collapsed : Visibility.Visible;
 
-        var measSource = Controls.OdorReproductionSettings.MeasurementSouce.None;
+        var measSource = OdorReproductionSettings.MeasurementSouce.None;
         if (App.IonVision != null)
-            measSource |= Controls.OdorReproductionSettings.MeasurementSouce.DMS;
+            measSource |= OdorReproductionSettings.MeasurementSouce.DMS;
         if (_smellInsp.IsOpen)
-            measSource |= Controls.OdorReproductionSettings.MeasurementSouce.SNT;
+            measSource |= OdorReproductionSettings.MeasurementSouce.SNT;
         odorReproductionSettings.SetMeasurementSource(measSource);
 
         if (App.IonVision == null && grdStatuses.RowDefinitions.Count == 3)
@@ -332,7 +336,9 @@ public partial class Setup : Page, IPage<object?>
                 tabOdorDisplay.IsSelected = true;
             }
 
-            await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators);
+            await _indicatorController.Create(Dispatcher, stpOdorDisplayIndicators, stpSmellInspIndicators,
+                chkShowThermistorIndicators.IsChecked ?? false,
+                chkShowPressureIndicators.IsChecked ?? false);
 
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
@@ -553,6 +559,8 @@ public partial class Setup : Page, IPage<object?>
     private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         lmsGraph.Visibility = (tabOdorDisplay.IsSelected || tabSmellInsp.IsSelected) ? Visibility.Visible : Visibility.Hidden;
+        chkShowThermistorIndicators.Visibility = tabOdorDisplay.IsSelected ? Visibility.Visible : Visibility.Collapsed;
+        chkShowPressureIndicators.Visibility = tabOdorDisplay.IsSelected ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void DmsPlotType_Click(object sender, RoutedEventArgs e)
@@ -587,5 +595,35 @@ public partial class Setup : Page, IPage<object?>
 
         _isCheckngChemicalLevels = false;
         UpdateUI();
+    }
+
+    private void chkShowThermistorIndicators_Checked(object sender, RoutedEventArgs e)
+    {
+        bool areVisible = chkShowThermistorIndicators.IsChecked ?? false;
+        Properties.Settings.Default.Setup_ShowThermistors = areVisible;
+        Properties.Settings.Default.Save();
+
+        foreach (var child in stpOdorDisplayIndicators.Children)
+        {
+            if (child is ChannelIndicator ci && ci.IsThermistor)
+            {
+                ci.Visibility = areVisible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+    }
+
+    private void chkShowPressureIndicators_Checked(object sender, RoutedEventArgs e)
+    {
+        bool areVisible = chkShowPressureIndicators.IsChecked ?? false;
+        Properties.Settings.Default.Setup_ShowMonometers = areVisible;
+        Properties.Settings.Default.Save();
+
+        foreach (var child in stpOdorDisplayIndicators.Children)
+        {
+            if (child is ChannelIndicator ci && ci.IsMonometer)
+            {
+                ci.Visibility = areVisible ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
     }
 }

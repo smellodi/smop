@@ -134,6 +134,18 @@
                     </TabItem>
                 </TabControl>
 
+                <WrapPanel HorizontalAlignment="Right"
+                           Margin="0,8,0,0">
+                    <CheckBox x:Name="chkShowThermistorIndicators"
+                              Content="Thermistors"
+                              Checked="chkShowThermistorIndicators_Checked"
+                              Unchecked="chkShowThermistorIndicators_Checked"/>
+                    <CheckBox x:Name="chkShowPressureIndicators"
+                              Content="Monometers"
+                              Checked="chkShowPressureIndicators_Checked"
+                              Unchecked="chkShowPressureIndicators_Checked"/>
+                </WrapPanel>
+
                 <local:LiveData x:Name="lmsGraph" Grid.Row="1"
                     Margin="0,12,0,0"/>
             </Grid>

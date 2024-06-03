@@ -321,5 +321,29 @@ namespace Smop.MainApp.Properties {
                 this["Reproduction_DmsSingleSV"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Setup_ShowThermistors {
+            get {
+                return ((bool)(this["Setup_ShowThermistors"]));
+            }
+            set {
+                this["Setup_ShowThermistors"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Setup_ShowMonometers {
+            get {
+                return ((bool)(this["Setup_ShowMonometers"]));
+            }
+            set {
+                this["Setup_ShowMonometers"] = value;
+            }
+        }
     }
 }

@@ -222,6 +222,9 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
         }
     }
 
+    public bool IsThermistor => Units.Contains("°");
+    public bool IsMonometer => Units.Contains("mBar");
+
     public SolidColorBrush HeaderColor => new(ChannelID switch
     {
         Device.ID.Base => (Color)Application.Current.FindResource("ColorLight"),

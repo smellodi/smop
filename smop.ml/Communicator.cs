@@ -61,7 +61,7 @@ public class Communicator : IDisposable
 
     public void LaunchMlExe(string cmdParams)
     {
-        if (_simulator != null || !System.IO.File.Exists(ML_EXECUTABLE))
+        if (_simulator != null || !CanLaunchML)
         {
             return;
         }
@@ -69,7 +69,7 @@ public class Communicator : IDisposable
         if (_mlExe != null)
         {
             _mlExe.Kill();
-            Task.Delay(1000).Wait();
+            _mlExe.WaitForExit();
         }
 
         try

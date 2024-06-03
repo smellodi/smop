@@ -44,7 +44,7 @@ public class IndicatorController(LiveData graph)
             bool isBase = m.Device == OdorDisplay.Device.ID.Base;
             foreach (var sv in m.SensorValues)
             {
-                var value = sv switch
+                /*var value = sv switch
                 {
                     Sensor.PID pid => pid.Volts * 1000,
                     Sensor.Thermometer temp => temp.Celsius,          // Ignored values:
@@ -60,6 +60,20 @@ public class IndicatorController(LiveData graph)
 
                 var source = IndicatorFactory.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor);
                 Update(source, value);
+                */
+
+                var values = sv.Values;
+                for (int sensorSubID = 0; sensorSubID < values.Length; sensorSubID++)
+                {
+                    var value = values[sensorSubID];
+                    if (sv is Sensor.PID)
+                        value *= 1000;
+                    else if (sv is Sensor.Gas && !isBase && sensorSubID == 0)   // SLPM
+                        value *= 1000;
+
+                    var source = IndicatorFactory.GetSourceId(m.Device, (OdorDisplay.Device.Capability)sv.Sensor, sensorSubID);
+                    Update(source, value);
+                }
             }
         }
     }

@@ -44,7 +44,7 @@ internal static class IndicatorFactory
         }
     }
 
-    public static string GetSourceId(Device.ID deviceID, Device.Capability cap) => $"od/{deviceID}/{cap}";
+    public static string GetSourceId(Device.ID deviceID, Device.Capability cap, int sensorSubID) => $"od/{deviceID}/{cap}/{sensorSubID}";
     public static string GetSourceId(string measure) => $"snt/{measure}";
 
     public static void ApplyChannelProps(ChannelIndicator indicator, Device.ID channelID, string odorName)
@@ -110,17 +110,67 @@ internal static class IndicatorFactory
             var cap = (Device.Capability)capId;
             if (caps.Has(cap))
             {
-                var indicator = CreateIndicator(deviceID, cap, index++ > 0);
-                if (indicator != null)
+                var dummySensorValue = CreateDummySensor(cap);
+                if (dummySensorValue == null)
+                    continue;
+
+                for (int subID = 0; subID < dummySensorValue.ValueNames.Length; subID++)
                 {
-                    callback(indicator);
+                    var indicator = CreateIndicator(deviceID, cap, subID, index++ > 0);
+                    if (indicator != null)
+                    {
+                        callback(indicator);
+                    }
                 }
             }
         }
     }
 
-    private static ChannelIndicator? CreateIndicator(Device.ID deviceID, Device.Capability cap, bool isSameDeviceAsPrevious)
+    private static ChannelIndicator? CreateIndicator(Device.ID deviceID, Device.Capability cap, int sensorSubID, bool isSameDeviceAsPrevious)
     {
+        (string? name, string? subname, string? units, int precision) = (cap, sensorSubID) switch
+        {
+            (Device.Capability.PID, 0) => ("PID", null, "mV", 1),
+            (Device.Capability.BeadThermistor, 0) => ("Bead therm.", null, "°C", 1),
+            (Device.Capability.BeadThermistor, 1) => ("Bead therm.", "U", "V", 1),
+            (Device.Capability.ChassisThermometer, 0) => ("Chassis therm.", null, "°C", 1),
+            (Device.Capability.OdorSourceThermometer, 0) => ("Source therm.", null, "°C", 1),
+            (Device.Capability.GeneralPurposeThermometer, 0) => ("Thermometer", null, "°C", 1),
+            (Device.Capability.OutputAirHumiditySensor, 0) => ("Output humid.", null, "%", 1),
+            (Device.Capability.OutputAirHumiditySensor, 1) => ("Output humid.", "T", "°C", 1),
+            (Device.Capability.InputAirHumiditySensor, 0) => ("Input humid.", null, "%", 1),
+            (Device.Capability.InputAirHumiditySensor, 1) => ("Input humid.", "T", "°C", 1),
+            (Device.Capability.PressureSensor, 0) => ("Pressure", null, "mBar", 1),
+            (Device.Capability.PressureSensor, 1) => ("Pressure", "T", "°C", 1),
+            (Device.Capability.OdorantFlowSensor, 0) => (deviceID == Device.ID.Base ? "Humid. flow" : "Flow", null,
+                                                         deviceID == Device.ID.Base ? "l/min" : "sccm", 1),
+            (Device.Capability.OdorantFlowSensor, 1) => (deviceID == Device.ID.Base ? "Humid. flow" : "Flow",
+                                                         "P", "mBar", 1),
+            (Device.Capability.OdorantFlowSensor, 2) => (deviceID == Device.ID.Base ? "Humid. flow" : "Flow",
+                                                         "T", "°C", 1),
+            (Device.Capability.DilutionAirFlowSensor, 0) => ("Dilut. flow", null, "l/min", 1),
+            (Device.Capability.DilutionAirFlowSensor, 1) => ("Dilut. flow", "P", "mBar", 1),
+            (Device.Capability.DilutionAirFlowSensor, 2) => ("Dilut. flow", "T", "°C", 1),
+            (Device.Capability.OdorantValveSensor, 0) => ("Valve", null, null, 0),
+            (Device.Capability.OutputValveSensor, 0) => ("Output valve", null, null, 0),
+            _ => (null, null, null, 0)
+        };
+
+        if (!string.IsNullOrEmpty(subname))
+            name = $"{name} {subname}";
+
+        return name == null || units == null ? null : new ChannelIndicator()
+        {
+            ChannelID = deviceID,
+            Title = $"{deviceID}{SEPARATOR}{name}",
+            Units = units,
+            Precision = precision,
+            Value = 0,
+            Source = GetSourceId(deviceID, cap, sensorSubID),
+            HasLeftBorder = !isSameDeviceAsPrevious,
+        };
+
+        /*
         var capName = cap switch
         {
             Device.Capability.PID => "PID",
@@ -180,6 +230,23 @@ internal static class IndicatorFactory
             Value = 0,
             Source = GetSourceId(deviceID, cap),
             HasLeftBorder = !isSameDeviceAsPrevious,
-        };
+        };*/
     }
+
+    private static OdorDisplay.Packets.Sensor.Value? CreateDummySensor(Device.Capability cap) => cap switch
+    {
+        Device.Capability.PID => new OdorDisplay.Packets.Sensor.PID(0),
+        Device.Capability.BeadThermistor => new OdorDisplay.Packets.Sensor.BeadThermistor(0, 0),
+        Device.Capability.ChassisThermometer => new OdorDisplay.Packets.Sensor.Thermometer(Device.Sensor.ChassisThermometer, 0),
+        Device.Capability.OdorSourceThermometer => new OdorDisplay.Packets.Sensor.Thermometer(Device.Sensor.OdorSourceThermometer, 0),
+        Device.Capability.GeneralPurposeThermometer => new OdorDisplay.Packets.Sensor.Thermometer(Device.Sensor.GeneralPurposeThermometer, 0),
+        Device.Capability.OutputAirHumiditySensor => new OdorDisplay.Packets.Sensor.Humidity(Device.Sensor.OutputAirHumiditySensor, 0, 0),
+        Device.Capability.InputAirHumiditySensor => new OdorDisplay.Packets.Sensor.Humidity(Device.Sensor.InputAirHumiditySensor, 0, 0),
+        Device.Capability.PressureSensor => new OdorDisplay.Packets.Sensor.Pressure(0, 0),
+        Device.Capability.OdorantFlowSensor => new OdorDisplay.Packets.Sensor.Gas(Device.Sensor.OdorantFlowSensor, 0, 0, 0),
+        Device.Capability.DilutionAirFlowSensor => new OdorDisplay.Packets.Sensor.Gas(Device.Sensor.DilutionAirFlowSensor, 0, 0, 0),
+        Device.Capability.OdorantValveSensor => new OdorDisplay.Packets.Sensor.Valve(Device.Sensor.OdorantValveSensor, false),
+        Device.Capability.OutputValveSensor => new OdorDisplay.Packets.Sensor.Valve(Device.Sensor.OutputValveSensor, false),
+        _ => null
+    };
 }

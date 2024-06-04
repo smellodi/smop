@@ -145,6 +145,8 @@ public class OdorReproducerController
     {
         Task.Run(async () =>
         {
+            App.IonVision?.SetScanResultComment(new { Pulse = _odorChannels.ToDmsComment(recipe) });
+
             if (useDelays)
             {
                 var saturationDurationSec = OdorDisplayController.CalcSaturationDuration(recipe.Channels?.Select(ch => ch.Flow));

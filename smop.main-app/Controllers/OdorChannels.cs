@@ -123,6 +123,20 @@ public class OdorChannels : IEnumerable<OdorChannel>
         settings.Save();
     }
 
+    public string ToDmsComment()
+    {
+        IEnumerable<string> result = _items
+                .Where(odorChannel => !string.IsNullOrEmpty(odorChannel.Name))
+                .Select(odorChannel => string.Format(DMS_COMMENT, odorChannel.Name, odorChannel.Flow));
+        return string.Join(",", result);
+    }
+
+    public string ToDmsComment(ML.Recipe recipe)
+    {
+        IEnumerable<string> result = recipe.Channels?.Select(ch => string.Format(DMS_COMMENT, NameFromID((OdorDisplay.Device.ID)ch.Id), ch.Flow)) ?? Array.Empty<string>();
+        return string.Join(",", result);
+    }
+
     public static OdorChannels From(IEnumerable<OdorChannel> channels) => new(channels.Select(ch => ch.ID).ToArray());
 
     public string NameFromID(OdorDisplay.Device.ID id) => _items.FirstOrDefault(odorChannel => odorChannel.ID == id)?.Name ?? id.ToString();
@@ -155,6 +169,8 @@ public class OdorChannels : IEnumerable<OdorChannel>
     readonly char SEPARATOR_CHANNEL = ';';
     readonly char SEPARATOR_KV = '=';
     readonly char SEPARATOR_VALUES = ',';
+
+    readonly string DMS_COMMENT = "{0}={1}";
 
     readonly List<OdorChannel> _items = new();
 

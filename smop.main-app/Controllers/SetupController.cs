@@ -9,6 +9,7 @@ using IVDefs = Smop.IonVision.Defs;
 using System.IO;
 using System.Text.Json;
 using Smop.MainApp.Dialogs;
+using Smop.ML;
 
 namespace Smop.MainApp.Controllers;
 
@@ -214,6 +215,8 @@ public class SetupController
 
         if (!COMHelper.ShowErrorIfAny(_odController.OpenChannels(_odorChannels), "release odors"))
             return;
+
+        App.IonVision?.SetScanResultComment(new { Pulse = _odorChannels.ToDmsComment() });
 
         if (!Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay))
             _odorDisplay.Data += OdorDisplay_Data;

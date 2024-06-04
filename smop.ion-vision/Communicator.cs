@@ -140,7 +140,7 @@ public class Communicator : IDisposable
     /// <returns>Scan progress</returns>
     public Task<Response<ScanProgress>> GetScanProgress() => _api.GetScanProgress();
 
-    /// <summary>Sets a marker for the latest scan result</summary>
+    /// <summary>Sets a comment for the next-to-be-performed scan</summary>
     /// <param name="comment">Comment to set</param>
     /// <returns>Error message, if any</returns>
     public Task<Response<Confirm>> SetScanResultComment(object comment) => _api.SetScanComments(comment);

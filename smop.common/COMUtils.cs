@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
+using System.Threading.Channels;
+using System.Windows.Controls.Primitives;
 
 namespace Smop.Common;
 
@@ -41,12 +43,11 @@ public class COMUtils : IDisposable
     /// Most likely SMOP port, i.e. the one that has a known description
     /// </summary>
     public static Port? OdorDisplayPort => Ports.FirstOrDefault(port => port.Manufacturer?.Contains("TUNI") ?? false);
-    //public static Port? SMOPPort => Ports.FirstOrDefault(port => port.Description?.Contains("Smellodi") ?? false);
 
     public COMUtils()
     {
-        Listen("__InstanceCreationEvent", "Win32_SerialPort", ActionType.Inserted);
-        Listen("__InstanceDeletionEvent", "Win32_SerialPort", ActionType.Removed);
+        Listen("__InstanceCreationEvent", "Win32_USBControllerDevice", ActionType.Inserted);    // Win32_SerialPort
+        Listen("__InstanceDeletionEvent", "Win32_USBControllerDevice", ActionType.Removed);
     }
 
     public void Dispose()
@@ -217,7 +218,7 @@ public class COMUtils : IDisposable
 
         foreach (PropertyData property in props)
         {
-            if (property.Name == "DeviceID")
+            if (property.Name == "DeviceID")        // next 3 properties handle Win32_SerialPort
             {
                 deviceID = (string?)property.Value;
             }
@@ -228,6 +229,22 @@ public class COMUtils : IDisposable
             else if (property.Name == "Manufacturer")
             {
                 manufacturer = (string?)property.Value;
+            }
+            else if (property.Name == "Dependent")  // this handles Win32_USBControllerDevice, as Win32_SerialPort stopped working
+            {
+                var usbControllerID = (string)property.Value;
+                usbControllerID = usbControllerID.Replace("\"", "");
+                var devID = usbControllerID.Split('=')[1];
+                using var searcher = new ManagementObjectSearcher($"SELECT * FROM Win32_PnPEntity WHERE DeviceID LIKE '%{devID}%'");
+                ManagementBaseObject[] records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
+                foreach (var rec in records)
+                {
+                    var name = (string?)rec.Properties["Name"]?.Value;
+                    if (name?.Contains("(COM") ?? false)
+                    {
+                        return CreateCOMPort(rec.Properties);
+                    }
+                }
             }
         }
 

@@ -71,9 +71,9 @@ public partial class Setup : Page, IPage<object?>
             }
 
             App.ML?.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
-
-            _doesOdorDisplayRequireCleanup = odorDisplayRequiresCleanup;
         }
+
+        _doesOdorDisplayRequireCleanup = odorDisplayRequiresCleanup;
 
         //cnvDmsScan.Children.Clear();
 
@@ -158,15 +158,17 @@ public partial class Setup : Page, IPage<object?>
 
     private void UpdateUI()
     {
+        bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
+
         if (_storage.SetupType == SetupType.PulseGenerator)
         {
             btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) &&
+                isODReady &&
                 pulseGeneratorSettings.Setup != null;
             stpTargetOdorActions.Visibility = Visibility.Collapsed;
         }
         else if (_storage.SetupType == SetupType.OdorReproduction)
         {
-            bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
             bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
             bool isSntReady = _ctrl.SntSample != null || isDmsReady;
             bool isMeasuringSomething = brdMeasurementProgress.Visibility == Visibility.Visible;

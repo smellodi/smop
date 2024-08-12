@@ -5,10 +5,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Smop.MainApp.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="150"
+             d:DesignHeight="200"
              d:DesignWidth="300"
              Loaded="UserControl_Loaded">
-    
+
+    <UserControl.Resources>
+        <Style x:Key="OdorName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="4, 0"/>
+        </Style>
+    </UserControl.Resources>
+
     <StackPanel>
         <Label Style="{StaticResource Section}"
                Content="Pulse Generator settings:"/>
@@ -51,5 +58,22 @@
                       Checked="Randomize_CheckedChanged"
                       Unchecked="Randomize_CheckedChanged"/>
         </UserControl>
+
+        <Separator Margin="0,8,0,0"/>
+        <StackPanel Grid.Column="0">
+            <Label Style="{StaticResource Section}"
+                Content="Odors:"/>
+            <StackPanel x:Name="stpOdorChannels">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0">ID</Label>
+                    <Label Grid.Column="1">Name</Label>
+                </Grid>
+                <!-- to be filled in code -->
+            </StackPanel>
+        </StackPanel>
     </StackPanel>
 </UserControl>

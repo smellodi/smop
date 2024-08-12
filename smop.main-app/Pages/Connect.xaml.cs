@@ -1,6 +1,7 @@
 ﻿using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
+using Smop.MainApp.Utils.Extensions;
 using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
@@ -299,8 +300,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         IonVisionSetupFilename = settings.Comm_IonVision_SetupFilename;
 
-        var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
-        txbIonVisionIP.Text = ivSettings.IP;
+        txbIonVisionIP.Text = IonVisionSetupFilename.ToFileNameOnly();
+        txbIonVisionIP.ToolTip = IonVisionSetupFilename;
     }
 
     private void SaveSettings()
@@ -368,6 +369,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             if (e.Source == this || e.Source == txbIonVisionIP)
             {
                 txbIonVisionIP.Text = "simulator";
+                txbIonVisionIP.ToolTip = null;
+
                 _storage.AddSimulatingTarget(SimulationTarget.IonVision);
 
                 if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
@@ -431,8 +434,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
             _nlog.Info(LogIO.Text(Timestamp.Ms, "DMS", "SetupFile", IonVisionSetupFilename));
 
-            var ivSettings = new IonVision.Settings(IonVisionSetupFilename);
-            txbIonVisionIP.Text = ivSettings.IP;
+            txbIonVisionIP.Text = IonVisionSetupFilename.ToFileNameOnly();
+            txbIonVisionIP.ToolTip = IonVisionSetupFilename;
 
             var settings = Properties.Settings.Default;
             settings.Comm_IonVision_SetupFilename = IonVisionSetupFilename;
@@ -463,7 +466,8 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             };
             ivSettings.Save();
 
-            txbIonVisionIP.Text = ivSettings.IP;
+            txbIonVisionIP.Text = IonVisionSetupFilename.ToFileNameOnly();
+            txbIonVisionIP.ToolTip = IonVisionSetupFilename;
         }
     }
 

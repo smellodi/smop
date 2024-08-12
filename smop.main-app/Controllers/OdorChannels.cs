@@ -75,6 +75,8 @@ public class OdorChannel : INotifyPropertyChanged
 
 public class OdorChannels : IEnumerable<OdorChannel>
 {
+    public static string[] KnownOdorNames => _channelProps.Keys.ToArray();
+
     public OdorChannels(OdorDisplay.Device.ID[]? ids = null)
     {
         var odorDefs = Properties.Settings.Default.Reproduction_Odors;
@@ -166,6 +168,8 @@ public class OdorChannels : IEnumerable<OdorChannel>
         object IEnumerator.Current => Current;
     }
 
+    record class ChannelProperty(float MaxFlow, float CriticalFlow, float PidCheckLevel);
+
     readonly char SEPARATOR_CHANNEL = ';';
     readonly char SEPARATOR_KV = '=';
     readonly char SEPARATOR_VALUES = ',';
@@ -174,31 +178,29 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     readonly List<OdorChannel> _items = new();
 
+    readonly static Dictionary<string, ChannelProperty> _channelProps = new()
+    {
+        { "default", new ChannelProperty(50, 100, 0.100f) },
+        { "ipa", new ChannelProperty(50, 55, 1.730f) },
+        { "ethanol", new ChannelProperty(50, 65, 1.200f) },
+        { "nbutanol", new ChannelProperty(50, 70, 0.600f) },
+        { "cyclohex", new ChannelProperty(50, 70, 0.935f) },
+        { "citron", new ChannelProperty(50, 60, 0.076f) },
+    };
+
     IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);
 
     private static void SetProperties(OdorChannel channel)
     {
         var channelName = channel.Name.ToLower();
-        channel.Propeties.Add("maxFlow", channelName switch
-        {
-            _ => 50,
-        });
+        if (!_channelProps.ContainsKey(channelName))
+            channelName = "default";
 
-        channel.Propeties.Add("criticalFlow", channelName switch
-        {
-            "ipa" => 55,
-            "ethanol" => 65,
-            "nbutanol" => 70,
-            _ => 100,
-        });
+        ChannelProperty channelProp = _channelProps[channelName];
 
-        channel.Propeties.Add($"pidCheckLevel", channelName switch  // as of carrier gas T = OdorChannel.BASE_TEMP
-        {
-            "ipa" => 1.730f,
-            "ethanol" => 1.200f,
-            "nbutanol" => 0.600f,
-            _ => 0.100f,
-        });
+        channel.Propeties.Add("maxFlow", channelProp.MaxFlow);
+        channel.Propeties.Add("criticalFlow", channelProp.CriticalFlow);
+        channel.Propeties.Add($"pidCheckLevel", channelProp.PidCheckLevel);     // as of carrier gas T = OdorChannel.BASE_TEMP
     }
 }
 

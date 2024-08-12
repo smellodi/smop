@@ -10,4 +10,5 @@ internal static class StringExt
         string[] temp = s.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries);
         return string.Join(replacement, temp);
     }
+    public static string ToFileNameOnly(this string s) => System.IO.Path.GetFileNameWithoutExtension(s);
 }

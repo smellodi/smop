@@ -47,8 +47,11 @@ public partial class Setup : Page, IPage<object?>
         });
 
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
+        pulseGeneratorSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
+        pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
 
-        odorReproductionSettings.OdorNameChanged += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
+        odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
+        pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
 
         DataContext = this;
 
@@ -58,7 +61,12 @@ public partial class Setup : Page, IPage<object?>
 
     public void Init(SetupType type, bool odorDisplayRequiresCleanup)
     {
-        if (type == SetupType.OdorReproduction)
+        if (type == SetupType.PulseGenerator)
+        {
+            _ctrl.AcquireOdorChannelsInfo();
+            _ctrl.EnumOdorChannels(pulseGeneratorSettings.AddOdorChannel);
+        }
+        else if (type == SetupType.OdorReproduction)
         {
             if (App.ML == null)
             {
@@ -159,6 +167,15 @@ public partial class Setup : Page, IPage<object?>
     private void UpdateUI()
     {
         bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
+        bool isMeasuringSomething = brdMeasurementProgress.Visibility == Visibility.Visible;
+
+        prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
+        prbDMSBusy.Visibility = _isDMSInitRunning ? Visibility.Visible : Visibility.Hidden;
+        prbSNTBusy.Visibility = _isCollectingData ? Visibility.Visible : Visibility.Hidden;
+
+        btnCheckChemicalLevels.IsEnabled = isODReady &&
+            !_isCheckngChemicalLevels &&
+            !isMeasuringSomething;
 
         if (_storage.SetupType == SetupType.PulseGenerator)
         {
@@ -171,17 +188,12 @@ public partial class Setup : Page, IPage<object?>
         {
             bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
             bool isSntReady = _ctrl.SntSample != null || isDmsReady;
-            bool isMeasuringSomething = brdMeasurementProgress.Visibility == Visibility.Visible;
 
             btnStart.IsEnabled =
                 isODReady &&
                 (isDmsReady || App.IonVision == null) &&
                 (isSntReady || !_smellInsp.IsOpen) &&
                 _mlIsConnected &&
-                !_isCheckngChemicalLevels &&
-                !isMeasuringSomething;
-
-            btnCheckChemicalLevels.IsEnabled = isODReady && 
                 !_isCheckngChemicalLevels &&
                 !isMeasuringSomething;
 
@@ -194,10 +206,6 @@ public partial class Setup : Page, IPage<object?>
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;
             odorReproductionSettings.IsEnabled = !isMeasuringSomething;
-
-            prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
-            prbDMSBusy.Visibility = _isDMSInitRunning ? Visibility.Visible : Visibility.Hidden;
-            prbSNTBusy.Visibility = _isCollectingData ? Visibility.Visible : Visibility.Hidden;
         }
 
         _dmsPlotTypes[(int)Plot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;

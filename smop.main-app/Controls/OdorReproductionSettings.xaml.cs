@@ -1,6 +1,7 @@
 ﻿using Smop.MainApp.Controllers;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -135,6 +136,7 @@ public partial class OdorReproductionSettings : UserControl
         }
     }
 
+    public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
 
     public OdorReproductionSettings()
@@ -168,7 +170,12 @@ public partial class OdorReproductionSettings : UserControl
             Style = FindResource("OdorName") as Style,
             ToolTip = "Enter a name of the odor loaded into this channel,\nor leave it blank if the channel is not used"
         };
-        txbName.TextChanged += (s, e) => OdorNameChanged?.Invoke(this, odorChannel);
+        txbName.TextChanged += (s, e) =>
+        {
+            ShowOdorNameSuggestions(txbName);
+            OdorNameChanging?.Invoke(this, odorChannel);
+        };
+        txbName.LostFocus += (s, e) => OdorNameChanged?.Invoke(this, odorChannel);
 
         var txbFlow = new TextBox()
         {
@@ -213,5 +220,32 @@ public partial class OdorReproductionSettings : UserControl
         stpOdorChannels.Children.Add(container);
 
         stpFlows.Children.Add(txbFlow);
+    }
+
+    // Internal
+
+    string _currentInput = "";
+    string? _currentSuggestion = null;
+
+    private void ShowOdorNameSuggestions(TextBox txb)
+    {
+        var input = txb.Text.ToLower();
+        var inputLength = input.Length;
+
+        if (input.Length > _currentInput.Length && input != _currentSuggestion)
+        {
+            _currentSuggestion = OdorChannels.KnownOdorNames.FirstOrDefault(x => x.StartsWith(input));
+            if (_currentSuggestion != null)
+            {
+                var currentText = txb.Text + _currentSuggestion[inputLength..];
+                var selectionStart = inputLength;
+                var selectionLength = _currentSuggestion.Length - inputLength;
+
+                txb.Text = currentText;
+                txb.Select(selectionStart, selectionLength);
+            }
+        }
+
+        _currentInput = input;
     }
 }

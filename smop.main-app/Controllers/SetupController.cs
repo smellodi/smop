@@ -9,7 +9,6 @@ using IVDefs = Smop.IonVision.Defs;
 using System.IO;
 using System.Text.Json;
 using Smop.MainApp.Dialogs;
-using Smop.ML;
 
 namespace Smop.MainApp.Controllers;
 
@@ -294,7 +293,7 @@ public class SetupController
 
         await App.ML.Config(dataSources.ToArray(), _odorChannels
                 .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
-                .Select(odorChannel => new ML.ChannelProps((int)odorChannel.ID, odorChannel.Name, odorChannel.Propeties)).ToArray(),
+                .Select(odorChannel => new ML.ChannelProps((int)odorChannel.ID, odorChannel.Name, odorChannel.Properties.ToDict())).ToArray(),
             settings.Reproduction_ML_MaxIterations,
             settings.Reproduction_ML_Threshold,
             settings.Reproduction_ML_Algorithm

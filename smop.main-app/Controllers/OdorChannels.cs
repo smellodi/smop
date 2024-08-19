@@ -6,6 +6,16 @@ using System.Linq;
 
 namespace Smop.MainApp.Controllers;
 
+public record class OdorChannelProperties(float MaxFlow, float CriticalFlow, float PidCheckLevel)
+{
+    public Dictionary<string, object> ToDict() => new()
+        {
+            { "maxFlow", MaxFlow },
+            { "criticalFlow", CriticalFlow },
+            { "pidCheckLevel", PidCheckLevel },
+        };
+}
+
 public class OdorChannel : INotifyPropertyChanged
 {
     public string Name
@@ -29,20 +39,15 @@ public class OdorChannel : INotifyPropertyChanged
     }
 
     public OdorDisplay.Device.ID ID { get; }
-    public Dictionary<string, object> Propeties { get; } = new();
-
+    public OdorChannelProperties Properties { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public OdorChannel(OdorDisplay.Device.ID id, string name, params KeyValuePair<string, object>[] props)
+    public OdorChannel(OdorDisplay.Device.ID id, string name, OdorChannelProperties props)
     {
         ID = id;
         _name = name;
-
-        foreach (var prop in props)
-        {
-            Propeties.Add(prop.Key, prop.Value);
-        }
+        Properties = props;
     }
 
     /// <summary>
@@ -54,7 +59,7 @@ public class OdorChannel : INotifyPropertyChanged
     /// <returns>Percentage</returns>
     public float ComputePidLevel(float pid, float temp)
     {
-        var basePID = (float)Propeties["pidCheckLevel"];
+        var basePID = Properties.PidCheckLevel;
         var dt = temp - BASE_TEMP;
         var correction = dt > 0 ? 
             CORRECTION_GAIN * Math.Pow(dt, CORRECTION_POW) : 
@@ -95,9 +100,7 @@ public class OdorChannels : IEnumerable<OdorChannel>
             {
                 var props = odors.ContainsKey(id) ? odors[id] : $"{id}";
                 var p = props.Split(SEPARATOR_VALUES);
-                var channel = new OdorChannel(id, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 };
-                SetProperties(channel);
-                _items.Add(channel);
+                AddChannel(id, p[0], p.Length > 1 ? float.Parse(p[1]) : 0);
             }
         }
         else
@@ -105,9 +108,7 @@ public class OdorChannels : IEnumerable<OdorChannel>
             foreach (var odor in odors)
             {
                 var p = odor.Value.Split(SEPARATOR_VALUES);
-                var channel = new OdorChannel(odor.Key, p[0]) { Flow = p.Length > 1 ? float.Parse(p[1]) : 0 };
-                SetProperties(channel);
-                _items.Add(channel);
+                AddChannel(odor.Key, p[0], p.Length > 1 ? float.Parse(p[1]) : 0);
             }
         }
     }
@@ -168,8 +169,6 @@ public class OdorChannels : IEnumerable<OdorChannel>
         object IEnumerator.Current => Current;
     }
 
-    record class ChannelProperty(float MaxFlow, float CriticalFlow, float PidCheckLevel);
-
     readonly char SEPARATOR_CHANNEL = ';';
     readonly char SEPARATOR_KV = '=';
     readonly char SEPARATOR_VALUES = ',';
@@ -178,29 +177,28 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     readonly List<OdorChannel> _items = new();
 
-    readonly static Dictionary<string, ChannelProperty> _channelProps = new()
+    readonly static Dictionary<string, OdorChannelProperties> _channelProps = new()
     {
-        { "default", new ChannelProperty(50, 100, 0.100f) },
-        { "ipa", new ChannelProperty(50, 55, 1.730f) },
-        { "ethanol", new ChannelProperty(50, 65, 1.200f) },
-        { "nbutanol", new ChannelProperty(50, 70, 0.600f) },
-        { "cyclohex", new ChannelProperty(50, 70, 0.935f) },
-        { "citron", new ChannelProperty(50, 60, 0.076f) },
+        { "default", new OdorChannelProperties(50, 100, 0.100f) },
+        { "ipa", new OdorChannelProperties(50, 55, 1.730f) },
+        { "ethanol", new OdorChannelProperties(50, 65, 1.200f) },
+        { "nbutanol", new OdorChannelProperties(50, 70, 0.600f) },
+        { "cyclohex", new OdorChannelProperties(50, 70, 0.935f) },
+        { "citron", new OdorChannelProperties(50, 60, 0.076f) },
     };
 
     IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);
 
-    private static void SetProperties(OdorChannel channel)
+    private void AddChannel(OdorDisplay.Device.ID id, string name, float flow)
     {
-        var channelName = channel.Name.ToLower();
+        var channelName = name.ToLower();
         if (!_channelProps.ContainsKey(channelName))
             channelName = "default";
+        var props = _channelProps[channelName];
 
-        ChannelProperty channelProp = _channelProps[channelName];
+        var channel = new OdorChannel(id, name, props) { Flow = flow };
 
-        channel.Propeties.Add("maxFlow", channelProp.MaxFlow);
-        channel.Propeties.Add("criticalFlow", channelProp.CriticalFlow);
-        channel.Propeties.Add($"pidCheckLevel", channelProp.PidCheckLevel);     // as of carrier gas T = OdorChannel.BASE_TEMP
+        _items.Add(channel);
     }
 }
 

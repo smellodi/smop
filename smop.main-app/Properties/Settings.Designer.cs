@@ -345,5 +345,17 @@ namespace Smop.MainApp.Properties {
                 this["Setup_ShowMonometers"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public double PulseEditor_Height {
+            get {
+                return ((double)(this["PulseEditor_Height"]));
+            }
+            set {
+                this["PulseEditor_Height"] = value;
+            }
+        }
     }
 }

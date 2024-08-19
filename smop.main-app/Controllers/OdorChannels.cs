@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.MainApp.Utils.Extensions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,12 +9,16 @@ namespace Smop.MainApp.Controllers;
 
 public record class OdorChannelProperties(float MaxFlow, float CriticalFlow, float PidCheckLevel)
 {
-    public Dictionary<string, object> ToDict() => new()
+    public Dictionary<string, object> ToDict()
+    {
+        var result = new Dictionary<string, object>();
+        var props = typeof(OdorChannelProperties).GetProperties();
+        foreach (var p in props)
         {
-            { "maxFlow", MaxFlow },
-            { "criticalFlow", CriticalFlow },
-            { "pidCheckLevel", PidCheckLevel },
-        };
+            result.Add(p.Name.ToCamelCase(), p.GetValue(this)!);
+        }
+        return result;
+    }
 }
 
 public class OdorChannel : INotifyPropertyChanged

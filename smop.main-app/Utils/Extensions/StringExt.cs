@@ -11,4 +11,5 @@ internal static class StringExt
         return string.Join(replacement, temp);
     }
     public static string ToFileNameOnly(this string s) => System.IO.Path.GetFileNameWithoutExtension(s);
+    public static string ToCamelCase(this string s) => char.ToLowerInvariant(s[0]) + s.Substring(1);
 }

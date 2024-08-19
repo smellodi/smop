@@ -248,6 +248,15 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     private void Window_Unloaded(object sender, RoutedEventArgs e)
     {
         Storage.Instance.UnbindScaleToZoomLevel(sctScale);
+
+        var settings = Properties.Settings.Default;
+        settings.PulseEditor_Height = ActualHeight;
+        settings.Save();
+    }
+
+    private void Window_SourceInitialized(object sender, EventArgs e)
+    {
+        Height = Properties.Settings.Default.PulseEditor_Height;
     }
 
     private void New_Click(object sender, RoutedEventArgs e)

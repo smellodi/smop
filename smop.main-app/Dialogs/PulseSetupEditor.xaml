@@ -6,14 +6,15 @@
         xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
         Title="Pulse setup file editor"
-        MinHeight="510"
+        MinHeight="494"
         MinWidth="400"
-        SizeToContent="WidthAndHeight"
+        SizeToContent="Width"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         Icon="/Assets/icons/main.png"
         Loaded="Window_Loaded"
-        Unloaded="Window_Unloaded">
+        Unloaded="Window_Unloaded"
+        SourceInitialized="Window_SourceInitialized">
     <Window.Resources>
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="MinWidth" Value="64"/>
@@ -73,9 +74,9 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
             <WrapPanel Grid.Row="0" Grid.ColumnSpan="2"
@@ -99,7 +100,6 @@
                 </Grid.RowDefinitions>
                 <Label Style="{StaticResource Header}" Grid.Row="0">Sessions</Label>
                 <ListView x:Name="lsvSessions" Grid.Row="1"
-                          MaxHeight="80"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           SelectionChanged="Sessions_SelectionChanged"
                           KeyUp="Sessions_KeyUp"/>
@@ -118,7 +118,6 @@
                 <Label Style="{StaticResource Header}" Grid.Row="0">Pulses</Label>
                 <ListView x:Name="lsvPulses" Grid.Row="1"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
-                          MaxHeight="106"
                           SelectionChanged="Pulses_SelectionChanged"
                           KeyUp="Pulses_KeyUp"/>
                 <Button x:Name="btnAddPulse" Grid.Row="2"

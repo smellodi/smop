@@ -83,12 +83,12 @@ public class SetupController
         COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set default humidity");
     }
 
-    public async void CleanUpOdorPrinter(Action? finishedAction = null)
+    public async void CleanUpOdorPrinter(string filename, Action? finishedAction = null)
     {
         LogOD?.Invoke(this, new LogHandlerArgs("Cleaning up: started."));
 
-        var setupFilename = _storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? "init-setup-debug.txt" : "init-setup.txt";
-        var setup = PulseSetup.Load(System.IO.Path.Combine("Properties", setupFilename));
+        var setupFilename = _storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? "init-setup-debug.txt" : $"{filename}.txt";
+        var setup = PulseSetup.Load(Path.Combine("Properties", setupFilename));
         if (setup != null)
         {
             using var controller = new PulseController(setup, null);

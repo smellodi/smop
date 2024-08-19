@@ -189,7 +189,7 @@ public class OdorChannels : IEnumerable<OdorChannel>
         { "ethanol", new OdorChannelProperties(50, 65, 1.200f) },
         { "nbutanol", new OdorChannelProperties(50, 70, 0.600f) },
         { "cyclohex", new OdorChannelProperties(50, 70, 0.935f) },
-        { "citron", new OdorChannelProperties(50, 60, 0.076f) },
+        { "citron", new OdorChannelProperties(50, 60, 0.084f) },
     };
 
     IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);

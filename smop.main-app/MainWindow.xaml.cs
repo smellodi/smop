@@ -154,8 +154,8 @@ public partial class MainWindow : Window
 
             _storage.SetupPage = next;
 
-            bool odorDisplayRequiresCleanup = sender is Connect connectPage && connectPage.OdorDisplayRequiresCleanup;
-            _setupPage.Init(_storage.SetupType, odorDisplayRequiresCleanup);
+            var odorDisplayCleanupFile = sender is Connect connectPage ? connectPage.OdorDisplayCleanupFile : null;
+            _setupPage.Init(_storage.SetupType, odorDisplayCleanupFile);
 
             Content = _setupPage;
         }

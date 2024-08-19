@@ -117,14 +117,22 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     {
         _odorChannelObservers = new();
 
+        var channels = new OdorChannels();
+
         foreach (var m in data.Measurements)
         {
             if (m.Device >= OdorDisplay.Device.ID.Odor1 && m.Device <= OdorDisplay.Device.ID.Odor9)
             {
-                var container = new WrapPanel() { Margin = new Thickness(0, 6, 0, 6) };
+                var channel = channels.FirstOrDefault(c => c.ID == m.Device);
+
+                var container = new WrapPanel()
+                {
+                    Margin = new Thickness(0, 6, 0, 6),
+                    HorizontalAlignment = HorizontalAlignment.Right
+                };
                 var label = new Label
                 {
-                    Content = m.Device,
+                    Content = channel?.Name ?? m.Device.ToString(),
                     Style = (Style)Resources["MeasurementLabel"]
                 };
                 var valve = new CheckBox

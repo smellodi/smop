@@ -59,12 +59,15 @@ public partial class Setup : Page, IPage<object?>
         ((App)Application.Current).AddCleanupAction(() => { App.ML?.Dispose(); });
     }
 
-    public void Init(SetupType type, bool odorDisplayRequiresCleanup)
+    public void Init(SetupType type, string? odorDisplayCleanupFile)
     {
         if (type == SetupType.PulseGenerator)
         {
             _ctrl.AcquireOdorChannelsInfo();
-            _ctrl.EnumOdorChannels(pulseGeneratorSettings.AddOdorChannel);
+            if (!_isInitilized)
+            {
+                _ctrl.EnumOdorChannels(pulseGeneratorSettings.AddOdorChannel);
+            }
         }
         else if (type == SetupType.OdorReproduction)
         {
@@ -81,7 +84,7 @@ public partial class Setup : Page, IPage<object?>
             App.ML?.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
         }
 
-        _doesOdorDisplayRequireCleanup = odorDisplayRequiresCleanup;
+        _odorDisplayCleanupFile = odorDisplayCleanupFile;
 
         //cnvDmsScan.Children.Clear();
 
@@ -158,7 +161,7 @@ public partial class Setup : Page, IPage<object?>
     bool _isCollectingData = false;
     bool _isCheckngChemicalLevels = false;
 
-    bool _doesOdorDisplayRequireCleanup = false;
+    string? _odorDisplayCleanupFile = null;
 
     Plot.ComparisonOperation _dmsPlotType = Plot.ComparisonOperation.None;
 
@@ -166,7 +169,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void UpdateUI()
     {
-        bool isODReady = _isOdorDisplayCleanedUp || !_doesOdorDisplayRequireCleanup;
+        bool isODReady = _isOdorDisplayCleanedUp || _odorDisplayCleanupFile == null;
         bool isMeasuringSomething = brdMeasurementProgress.Visibility == Visibility.Visible;
 
         prbODBusy.Visibility = _isOdorDisplayCleaningRunning ? Visibility.Visible : Visibility.Hidden;
@@ -353,12 +356,12 @@ public partial class Setup : Page, IPage<object?>
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
 
-            if (_doesOdorDisplayRequireCleanup)
+            if (_odorDisplayCleanupFile != null)
             {
                 _isOdorDisplayCleaningRunning = true;
 
                 await Task.Delay(150);
-                _ctrl.CleanUpOdorPrinter(() =>
+                _ctrl.CleanUpOdorPrinter(_odorDisplayCleanupFile, () =>
                 {
                     _isOdorDisplayCleaningRunning = false;
                     _isOdorDisplayCleanedUp = true;

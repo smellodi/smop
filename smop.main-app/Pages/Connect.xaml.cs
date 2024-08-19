@@ -25,7 +25,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     public bool HasOutputConnection => _odorDisplay.IsOpen;
     public bool HasOutputAndInputConnections => _odorDisplay.IsOpen && (_ionVision != null || _smellInsp.IsOpen);
 
-    public bool OdorDisplayRequiresCleanup => chkOdorDisplayRequiresCleanup.IsChecked ?? false;
+    public string? OdorDisplayCleanupFile => (cmbOdorDisplayCleanupFile.SelectedItem as ComboBoxItem)?.Content?.ToString(); //chkOdorDisplayRequiresCleanup.IsChecked ?? false;
 
     public Connect()
     {
@@ -58,6 +58,14 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         });
 
         _smellInsp.DeviceInfo += async (s, e) => await Dispatcher.BeginInvoke(() => tblSmellInspInfo.Text = $"Version: v{e.Version}");
+
+        var cleanupFiles = Directory.EnumerateFiles("Properties", "*.txt");
+        foreach (var filename in cleanupFiles)
+        {
+            var name = Path.GetFileNameWithoutExtension(filename);
+            if (!name.EndsWith("debug"))
+                cmbOdorDisplayCleanupFile.Items.Add(name);
+        }
 
         UpdateUI();
     }

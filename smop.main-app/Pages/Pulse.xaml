@@ -160,7 +160,7 @@
                 MinWidth="200"
                 HorizontalAlignment="Right">
                 <Label Style="{StaticResource Header}"
-                    HorizontalContentAlignment="Right"
+                    HorizontalContentAlignment="Center"
                     Content="Channels"/>
                 
                 <StackPanel x:Name="stpChannels"

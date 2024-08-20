@@ -610,7 +610,7 @@ public partial class Setup : Page, IPage<object?>
         UpdateUI();
     }
 
-    private void chkShowThermistorIndicators_Checked(object sender, RoutedEventArgs e)
+    private void ShowThermistorIndicators_Checked(object sender, RoutedEventArgs e)
     {
         bool areVisible = chkShowThermistorIndicators.IsChecked ?? false;
         Properties.Settings.Default.Setup_ShowThermistors = areVisible;
@@ -625,7 +625,7 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
-    private void chkShowPressureIndicators_Checked(object sender, RoutedEventArgs e)
+    private void ShowPressureIndicators_Checked(object sender, RoutedEventArgs e)
     {
         bool areVisible = chkShowPressureIndicators.IsChecked ?? false;
         Properties.Settings.Default.Setup_ShowMonometers = areVisible;

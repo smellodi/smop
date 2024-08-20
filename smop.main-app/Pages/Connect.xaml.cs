@@ -1,4 +1,5 @@
-﻿using Smop.MainApp.Dialogs;
+﻿using Smop.MainApp.Controllers;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using Smop.MainApp.Utils.Extensions;
@@ -25,7 +26,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     public bool HasOutputConnection => _odorDisplay.IsOpen;
     public bool HasOutputAndInputConnections => _odorDisplay.IsOpen && (_ionVision != null || _smellInsp.IsOpen);
 
-    public string? OdorDisplayCleanupFile => (cmbOdorDisplayCleanupFile.SelectedItem as ComboBoxItem)?.Content?.ToString(); //chkOdorDisplayRequiresCleanup.IsChecked ?? false;
+    public string? OdorDisplayCleanupFile => cmbOdorDisplayCleanupFile.SelectedItem as string; //chkOdorDisplayRequiresCleanup.IsChecked ?? false;
 
     public Connect()
     {
@@ -59,13 +60,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         _smellInsp.DeviceInfo += async (s, e) => await Dispatcher.BeginInvoke(() => tblSmellInspInfo.Text = $"Version: v{e.Version}");
 
-        var cleanupFiles = Directory.EnumerateFiles("Properties", "*.txt");
-        foreach (var filename in cleanupFiles)
-        {
-            var name = Path.GetFileNameWithoutExtension(filename);
-            if (!name.EndsWith("debug"))
-                cmbOdorDisplayCleanupFile.Items.Add(name);
-        }
+        EnumerateCleanupFiles();
 
         UpdateUI();
     }
@@ -85,7 +80,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.CommPort _smellInsp = SmellInsp.CommPort.Instance;
 
-    string IonVisionSetupFilename = "Properties/IonVision.json";
+    string IonVisionSetupFilename = "Assets/ion-vision/default.json";
     IonVision.Communicator? _ionVision = null;
 
     private static void UpdatePortList(ComboBox cmb, Common.COMUtils.Port? defaultPort = null)
@@ -111,6 +106,19 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
                     break;
                 }
             }
+        }
+    }
+
+    private void EnumerateCleanupFiles()
+    {
+        cmbOdorDisplayCleanupFile.Items.Clear();
+
+        var cleanupFiles = Directory.EnumerateFiles("Assets/cleanup", "*.txt");
+        foreach (var filename in cleanupFiles)
+        {
+            var name = Path.GetFileNameWithoutExtension(filename);
+            if (!name.StartsWith("debug"))
+                cmbOdorDisplayCleanupFile.Items.Add(name);
         }
     }
 
@@ -433,7 +441,7 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         {
             Filter = "JSON files|*.json",
             FileName = Path.GetFileName(IonVisionSetupFilename),
-            InitialDirectory = Path.GetDirectoryName(IonVisionSetupFilename)
+            InitialDirectory = Path.GetDirectoryName(Path.GetFullPath(IonVisionSetupFilename))
         };
 
         if (ofd.ShowDialog() ?? false)
@@ -477,6 +485,29 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
             txbIonVisionIP.Text = IonVisionSetupFilename.ToFileNameOnly();
             txbIonVisionIP.ToolTip = IonVisionSetupFilename;
         }
+    }
+
+    private void EditOdorDisplayCleanup_Click(object sender, RoutedEventArgs e)
+    {
+        var editor = new PulseSetupEditor();
+
+        var filename = cmbOdorDisplayCleanupFile.SelectedItem as string ?? "default";
+        filename = Path.Combine("Assets", "cleanup", filename + ".txt");
+
+        editor.Load(filename);
+
+        if (editor.ShowDialog() == true)
+        {
+            filename = editor.Filename;
+            if (filename != null)
+            {
+                var setup = new PulseSetup() { Sessions = editor.Sessions };
+                setup.Save(filename);
+            }
+        }
+
+        EnumerateCleanupFiles();
+        cmbOdorDisplayCleanupFile.SelectedItem = Path.GetFileNameWithoutExtension(filename);
     }
 
     private void GeneratePulses_Click(object? sender, RoutedEventArgs e)

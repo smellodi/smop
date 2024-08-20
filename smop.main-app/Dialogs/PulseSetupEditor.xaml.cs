@@ -278,13 +278,16 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             newFilename += ".txt";
         }
 
-        if (File.Exists("Properties/" + newFilename))
+        var folder = Path.GetDirectoryName(Filename);
+
+        var pathToNewFilename = Path.Combine(folder ?? "Assets/pulses", newFilename);
+        if (File.Exists(pathToNewFilename))
         {
             MsgBox.Error(Title, $"File '{newFilename}' exists already");
             return;
         }
 
-        Filename = "Properties/" + newFilename;
+        Filename = pathToNewFilename;
         tblFileName.Text = Filename;
 
         lsvPulses.Items.Clear();

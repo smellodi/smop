@@ -138,12 +138,12 @@
                            Margin="0,8,0,0">
                     <CheckBox x:Name="chkShowThermistorIndicators"
                               Content="Thermistors"
-                              Checked="chkShowThermistorIndicators_Checked"
-                              Unchecked="chkShowThermistorIndicators_Checked"/>
+                              Checked="ShowThermistorIndicators_Checked"
+                              Unchecked="ShowThermistorIndicators_Checked"/>
                     <CheckBox x:Name="chkShowPressureIndicators"
                               Content="Monometers"
-                              Checked="chkShowPressureIndicators_Checked"
-                              Unchecked="chkShowPressureIndicators_Checked"/>
+                              Checked="ShowPressureIndicators_Checked"
+                              Unchecked="ShowPressureIndicators_Checked"/>
                 </WrapPanel>
 
                 <local:LiveData x:Name="lmsGraph" Grid.Row="1"

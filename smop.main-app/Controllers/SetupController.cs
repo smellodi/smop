@@ -87,8 +87,8 @@ public class SetupController
     {
         LogOD?.Invoke(this, new LogHandlerArgs("Cleaning up: started."));
 
-        var setupFilename = _storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? "init-setup-debug.txt" : $"{filename}.txt";
-        var setup = PulseSetup.Load(Path.Combine("Properties", setupFilename));
+        var setupFilename = _storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? "debug.txt" : $"{filename}.txt";
+        var setup = PulseSetup.Load(Path.Combine("Assets", "cleanup", setupFilename));
         if (setup != null)
         {
             using var controller = new PulseController(setup, null);

@@ -145,7 +145,7 @@ namespace Smop.MainApp.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Properties/IonVision.json")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Assets/ion-vision/default.json")]
         public string Comm_IonVision_SetupFilename {
             get {
                 return ((string)(this["Comm_IonVision_SetupFilename"]));

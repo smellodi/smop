@@ -33,7 +33,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Comm_IonVision_SetupFilename" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Properties/IonVision.json</Value>
+      <Value Profile="(Default)">Assets/ion-vision/default.json</Value>
     </Setting>
     <Setting Name="Pulses_SetupFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

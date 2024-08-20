@@ -140,9 +140,9 @@ public partial class PulseGeneratorSettings : UserControl
         var settings = Properties.Settings.Default;
         var ofd = new OpenFileDialog
         {
-            Filter = "Any file|*",
+            Filter = "Text files|*.txt",
             FileName = Path.GetFileName(settings.Pulses_SetupFilename.Trim()),
-            InitialDirectory = Path.GetDirectoryName(settings.Pulses_SetupFilename.Trim()) ?? AppDomain.CurrentDomain.BaseDirectory
+            InitialDirectory = Path.GetDirectoryName(Path.GetFullPath(settings.Pulses_SetupFilename.Trim())) ?? AppDomain.CurrentDomain.BaseDirectory
         };
 
         if (ofd.ShowDialog() ?? false)
@@ -159,7 +159,7 @@ public partial class PulseGeneratorSettings : UserControl
         var settings = Properties.Settings.Default;
         if (string.IsNullOrEmpty(settings.Pulses_SetupFilename.Trim()) || !File.Exists(settings.Pulses_SetupFilename.Trim()))
         {
-            settings.Pulses_SetupFilename = "Properties/pulse-setup.txt";
+            settings.Pulses_SetupFilename = Path.Combine("Assets", "pulses", "default.txt");
         }
 
         editor.Load(settings.Pulses_SetupFilename.Trim());
@@ -173,8 +173,6 @@ public partial class PulseGeneratorSettings : UserControl
 
             LoadPulseSetup(filename);
         }
-
-        return;
     }
 
     private void Randomize_CheckedChanged(object sender, RoutedEventArgs e)

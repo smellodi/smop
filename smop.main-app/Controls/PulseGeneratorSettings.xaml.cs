@@ -20,10 +20,21 @@ public partial class PulseGeneratorSettings : UserControl
 
     public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
+    public event EventHandler<float>? HumidityChanged;
+
+    public float Humidity
+    {
+        get => Properties.Settings.Default.Pulses_Humidity;
+        set
+        {
+            SetHumidity(value);
+        }
+    }
 
     public PulseGeneratorSettings()
     {
         InitializeComponent();
+        DataContext = this;
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)
@@ -133,6 +144,17 @@ public partial class PulseGeneratorSettings : UserControl
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
+    private void SetHumidity(float newHumidity)
+    {
+        var oldHumidity = Properties.Settings.Default.Pulses_Humidity;
+        if (oldHumidity != newHumidity)
+        {
+            Properties.Settings.Default.Pulses_Humidity = newHumidity;
+            Properties.Settings.Default.Save();
+            HumidityChanged?.Invoke(this, newHumidity);
+        }
+    }
+
     // UI
 
     private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
@@ -190,6 +212,17 @@ public partial class PulseGeneratorSettings : UserControl
         if (Visibility == Visibility.Visible)
         {
             LoadPulseSetup(settings.Pulses_SetupFilename.Trim());
+        }
+    }
+
+    private void Humidity_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            if (float.TryParse(txbHumidity.Text, out float value) && value > 0 && value < 90)
+            {
+                SetHumidity(value);
+            }
         }
     }
 }

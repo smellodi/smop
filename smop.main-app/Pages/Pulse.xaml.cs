@@ -1,6 +1,8 @@
-﻿using Smop.Common;
+﻿using ScottPlot.Drawing.Colormaps;
+using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
+using Smop.MainApp.Utils.Extensions;
 using Smop.OdorDisplay.Packets;
 using System;
 using System.Collections.Generic;
@@ -219,10 +221,12 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         if (pause > 1)
         {
             wtiWaiting.Start(pause);
+            lblWaitingTime.Content = wtiWaiting.WaitingTime.ToTime();
         }
         else if (pause == 0)
         {
             wtiWaiting.Reset();
+            lblWaitingTime.Content = null;
         }
 
         if (stage == Stage.Finished)
@@ -365,5 +369,14 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     {
         CleanUp();
         Next?.Invoke(this, Storage.Instance.SetupPage);
+    }
+
+    private void Waiting_TimeUpdated(object sender, double e)
+    {
+        double remainingTime = wtiWaiting.WaitingTime - e;
+        if (remainingTime > 0)
+            lblWaitingTime.Content = (wtiWaiting.WaitingTime - e).ToTime(wtiWaiting.WaitingTime);
+        else
+            lblWaitingTime.Content = null;
     }
 }

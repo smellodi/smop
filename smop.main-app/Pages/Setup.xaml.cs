@@ -1,4 +1,5 @@
-﻿using Smop.Common;
+﻿using ScottPlot.Drawing.Colormaps;
+using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
 using Smop.MainApp.Dialogs;
@@ -49,6 +50,10 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
         pulseGeneratorSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
+        pulseGeneratorSettings.HumidityChanged += (s, e) =>
+        {
+            _ctrl.SetHumidityLevel(e);
+        };
 
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
@@ -353,8 +358,12 @@ public partial class Setup : Page, IPage<object?>
                 chkShowThermistorIndicators.IsChecked ?? false,
                 chkShowPressureIndicators.IsChecked ?? false);
 
+            var settings = Properties.Settings.Default;
+            var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
+
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
+            _ctrl.SetHumidityLevel(humidity);
 
             if (_odorDisplayCleanupFile != null)
             {
@@ -426,12 +435,18 @@ public partial class Setup : Page, IPage<object?>
         prbMeasurementProgress.Value = 0;
         lblMeasurementProgress.Content = "0%";
 
+        var settings = Properties.Settings.Default;
+
         UpdateUI();
 
-        if (App.ML != null && App.ML.CmdParams != Properties.Settings.Default.Reproduction_ML_CmdParams)
+        if (App.ML != null && App.ML.CmdParams != settings.Reproduction_ML_CmdParams)
         {
-            App.ML.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
+            App.ML.LaunchMlExe(settings.Reproduction_ML_CmdParams);
         }
+
+        var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
+        if (!_ctrl.SetHumidityLevel(humidity))
+            return;
 
         await _ctrl.MeasureSample();
 
@@ -591,6 +606,11 @@ public partial class Setup : Page, IPage<object?>
         lblMeasurementProgress.Content = "0%";
 
         UpdateUI();
+
+        var settings = Properties.Settings.Default;
+        var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
+        if (!_ctrl.SetHumidityLevel(humidity))
+            return;
 
         var chemicalLevels = await _ctrl.CheckChemicalLevels();
         var lines = chemicalLevels?.Select(gasFlow => $"{gasFlow.OdorName}: {gasFlow.Level:F1} %") ?? new string[] { "Failed to measure gas levels" };

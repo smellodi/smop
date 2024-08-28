@@ -78,9 +78,12 @@ public class SetupController
 
         System.Threading.Thread.Sleep(100);
         COMHelper.ShowErrorIfAny(_odController.StartMeasurements(), "start measurements");
+    }
 
+    public bool SetHumidityLevel(float humidity)
+    {
         System.Threading.Thread.Sleep(100);
-        COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set default humidity");
+        return COMHelper.ShowErrorIfAny(_odController.SetHumidity(humidity), "set humidity");
     }
 
     public async void CleanUpOdorPrinter(string filename, Action? finishedAction = null)
@@ -207,9 +210,6 @@ public class SetupController
 
     public async Task MeasureSample()
     {
-        if (!COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set humidity"))
-            return;
-
         await Task.Delay(150);
 
         if (!COMHelper.ShowErrorIfAny(_odController.OpenChannels(_odorChannels), "release odors"))
@@ -440,9 +440,6 @@ public class SetupController
     public async Task<ChemicalLevel[]?> CheckChemicalLevels()
     {
         var result = new List<ChemicalLevel>();
-
-        if (!COMHelper.ShowErrorIfAny(_odController.SetHumidity(Properties.Settings.Default.Reproduction_Humidity), "set humidity"))
-            return null;
 
         _odorDisplay.Data += OdorDisplay_Data;
 

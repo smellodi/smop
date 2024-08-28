@@ -357,5 +357,17 @@ namespace Smop.MainApp.Properties {
                 this["PulseEditor_Height"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public float Pulses_Humidity {
+            get {
+                return ((float)(this["Pulses_Humidity"]));
+            }
+            set {
+                this["Pulses_Humidity"] = value;
+            }
+        }
     }
 }

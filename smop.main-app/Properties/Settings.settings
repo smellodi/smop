@@ -86,5 +86,8 @@
     <Setting Name="PulseEditor_Height" Type="System.Double" Scope="User">
       <Value Profile="(Default)">500</Value>
     </Setting>
+    <Setting Name="Pulses_Humidity" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">15</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

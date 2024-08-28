@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Smop.MainApp.Controls"
+             xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              mc:Ignorable="d" 
-             d:DesignHeight="200"
+             d:DesignHeight="300"
              d:DesignWidth="300"
              Loaded="UserControl_Loaded">
 
@@ -13,6 +13,9 @@
         <Style x:Key="OdorName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="4, 0"/>
+        </Style>
+        <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="14"/>
         </Style>
     </UserControl.Resources>
 
@@ -57,6 +60,24 @@
                       VerticalAlignment="Center"
                       Checked="Randomize_CheckedChanged"
                       Unchecked="Randomize_CheckedChanged"/>
+        </UserControl>
+        <Separator Margin="0,8,0,0"/>
+        <Label Style="{StaticResource Section}"
+               Content="Initial air settings:"/>
+        <UserControl x:Name="uscHumidity"
+                     Style="{StaticResource Setting}"
+                     Tag="Humidity, %">
+            <TextBox x:Name="txbHumidity" Grid.Column="0"
+                     Style="{StaticResource Value}"
+                     KeyUp="Humidity_KeyUp">
+                <TextBox.Text>
+                    <Binding Path="Humidity" UpdateSourceTrigger="LostFocus">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
         </UserControl>
 
         <Separator Margin="0,8,0,0"/>

@@ -225,7 +225,13 @@
                         Margin="0,12"
                         Height="50"
                         VerticalAlignment="Bottom"
-                        Text="Wait"/>
+                        Text="Wait" TimeUpdated="Waiting_TimeUpdated"/>
+                    <Label x:Name="lblWaitingTime" 
+                           HorizontalContentAlignment="Center"
+                           Foreground="{StaticResource BrushFontDark}"
+                           FontWeight="Bold"
+                           FontSize="14"
+                           Content="00:00"/>
                 </StackPanel>
             </Grid>
         </Grid>

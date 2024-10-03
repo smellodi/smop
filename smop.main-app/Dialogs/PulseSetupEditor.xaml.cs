@@ -302,9 +302,17 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     private void SessionAdd_Click(object sender, RoutedEventArgs e)
     {
-        var session = new SessionProps(40, new PulseIntervals(10, 60, 10, 10));
+        var newSession = new SessionProps(40, new PulseIntervals(10, 60, 10, 10));
         var currentSession = Session;
+        
         if (currentSession != null)
+        {
+            newSession.Humidity = currentSession.Humidity;
+            newSession.Intervals = currentSession.Intervals with { };
+        }
+
+        /*
+        if (currentSession != null)     // lets copy pulse to the newly created session
         {
             foreach (var pulse in currentSession.Pulses)
             {
@@ -313,20 +321,20 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
                 {
                     channels.Add(new PulseChannelProps(channel.Id, channel.Flow, channel.Active));
                 }
-                session.AddPulse(new PulseProps(channels.ToArray()));
+                newSession.AddPulse(new PulseProps(channels.ToArray()));
             }
         }
-        else
+        else      // if there is no current session, we must create one pulse
+        {*/     
+        var pulseChannelProps = new List<PulseChannelProps>() { new(1, 10f, true) };
+        for (int i = 2; i <= PulseChannels.MaxCount; i++)
         {
-            var pulseChannelProps = new List<PulseChannelProps>() { new(1, 10f, true) };
-            for (int i = 2; i <= PulseChannels.MaxCount; i++)
-            {
-                pulseChannelProps.Add(new PulseChannelProps(i, 0f, false));
-            }
-            session.AddPulse(new PulseProps(pulseChannelProps.ToArray()));
+            pulseChannelProps.Add(new PulseChannelProps(i, 0f, false));
         }
+        newSession.AddPulse(new PulseProps(pulseChannelProps.ToArray()));
+        //}
 
-        _sessions.Add(session);
+        _sessions.Add(newSession);
         _sessionIndex = _sessions.Count - 1;
 
         lsvSessions.Items.Add($"#{_sessions.Count}");
@@ -405,7 +413,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
                 lsvSessions.Items.RemoveAt(lsvSessions.SelectedIndex);
 
                 _sessionIndex = sessionIndex;
-                lsvSessions.SelectedIndex = sessionIndex;   // funny that this line does not cause the next ahnder to trigger automatically
+                lsvSessions.SelectedIndex = sessionIndex;   // funny that this line does not trigger Sessions_SelectionChanged automatically
                 Sessions_SelectionChanged(sender, null);
             }
         }
@@ -439,10 +447,13 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             if (currentSession != null && _pulseIndex >= 0 && lsvPulses.Items.Count > 1)
             {
                 currentSession.RemovePulse(_pulseIndex);
+                int pulseIndex = Math.Min(_pulseIndex, currentSession.Pulses.Length - 1);
 
-                int index = Math.Max(0, lsvPulses.SelectedIndex - 1);
+                _pulseIndex = -1;
                 lsvPulses.Items.RemoveAt(lsvPulses.SelectedIndex);
-                lsvPulses.SelectedIndex = index;
+
+                _pulseIndex = pulseIndex;
+                lsvPulses.SelectedIndex = pulseIndex;
             }
         }
     }

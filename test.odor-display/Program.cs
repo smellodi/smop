@@ -17,11 +17,11 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "devs", ("retrieves attached modules", new QueryDevices()) },
     { "capsb", ("retrieves Base module capabilities", new QueryCapabilities(Device.ID.Base)) },
     { "caps1", ("retrieves Odor1 module capabilities", new QueryCapabilities(Device.ID.Odor1)) },
-    { "set1", ("sets Base odorant flow = 5 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
+    { "set1", ("sets Base odorant flow = 10 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
         {
             new(Device.ID.Base, new ActuatorCapabilities(
                 ActuatorCapabilities.OutputValveOpenPermanently,
-                KeyValuePair.Create(Device.Controller.OdorantFlow, 5.0f)
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 10.0f)
             )),
             new(Device.ID.Odor1, new ActuatorCapabilities()
             {
@@ -29,11 +29,11 @@ var commands = new Dictionary<string, (string, Request?)>()
                 { Device.Controller.ChassisTemperature, 25f },
             })
         })) },
-    { "set2", ("sets Base [humidity = 4 ccm, dilution = 6 ccm, odorant+output valve ON]", new SetActuators(new Actuator[]
+    { "set2", ("sets Base [humidity = 15% (humid air = 1.5L/min, dry air = 8.5L/min, odorant valve ON]", new SetActuators(new Actuator[]
         {
             new(Device.ID.Base, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, 4f),
-                KeyValuePair.Create(Device.Controller.DilutionAirFlow, 6f),
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 1.5f),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, 8.5f),
                 ActuatorCapabilities.OdorantValveOpenPermanently
                 //ActuatorCapabilities.OutputValveOpenPermanently,
             )),

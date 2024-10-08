@@ -82,7 +82,7 @@ public static class Device
         /// </summary>
         OdorantFlowController = 12,
         /// <summary>
-        /// Base module only has it
+        /// Base and Dilution modules only have it
         /// </summary>
         DilutionAirFlowController = 13,
         /// <summary>
@@ -94,7 +94,7 @@ public static class Device
         /// </summary>
         OdorantValveController = 15,
         /// <summary>
-        /// Dilution module only has it
+        /// Base and Dilution modules only have it
         /// </summary>
         OutputValveController = 16,
     }

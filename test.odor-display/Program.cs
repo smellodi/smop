@@ -16,72 +16,108 @@ var commands = new Dictionary<string, (string, Request?)>()
     { "ver", ("retrieves version", new QueryVersion()) },
     { "devs", ("retrieves attached modules", new QueryDevices()) },
     { "capsb", ("retrieves Base module capabilities", new QueryCapabilities(Device.ID.Base)) },
+    { "capsd", ("retrieves Dilution module capabilities", new QueryCapabilities(Device.ID.DilutionAir)) },
     { "caps1", ("retrieves Odor1 module capabilities", new QueryCapabilities(Device.ID.Odor1)) },
-    { "set1", ("sets Base odorant flow = 10 l/min, output valve ON, Odor1 flow = 0.1 l/min, chassis T = 25C", new SetActuators(new Actuator[]
-        {
-            new(Device.ID.Base, new ActuatorCapabilities(
-                ActuatorCapabilities.OutputValveOpenPermanently,
-                KeyValuePair.Create(Device.Controller.OdorantFlow, 10.0f)
-            )),
-            new(Device.ID.Odor1, new ActuatorCapabilities()
-            {
-                { Device.Controller.OdorantFlow, 0.1f },
-                { Device.Controller.ChassisTemperature, 25f },
-            })
-        })) },
-    { "set2", ("sets Base [humidity = 15% (humid air = 1.5L/min, dry air = 8.5L/min, odorant valve ON]", new SetActuators(new Actuator[]
+    { "init", ("starts the fan, enables PID", new SetSystem(true, true)) },
+    { "bon", ("turns Base ON [humid air = 1.5L/min, dry air = 8.5L/min, both valves ON]", new SetActuators(new Actuator[]
         {
             new(Device.ID.Base, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 1.5f),
                 KeyValuePair.Create(Device.Controller.DilutionAirFlow, 8.5f),
-                ActuatorCapabilities.OdorantValveOpenPermanently
-                //ActuatorCapabilities.OutputValveOpenPermanently,
+                ActuatorCapabilities.OdorantValveOpenPermanently,
+                ActuatorCapabilities.OutputValveOpenPermanently
             )),
         })) },
-    { "set3", ("sets Base [odorant+output OFF]", new SetActuators(new Actuator[]
+    { "boff", ("turns Base OFF", new SetActuators(new Actuator[]
         {
             new(Device.ID.Base, new ActuatorCapabilities(
-                ActuatorCapabilities.OdorantValveClose
-                //ActuatorCapabilities.OutputValveClose
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0.0f),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, 0.0f),
+                ActuatorCapabilities.OdorantValveClose,
+                ActuatorCapabilities.OutputValveClose
             )),
         })) },
-    { "set4", ("sets Odor1-3 [flow = 50 sccm, odorant ON]", new SetActuators(new Actuator[]
-        {
-            new(Device.ID.Odor1, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
-                ActuatorCapabilities.OdorantValveOpenPermanently
-            )),
-            new(Device.ID.Odor2, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
-                ActuatorCapabilities.OdorantValveOpenPermanently
-            )),
-            new(Device.ID.Odor3, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
-                ActuatorCapabilities.OdorantValveOpenPermanently
-            ))
-        })) },
-    { "set5", ("sets Odor1-3 [odorant OFF]", new SetActuators(new Actuator[]
-        {
-            new(Device.ID.Odor1, new ActuatorCapabilities(
-                ActuatorCapabilities.OdorantValveClose
-            )),
-            new(Device.ID.Odor2, new ActuatorCapabilities(
-                ActuatorCapabilities.OdorantValveClose
-            )),
-            new(Device.ID.Odor3, new ActuatorCapabilities(
-                ActuatorCapabilities.OdorantValveClose
-            )),
-        })) },
-    { "set6", ("sets Odor1 [flow = 10 sccm, odorant ON=2 sec]", new SetActuators(new Actuator[]
+    { "oon1", ("turns Odor1 ON for 2 seconds [flow = 10 sccm]", new SetActuators(new Actuator[]
         {
             new(Device.ID.Odor1, new ActuatorCapabilities(
                 KeyValuePair.Create(Device.Controller.OdorantFlow, 10f),
                 KeyValuePair.Create(Device.Controller.OdorantValve, 2000f)
             ))
         })) },
-    { "sets", ("start the fan, enabled PID", new SetSystem(true, true)) },
-    { "setm", ("start measurements; press ENTRER to stop it", new SetMeasurements(SetMeasurements.Command.Start)) },
-    { "setmo", ("retrieves a measurement once", new SetMeasurements(SetMeasurements.Command.Once)) },
+    { "oon2", ("turns Odor1 ON [flow = 40 sccm]", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.Odor1, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 40f),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+            ))
+        })) },
+    { "ooff2", ("turns Odor1 OFF", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.Odor1, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+                ActuatorCapabilities.OutputValveClose
+            ))
+        })) },
+    { "oon3", ("turns Odor[1-3] ON [flow = 50 sccm]", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.Odor1, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+            )),
+            new(Device.ID.Odor2, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+            )),
+            new(Device.ID.Odor3, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 50f),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+            ))
+        })) },
+    { "ooff3", ("turns Odor[1-3] OFF", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.Odor1, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+                ActuatorCapabilities.OdorantValveClose
+            )),
+            new(Device.ID.Odor2, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+                ActuatorCapabilities.OdorantValveClose
+            )),
+            new(Device.ID.Odor3, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+                ActuatorCapabilities.OdorantValveClose
+            )),
+        })) },
+    { "dpon", ("turn the Dilution pump ON", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.DilutionAir, new ActuatorCapabilities(
+                ActuatorCapabilities.OutputValveOpenPermanently
+            ))
+        })) },
+    { "dpoff", ("turn the Dilution pump OFF", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.DilutionAir, new ActuatorCapabilities(
+                ActuatorCapabilities.OutputValveClose
+            ))
+        })) },
+    { "don", ("turns Dilution ON [10 L/min + 100 sccm]", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.DilutionAir, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 10f),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, 100f),
+                ActuatorCapabilities.OdorantValveOpenPermanently
+            ))
+        })) },
+    { "doff", ("turns Dilution OFF", new SetActuators(new Actuator[]
+        {
+            new(Device.ID.DilutionAir, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+                KeyValuePair.Create(Device.Controller.DilutionAirFlow, 0f),
+                ActuatorCapabilities.OdorantValveClose
+            ))
+        })) },
+    { "start", ("start measurements; press ENTRER to stop it", new SetMeasurements(SetMeasurements.Command.Start)) },
+    { "once", ("retrieves a measurement once", new SetMeasurements(SetMeasurements.Command.Once)) },
     { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },
     { "", ("", new SetMeasurements(SetMeasurements.Command.Stop)) },

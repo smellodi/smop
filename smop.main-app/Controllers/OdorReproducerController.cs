@@ -124,15 +124,14 @@ public class OdorReproducerController
 
             if (_odorDisplayLogger.HasRecords)
             {
-                var result = Logger.Save(new ILog[] { _odorDisplayLogger });
+                var (result, folder) = Logger.Save(new ILog[] { _odorDisplayLogger });
                 if (result == SavingResult.None)
                 {
                     MsgBox.Warn(App.Current.MainWindow.Title, "No data to save", MsgBox.Button.OK);
                 }
                 else if (result == SavingResult.Save && App.LogFileName is string logFilename)
                 {
-                    var logFolder = LogLocation.Instance.Folder;
-                    File.Copy(logFilename, Path.Combine(logFolder, "events.txt"));
+                    File.Copy(logFilename, Path.Combine(folder ?? "", "events.txt"));
                 }
                 _odorDisplayLogger.Clear();
             }

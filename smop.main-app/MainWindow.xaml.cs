@@ -68,7 +68,7 @@ public partial class MainWindow : Window
         if (smellInspLogger.HasRecords) logs.Add(smellInspLogger);
         if (ionVisionLogger.HasRecords) logs.Add(ionVisionLogger);
 
-        var result = Logger.Save(logs.ToArray());
+        var (result, _) = Logger.Save(logs.ToArray());
 
         if (result == SavingResult.None)
         {

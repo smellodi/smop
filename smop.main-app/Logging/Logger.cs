@@ -3,6 +3,7 @@ using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.WebSockets;
 using System.Text;
 using System.Windows;
 
@@ -38,19 +39,27 @@ public interface ILog
 
 public static class Logger
 {
-    public static SavingResult Save(ILog[] logs)
+    /// <summary>
+    /// Save the log files into the same folder
+    /// </summary>
+    /// <param name="logs">The logs to save</param>
+    /// <returns>Saving result and the folder where the log files were save</returns>
+    public static (SavingResult, string?) Save(ILog[] logs)
     {
         if (logs.Length == 0)
         {
-            return SavingResult.None;
+            return (SavingResult.None, null);
         }
 
-        var logLocation = LogLocation.Instance;
+        var logLocation = new LogLocation();
         var result = logLocation.PromptToSave();
+        string? folder = null;
 
         if (result == SavingResult.Save)
         {
             logLocation.EnsureLocationExists();
+            folder = logLocation.Folder;
+
             var failedToSave = new List<string>();
 
             foreach (var log in logs)
@@ -70,7 +79,7 @@ public static class Logger
                     $"Failed to save the following files\\n'{listOfFiles}':\n\nRetry?",
                     MsgBox.Button.Yes, MsgBox.Button.No) == MsgBox.Button.Yes)
                 {
-                    result = Save(logs);
+                    (result, folder) = Save(logs);
                 }
             }
             else
@@ -90,7 +99,7 @@ public static class Logger
             }
         }
 
-        return result;
+        return (result, folder);
     }
 }
 
@@ -148,9 +157,22 @@ public abstract class Logger<T> where T : RecordBase
 
 public class LogLocation
 {
-    public static LogLocation Instance => _instance ??= new();
+    //public static LogLocation Instance => _instance ??= new();
 
     public string Folder => Path.Combine(_rootFolder, _folderName);
+
+    public LogLocation()
+    {
+        var settings = Properties.Settings.Default;
+        _rootFolder = settings.Logger_Folder;
+
+        if (string.IsNullOrEmpty(_rootFolder) || !Directory.Exists(_rootFolder))
+        {
+            _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        }
+
+        _folderName = $"{DateTime.Now:u}".ToPath();
+    }
 
     public SavingResult PromptToSave()
     {
@@ -207,18 +229,6 @@ public class LogLocation
     string _rootFolder;
     string _folderName;
 
-    protected LogLocation()
-    {
-        var settings = Properties.Settings.Default;
-        _rootFolder = settings.Logger_Folder;
-
-        if (string.IsNullOrEmpty(_rootFolder) || !Directory.Exists(_rootFolder))
-        {
-            _rootFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        }
-
-        _folderName = $"{DateTime.Now:u}".ToPath();
-    }
 
     private bool AskFolderName()
     {

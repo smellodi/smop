@@ -369,5 +369,17 @@ namespace Smop.MainApp.Properties {
                 this["Pulses_Humidity"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Setup_HumidityAutoAdjustment {
+            get {
+                return ((bool)(this["Setup_HumidityAutoAdjustment"]));
+            }
+            set {
+                this["Setup_HumidityAutoAdjustment"] = value;
+            }
+        }
     }
 }

@@ -21,20 +21,31 @@ public partial class PulseGeneratorSettings : UserControl
     public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
     public event EventHandler<float>? HumidityChanged;
+    public event EventHandler<bool>? HumidityAutoAdjustmentChanged;
 
     public float Humidity
     {
         get => Properties.Settings.Default.Pulses_Humidity;
-        set
-        {
-            SetHumidity(value);
-        }
+        set { SetHumidity(value); }
+    }
+
+    public bool HumidityAutoAdjustment
+    {
+        get => Properties.Settings.Default.Setup_HumidityAutoAdjustment;
+        set { SetHumidityAutoAdjustment(value); }
     }
 
     public PulseGeneratorSettings()
     {
         InitializeComponent();
         DataContext = this;
+    }
+
+    public void Init()
+    {
+        HumidityController.Instance.Init();
+
+        HumidityChanged?.Invoke(this, Properties.Settings.Default.Pulses_Humidity);
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)
@@ -152,6 +163,17 @@ public partial class PulseGeneratorSettings : UserControl
             Properties.Settings.Default.Pulses_Humidity = newHumidity;
             Properties.Settings.Default.Save();
             HumidityChanged?.Invoke(this, newHumidity);
+        }
+    }
+
+    private void SetHumidityAutoAdjustment(bool value)
+    {
+        var prevValue = Properties.Settings.Default.Setup_HumidityAutoAdjustment;
+        if (prevValue != value)
+        {
+            Properties.Settings.Default.Setup_HumidityAutoAdjustment = value;
+            Properties.Settings.Default.Save();
+            HumidityAutoAdjustmentChanged?.Invoke(this, value);
         }
     }
 

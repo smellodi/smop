@@ -1,5 +1,4 @@
-﻿using ScottPlot.Drawing.Colormaps;
-using Smop.Common;
+﻿using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
 using Smop.MainApp.Dialogs;
@@ -53,6 +52,11 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.HumidityChanged += (s, e) =>
         {
             _ctrl.SetHumidityLevel(e);
+            HumidityController.Instance.TargetHumidity = e;
+        };
+        pulseGeneratorSettings.HumidityAutoAdjustmentChanged += (s, e) =>
+        {
+            HumidityController.Instance.IsEnabled = e;
         };
 
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
@@ -69,6 +73,8 @@ public partial class Setup : Page, IPage<object?>
         if (type == SetupType.PulseGenerator)
         {
             _ctrl.AcquireOdorChannelsInfo();
+            pulseGeneratorSettings.Init();
+
             if (!_isInitilized)
             {
                 _ctrl.EnumOdorChannels(pulseGeneratorSettings.AddOdorChannel);

@@ -89,5 +89,8 @@
     <Setting Name="Pulses_Humidity" Type="System.Single" Scope="User">
       <Value Profile="(Default)">15</Value>
     </Setting>
+    <Setting Name="Setup_HumidityAutoAdjustment" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

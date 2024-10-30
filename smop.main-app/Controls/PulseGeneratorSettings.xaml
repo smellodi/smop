@@ -63,7 +63,7 @@
         </UserControl>
         <Separator Margin="0,8,0,0"/>
         <Label Style="{StaticResource Section}"
-               Content="Initial air settings:"/>
+               Content="Air settings:"/>
         <UserControl x:Name="uscHumidity"
                      Style="{StaticResource Setting}"
                      Tag="Humidity, %">
@@ -79,6 +79,9 @@
                 </TextBox.Text>
             </TextBox>
         </UserControl>
+        <CheckBox Content="auto-adjustment"
+                  HorizontalAlignment="Right"
+                  IsChecked="{Binding HumidityAutoAdjustment}"/>
 
         <Separator Margin="0,8,0,0"/>
         <StackPanel Grid.Column="0">

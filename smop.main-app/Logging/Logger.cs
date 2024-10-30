@@ -3,7 +3,6 @@ using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.WebSockets;
 using System.Text;
 using System.Windows;
 
@@ -218,8 +217,6 @@ public class LogLocation
     }
 
     // Internal
-
-    static LogLocation? _instance = null;
 
     readonly string SaveInto = "Save data into";
     readonly string PressChange = "Press 'Change' to set another destination file";

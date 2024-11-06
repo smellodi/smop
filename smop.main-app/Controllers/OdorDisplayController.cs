@@ -60,6 +60,21 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
+    public Comm.Result StopFlows(Device.ID[] channels)
+    {
+        var actuators = new List<Actuator>();
+        // TODO use proper IDs
+        foreach (var channelID in channels)
+        {
+            actuators.Add(new Actuator(channelID, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, 0f),
+                ActuatorCapabilities.OdorantValveClose
+            )));
+        }
+
+        return Send(new SetActuators(actuators.ToArray()));
+    }
+
     public Comm.Result OpenChannels(PulseChannelProps[] channels, float durationSec)
     {
         var actuators = new List<Actuator>();

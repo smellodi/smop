@@ -1,6 +1,7 @@
 ﻿using Smop.Common;
 using Smop.MainApp.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Smop.MainApp.Controllers;
@@ -89,6 +90,15 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
                 _pulseIndex = session.Pulses.Length - 1;
             }
         }
+    }
+
+    public void Stop()
+    {
+        var channelIDs = new List<OdorDisplay.Device.ID>();
+        for (int i = 1; i < PulseChannels.MaxCount; i++)
+            channelIDs.Add((OdorDisplay.Device.ID)i);
+
+        _odorDisplay.StopFlows(channelIDs.ToArray());
     }
 
     // Internal

@@ -87,6 +87,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         _delayedAction?.Close();
         _delayedAction = null;
 
+        _controller?.Stop();
         _controller?.Dispose();
         _controller = null;
     }

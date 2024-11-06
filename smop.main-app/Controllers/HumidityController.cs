@@ -42,7 +42,7 @@ internal class HumidityController
 
     // Internal
 
-    const float CONTROL_GAIN = 0.8f;
+    const float CONTROL_GAIN = 0.75f;
     const float UPDATE_INTERVAL = 5000; // ms
 
     static HumidityController? _instance = null;
@@ -53,7 +53,7 @@ internal class HumidityController
 
     bool _isEnabled;
     float _targetHumidity;
-    float _measuredHumidity = 0;
+    float? _measuredHumidity = null;
     float _currentHumidity;
 
     private HumidityController()
@@ -104,15 +104,12 @@ internal class HumidityController
 
     private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs? e)
     {
-        var diff = _targetHumidity - _measuredHumidity;
+        var diff = _targetHumidity - (_measuredHumidity ?? _targetHumidity);
         if (Math.Abs(diff) > 0.1)
         {
-            //_currentHumidity += CONTROL_GAIN * diff;
-            //_ctrl.SetHumidity(_currentHumidity);
-            //System.Diagnostics.Debug.WriteLine($"[HC] Corrected humidity: {_currentHumidity:F2}");
-
-            _ctrl.SetHumidity(_targetHumidity + CONTROL_GAIN * diff);
-            System.Diagnostics.Debug.WriteLine($"[HC] Corrected humidity: {_targetHumidity + CONTROL_GAIN * diff:F2}");
+            _currentHumidity += CONTROL_GAIN * diff;
+            _ctrl.SetHumidity(_currentHumidity);
+            System.Diagnostics.Debug.WriteLine($"[HC] Corrected humidity: {_currentHumidity:F2}");
         }
     }
 }

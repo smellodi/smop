@@ -25,14 +25,14 @@
         </Style>
         <Style x:Key="SubHeader" TargetType="Label">
             <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Margin" Value="0,18,0,0"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
         <Style x:Key="MeasurementLabel" TargetType="Label">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Setter Property="Padding" Value="5,2,5,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
@@ -40,11 +40,18 @@
             <Setter Property="FontSize" Value="17"/>
             <Setter Property="Padding" Value="4,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
+        </Style>
+        <Style x:Key="MeasurementValues" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="Padding" Value="4,0"/>
+            <Setter Property="TextAlignment" Value="Right"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
         <Style x:Key="MeasurementValve" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="6,6,6,0"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
         </Style>
@@ -76,9 +83,9 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0"
-                MinWidth="200"
-                Margin="6,0,0,0"
-                HorizontalAlignment="Left">
+                        MinWidth="200"
+                        Margin="6,0,0,0"
+                        HorizontalAlignment="Left">
                 <Label Style="{StaticResource Header}"
                     Content="Base"/>
 
@@ -157,8 +164,9 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2"
-                MinWidth="200"
-                HorizontalAlignment="Right">
+                        MinWidth="200"
+                        Margin="0,0,6,0"
+                        HorizontalAlignment="Right">
                 <Label Style="{StaticResource Header}"
                     HorizontalContentAlignment="Center"
                     Content="Channels"/>
@@ -222,10 +230,11 @@
                     </StackPanel>
 
                     <local:WaitingInstruction x:Name="wtiWaiting"
-                        Margin="0,12"
-                        Height="50"
-                        VerticalAlignment="Bottom"
-                        Text="Wait" TimeUpdated="Waiting_TimeUpdated"/>
+                                              Margin="0,12"
+                                              Height="50"
+                                              VerticalAlignment="Bottom"
+                                              Text="Wait"
+                                              TimeUpdated="Waiting_TimeUpdated"/>
                     <Label x:Name="lblWaitingTime" 
                            HorizontalContentAlignment="Center"
                            Foreground="{StaticResource BrushFontDark}"

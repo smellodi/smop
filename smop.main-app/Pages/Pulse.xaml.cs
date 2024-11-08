@@ -1,5 +1,4 @@
-﻿using ScottPlot.Drawing.Colormaps;
-using Smop.Common;
+﻿using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
 using Smop.MainApp.Utils.Extensions;
@@ -10,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using Sensor = Smop.OdorDisplay.Packets.Sensor;
 
@@ -71,7 +71,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
     readonly Dictionary<int, StageDisplay> _stageDisplays = new();
 
-    Dictionary<OdorDisplay.Device.ID, (Label, CheckBox)>? _odorChannelObservers;
+    Dictionary<OdorDisplay.Device.ID, (Run, Run, Run, CheckBox)>? _odorChannelObservers;
 
     PulseController? _controller = null;
 
@@ -142,18 +142,26 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                 {
                     Style = (Style)Resources["MeasurementValve"]
                 };
-                var value = new Label
+
+                var valueTop = new Run();
+                var valueMiddle = new Run();
+                var valueBottom = new Run();
+                var value = new TextBlock
                 {
-                    Content = 0,
-                    Style = (Style)Resources["MeasurementValue"]
+                    Style = (Style)Resources["MeasurementValues"],
                 };
+                value.Inlines.Add(valueTop);
+                value.Inlines.Add(new LineBreak());
+                value.Inlines.Add(valueMiddle);
+                value.Inlines.Add(new LineBreak());
+                value.Inlines.Add(valueBottom);
 
                 container.Children.Add(label);
                 container.Children.Add(valve);
                 container.Children.Add(value);
                 stpChannels.Children.Add(container);
 
-                _odorChannelObservers.Add(m.Device, (value, valve));
+                _odorChannelObservers.Add(m.Device, (valueTop, valueMiddle, valueBottom, valve));
             }
         }
     }
@@ -227,7 +235,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         else if (pause == 0)
         {
             wtiWaiting.Reset();
-            lblWaitingTime.Content = null;
+            lblWaitingTime.Content = " ";
         }
 
         if (stage == Stage.Finished)
@@ -321,11 +329,13 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (Sensor.Gas)sv;
-                                observer.Item1.Content = $"{v.SLPM * 1000:F1} sccm,\n{v.Millibars:F1} mBar,\n{v.Celsius:F1} °C";
+                                observer.Item1.Text = $"{v.SLPM * 1000:F1} sccm";
+                                observer.Item2.Text = $"{v.Millibars:F1} mBar";
+                                observer.Item3.Text = $"{v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
-                            observer.Item2.IsChecked = ((Sensor.Valve)sv).Opened;
+                            observer.Item4.IsChecked = ((Sensor.Valve)sv).Opened;
                             break;
                     }
                 }
@@ -378,6 +388,6 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         if (remainingTime > 0)
             lblWaitingTime.Content = (wtiWaiting.WaitingTime - e).ToTime(wtiWaiting.WaitingTime);
         else
-            lblWaitingTime.Content = null;
+            lblWaitingTime.Content = " ";
     }
 }

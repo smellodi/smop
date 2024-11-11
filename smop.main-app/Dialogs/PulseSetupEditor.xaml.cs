@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Channels;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -113,25 +114,36 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         _pulseChannelFlowValid = FindResource("TextBoxWithoutError") as Style;
         _pulseChannelFlowInvalid = FindResource("TextBoxWithError") as Style;
 
+        var channels = new OdorChannels();
+
         for (int i = 1; i <= PulseChannels.MaxCount; i++)
         {
             var id = i.ToString();
 
+            var channelID = Enum.Parse<OdorDisplay.Device.ID>($"Odor{i}");
+            var channel = channels.FirstOrDefault(c => c.ID == channelID);
+
             grdPulse.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 
-            var label = new Label() { Content = id };
+            var label = new Label();
+            if (channel?.Name.Length > 0)
+            {
+                label.Content = channel.Name;
+            }
+            else
+            {
+                label.Content = id;
+            }
             Grid.SetRow(label, i);
             Grid.SetColumn(label, 0);
             grdPulse.Children.Add(label);
 
-            var chk = new CheckBox() { Tag = id };
+            var chk = new CheckBox() { Tag = id, Width = 26, IsTabStop = false };
             chk.Checked += PulseChannelUse_CheckedChanged;
             chk.Unchecked += PulseChannelUse_CheckedChanged;
             Grid.SetRow(chk, i);
             Grid.SetColumn(chk, 1);
             grdPulse.Children.Add(chk);
-
-            _pulseChannelUseControl.Add(chk);
 
             var txb = new TextBox() { Tag = id };
             txb.TextChanged += PulseChannelFlow_TextChanged;
@@ -142,7 +154,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
             grdPulse.Children.Add(txb);
 
-            _pulseChannelFlowControl.Add(txb);
+            _pulseChannelControls.Add((chk, txb));
         }
     }
 
@@ -174,8 +186,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     const float PULSE_CHANNEL_MIN = 0;
     const float PULSE_CHANNEL_MAX = 1500;
 
-    readonly List<CheckBox> _pulseChannelUseControl = new();
-    readonly List<TextBox> _pulseChannelFlowControl = new();
+    readonly List<(CheckBox, TextBox)> _pulseChannelControls = new();
 
     readonly Style? _pulseChannelFlowValid;
     readonly Style? _pulseChannelFlowInvalid;
@@ -230,6 +241,10 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             {
                 txb.Style = _pulseChannelFlowValid;
                 UpdateChannelFlow(id, value);
+
+                var (chk, _) = _pulseChannelControls.FirstOrDefault(kv => kv.Item2 == txb);
+                if (chk != null)
+                    chk.IsChecked = value > 0;
             }
             else
             {
@@ -425,15 +440,10 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
         grdPulse.IsEnabled = Session != null;
 
-        foreach (var chk in _pulseChannelUseControl)
+        foreach (var (chk, txb) in _pulseChannelControls)
         {
             var id = int.Parse((string)chk.Tag);
             chk.IsChecked = Channels.FirstOrDefault(c => c.Id == id)?.Active ?? false;
-        }
-
-        foreach (var txb in _pulseChannelFlowControl)
-        {
-            var id = int.Parse((string)txb.Tag);
             txb.Text = Channels.FirstOrDefault(c => c.Id == id)?.Flow.ToString("F2") ?? "";
             txb.Style = _pulseChannelFlowValid;
         }

@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Pulse setup file editor"
         MinHeight="594"
-        MinWidth="400"
+        MinWidth="310"
         SizeToContent="Width"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
@@ -159,7 +159,7 @@
                         </TextBox.Text>
                     </TextBox>
                     
-                    <Label Grid.Row="1" Grid.Column="0">Initial pause, seconds</Label>
+                    <Label Grid.Row="1" Grid.Column="0">Initial pause, s</Label>
                     <TextBox x:Name="txbSessionInitialPause" Grid.Row="1" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
@@ -171,7 +171,7 @@
                         </TextBox.Text>
                     </TextBox>
 
-                    <Label Grid.Row="2" Grid.Column="0">Pulse duration, seconds</Label>
+                    <Label Grid.Row="2" Grid.Column="0">Pulse duration, s</Label>
                     <TextBox x:Name="txbSessionPulseDuration" Grid.Row="2" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
@@ -183,7 +183,7 @@
                         </TextBox.Text>
                     </TextBox>
                     
-                    <Label Grid.Row="3" Grid.Column="0">DMS start delay, seconds</Label>
+                    <Label Grid.Row="3" Grid.Column="0">DMS start delay, s</Label>
                     <TextBox x:Name="txbSessionDMSDelay" Grid.Row="3" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}"
                              IsEnabled="{Binding IsChecked, ElementName=chkUseDMS}">
@@ -197,11 +197,11 @@
                     </TextBox>
                     <CheckBox x:Name="chkUseDMS" Grid.Row="3" Grid.Column="1"
                               Height="24"
-                              Margin="0,0,-12,0"
+                              Width="24"
                               HorizontalAlignment="Right"
                               IsChecked="{Binding UseSessionDMS}"/>
 
-                    <Label Grid.Row="4" Grid.Column="0">Final pause, seconds</Label>
+                    <Label Grid.Row="4" Grid.Column="0">Final pause, s</Label>
                     <TextBox x:Name="txbSessionFinalPause" Grid.Row="4" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
@@ -246,7 +246,7 @@
                     <Label Grid.Row="0" Grid.Column="1" FontWeight="Bold">Valve</Label>
                     <Label Grid.Row="0" Grid.Column="2" FontWeight="Bold">Flow, sccm</Label>
 
-                    <!-- puplated in code -->
+                    <!-- populated in code -->
 
                 </Grid>
             </Grid>

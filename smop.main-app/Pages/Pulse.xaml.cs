@@ -29,14 +29,15 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
         DataContext = this;
 
-        pdsInitialPause.Flow = -1;
-        pdsFinalPause.Flow = -1;
-
         ((App)Application.Current).AddCleanupAction(CleanUp);
     }
 
     public void Start(PulseSetup setup)
     {
+        grdStageDisplays.Children.Clear();
+
+        _stageDisplays.Clear();
+
         var maxChannelId = Devices.MaxOdorModuleCount;
         var channelsExist = new bool[maxChannelId];
 
@@ -46,11 +47,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                     if (channel.Flow > 0 || channel.Active)
                         channelsExist[channel.Id - 1] = true;
 
-        stpStageDisplays.Children.Clear();
-        _stageDisplays.Clear();
-
         CreateChannelStageIndicators(channelsExist);
-        CreateAdditionalStageIndicators();
 
         _controller = new PulseController(setup, App.IonVision);
         _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Intervals, e.Pulse, e.Stage));
@@ -77,9 +74,6 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
     Stage _stage = Stage.None;
 
-    StageDisplay? _preStageDisplay;
-    StageDisplay? _postStageDisplay;
-
     DispatchOnce? _delayedAction = null;
 
     private void CleanUp()
@@ -94,27 +88,26 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
     private void CreateChannelStageIndicators(bool[] channelsExist)
     {
+        var channels = new OdorChannels();
+
         for (int i = 0; i < channelsExist.Length; i++)
         {
             if (channelsExist[i])
             {
-                var stageDisplay = new StageDisplay() { Text = $"Channel #{i + 1}" };
-                stpStageDisplays.Children.Add(stageDisplay);
+                var channelID = Enum.Parse<OdorDisplay.Device.ID>($"Odor{i + 1}");
+                var channel = channels.FirstOrDefault(c => c.ID == channelID);
+
+                var stageDisplay = new StageDisplay() { Text = channel?.Name ?? $"Channel #{i + 1}" };
+                stageDisplay.Margin = new Thickness(12, 0, 0, 0);
+
+                Grid.SetColumn(stageDisplay, _stageDisplays.Count);
+
+                grdStageDisplays.Children.Add(stageDisplay);
 
                 _stageDisplays.Add(i + 1, stageDisplay);
             }
         }
     }
-
-    private void CreateAdditionalStageIndicators()
-    {
-        _preStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(0, 0, 12, 0), Flow = -1 };
-        stpStageDisplays.Children.Insert(0, _preStageDisplay);
-
-        _postStageDisplay = new StageDisplay() { Width = 24, Margin = new Thickness(12, 0, 0, 0), Flow = -1 };
-        stpStageDisplays.Children.Add(_postStageDisplay);
-    }
-
 
     private void CreateChannelObservers(Data data)
     {
@@ -177,8 +170,8 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
         if (stage.HasFlag(Stage.NewSession) && intervals != null)
         {
-            pdsInitialPause.Duration = (int)(intervals.InitialPause * 1000);
-            pdsFinalPause.Duration = (int)(intervals.FinalPause * 1000);
+            psdInitialPause.Duration = (int)(intervals.InitialPause * 1000);
+            psdFinalPause.Duration = (int)(intervals.FinalPause * 1000);
 
             runSession.Text = _controller?.SessionId.ToString() ?? "0";
             runSessionCount.Text = _controller?.SessionCount.ToString() ?? "0";
@@ -211,10 +204,10 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
             stageDisplay.Value.IsCurrent = isPulse && (pulse?.Channels.Any(ch => ch.Id == stageDisplay.Key && ch.Active) ?? false);
         }
 
-        if (_preStageDisplay != null)
-            _preStageDisplay.IsCurrent = isPulse;
-        if (_postStageDisplay != null)
-            _postStageDisplay.IsCurrent = isPulse;
+        //if (_preStageDisplay != null)
+        psdPre.IsCurrent = isPulse;
+        //if (_postStageDisplay != null)
+        psdPost.IsCurrent = isPulse;
 
         stage = stage & ~Stage.NewPulse & ~Stage.NewSession;
         var pause = stage switch

@@ -139,8 +139,11 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
             var session = _setup.Sessions[_sessionIndex];
             _eventLogger.Add("session", _sessionIndex.ToString());
 
-            HumidityController.Instance.TargetHumidity = session.Humidity;
-            _odorDisplay.SetHumidity(session.Humidity);
+            if (session.Humidity >= 0)
+            {
+                HumidityController.Instance.TargetHumidity = session.Humidity;
+                _odorDisplay.SetHumidity(session.Humidity);
+            }
 
             _extraStages |= Stage.NewSession;
 

@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              mc:Ignorable="d"
              x:Name="display"
              MinHeight="80"
@@ -25,7 +24,6 @@
         </Style>
     </UserControl.Resources>
 
-    <!--StackPanel DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type local:PauseDisplay}}}"-->
     <Grid DataContext="{Binding ElementName=display}">
         <StackPanel VerticalAlignment="Center"
                     Margin="0,16">

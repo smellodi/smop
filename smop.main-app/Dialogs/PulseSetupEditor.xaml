@@ -6,7 +6,7 @@
         xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
         Title="Pulse setup file editor"
-        MinHeight="494"
+        MinHeight="594"
         MinWidth="400"
         SizeToContent="Width"
         WindowStartupLocation="CenterOwner"

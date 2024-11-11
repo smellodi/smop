@@ -45,7 +45,7 @@ public record class PulseIntervals(float InitialPause, float Pulse, float DmsDel
 public class SessionProps(float humidity, PulseIntervals intervals)
 {
     /// <summary>
-    /// 0..100
+    /// 0..100, or -1 or not set
     /// </summary>
     public float Humidity { get; set; } = humidity;
     public PulseIntervals Intervals { get; set; } = intervals;
@@ -122,7 +122,7 @@ public class PulseSetup
                 {
                     if (lastSession != null)
                     {
-                        var props = value.Trim().Split(' ').Where(p => !string.IsNullOrEmpty(p)).ToArray(); ;
+                        var props = value.Trim().Split(' ').Where(p => !string.IsNullOrEmpty(p)).ToArray();
                         var (pulseProps, hasInvalidValues) = CreatePulseProps(props);
 
                         if (pulseProps != null)
@@ -173,10 +173,9 @@ public class PulseSetup
         {
             writer.WriteLine(string.Join("",
                 $"{SESSION_INIT}:",
-                $" {SESSION_HUMIDITY}={session.Humidity}",
+                session.Humidity >= 0 ? $" {SESSION_HUMIDITY}={session.Humidity}" : "",
                 $" {PULSE_INITIAL_PAUSE}={session.Intervals.InitialPause}",
-                session.Intervals.DmsDelay >= 0 ?
-                    $" {DMS_DELAY}={session.Intervals.DmsDelay}" : "",
+                session.Intervals.DmsDelay >= 0 ? $" {DMS_DELAY}={session.Intervals.DmsDelay}" : "",
                 $" {PULSE_DURATION}={session.Intervals.Pulse}",
                 $" {PULSE_FINAL_PAUSE}={session.Intervals.FinalPause}"
             ));
@@ -185,8 +184,15 @@ public class PulseSetup
                 writer.Write($"{SESSION_PULSE}:");
                 foreach (var channel in pulse.Channels)
                 {
-                    var isActive = channel.Active ? PULSE_CHANNEL_ON : PULSE_CHANNEL_OFF;
-                    writer.Write($" {channel.Id}={channel.Flow},{isActive}");
+                    if (channel.Active != (channel.Flow != 0))
+                    {
+                        var isActive = channel.Active ? PULSE_CHANNEL_ON : PULSE_CHANNEL_OFF;
+                        writer.Write($" {channel.Id}={channel.Flow},{isActive}");
+                    }
+                    else
+                    {
+                        writer.Write($" {channel.Id}={channel.Flow}");
+                    }
                 }
                 writer.WriteLine();
             }
@@ -274,7 +280,7 @@ public class PulseSetup
         }
 
         return
-            humidity < 0 || humidity > MAX_INTERVAL ||
+            humidity > 100 ||
             delay < 0 || delay > MAX_INTERVAL ||
             duration <= 0 || duration > MAX_INTERVAL ||
             dmsDelay > MAX_INTERVAL ||
@@ -309,7 +315,7 @@ public class PulseSetup
             var id = int.Parse(keyvalue[0]);
             var flow = float.Parse(paramList[0]);
 
-            var active = true;
+            var active = flow != 0;
             if (paramList.Length > 1)
             {
                 if (int.TryParse(paramList[1], out int activeValue))

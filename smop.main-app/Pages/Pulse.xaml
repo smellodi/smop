@@ -207,17 +207,29 @@
                             <RowDefinition/>
                         </Grid.RowDefinitions>
 
-                        <local:StageDisplay x:Name="pdsInitialPause" Grid.Row="0"
+                        <local:StageDisplay x:Name="psdInitialPause" Grid.Row="0"
                                         Text="Initial pause"
                                         Margin="0,0,0,12"
                                         IsCurrent="{Binding IsInitialPause}"/>
 
-                        <StackPanel x:Name="stpStageDisplays" Grid.Row="1"
-                                Orientation="Horizontal"
-                                MinHeight="100">
-                        </StackPanel>
+                        <Grid x:Name="grdStageDisplaysContainer" Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <local:StageDisplay x:Name="psdPre" Grid.Column="0"
+                                                Width="24"/>
+                            <UniformGrid x:Name="grdStageDisplays" Grid.Column="1"
+                                         Rows="1"
+                                         MinHeight="100">
+                            </UniformGrid>
+                            <local:StageDisplay x:Name="psdPost" Grid.Column="2"
+                                                Width="24"
+                                                Margin="12,0,0,0"/>
+                        </Grid>
 
-                        <local:StageDisplay x:Name="pdsFinalPause" Grid.Row="2"
+                        <local:StageDisplay x:Name="psdFinalPause" Grid.Row="2"
                                         Text="Final pause"
                                         Margin="0,12,0,0"
                                         IsCurrent="{Binding IsFinalPause}"/>

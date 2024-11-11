@@ -89,7 +89,7 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
         nameof(Flow),
         typeof(double),
         typeof(StageDisplay),
-        new FrameworkPropertyMetadata(new PropertyChangedCallback(
+        new FrameworkPropertyMetadata(-1d, new PropertyChangedCallback(
             (s, e) => (s as StageDisplay)?.PropertyChanged?.Invoke(s, new PropertyChangedEventArgs(nameof(Flow)))
         ))
     );

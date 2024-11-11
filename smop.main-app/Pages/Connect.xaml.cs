@@ -128,51 +128,75 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         cmbSmellInspCommPort.IsEnabled = !_smellInsp.IsOpen;
     }
 
-    private void ConnectToOdorDispay(string? address)
+    private async Task ConnectToOdorDispay(string? address)
     {
         if (_odorDisplay.IsOpen)
             return;
 
-        if (!COMHelper.ShowErrorIfAny(_odorDisplay.Open(address), $"open port {address}"))
-            return;
+        btnConnectToOdorDisplay.IsEnabled = false;
+        cmbOdorDisplayCommPort.IsEnabled = false;
 
-        btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
-
-        var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
-        if (LogIO.Add(queryResult, "QueryVersion", LogSource.OD) && response is OdorDisplay.Packets.Version version)
+        await Task.Run(() =>
         {
-            tblOdorDisplayInfo.Inlines.Add($"Hardware: v{version.Hardware}");
-            tblOdorDisplayInfo.Inlines.Add(new LineBreak());
-            tblOdorDisplayInfo.Inlines.Add($"Software: v{version.Software}");
-            tblOdorDisplayInfo.Inlines.Add(new LineBreak());
-            tblOdorDisplayInfo.Inlines.Add($"Protocol: v{version.Protocol}");
-        }
+            if (COMHelper.ShowErrorIfAny(_odorDisplay.Open(address), $"open port {address}"))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    btnConnectToOdorDisplay.Content = new Image() { Source = _greenButtonImage };
 
-        //_odorDisplay.Debug += Comm_DebugAsync;
+                    var queryResult = _odorDisplay.Request(new QueryVersion(), out Ack? ack, out Response? response);
+                    if (LogIO.Add(queryResult, "QueryVersion", LogSource.OD) && response is OdorDisplay.Packets.Version version)
+                    {
+                        tblOdorDisplayInfo.Inlines.Add($"Hardware: v{version.Hardware}");
+                        tblOdorDisplayInfo.Inlines.Add(new LineBreak());
+                        tblOdorDisplayInfo.Inlines.Add($"Software: v{version.Software}");
+                        tblOdorDisplayInfo.Inlines.Add(new LineBreak());
+                        tblOdorDisplayInfo.Inlines.Add($"Protocol: v{version.Protocol}");
+                    }
 
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
+                    //_odorDisplay.Debug += Comm_DebugAsync;
+
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputConnection)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
+                });
+            }
+        });
+
+        btnConnectToOdorDisplay.IsEnabled = true;
+        cmbOdorDisplayCommPort.IsEnabled = true;
     }
 
-    private void ConnectToSmellInsp(string? address)
+    private async Task ConnectToSmellInsp(string? address)
     {
         if (_smellInsp.IsOpen)
             return;
 
-        if (!COMHelper.ShowErrorIfAny(_smellInsp.Open(address), $"open port {address}"))
-            return;
+        btnConnectToSmellInsp.IsEnabled = false;
+        cmbSmellInspCommPort.IsEnabled = false;
 
-        btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
+        await Task.Run(() =>
+        {
+            if (COMHelper.ShowErrorIfAny(_smellInsp.Open(address), $"open port {address}"))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    btnConnectToSmellInsp.Content = new Image() { Source = _greenButtonImage };
 
-        var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
-        LogIO.Add(queryResult, "GetInfo", LogSource.SNT);
+                    var queryResult = _smellInsp.Send(SmellInsp.Command.GET_INFO);
+                    LogIO.Add(queryResult, "GetInfo", LogSource.SNT);
 
-        if (queryResult.Error != Comm.Error.Success)
-            tblSmellInspInfo.Text = $"Status: {queryResult.Reason}";
+                    if (queryResult.Error != Comm.Error.Success)
+                        tblSmellInspInfo.Text = $"Status: {queryResult.Reason}";
 
-        //_smellInsp.Debug += Comm_DebugAsync;
+                    //_smellInsp.Debug += Comm_DebugAsync;
 
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasOutputAndInputConnections)));
+                });
+            }
+        });
+
+        btnConnectToSmellInsp.IsEnabled = true;
+        cmbSmellInspCommPort.IsEnabled = true;
     }
 
     private async Task ConnectToIonVisionAsync()
@@ -182,9 +206,9 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         _ionVision = new IonVision.Communicator(IonVisionSetupFilename, _storage.Simulating.HasFlag(SimulationTarget.IonVision));
 
-        btnConnectToIonVision.IsEnabled = false;
+        grdIonVision.IsEnabled = false;
         var connectionInfo = await CheckIonVision(_ionVision);
-        btnConnectToIonVision.IsEnabled = true;
+        grdIonVision.IsEnabled = true;
 
         if (!connectionInfo.IsConnected)
         {
@@ -410,15 +434,15 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
         UpdateUI();
     }
 
-    private void ConnectToOdorDisplay_Click(object? sender, RoutedEventArgs e)
+    private async void ConnectToOdorDisplay_Click(object? sender, RoutedEventArgs e)
     {
-        ConnectToOdorDispay(_storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? null : (string)cmbOdorDisplayCommPort.SelectedItem);
+        await ConnectToOdorDispay(_storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? null : (string)cmbOdorDisplayCommPort.SelectedItem);
         UpdateUI();
     }
 
-    private void ConnectToSmellInsp_Click(object? sender, RoutedEventArgs e)
+    private async void ConnectToSmellInsp_Click(object? sender, RoutedEventArgs e)
     {
-        ConnectToSmellInsp(_storage.Simulating.HasFlag(SimulationTarget.SmellInspector) ? null : (string)cmbSmellInspCommPort.SelectedItem);
+        await ConnectToSmellInsp(_storage.Simulating.HasFlag(SimulationTarget.SmellInspector) ? null : (string)cmbSmellInspCommPort.SelectedItem);
         UpdateUI();
     }
 

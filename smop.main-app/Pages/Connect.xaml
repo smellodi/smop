@@ -134,7 +134,7 @@
             <Label Grid.Row="2" Grid.Column="0" 
                    Style="{StaticResource LblInTable}"
                    Content="Ion Vision"/>
-            <Grid Grid.Row="2" Grid.Column="1">
+            <Grid x:Name="grdIonVision" Grid.Row="2" Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="Auto"/>

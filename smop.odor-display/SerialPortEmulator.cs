@@ -27,7 +27,10 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
         };
     }
 
-    public void Open() { IsOpen = true; }
+    public void Open()
+    {
+        IsOpen = true;
+    }
 
     public void Close()
     {

@@ -100,7 +100,7 @@ public partial class Reproduction : Page, IPage<Navigation>
                 .Select(ch => ch.Name)
                 .ToArray();
             for (int i = 0; i < channelNames.Length + 1; i++)     // 1 extra column for the distance
-                grdSearchSpaceTable.ColumnDefinitions.Add(new ColumnDefinition());
+                grdSearchSpaceTable.ColumnDefinitions.Add(new ColumnDefinition() { MaxWidth = 46 });
 
             AddFlowsRecordToSearchSpaceTable(channelNames, "Dist");
         }
@@ -258,7 +258,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         void AddValue(string value, int column)
         {
-            var tbl = new TextBlock() { Text = value.ToString(), Padding = new Thickness(2) };
+            var tbl = new TextBlock() { Text = value, Padding = new Thickness(2) };
             if (grdSearchSpaceTable.RowDefinitions.Count == 1)
             {
                 tbl.FontWeight = FontWeights.Bold;
@@ -389,7 +389,7 @@ public partial class Reproduction : Page, IPage<Navigation>
                 }
                 else
                 {
-                    string[] flows = recipe.IsFinal ? Array.Empty<string>() : _proc.RecipeFlows.Select(f => f.ToString("F0")).ToArray();
+                    string[] flows = recipe.IsFinal ? Array.Empty<string>() : _proc.RecipeFlows.Select(f => f.ToString("F1")).ToArray();
                     AddFlowsRecordToSearchSpaceTable(flows, recipe.Distance.ToString("F2"));
                 }
             }

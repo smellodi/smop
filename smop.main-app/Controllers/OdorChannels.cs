@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text.Json;
@@ -40,6 +41,12 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
         Load();
     }
 
+    public KnownOdors(ObservableCollection<OdorChannelProperties> coll) : this()
+    {
+        _items.Clear();
+        _items.AddRange(coll);
+    }
+
     public void Save()
     {
         var knownOdorsStr = JsonSerializer.Serialize(_items);
@@ -49,11 +56,10 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
         ReloadRequested?.Invoke(this, EventArgs.Empty);
     }
 
-    public OdorChannelProperties GetProps(string name)
+    public OdorChannelProperties? GetProps(string name)
     {
         var channelName = name.ToLower();
-        var knownOdorProps = _items.FirstOrDefault(props => channelName.StartsWith(props.ShortKnownName));
-        return knownOdorProps == null ? _default : knownOdorProps;
+        return _items.FirstOrDefault(props => channelName.StartsWith(props.ShortKnownName));
     }
 
     public string? GetFullName(string text) => _items.Where(item => item.FullKnownName.ToLower().StartsWith(text.ToLower())).FirstOrDefault()?.FullKnownName;
@@ -62,7 +68,6 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
 
     static event EventHandler? ReloadRequested; // used to sync all instances
 
-    readonly OdorChannelProperties _default = new OdorChannelProperties(50, 100, 0.100f);
     readonly List<OdorChannelProperties> _items = new()
     {
         new OdorChannelProperties(50, 55, 1.730f, "ipa", "Isopropanol"),
@@ -111,6 +116,53 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
     }
 }
 
+public class PidLevelInspector
+{
+    // Constants for ComputePidLevel, found empirically.. may be incorrect!
+
+    public double BasePID { get; set; } = 0.052;       // V
+    public double BasePIDTemp { get; set; } = 20.5;    // Celsius
+    public double PIDCompPower { get; set; } = 2.3;
+    public double PIDCompGain { get; set; } = 0.014;
+
+    public PidLevelInspector()
+    {
+        var settings = Properties.Settings.Default;
+        BasePID = settings.Odor_BasePID;
+        BasePIDTemp = settings.Odor_BasePIDTemp;
+        PIDCompPower = settings.Odor_PIDTempCompPower;
+        PIDCompGain = settings.Odor_PIDTempCompGain;
+    }
+
+    /// <summary>
+    /// Computes the PID level as a percentage to the expected level given the reference flow <see cref="ChemicalLevel.TestFlow"/>.
+    /// The correction formula was found empirically and may be wrong!
+    /// </summary>
+    /// <param name="pidExpectedChange">PID from odor properties, Volts</param>
+    /// <param name="pidMeasured">PID measured, Volts</param>
+    /// <param name="temp">Temperature, Celsius</param>
+    /// <returns>Percentage</returns>
+    public float ComputePidLevel(float pidExpectedChange, float pidMeasured, float temp)
+    {
+        var dt = temp - BasePIDTemp;
+        var correction = dt > 0 ?
+            PIDCompGain * Math.Pow(dt, PIDCompPower) :
+            -PIDCompGain * Math.Pow(-dt, PIDCompPower);
+        return 100 * (float)(pidMeasured - BasePID) / (pidExpectedChange + (float)correction);
+    }
+
+    public void Save()
+    {
+        var settings = Properties.Settings.Default;
+        settings.Odor_BasePID = BasePID;
+        settings.Odor_BasePIDTemp = BasePIDTemp;
+        settings.Odor_PIDTempCompPower = PIDCompPower;
+        settings.Odor_PIDTempCompGain = PIDCompGain;
+
+        settings.Save();
+    }
+}
+
 public class OdorChannel : INotifyPropertyChanged
 {
     public string Name
@@ -145,29 +197,7 @@ public class OdorChannel : INotifyPropertyChanged
         Properties = props;
     }
 
-    /// <summary>
-    /// Computes the PID level as a percentage to the expected level given the reference flow <see cref="ChemicalLevel.TestFlow"/>.
-    /// The reference PID level is hardcoded in its "pidCheckLevel" property.
-    /// The correction formula was found empirically and may be wrong!
-    /// </summary>
-    /// <param name="pid">PID, Volts</param>
-    /// <returns>Percentage</returns>
-    public float ComputePidLevel(float pid, float temp)
-    {
-        var basePID = Properties.PidCheckLevel;
-        var dt = temp - BASE_TEMP;
-        var correction = dt > 0 ? 
-            CORRECTION_GAIN * Math.Pow(dt, CORRECTION_POW) : 
-            -CORRECTION_GAIN * Math.Pow(-dt, CORRECTION_POW);
-        return 100 * pid / (basePID + (float)correction);
-    }
-
     // Internal
-
-    // Constants for ComputePidLevel, found empirically.. may be incorrect!
-    const double BASE_TEMP = 20.5;
-    const double CORRECTION_POW = 2.3;
-    const double CORRECTION_GAIN = 0.014;
 
     string _name;
     float _flow = 0;
@@ -175,8 +205,6 @@ public class OdorChannel : INotifyPropertyChanged
 
 public class OdorChannels : IEnumerable<OdorChannel>
 {
-    //public static string[] KnownOdorNames => _channelProps.Keys.ToArray();
-
     public OdorChannels(OdorDisplay.Device.ID[]? ids = null)
     {
         var odorDefs = Properties.Settings.Default.Reproduction_Odors;
@@ -270,6 +298,8 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     readonly string DMS_COMMENT = "{0}={1}";
 
+    readonly OdorChannelProperties DEFAULT_ODOR_PROPS = new(50, 100, 0.100f);
+
     readonly List<OdorChannel> _items = new();
 
     KnownOdors _knownOdors = new();
@@ -278,7 +308,7 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     private void AddChannel(OdorDisplay.Device.ID id, string name, float flow)
     {
-        var props = _knownOdors.GetProps(name);
+        var props = _knownOdors.GetProps(name) ?? DEFAULT_ODOR_PROPS;
         var channel = new OdorChannel(id, name, props) { Flow = flow };
         _items.Add(channel);
     }

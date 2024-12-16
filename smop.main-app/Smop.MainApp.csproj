@@ -48,6 +48,7 @@
     <None Remove="Assets\images\button-red.png" />
     <None Remove="Assets\images\conn-dms-ml.png" />
     <None Remove="Assets\images\conn-ml-od.png" />
+    <None Remove="Assets\images\delete.png" />
     <None Remove="Assets\images\dms.png" />
     <None Remove="Assets\images\edit.png" />
     <None Remove="Assets\images\gas.gif" />
@@ -73,6 +74,7 @@
     <Resource Include="Assets\images\button-red.png" />
     <Resource Include="Assets\images\conn-dms-ml.png" />
     <Resource Include="Assets\images\conn-ml-od.png" />
+    <Resource Include="Assets\images\delete.png" />
     <Resource Include="Assets\images\dms.png" />
     <Resource Include="Assets\images\edit.png" />
     <Resource Include="Assets\images\error.png" />

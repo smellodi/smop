@@ -393,5 +393,53 @@ namespace Smop.MainApp.Properties {
                 this["KnownOdors"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.052")]
+        public double Odor_BasePID {
+            get {
+                return ((double)(this["Odor_BasePID"]));
+            }
+            set {
+                this["Odor_BasePID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("20.5")]
+        public double Odor_BasePIDTemp {
+            get {
+                return ((double)(this["Odor_BasePIDTemp"]));
+            }
+            set {
+                this["Odor_BasePIDTemp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2.3")]
+        public double Odor_PIDTempCompPower {
+            get {
+                return ((double)(this["Odor_PIDTempCompPower"]));
+            }
+            set {
+                this["Odor_PIDTempCompPower"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.014")]
+        public double Odor_PIDTempCompGain {
+            get {
+                return ((double)(this["Odor_PIDTempCompGain"]));
+            }
+            set {
+                this["Odor_PIDTempCompGain"] = value;
+            }
+        }
     }
 }

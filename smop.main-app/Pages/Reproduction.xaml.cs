@@ -428,6 +428,8 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     private void DisplayODState(ODPackets.Data data)
     {
+        int odorRow = 0;
+
         foreach (var m in data.Measurements)
         {
             if (m.Device == ODDevice.ID.Base)
@@ -455,9 +457,11 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
             else
             {
-                var row = ((int)m.Device - 1) + MEASUREMENT_ROW_FIRST_ODOR_CHANNEL;
+                var row = odorRow + MEASUREMENT_ROW_FIRST_ODOR_CHANNEL;
                 if (GetElementInGrid(grdODChannels, row, 1) is not TextBlock flowEl)
                     continue;
+
+                odorRow++;
 
                 var gas = GetMeasurement<ODPackets.Sensor.Gas>(m, ODDevice.Sensor.OdorantFlowSensor);
                 var valve = GetMeasurement<ODPackets.Sensor.Valve>(m, ODDevice.Sensor.OdorantValveSensor);

@@ -1,0 +1,145 @@
+﻿<Window x:Class="Smop.MainApp.Dialogs.KnownOdorsEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Smop.MainApp.Dialogs"
+        mc:Ignorable="d"
+        Title="Known odors"
+        Height="560"
+        Width="312"
+        MinHeight="560"
+        MinWidth="300"
+        WindowStyle="ToolWindow"
+        WindowStartupLocation="CenterOwner"
+        Icon="/Assets/icons/main.png"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
+
+    <Window.Resources>
+        <DataTemplate x:Key="KnownOdorTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="124"/>
+                    <ColumnDefinition Width="46"/>
+                    <ColumnDefinition Width="36"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                         Text="{Binding Path=ShortKnownName, Mode=TwoWay}"/>
+                <TextBox Grid.Column="1"
+                         Text="{Binding Path=FullKnownName, Mode=TwoWay}"
+                         Margin="2,0,0,0"/>
+                <TextBox Grid.Column="2"
+                         Text="{Binding Path=PidCheckLevel, Mode=TwoWay}"
+                         Margin="2,0,0,0"/>
+                <Button Grid.Column="3"
+                        Tag="{Binding Path=ShortKnownName}"
+                        Margin="2,0,0,0"
+                        Width="32"
+                        Height="32"
+                        HorizontalContentAlignment="Center"
+                        Click="DeleteItem_Click">
+                    <Image Source="/Assets/images/delete.png"
+                           Margin="-22,0,0,0"/>
+                </Button>
+            </Grid>
+        </DataTemplate>
+
+        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="Margin" Value="4,0" />
+            <Setter Property="Padding" Value="12,4" />
+            <Setter Property="MinWidth" Value="58" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.LayoutTransform>
+            <ScaleTransform x:Name="sctScale"/>
+        </Grid.LayoutTransform>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="8,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="126"/>
+                <ColumnDefinition Width="42"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0"
+                   FontWeight="Bold"
+                   Content="Abbr."/>
+            <Label Grid.Column="1"
+                   FontWeight="Bold"
+                   Content="Full name"/>
+            <Label Grid.Column="2"
+                   FontWeight="Bold"
+                   Content="PID"/>
+        </Grid>
+
+        <ListBox Grid.Row="1"
+                 ItemTemplate="{StaticResource KnownOdorTemplate}"
+                 ItemsSource="{Binding Items, Mode=OneWay}"/>
+
+        <Button Grid.Row="2"
+                Content="Add"
+                Click="AddItem_Click"/>
+
+        <Grid Grid.Row="3"
+              DataContext="{Binding PidLevelInspector}"
+              Margin="2,6,6,6">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="72"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Row="0" Grid.ColumnSpan="2"
+                   HorizontalAlignment="Center"
+                   Content="PID check"
+                   FontWeight="Bold"/>
+            
+            <Label Grid.Row="1" Grid.Column="0"
+                   Content="Base PID, V"/>
+            <TextBox Grid.Row="1" Grid.Column="1"
+                     Text="{Binding Path=BasePID, Mode=TwoWay}"/>
+
+            <Label Grid.Row="2" Grid.Column="0"
+                   Content="Base PID temp, C"/>
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Text="{Binding Path=BasePIDTemp, Mode=TwoWay}"/>
+
+            <Label Grid.Row="3" Grid.Column="0"
+                   Content="PID temperature compensation factor"/>
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Text="{Binding Path=PIDCompPower, Mode=TwoWay}"/>
+
+            <Label Grid.Row="4" Grid.Column="0"
+                   Content="PID temperature compensation gain"/>
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Text="{Binding Path=PIDCompGain, Mode=TwoWay}"/>
+        </Grid>
+
+        <WrapPanel Grid.Row="4"
+                   Margin="12"
+                   HorizontalAlignment="Center">
+            <Button Content="OK"
+                    IsDefault="True"
+                    Click="OK_Click"/>
+            <Button Content="Cancel"
+                    IsCancel="True"/>
+        </WrapPanel>
+    </Grid>
+</Window>

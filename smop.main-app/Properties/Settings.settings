@@ -95,5 +95,17 @@
     <Setting Name="KnownOdors" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="Odor_BasePID" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.052</Value>
+    </Setting>
+    <Setting Name="Odor_BasePIDTemp" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">20.5</Value>
+    </Setting>
+    <Setting Name="Odor_PIDTempCompPower" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">2.3</Value>
+    </Setting>
+    <Setting Name="Odor_PIDTempCompGain" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.014</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

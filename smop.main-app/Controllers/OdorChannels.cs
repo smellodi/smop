@@ -4,11 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text.Json;
 
 namespace Smop.MainApp.Controllers;
 
-public record class OdorChannelProperties(float MaxFlow, float CriticalFlow, float PidCheckLevel)
+public record class OdorChannelProperties(float MaxFlow, float CriticalFlow, float PidCheckLevel, string ShortKnownName = "", string FullKnownName = "")
 {
+    public bool IsKnownOdor => !string.IsNullOrEmpty(FullKnownName);
     public Dictionary<string, object> ToDict()
     {
         var result = new Dictionary<string, object>();
@@ -18,6 +20,94 @@ public record class OdorChannelProperties(float MaxFlow, float CriticalFlow, flo
             result.Add(p.Name.ToCamelCase(), p.GetValue(this)!);
         }
         return result;
+    }
+}
+
+public class KnownOdors : IEnumerable<OdorChannelProperties>
+{
+    public IEnumerator<OdorChannelProperties> GetEnumerator() => new EnumOdorChannels(_items);
+
+    public string[] FullNames => _items.Select(item => item.FullKnownName).ToArray();
+
+    public KnownOdors()
+    {
+        ReloadRequested += (s, e) =>
+        {
+            if (s != this)
+                Load();
+        };
+
+        Load();
+    }
+
+    public void Save()
+    {
+        var knownOdorsStr = JsonSerializer.Serialize(_items);
+        Properties.Settings.Default.KnownOdors = knownOdorsStr;
+        Properties.Settings.Default.Save();
+
+        ReloadRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public OdorChannelProperties GetProps(string name)
+    {
+        var channelName = name.ToLower();
+        var knownOdorProps = _items.FirstOrDefault(props => channelName.StartsWith(props.ShortKnownName));
+        return knownOdorProps == null ? _default : knownOdorProps;
+    }
+
+    public string? GetFullName(string text) => _items.Where(item => item.FullKnownName.ToLower().StartsWith(text.ToLower())).FirstOrDefault()?.FullKnownName;
+
+    // Internal
+
+    static event EventHandler? ReloadRequested; // used to sync all instances
+
+    readonly OdorChannelProperties _default = new OdorChannelProperties(50, 100, 0.100f);
+    readonly List<OdorChannelProperties> _items = new()
+    {
+        new OdorChannelProperties(50, 55, 1.730f, "ipa", "Isopropanol"),
+        new OdorChannelProperties(50, 65, 1.200f, "eth", "Ethanol"),
+        new OdorChannelProperties(50, 70, 0.600f, "nbut", "nButanol"),
+        new OdorChannelProperties(50, 70, 1.18f, "cyclohex", "Cyclohexanone"),
+        new OdorChannelProperties(50, 70, 1.18f, "hex", "Cyclohexanone"),
+        new OdorChannelProperties(50, 60, 0.084f, "citron", "Citronellol"),
+        new OdorChannelProperties(50, 70, 0.990f, "limon", "Limonene"),
+    };
+
+    class EnumOdorChannels(List<OdorChannelProperties> odorChannels) : IEnumerator<OdorChannelProperties>
+    {
+        public OdorChannelProperties Current => _odorChannels[_position];
+
+        public bool MoveNext() => ++_position < _odorChannels.Count;
+
+        public void Reset() => _position = -1;
+
+        public void Dispose() { }
+
+
+        // Internal 
+
+        readonly List<OdorChannelProperties> _odorChannels = odorChannels;
+
+        int _position = -1;
+
+        object IEnumerator.Current => Current;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);
+
+    private void Load()
+    {
+        var knownOdorsStr = Properties.Settings.Default.KnownOdors;
+        if (!string.IsNullOrEmpty(knownOdorsStr))
+        {
+            var items = JsonSerializer.Deserialize<List<OdorChannelProperties>>(knownOdorsStr);
+            if (items != null)
+            {
+                _items.Clear();
+                _items.AddRange(items);
+            }
+        }
     }
 }
 
@@ -85,7 +175,7 @@ public class OdorChannel : INotifyPropertyChanged
 
 public class OdorChannels : IEnumerable<OdorChannel>
 {
-    public static string[] KnownOdorNames => _channelProps.Keys.ToArray();
+    //public static string[] KnownOdorNames => _channelProps.Keys.ToArray();
 
     public OdorChannels(OdorDisplay.Device.ID[]? ids = null)
     {
@@ -182,27 +272,14 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     readonly List<OdorChannel> _items = new();
 
-    readonly static Dictionary<string, OdorChannelProperties> _channelProps = new()
-    {
-        { "default", new OdorChannelProperties(50, 100, 0.100f) },
-        { "ipa", new OdorChannelProperties(50, 55, 1.730f) },
-        { "ethanol", new OdorChannelProperties(50, 65, 1.200f) },
-        { "nbutanol", new OdorChannelProperties(50, 70, 0.600f) },
-        { "cyclohex", new OdorChannelProperties(50, 70, 0.935f) },
-        { "citron", new OdorChannelProperties(50, 60, 0.084f) },
-    };
+    KnownOdors _knownOdors = new();
 
     IEnumerator IEnumerable.GetEnumerator() => new EnumOdorChannels(_items);
 
     private void AddChannel(OdorDisplay.Device.ID id, string name, float flow)
     {
-        var channelName = name.ToLower();
-        if (!_channelProps.ContainsKey(channelName))
-            channelName = "default";
-        var props = _channelProps[channelName];
-
+        var props = _knownOdors.GetProps(name);
         var channel = new OdorChannel(id, name, props) { Flow = flow };
-
         _items.Add(channel);
     }
 }

@@ -90,6 +90,8 @@ public partial class PulseGeneratorSettings : UserControl
     
     // Internal
 
+    readonly KnownOdors _knownOdors = new();
+
     string? _setupFileName = null;
 
     string _currentInput = "";
@@ -102,7 +104,7 @@ public partial class PulseGeneratorSettings : UserControl
 
         if (input.Length > _currentInput.Length && input != _currentSuggestion)
         {
-            _currentSuggestion = OdorChannels.KnownOdorNames.FirstOrDefault(x => x.StartsWith(input));
+            _currentSuggestion = _knownOdors.GetFullName(input);
             if (_currentSuggestion != null)
             {
                 var currentText = txb.Text + _currentSuggestion[inputLength..];

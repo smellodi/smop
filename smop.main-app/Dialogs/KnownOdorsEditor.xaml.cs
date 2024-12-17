@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Controllers;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
@@ -65,6 +66,6 @@ public partial class KnownOdorsEditor : Window, INotifyPropertyChanged
 
     private void AddItem_Click(object sender, RoutedEventArgs e)
     {
-        Items.Add(new OdorChannelProperties(50, 70, 1, "name", "LongName"));
+        Items.Add(new OdorChannelProperties(0, 50, 70, 1, "name", "LongName"));
     }
 }

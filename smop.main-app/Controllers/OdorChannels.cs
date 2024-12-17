@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace Smop.MainApp.Controllers;
 
-public record class OdorChannelProperties(float MaxFlow, float CriticalFlow, float PidCheckLevel, string ShortKnownName = "", string FullKnownName = "")
+public record class OdorChannelProperties(float MinFlow, float MaxFlow, float CriticalFlow, float PidCheckLevel, string ShortKnownName = "", string FullKnownName = "")
 {
     public bool IsKnownOdor => !string.IsNullOrEmpty(FullKnownName);
     public Dictionary<string, object> ToDict()
@@ -70,13 +70,13 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
 
     readonly List<OdorChannelProperties> _items = new()
     {
-        new OdorChannelProperties(50, 55, 1.730f, "ipa", "Isopropanol"),
-        new OdorChannelProperties(50, 65, 1.200f, "eth", "Ethanol"),
-        new OdorChannelProperties(50, 70, 0.600f, "nbut", "nButanol"),
-        new OdorChannelProperties(50, 70, 1.18f, "cyclohex", "Cyclohexanone"),
-        new OdorChannelProperties(50, 70, 1.18f, "hex", "Cyclohexanone"),
-        new OdorChannelProperties(50, 60, 0.084f, "citron", "Citronellol"),
-        new OdorChannelProperties(50, 70, 0.990f, "limon", "Limonene"),
+        new OdorChannelProperties(0, 50, 55, 1.730f, "ipa", "Isopropanol"),
+        new OdorChannelProperties(0, 50, 65, 1.200f, "eth", "Ethanol"),
+        new OdorChannelProperties(0, 50, 70, 0.600f, "nbut", "nButanol"),
+        new OdorChannelProperties(0, 50, 70, 1.18f, "cyclohex", "Cyclohexanone"),
+        new OdorChannelProperties(0, 50, 70, 1.18f, "hex", "Cyclohexanone"),
+        new OdorChannelProperties(0, 50, 120, 0.084f, "citron", "Citronellol"),
+        new OdorChannelProperties(0, 50, 75, 0.990f, "limon", "Limonene"),
     };
 
     class EnumOdorChannels(List<OdorChannelProperties> odorChannels) : IEnumerator<OdorChannelProperties>
@@ -298,7 +298,7 @@ public class OdorChannels : IEnumerable<OdorChannel>
 
     readonly string DMS_COMMENT = "{0}={1}";
 
-    readonly OdorChannelProperties DEFAULT_ODOR_PROPS = new(50, 100, 0.100f);
+    readonly OdorChannelProperties DEFAULT_ODOR_PROPS = new(0, 50, 100, 0.100f);
 
     readonly List<OdorChannel> _items = new();
 

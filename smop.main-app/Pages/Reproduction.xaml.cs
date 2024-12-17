@@ -10,7 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
-using ODDevice = Smop.OdorDisplay.Device;
+using MOD = Smop.OdorDisplay.Device;
 using ODPackets = Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp.Pages;
@@ -205,7 +205,7 @@ public partial class Reproduction : Page, IPage<Navigation>
         return null;
     }
 
-    private static T? GetMeasurement<T>(ODPackets.Sensors measurement, ODDevice.Sensor sensor)
+    private static T? GetMeasurement<T>(ODPackets.Sensors measurement, MOD.Sensor sensor)
         where T : ODPackets.Sensor.Value
     {
         T? result = default;
@@ -245,7 +245,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             if (!string.IsNullOrEmpty(odorChannel.Name))
             {
                 grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-                AddLabel(grid, odorChannel.Name, grid.RowDefinitions.Count - 1, 0, labelStyle);
+                AddLabel(grid, odorChannel.Name, grid.RowDefinitions.Count - 1, 0, labelStyle, odorChannel.ID);
                 AddTextBlock(grid, "", grid.RowDefinitions.Count - 1, 1, valueStyle);
             }
         }
@@ -428,27 +428,25 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     private void DisplayODState(ODPackets.Data data)
     {
-        int odorRow = 0;
-
         foreach (var m in data.Measurements)
         {
-            if (m.Device == ODDevice.ID.Base)
+            if (m.Device == MOD.ID.Base)
             {
-                var value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.PID);
+                var value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == MOD.Sensor.PID);
                 if (value != null && value is ODPackets.Sensor.PID pid)
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_PID, 1) is TextBlock pidEl)
                         pidEl.Text = (pid.Volts * 1000).ToString("0.0") + " mV";
                 }
 
-                value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.OutputAirHumiditySensor);
+                value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == MOD.Sensor.OutputAirHumiditySensor);
                 if (value != null && value is ODPackets.Sensor.Humidity humidity)
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_HUMIDITY, 1) is TextBlock humidityEl)
                         humidityEl.Text = humidity.Percent.ToString("0.0") + " %";
                 }
 
-                value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == ODDevice.Sensor.OdorSourceThermometer);
+                value = m.SensorValues.FirstOrDefault(sv => sv.Sensor == MOD.Sensor.OdorSourceThermometer);
                 if (value != null && value is ODPackets.Sensor.Thermometer thermometer)
                 {
                     if (GetElementInGrid(grdODChannels, MEASUREMENT_ROW_TEMPERATURE_GAS, 1) is TextBlock tempGasEl)
@@ -457,14 +455,24 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
             else
             {
-                var row = odorRow + MEASUREMENT_ROW_FIRST_ODOR_CHANNEL;
-                if (GetElementInGrid(grdODChannels, row, 1) is not TextBlock flowEl)
+                int row = -1;
+                for (int i = MEASUREMENT_ROW_FIRST_ODOR_CHANNEL; i < grdODChannels.RowDefinitions.Count; i++)
+                {
+                    if (GetElementInGrid(grdODChannels, i, 0) is Label odorNameEl)
+                    {
+                        if ((MOD.ID)odorNameEl.Tag == m.Device)
+                        {
+                            row = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (row < 0 || GetElementInGrid(grdODChannels, row, 1) is not TextBlock flowEl)
                     continue;
 
-                odorRow++;
-
-                var gas = GetMeasurement<ODPackets.Sensor.Gas>(m, ODDevice.Sensor.OdorantFlowSensor);
-                var valve = GetMeasurement<ODPackets.Sensor.Valve>(m, ODDevice.Sensor.OdorantValveSensor);
+                var gas = GetMeasurement<ODPackets.Sensor.Gas>(m, MOD.Sensor.OdorantFlowSensor);
+                var valve = GetMeasurement<ODPackets.Sensor.Valve>(m, MOD.Sensor.OdorantValveSensor);
 
                 if (!(valve?.Opened ?? true))
                 {
@@ -524,7 +532,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             int rowIndex = 1;
             foreach (var channel in recipe.Channels)
             {
-                var id = (ODDevice.ID)channel.Id;
+                var id = (MOD.ID)channel.Id;
                 var label = _proc.OdorChannels.FirstOrDefault(odorChannel => odorChannel.ID == id)?.Name ?? id.ToString();
                 AddLabel(grdRecipeChannels, label, rowIndex, 0, _recipeLabelStyle);
 
@@ -575,12 +583,13 @@ public partial class Reproduction : Page, IPage<Navigation>
         grid.Children.Add(tbl);
     }
 
-    private static void AddLabel(Grid grid, string text, int row, int column, Style? style)
+    private static void AddLabel(Grid grid, string text, int row, int column, Style? style, object? tag = null)
     {
         var lbl = new Label()
         {
             Content = text,
             Style = style,
+            Tag = tag
         };
         Grid.SetRow(lbl, row);
         Grid.SetColumn(lbl, column);

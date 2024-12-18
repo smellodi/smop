@@ -680,6 +680,9 @@ public partial class Setup : Page, IPage<object?>
     private void EditKnownOdors_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new KnownOdorsEditor();
-        dialog.ShowDialog();
+        if (dialog.ShowDialog() == true)
+        {
+            _ctrl.AcquireOdorChannelsInfo();
+        }
     }
 }

@@ -15,7 +15,7 @@ public partial class PulseGeneratorSettings : UserControl
 {
     public PulseSetup? Setup { get; private set; } = null;
 
-    public event EventHandler? Changed;
+    public event EventHandler? SetupChanged;
 
     public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
@@ -153,7 +153,7 @@ public partial class PulseGeneratorSettings : UserControl
         settings.Pulses_SetupFilename = _setupFileName;
         settings.Save();
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        SetupChanged?.Invoke(this, EventArgs.Empty);
     }
 
     private void SetHumidity(float newHumidity)
@@ -242,7 +242,7 @@ public partial class PulseGeneratorSettings : UserControl
     {
         if (e.Key == System.Windows.Input.Key.Enter)
         {
-            if (float.TryParse(txbHumidity.Text, out float value) && value > 0 && value < 90)
+            if (float.TryParse(txbHumidity.Text, out float value) && value >= 0 && value < 90)
             {
                 SetHumidity(value);
             }

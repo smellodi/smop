@@ -46,7 +46,7 @@ public partial class Setup : Page, IPage<object?>
             lblMeasurementProgress.Content = $"{e}%";
         });
 
-        pulseGeneratorSettings.Changed += (s, e) => UpdateUI();
+        pulseGeneratorSettings.SetupChanged += (s, e) => UpdateUI();
         pulseGeneratorSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
         pulseGeneratorSettings.HumidityChanged += (s, e) =>

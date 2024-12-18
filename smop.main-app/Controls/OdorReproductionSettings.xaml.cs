@@ -279,4 +279,17 @@ public partial class OdorReproductionSettings : UserControl
             HumidityAutoAdjustmentChanged?.Invoke(this, value);
         }
     }
+
+    // UI
+
+    private void Humidity_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+    {
+        if (e.Key == System.Windows.Input.Key.Enter)
+        {
+            if (float.TryParse(txbHumidity.Text, out float value) && value >= 0 && value < 90)
+            {
+                SetHumidity(value);
+            }
+        }
+    }
 }

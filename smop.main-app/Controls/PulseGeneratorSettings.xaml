@@ -73,7 +73,7 @@
                 <TextBox.Text>
                     <Binding Path="Humidity" UpdateSourceTrigger="LostFocus">
                         <Binding.ValidationRules>
-                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                            <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>

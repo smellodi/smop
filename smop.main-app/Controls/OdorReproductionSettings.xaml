@@ -154,11 +154,12 @@
                      Style="{StaticResource Setting}"
                      Tag="Humidity, %">
             <TextBox x:Name="txbHumidity" Grid.Column="0"
-                     Style="{StaticResource Value}">
+                     Style="{StaticResource Value}"
+                     KeyUp="Humidity_KeyUp">
                 <TextBox.Text>
-                    <Binding Path="Humidity" UpdateSourceTrigger="PropertyChanged">
+                    <Binding Path="Humidity" UpdateSourceTrigger="LostFocus">
                         <Binding.ValidationRules>
-                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                            <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>

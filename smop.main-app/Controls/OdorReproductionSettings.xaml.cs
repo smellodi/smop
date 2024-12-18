@@ -1,7 +1,6 @@
 ﻿using Smop.MainApp.Controllers;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -126,18 +125,22 @@ public partial class OdorReproductionSettings : UserControl
         }
     }*/
 
-    public static float Humidity
+    public float Humidity
     {
         get => Properties.Settings.Default.Reproduction_Humidity;
-        set
-        {
-            Properties.Settings.Default.Reproduction_Humidity = value;
-            Properties.Settings.Default.Save();
-        }
+        set { SetHumidity(value); }
+    }
+
+    public bool HumidityAutoAdjustment
+    {
+        get => Properties.Settings.Default.Setup_HumidityAutoAdjustment;
+        set { SetHumidityAutoAdjustment(value); }
     }
 
     public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
+    public event EventHandler<float>? HumidityChanged;
+    public event EventHandler<bool>? HumidityAutoAdjustmentChanged;
 
     public OdorReproductionSettings()
     {
@@ -149,6 +152,11 @@ public partial class OdorReproductionSettings : UserControl
         DataContext = this;
 
         txbCmdParams.IsEnabled = ML.Communicator.CanLaunchML;
+    }
+
+    public void Init()
+    {
+        HumidityController.Instance.Init();
     }
 
     public void SetMeasurementSource(MeasurementSouce sources)
@@ -249,5 +257,26 @@ public partial class OdorReproductionSettings : UserControl
         }
 
         _currentInput = input;
+    }
+    private void SetHumidity(float newHumidity)
+    {
+        var oldHumidity = Properties.Settings.Default.Reproduction_Humidity;
+        if (oldHumidity != newHumidity)
+        {
+            Properties.Settings.Default.Reproduction_Humidity = newHumidity;
+            Properties.Settings.Default.Save();
+            HumidityChanged?.Invoke(this, newHumidity);
+        }
+    }
+
+    private void SetHumidityAutoAdjustment(bool value)
+    {
+        var prevValue = Properties.Settings.Default.Setup_HumidityAutoAdjustment;
+        if (prevValue != value)
+        {
+            Properties.Settings.Default.Setup_HumidityAutoAdjustment = value;
+            Properties.Settings.Default.Save();
+            HumidityAutoAdjustmentChanged?.Invoke(this, value);
+        }
     }
 }

@@ -6,7 +6,7 @@
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              xmlns:local="clr-namespace:Smop.MainApp.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="400"
+             d:DesignHeight="420"
              d:DesignWidth="300">
     
     <UserControl.Resources>
@@ -165,6 +165,10 @@
             </TextBox>
         </UserControl>
 
+        <CheckBox Content="auto-adjustment"
+                  HorizontalAlignment="Right"
+                  IsChecked="{Binding HumidityAutoAdjustment}"/>
+        
         <Separator Margin="0,8,0,0"/>
         <Grid>
             <Grid.ColumnDefinitions>

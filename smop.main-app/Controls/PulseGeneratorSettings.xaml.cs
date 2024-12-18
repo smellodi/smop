@@ -5,7 +5,6 @@ using Smop.MainApp.Utils;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;

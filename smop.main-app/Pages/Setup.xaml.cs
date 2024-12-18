@@ -60,7 +60,16 @@ public partial class Setup : Page, IPage<object?>
         };
 
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
-        pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
+        odorReproductionSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
+        odorReproductionSettings.HumidityChanged += (s, e) =>
+        {
+            _ctrl.SetHumidityLevel(e);
+            HumidityController.Instance.TargetHumidity = e;
+        };
+        odorReproductionSettings.HumidityAutoAdjustmentChanged += (s, e) =>
+        {
+            HumidityController.Instance.IsEnabled = e;
+        };
 
         DataContext = this;
 
@@ -82,6 +91,8 @@ public partial class Setup : Page, IPage<object?>
         }
         else if (type == SetupType.OdorReproduction)
         {
+            odorReproductionSettings.Init();
+
             if (App.ML == null)
             {
                 App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));

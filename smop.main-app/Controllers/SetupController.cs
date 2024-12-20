@@ -503,7 +503,22 @@ public class SetupController
         return result.ToArray();
     }
 
+    public string[] GetOdorsWithFlowOutOfRange()
+    {
+        var enabledChannels = _odorChannels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString());
+
+        var knownOdors = new KnownOdors();
+        return enabledChannels
+            .Select(odorChannel => new ChannelAndProps(odorChannel, knownOdors.GetProps(odorChannel.Name)))
+            .Where(chp => chp.Props != null && (chp.Channel.Flow < chp.Props.MinFlow || chp.Channel.Flow > chp.Props.MaxFlow))
+            .Select(chp => chp.Channel.Name)
+            .ToArray();
+    }
+
     // Internal
+
+    record class ChannelAndProps(OdorChannel Channel, OdorChannelProperties? Props);
 
     const int PID_MAX_DATA_COUNT = 30;
 

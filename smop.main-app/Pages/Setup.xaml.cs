@@ -444,6 +444,13 @@ public partial class Setup : Page, IPage<object?>
 
     private async void TargetMeasure_Click(object sender, RoutedEventArgs e)
     {
+        var channelsWithInvalidFlows = _ctrl.GetOdorsWithFlowOutOfRange();
+        if (channelsWithInvalidFlows.Length > 0)
+        {
+            MsgBox.Error(Title, $"Target flow of {string.Join(", ", channelsWithInvalidFlows)} is outside the flow range.");
+            return;
+        }
+
         _isCollectingData = true;
 
         btnTargetMeasure.IsEnabled = false;

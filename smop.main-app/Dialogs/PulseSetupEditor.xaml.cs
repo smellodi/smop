@@ -383,7 +383,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         DialogResult = true;
     }
 
-    private void Sessions_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void Sessions_SelectionChanged(object sender, SelectionChangedEventArgs? e)
     {
         if (Session == null)
             return;

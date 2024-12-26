@@ -224,7 +224,9 @@ public class SetupController
             .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString())
             .Select(odorChannel => odorChannel.Flow);
 
-        var saturationDuration = OdorDisplayController.CalcSaturationDuration(flows);
+        var pauseEstimator = new PauseEstimator();
+
+        var saturationDuration = pauseEstimator.GetSaturationDuration(flows);
         LogOD?.Invoke(this, new LogHandlerArgs($"Odors were released, waiting {saturationDuration:F1}s for the mixture to stabilize..."));
         await Task.Delay((int)(saturationDuration * 1000));
         LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
@@ -250,7 +252,7 @@ public class SetupController
 
         COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors");
 
-        var cleanupDuration = OdorDisplayController.CalcCleanupDuration(flows);
+        var cleanupDuration = pauseEstimator.GetCleanupDuration(flows);
         LogOD?.Invoke(this, new LogHandlerArgs($"Odors stopped, cleaning up {cleanupDuration:F1}s..."));
         await Task.Delay((int)(cleanupDuration * 1000));
         LogOD?.Invoke(this, new LogHandlerArgs("Done."));
@@ -446,6 +448,8 @@ public class SetupController
         var enabledChannels = _odorChannels
             .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name) && odorChannel.Name != odorChannel.ID.ToString());
 
+        var pauseEstimator = new PauseEstimator();
+
         float count = 0;
         foreach (var channel in enabledChannels)
         {
@@ -457,7 +461,7 @@ public class SetupController
 
             COMHelper.ShowErrorIfAny(_odController.OpenChannels(odorChannels), "release odors");
 
-            var saturationDuration = OdorDisplayController.CalcSaturationDuration(new float[] { 0 });   // use maximum duration
+            var saturationDuration = pauseEstimator.GetSaturationDuration(Array.Empty<float>());   // use maximum duration
             LogOD?.Invoke(this, new LogHandlerArgs($"{channel.Name} was released, waiting {saturationDuration:F1}s for the mixture to stabilize..."));
             await Task.Delay((int)(saturationDuration * 1000));
             LogOD?.Invoke(this, new LogHandlerArgs("The odor is ready."));
@@ -479,7 +483,7 @@ public class SetupController
             progress = 100f * (3 * count + 2) / (3 * enabledChannels.Count());
             MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
 
-            var cleanupDuration = OdorDisplayController.CalcCleanupDuration(new float[] { 0 });     // use the maximum duration
+            var cleanupDuration = pauseEstimator.GetCleanupDuration(Array.Empty<float>());     // use the maximum duration
             LogOD?.Invoke(this, new LogHandlerArgs($"The odor was stopped, cleaning up {cleanupDuration:F1}s..."));
             await Task.Delay((int)(cleanupDuration * 1000));
             LogOD?.Invoke(this, new LogHandlerArgs("Done."));

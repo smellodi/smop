@@ -12,7 +12,7 @@ namespace Smop.MainApp.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.12.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.8.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -439,6 +439,78 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["Odor_PIDTempCompGain"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8")]
+        public double PauseEstimator_MinSaturationDuration {
+            get {
+                return ((double)(this["PauseEstimator_MinSaturationDuration"]));
+            }
+            set {
+                this["PauseEstimator_MinSaturationDuration"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8")]
+        public double PauseEstimator_SaturationGain {
+            get {
+                return ((double)(this["PauseEstimator_SaturationGain"]));
+            }
+            set {
+                this["PauseEstimator_SaturationGain"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-0.07")]
+        public double PauseEstimator_SaturationExpGain {
+            get {
+                return ((double)(this["PauseEstimator_SaturationExpGain"]));
+            }
+            set {
+                this["PauseEstimator_SaturationExpGain"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2.5")]
+        public double PauseEstimator_MinCleanupDuration {
+            get {
+                return ((double)(this["PauseEstimator_MinCleanupDuration"]));
+            }
+            set {
+                this["PauseEstimator_MinCleanupDuration"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.8")]
+        public double PauseEstimator_CleanupGain {
+            get {
+                return ((double)(this["PauseEstimator_CleanupGain"]));
+            }
+            set {
+                this["PauseEstimator_CleanupGain"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.03")]
+        public double PauseEstimator_CleanupExpGain {
+            get {
+                return ((double)(this["PauseEstimator_CleanupExpGain"]));
+            }
+            set {
+                this["PauseEstimator_CleanupExpGain"] = value;
             }
         }
     }

@@ -107,5 +107,23 @@
     <Setting Name="Odor_PIDTempCompGain" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.014</Value>
     </Setting>
+    <Setting Name="PauseEstimator_MinSaturationDuration" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">8</Value>
+    </Setting>
+    <Setting Name="PauseEstimator_SaturationGain" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">8</Value>
+    </Setting>
+    <Setting Name="PauseEstimator_SaturationExpGain" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">-0.07</Value>
+    </Setting>
+    <Setting Name="PauseEstimator_MinCleanupDuration" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">2.5</Value>
+    </Setting>
+    <Setting Name="PauseEstimator_CleanupGain" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.8</Value>
+    </Setting>
+    <Setting Name="PauseEstimator_CleanupExpGain" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.03</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Controllers;
+using Smop.MainApp.Dialogs;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -291,5 +292,11 @@ public partial class OdorReproductionSettings : UserControl
                 SetHumidity(value);
             }
         }
+    }
+
+    private void PauseEstimator_Click(object sender, RoutedEventArgs e)
+    {
+        PauseEstimatorEditor dialog = new();
+        dialog.ShowDialog();
     }
 }

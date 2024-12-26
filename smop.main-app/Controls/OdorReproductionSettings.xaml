@@ -6,7 +6,7 @@
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              xmlns:local="clr-namespace:Smop.MainApp.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="420"
+             d:DesignHeight="460"
              d:DesignWidth="300">
     
     <UserControl.Resources>
@@ -201,6 +201,19 @@
                     <!-- to be filled in code -->
                 </StackPanel>
             </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,4,0,0">
+            <Label HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   Content="Pause estimator"/>
+            <Button HorizontalAlignment="Right"
+                    Height="36"
+                    Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Self}}"
+                    ToolTip="Edit pause estimator parameters"
+                    Click="PauseEstimator_Click">
+                <Image Source="/Assets/images/edit.png"/>
+            </Button>
         </Grid>
     </StackPanel>
 </UserControl>

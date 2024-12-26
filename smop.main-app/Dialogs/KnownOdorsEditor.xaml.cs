@@ -6,7 +6,7 @@ using System.Windows.Controls;
 
 namespace Smop.MainApp.Dialogs;
 
-public partial class KnownOdorsEditor : Window, INotifyPropertyChanged
+public partial class KnownOdorsEditor : Window
 {
     public ObservableCollection<OdorChannelProperties> Items { get; set; } = new(new KnownOdors());
 
@@ -20,8 +20,6 @@ public partial class KnownOdorsEditor : Window, INotifyPropertyChanged
 
         DataContext = this;
     }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
 
     // Internal
 

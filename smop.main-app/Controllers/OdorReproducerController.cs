@@ -106,7 +106,7 @@ public class OdorReproducerController
             {
                 _nlog.Info(LogIO.Text(Timestamp.Ms, "Cache", "Read", dmsFilename));
 
-                var cleanupDurationMs = OdorDisplayController.CalcCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
+                var cleanupDurationMs = _pauseEstimator.GetCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
                 var cleanupDuration = (int)(cleanupDurationMs * 1000);
                 _ = SendMeasurementToML(cachedDmsScan, cleanupDuration);
             }
@@ -148,7 +148,7 @@ public class OdorReproducerController
 
             if (useDelays)
             {
-                var saturationDurationSec = OdorDisplayController.CalcSaturationDuration(recipe.Channels?.Select(ch => ch.Flow));
+                var saturationDurationSec = _pauseEstimator.GetSaturationDuration(recipe.Channels?.Select(ch => ch.Flow));
                 await Task.Delay((int)(saturationDurationSec * 1000));
             }
 
@@ -160,7 +160,7 @@ public class OdorReproducerController
                 int cleanupDuration = 100;
                 if (useDelays)
                 {
-                    var cleanupDurationSec = OdorDisplayController.CalcCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
+                    var cleanupDurationSec = _pauseEstimator.GetCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
                     cleanupDuration = (int)(cleanupDurationSec * 1000);
                 }
 
@@ -186,6 +186,7 @@ public class OdorReproducerController
     readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
 
     readonly OdorDisplayController _odController = new();
+    readonly PauseEstimator _pauseEstimator = new();
 
     readonly ML.Communicator _ml;
 

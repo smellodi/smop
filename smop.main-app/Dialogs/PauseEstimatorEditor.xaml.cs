@@ -1,5 +1,4 @@
 ﻿using Smop.MainApp.Controllers;
-using System.ComponentModel;
 using System.Windows;
 
 namespace Smop.MainApp.Dialogs;
@@ -11,6 +10,7 @@ public partial class PauseEstimatorEditor : Window
         InitializeComponent();
 
         DialogTools.HideWindowButtons(this);
+        DialogTools.SetCentralPosition(this);
 
         DataContext = _pauseEstimator;
     }

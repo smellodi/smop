@@ -74,3 +74,23 @@ public class ZoomToPercentageConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+public class NullableNumberToString : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value == null)
+            return "";
+        else 
+            return $"{(double)value:F1}";
+    }
+
+    public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        string? s = (string?)value;
+        if (string.IsNullOrEmpty(s))
+            return null;
+        else
+            return double.TryParse(s, out double result) ? result : null;
+    }
+}

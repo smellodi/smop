@@ -4,10 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Smop.MainApp.Dialogs"
+        xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
-        Title="Pause Estimation Parameters"
-        Height="300"
-        Width="300"
+        Title="Pulse Interval Estimator"
+        Height="480"
+        Width="220"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterOwner"
         Icon="/Assets/icons/main.png"
@@ -16,6 +17,7 @@
         Unloaded="Window_Unloaded">
 
     <Window.Resources>
+        <utils:NullableNumberToString x:Key="num2str"/>
         <Style x:Key="CloseButton" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="4,0" />
             <Setter Property="Padding" Value="12,4" />
@@ -27,15 +29,10 @@
         </Style>
     </Window.Resources>
 
-    <Grid>
-        <Grid.LayoutTransform>
+    <StackPanel Margin="0,0,8,0">
+        <StackPanel.LayoutTransform>
             <ScaleTransform x:Name="sctScale"/>
-        </Grid.LayoutTransform>
-
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        </StackPanel.LayoutTransform>
 
         <Grid>
             <Grid.RowDefinitions>
@@ -57,7 +54,7 @@
                    Style="{StaticResource Header}"
                    Content="Saturation"/>
             
-            <Label Grid.Row="1" Grid.Column="0">Minimum duration, sec</Label>
+            <Label Grid.Row="1" Grid.Column="0">Minimum duration (B), sec</Label>
             <TextBox x:Name="txbMinSaturationDuration" Grid.Row="1" Grid.Column="1">
                 <TextBox.Text>
                     <Binding Path="MinSaturationDuration" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -68,7 +65,7 @@
                 </TextBox.Text>
             </TextBox>
 
-            <Label Grid.Row="2" Grid.Column="0">Gain</Label>
+            <Label Grid.Row="2" Grid.Column="0">Gain (G)</Label>
             <TextBox x:Name="txbSaturationGain" Grid.Row="2" Grid.Column="1">
                 <TextBox.Text>
                     <Binding Path="SaturationGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -79,7 +76,7 @@
                 </TextBox.Text>
             </TextBox>
 
-            <Label Grid.Row="3" Grid.Column="0">Exponential gain</Label>
+            <Label Grid.Row="3" Grid.Column="0">Exponential gain (A)</Label>
             <TextBox x:Name="txbSaturationExpGain" Grid.Row="3" Grid.Column="1">
                 <TextBox.Text>
                     <Binding Path="SaturationExpGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -91,12 +88,12 @@
             </TextBox>
 
             <StackPanel Grid.Row="4" Grid.ColumnSpan="2">
-                <Separator Margin="0,8,0,0"/>
+                <Separator Margin="4,8,0,0"/>
                 <Label Style="{StaticResource Header}"
                    Content="Cleanup"/>
             </StackPanel>
 
-            <Label Grid.Row="5" Grid.Column="0">Minimum duration, sec</Label>
+            <Label Grid.Row="5" Grid.Column="0">Minimum duration (B), sec</Label>
             <TextBox x:Name="txbMinCleanupDuration" Grid.Row="5" Grid.Column="1">
                 <TextBox.Text>
                     <Binding Path="MinCleanupDuration" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -107,7 +104,7 @@
                 </TextBox.Text>
             </TextBox>
 
-            <Label Grid.Row="6" Grid.Column="0">Gain</Label>
+            <Label Grid.Row="6" Grid.Column="0">Gain (G)</Label>
             <TextBox x:Name="txbCleanupGain" Grid.Row="6" Grid.Column="1">
                 <TextBox.Text>
                     <Binding Path="CleanupGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -118,7 +115,7 @@
                 </TextBox.Text>
             </TextBox>
 
-            <Label Grid.Row="7" Grid.Column="0">Exponential gain</Label>
+            <Label Grid.Row="7" Grid.Column="0">Exponential gain (A)</Label>
             <TextBox x:Name="txbCleanupExpGain" Grid.Row="7" Grid.Column="1">
                 <TextBox.Text>
                     <Binding Path="CleanupExpGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -130,8 +127,48 @@
             </TextBox>
         </Grid>
 
-        <WrapPanel Grid.Row="1"
-                   Margin="12"
+        <StackPanel Margin="4,0,0,0">
+            <Separator Margin="0,8"/>
+            <TextBlock TextWrapping="Wrap">Note: both intervals are estimated using the save equation:</TextBlock>
+            <TextBlock HorizontalAlignment="Center" FontStyle="Italic" FontWeight="SemiBold">T = B + G * e^(A * F)</TextBlock>
+            <TextBlock TextWrapping="Wrap">where F is an odor flow in sccm</TextBlock>
+            <Separator Margin="0,8"/>
+            <TextBlock TextWrapping="Wrap">Type a flow value into the box below to inspect the estimated intervals using the parameters above:</TextBlock>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0"
+                       HorizontalContentAlignment="Center"
+                       Content="Flow, sccm"/>
+                <Label Grid.Row="0" Grid.Column="1"
+                       HorizontalContentAlignment="Center"
+                       Content="Saturation"/>
+                <Label Grid.Row="0" Grid.Column="2"
+                       HorizontalContentAlignment="Center"
+                       Content="Cleanup"/>
+
+                <TextBox x:Name="txbExampleFlow" Grid.Row="1"
+                         Text="{Binding ExampleFlow, Converter={StaticResource num2str}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Label Grid.Row="1" Grid.Column="1"
+                       FontWeight="Bold"
+                       HorizontalContentAlignment="Center"
+                       Content="{Binding ExampleSaturation, Mode=OneWay, Converter={StaticResource num2str}}"/>
+                <Label Grid.Row="1" Grid.Column="2"
+                       FontWeight="Bold"
+                       HorizontalContentAlignment="Center"
+                       Content="{Binding ExampleCleanup, Mode=OneWay, Converter={StaticResource num2str}}"/>
+            </Grid>
+        </StackPanel>
+
+        <WrapPanel Margin="12"
                    HorizontalAlignment="Center">
             <Button Content="OK"
                     IsDefault="True"
@@ -160,5 +197,5 @@
                     Content="Cancel"
                     IsCancel="True"/>
         </WrapPanel>
-    </Grid>
+    </StackPanel>
 </Window>

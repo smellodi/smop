@@ -9,6 +9,8 @@ public partial class App : Application
 {
     #region Global objects
 
+    public static string Name => "Smellodi Odor Printer";
+
     public static IonVision.Communicator? IonVision { get; set; } = null;
     public static ML.Communicator? ML { get; set; } = null;
     public static string? LogFileName

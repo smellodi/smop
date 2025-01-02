@@ -127,7 +127,7 @@ public class OdorReproducerController
                 var (result, folder) = Logger.Save(new ILog[] { _odorDisplayLogger });
                 if (result == SavingResult.None)
                 {
-                    MsgBox.Warn(App.Current.MainWindow.Title, "No data to save", MsgBox.Button.OK);
+                    MsgBox.Warn(App.Name, "No data to save", MsgBox.Button.OK);
                 }
                 else if (result == SavingResult.Save && App.LogFileName is string logFilename)
                 {

@@ -330,11 +330,15 @@ internal class SerialPortEmulator : ISerialPort, System.IDisposable
         {
             var id = (Device.ID)i;
             var odorCaps = _state[id].Capabilities;
+            var isFlowingToOutput = odorCaps[Device.Controller.OdorantFlow] > 0 && odorCaps[Device.Controller.OdorantValve] != 0;
             measurements.Add(new Sensors(id, new Sensor.Value[]
             {
-                new Sensor.Gas(Device.Sensor.OdorantFlowSensor, odorCaps[Device.Controller.OdorantFlow] * flowConverter + Random.Range(0.0005f), 27.4f + Random.Range(0.1f), 1002.0f + Random.Range(0.5f)),
+                new Sensor.Gas(Device.Sensor.OdorantFlowSensor,
+                    odorCaps[Device.Controller.OdorantFlow] * flowConverter + Random.Range(0.0005f),
+                    27.4f + Random.Range(0.1f),
+                    (isFlowingToOutput ? 1006f : 998f) + Random.Range(0.5f)),
                 new Sensor.Thermometer(Device.Sensor.OdorSourceThermometer, 27.0f + Random.Range(0.1f)),
-                new Sensor.Pressure(1006f + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
+                new Sensor.Pressure((isFlowingToOutput ? 1006f : 998f) + Random.Range(1.0f), 27.2f + Random.Range(0.1f)),
                 new Sensor.Valve(Device.Sensor.OdorantValveSensor, odorCaps[Device.Controller.OdorantValve] != 0),
             }));
         }

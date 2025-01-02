@@ -74,7 +74,7 @@ public static class Logger
             {
                 var listOfFiles = string.Join('\n', failedToSave);
                 if (MsgBox.Ask(
-                    $"{Application.Current.MainWindow.Title} - Logger",
+                    $"{App.Name} - Logger",
                     $"Failed to save the following files\\n'{listOfFiles}':\n\nRetry?",
                     MsgBox.Button.Yes, MsgBox.Button.No) == MsgBox.Button.Yes)
                 {
@@ -84,7 +84,7 @@ public static class Logger
             else
             {
                 MsgBox.Notify(
-                    $"{Application.Current.MainWindow.Title} - Logger",
+                    $"{App.Name} - Logger",
                     $"Data saved into\n'{logLocation.Folder}'",
                     MsgBox.Button.OK);
             }
@@ -175,7 +175,7 @@ public class LogLocation
 
     public SavingResult PromptToSave()
     {
-        var title = $"{Application.Current.MainWindow.Title} - Logging";
+        var title = $"{App.Name} - Logger";
         var message = $"{SaveInto}\n'{Folder}'?\n\n{PressChange}\n{PressDiscard}\n{PressCancel}";
 
         MsgBox.Result answer = MsgBox.Ask(title, message, Array.Empty<string>(),

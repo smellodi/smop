@@ -128,7 +128,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                 };
                 var label = new Label
                 {
-                    Content = channel?.Name ?? m.Device.ToString(),
+                    Content = string.IsNullOrEmpty(channel?.Name) ? m.Device.ToString() : channel.Name,
                     Style = (Style)Resources["MeasurementLabel"]
                 };
                 var valve = new CheckBox

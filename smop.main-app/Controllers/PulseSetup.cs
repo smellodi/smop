@@ -151,7 +151,7 @@ public class PulseSetup
             if (linesWithInvalidData.Count > 0)
             {
                 var lines = string.Join(", ", linesWithInvalidData);
-                MsgBox.Warn(System.Windows.Application.Current.MainWindow.Title,
+                MsgBox.Warn(App.Name,
                     $"The setup file was read and parsed, but the following lines were ignored:\n{lines}",
                     new MsgBox.Button[] { MsgBox.Button.OK });
             }
@@ -159,7 +159,7 @@ public class PulseSetup
         catch (Exception ex)
         {
             _nlog.Error(ex, "Cannot read or parse the pulse setup file");
-            MsgBox.Error(System.Windows.Application.Current.MainWindow.Title, $"Cannot read or parse the pulse setup file:\n{ex.Message}");
+            MsgBox.Error(App.Name, $"Cannot read or parse the pulse setup file:\n{ex.Message}");
             return null;
         }
 

@@ -366,7 +366,7 @@ public class SetupController
             if (loadedDataSize != expectedDataSize)
             {
                 result = null;
-                MsgBox.Error(App.Current.MainWindow.Title, "The DMS data size does not match the size defined in the current parameter");
+                MsgBox.Error(App.Name, "The DMS data size does not match the size defined in the current parameter");
             }
 
             DmsScan = result;

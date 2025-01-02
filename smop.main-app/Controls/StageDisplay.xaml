@@ -28,7 +28,7 @@
         <StackPanel VerticalAlignment="Center"
                     Margin="0,16">
             <Label Content="{Binding Text}"
-                   Margin="20,0"/>
+                   Margin="4,0"/>
             <Label>
                 <TextBlock>
                     <Run Text="{Binding DurationValue, Mode=OneWay}"/>

@@ -38,7 +38,7 @@ public partial class MainWindow : Window
         }
 
         string version = Utils.Resources.GetVersion();
-        Title += $"   v{version}";
+        Title = $"{App.Name}   v{version}";
     }
 
     // Internal

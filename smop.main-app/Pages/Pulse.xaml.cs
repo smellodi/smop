@@ -375,11 +375,11 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         Next?.Invoke(this, Storage.Instance.SetupPage);
     }
 
-    private void Waiting_TimeUpdated(object sender, double e)
+    private void Waiting_TimeUpdated(object sender, WaitingInstruction.TimeUpdatedEventArgs e)
     {
-        double remainingTime = wtiWaiting.WaitingTime - e;
+        double remainingTime = wtiWaiting.WaitingTime - e.Duration;
         if (remainingTime > 0)
-            lblWaitingTime.Content = (wtiWaiting.WaitingTime - e).ToTime(wtiWaiting.WaitingTime);
+            lblWaitingTime.Content = (wtiWaiting.WaitingTime - e.Duration).ToTime(wtiWaiting.WaitingTime);
         else
             lblWaitingTime.Content = " ";
     }

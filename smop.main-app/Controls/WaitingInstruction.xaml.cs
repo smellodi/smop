@@ -8,8 +8,13 @@ namespace Smop.MainApp.Controls;
 
 public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, IDisposable
 {
+    public class TimeUpdatedEventArgs(double duration) : EventArgs
+    {
+        public double Duration => duration;
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
-    public event EventHandler<double>? TimeUpdated;
+    public event EventHandler<TimeUpdatedEventArgs>? TimeUpdated;
 
     #region Text property
 
@@ -133,7 +138,7 @@ public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, I
 
         Progress = progress;
 
-        TimeUpdated?.Invoke(this, duration);
+        TimeUpdated?.Invoke(this, new TimeUpdatedEventArgs(duration));
 
         if (progress >= 1.0)
         {

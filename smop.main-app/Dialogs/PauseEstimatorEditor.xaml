@@ -18,6 +18,8 @@
 
     <Window.Resources>
         <utils:NullableNumberToString x:Key="num2str"/>
+        <utils:BoolInverse x:Key="inverseBool"/>
+        
         <Style x:Key="CloseButton" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="4,0" />
             <Setter Property="Padding" Value="12,4" />
@@ -26,6 +28,13 @@
         <Style x:Key="Header" TargetType="{x:Type Label}">
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="Semi" TargetType="{x:Type Separator}">
+            <Setter Property="Background" Value="LightGray"/>
+            <Setter Property="Margin" Value="12,2"/>
+        </Style>
+        <Style TargetType="{x:Type RadioButton}">
+            <Setter Property="Margin" Value="2"/>
         </Style>
     </Window.Resources>
 
@@ -36,6 +45,10 @@
 
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -93,8 +106,18 @@
                    Content="Cleanup"/>
             </StackPanel>
 
-            <Label Grid.Row="5" Grid.Column="0">Minimum duration (B), sec</Label>
-            <TextBox x:Name="txbMinCleanupDuration" Grid.Row="5" Grid.Column="1">
+            <StackPanel Grid.Row="5" Grid.ColumnSpan="2">
+                <RadioButton Content="Interval"
+                             IsChecked="{Binding UseCleanupPidLevel, Mode=TwoWay, Converter={StaticResource inverseBool}}"/>
+                <RadioButton Content="PID level"
+                             IsChecked="{Binding UseCleanupPidLevel, Mode=TwoWay}"/>
+            </StackPanel>
+
+            <Separator Grid.Row="6" Grid.ColumnSpan="2" Style="{StaticResource Semi}"/>
+            
+            <Label Grid.Row="7" Grid.Column="0">Minimum duration (B), sec</Label>
+            <TextBox x:Name="txbMinCleanupDuration" Grid.Row="7" Grid.Column="1"
+                     IsEnabled="{Binding UseCleanupPidLevel, Converter={StaticResource inverseBool}}">
                 <TextBox.Text>
                     <Binding Path="MinCleanupDuration" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                         <Binding.ValidationRules>
@@ -104,8 +127,9 @@
                 </TextBox.Text>
             </TextBox>
 
-            <Label Grid.Row="6" Grid.Column="0">Gain (G)</Label>
-            <TextBox x:Name="txbCleanupGain" Grid.Row="6" Grid.Column="1">
+            <Label Grid.Row="8" Grid.Column="0">Gain (G)</Label>
+            <TextBox x:Name="txbCleanupGain" Grid.Row="8" Grid.Column="1"
+                     IsEnabled="{Binding UseCleanupPidLevel, Converter={StaticResource inverseBool}}">
                 <TextBox.Text>
                     <Binding Path="CleanupGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                         <Binding.ValidationRules>
@@ -115,12 +139,27 @@
                 </TextBox.Text>
             </TextBox>
 
-            <Label Grid.Row="7" Grid.Column="0">Exponential gain (A)</Label>
-            <TextBox x:Name="txbCleanupExpGain" Grid.Row="7" Grid.Column="1">
+            <Label Grid.Row="9" Grid.Column="0">Exponential gain (A)</Label>
+            <TextBox x:Name="txbCleanupExpGain" Grid.Row="9" Grid.Column="1"
+                     IsEnabled="{Binding UseCleanupPidLevel, Converter={StaticResource inverseBool}}">
                 <TextBox.Text>
                     <Binding Path="CleanupExpGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                         <Binding.ValidationRules>
                             <local:RangeRule Min="0.001" Max="1" ValidatesOnTargetUpdated="True"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+
+            <Separator Grid.Row="10" Grid.ColumnSpan="2" Style="{StaticResource Semi}"/>
+
+            <Label Grid.Row="11" Grid.Column="0">PID level, V</Label>
+            <TextBox x:Name="txbCleanupPidLevel" Grid.Row="11" Grid.Column="1"
+                     IsEnabled="{Binding UseCleanupPidLevel}">
+                <TextBox.Text>
+                    <Binding Path="CleanupPidLevel" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <local:RangeRule Min="0.05" Max="0.1" ValidatesOnTargetUpdated="True"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>

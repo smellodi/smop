@@ -108,7 +108,7 @@ public class OdorReproducerController
 
                 var cleanupDurationMs = _pauseEstimator.GetCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
                 var cleanupDuration = (int)(cleanupDurationMs * 1000);
-                _ = SendMeasurementToML(cachedDmsScan, cleanupDuration);
+                _ = SendMeasurementToML(cachedDmsScan, _pauseEstimator.UseCleanupPidLevel, _pauseEstimator.CleanupPidLevel, cleanupDuration);
             }
             else
             {
@@ -158,13 +158,16 @@ public class OdorReproducerController
             if (measurement != null)
             {
                 int cleanupDuration = 100;
+                double cleanupPidLevel = 1;
+
                 if (useDelays)
                 {
                     var cleanupDurationSec = _pauseEstimator.GetCleanupDuration(recipe.Channels?.Select(ch => ch.Flow));
                     cleanupDuration = (int)(cleanupDurationSec * 1000);
+                    cleanupPidLevel = _pauseEstimator.CleanupPidLevel;
                 }
 
-                await SendMeasurementToML(measurement, cleanupDuration);
+                await SendMeasurementToML(measurement, _pauseEstimator.UseCleanupPidLevel, _pauseEstimator.CleanupPidLevel, cleanupDuration);
                 if (measurement is IV.Defs.ScanResult fullScan)
                 {
                     var filename = _dmsCache.Save(recipe, fullScan);
@@ -192,6 +195,8 @@ public class OdorReproducerController
 
     bool _canSendFrequentData = false;
     bool _canLogOdorDisplayData;
+
+    double _pidLastValue = 0;
 
     private string RecipeToString(ML.Recipe recipe)
     {
@@ -231,27 +236,42 @@ public class OdorReproducerController
         return result;
     }
 
-    private async Task SendMeasurementToML(IMeasurement measurement, int cleanupDuration)
+    private async Task SendMeasurementToML(IMeasurement measurement, bool useCleanupPidLevel, double cleanupPidLevel, int cleanupDuration)
     {
         MlComputationStarted?.Invoke(this, EventArgs.Empty);
 
         if (measurement is IV.Defs.ScopeResult dmsScopeScan)
         {
             ScopeScanFinished?.Invoke(this, dmsScopeScan);
-            await Task.Delay(cleanupDuration);
+            await WaitUntilCleanedUp(useCleanupPidLevel, cleanupPidLevel, cleanupDuration);
             _ = _ml.Publish(dmsScopeScan);
         }
         else if (measurement is IV.Defs.ScanResult dmsFullScan)
         {
             ScanFinished?.Invoke(this, dmsFullScan);
-            await Task.Delay(cleanupDuration);
+            await WaitUntilCleanedUp(useCleanupPidLevel, cleanupPidLevel, cleanupDuration);
             _ = _ml.Publish(dmsFullScan);
         }
         else if (measurement is SmellInsp.Data snt)
         {
             SntCollected?.Invoke(this, snt);
-            await Task.Delay(cleanupDuration);
+            await WaitUntilCleanedUp(useCleanupPidLevel, cleanupPidLevel, cleanupDuration);
             _ = _ml.Publish(snt);
+        }
+    }
+
+    private async Task WaitUntilCleanedUp(bool useCleanupPidLevel, double cleanupPidLevel, int cleanupDuration)
+    {
+        if (useCleanupPidLevel)
+        {
+            while (_pidLastValue > cleanupPidLevel)
+            {
+                await Task.Delay(100);
+            }
+        }
+        else
+        {
+            await Task.Delay(cleanupDuration);
         }
     }
 
@@ -306,15 +326,17 @@ public class OdorReproducerController
 
             OdorDisplayData?.Invoke(this, data);
 
-            if (!_canSendFrequentData || !Properties.Settings.Default.Reproduction_UsePID)
-                return;
-
             foreach (var measurement in data.Measurements)
             {
                 if (measurement.Device == OdorDisplay.Device.ID.Base &&
                     measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.Sensor.PID pid)
                 {
-                    _ = _ml.Publish(pid.Volts);
+                    _pidLastValue = pid.Volts;
+
+                    if (_canSendFrequentData && Properties.Settings.Default.Reproduction_UsePID)
+                    {
+                        _ = _ml.Publish(pid.Volts);
+                    }
                     break;
                 }
             }

@@ -125,5 +125,11 @@
     <Setting Name="PauseEstimator_CleanupExpGain" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.03</Value>
     </Setting>
+    <Setting Name="PauseEstimator_UseCleanupPIDLevel" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="PauseEstimator_CleanupPIDLevel" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.055</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

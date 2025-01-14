@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Dialogs;
+using Smop.MainApp.Pages;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -65,6 +66,16 @@ public class SessionProps(float humidity, PulseIntervals intervals)
     {
         var r = new Random();
         r.Shuffle(_pulses);
+    }
+
+    public PulseChannelProps[] GetActiveChannels()
+    {
+        var activeChannels = new List<PulseChannelProps>();
+        foreach (var pulse in _pulses)
+            foreach (var channel in pulse.Channels)
+                if (channel.Flow > 0 || channel.Active)
+                    activeChannels.Add(channel);
+        return activeChannels.ToArray();
     }
 
     // Internal

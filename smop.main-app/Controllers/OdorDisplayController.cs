@@ -1,7 +1,6 @@
 ﻿using Smop.MainApp.Logging;
 using Smop.OdorDisplay;
 using Smop.OdorDisplay.Packets;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -52,8 +51,8 @@ internal class OdorDisplayController
         foreach (var channel in channels)
         {
             actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow),
-                KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow)//,
+                //KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
             )));
         }
 
@@ -75,17 +74,22 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result OpenChannels(PulseChannelProps[] channels, float durationSec)
+    public Comm.Result OpenChannels(PulseChannelProps[] channels, float durationSec = 0)
     {
         var actuators = new List<Actuator>();
         foreach (var channel in channels)
         {
             if (channel.Active)
             {
-                actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
-                {
-                    { Device.Controller.OdorantValve, durationSec * 1000 },
-                }));
+                if (durationSec <= 0)
+                    actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
+                        ActuatorCapabilities.OdorantValveOpenPermanently
+                    )));
+                else
+                    actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
+                    {
+                        { Device.Controller.OdorantValve, durationSec * 1000 },
+                    }));
             }
         }
 

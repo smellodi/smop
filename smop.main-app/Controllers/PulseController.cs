@@ -198,7 +198,17 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
             HandleIonVisionError(await _ionVision.SetScanResultComment(new { Pulses = pulseData }), "SetScanResultComment");
         }
 
-        _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);
+        if (session.Intervals.InitialPause == 0 && session.Intervals.FinalPause == 0)
+        {
+            if (_pulseIndex == 0)
+            {
+                _odorDisplay.OpenChannels(session.GetActiveChannels());
+            }
+        }
+        else
+        {
+            _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);
+        }
 
         if (session.Intervals.HasDms)
         {
@@ -243,6 +253,14 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
         _eventLogger.Add("pulse", _pulseIndex.ToString(), "stop");
 
+        if (session.Intervals.InitialPause == 0 && session.Intervals.FinalPause == 0)
+        {
+            if (_pulseIndex == session.Pulses.Length - 1)
+            {
+                _odorDisplay.CloseChannels(session.GetActiveChannels());
+            }
+        }
+        //else
         //_odorDisplay.CloseChannels(pulse.Channels);
 
         _delayedAction = DispatchOnce.Do(session.Intervals.FinalPause, RunNextPulse);

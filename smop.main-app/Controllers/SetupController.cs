@@ -252,10 +252,7 @@ public class SetupController
 
         COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors");
 
-        var cleanupDuration = pauseEstimator.GetCleanupDuration(flows);
-        LogOD?.Invoke(this, new LogHandlerArgs($"Odors stopped, cleaning up {cleanupDuration:F1}s..."));
-        await Task.Delay((int)(cleanupDuration * 1000));
-        LogOD?.Invoke(this, new LogHandlerArgs("Done."));
+        await WaitUntilCleanedUp(pauseEstimator.UseCleanupPidLevel, pauseEstimator.CleanupPidLevel, pauseEstimator.GetCleanupDuration(flows));
 
         _odorDisplay.Data -= OdorDisplay_Data;
     }
@@ -301,7 +298,7 @@ public class SetupController
             settings.Reproduction_ML_Algorithm
         );
 
-        await Task.Delay(300);
+        await Task.Delay(500);
 
         _nlog.Info(LogIO.Text(Timestamp.Ms, "ML", "InitialMeasurements"));
 
@@ -483,10 +480,8 @@ public class SetupController
             progress = 100f * (3 * count + 2) / (3 * enabledChannels.Count());
             MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
 
-            var cleanupDuration = pauseEstimator.GetCleanupDuration(Array.Empty<float>());     // use the maximum duration
-            LogOD?.Invoke(this, new LogHandlerArgs($"The odor was stopped, cleaning up {cleanupDuration:F1}s..."));
-            await Task.Delay((int)(cleanupDuration * 1000));
-            LogOD?.Invoke(this, new LogHandlerArgs("Done."));
+            await WaitUntilCleanedUp(pauseEstimator.UseCleanupPidLevel, pauseEstimator.CleanupPidLevel,
+                pauseEstimator.GetCleanupDuration(Array.Empty<float>()));   // use the maximum duration
 
             progress = 100f * (3 * count + 3) / (3 * enabledChannels.Count());
             MeasurementProgress?.Invoke(this, (float)Math.Round(progress));
@@ -543,6 +538,7 @@ public class SetupController
     OdorChannels _odorChannels = new();
 
     bool _canCollectOdorDisplayData = false;
+    double _pidLastValue = 0;
 
     private async Task MakeDmsScan(IonVision.Communicator ionVision)
     {
@@ -669,21 +665,43 @@ public class SetupController
         }
     }
 
+    private async Task WaitUntilCleanedUp(bool useCleanupPidLevel, double cleanupPidLevel, double cleanupDuration)
+    {
+        if (useCleanupPidLevel)
+        {
+            LogOD?.Invoke(this, new LogHandlerArgs($"Odors stopped, cleaning until PID < {1000 * cleanupPidLevel:F1} mV ..."));
+            while (_pidLastValue > cleanupPidLevel)
+            {
+                await Task.Delay(100);
+            }
+        }
+        else
+        {
+            LogOD?.Invoke(this, new LogHandlerArgs($"Odors stopped, cleaning up {cleanupDuration:F1}s ..."));
+            await Task.Delay((int)(cleanupDuration * 1000));
+        }
+        LogOD?.Invoke(this, new LogHandlerArgs("Done."));
+    }
+
     private async void OdorDisplay_Data(object? sender, ODPackets.Data data)
     {
         await COMHelper.Do(() =>
         {
             _odorDisplayLogger.Add(data);
 
-            if (_canCollectOdorDisplayData && _pidSamples.Count < PID_MAX_DATA_COUNT)
+            foreach (var measurement in data.Measurements)
             {
-                foreach (var measurement in data.Measurements)
+                if (measurement.Device == OdorDisplay.Device.ID.Base)
                 {
-                    if (measurement.Device == OdorDisplay.Device.ID.Base)
+                    if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.Sensor.PID pid)
                     {
-                        if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.PID) is ODPackets.Sensor.PID pid)
+                        _pidLastValue = pid.Volts;
+                        if (_canCollectOdorDisplayData && _pidSamples.Count < PID_MAX_DATA_COUNT)
                             _pidSamples.Add(pid.Volts);
-                        if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.InputAirHumiditySensor) is ODPackets.Sensor.Humidity humidity)
+                    }
+                    if (measurement.SensorValues.FirstOrDefault(value => value.Sensor == OdorDisplay.Device.Sensor.InputAirHumiditySensor) is ODPackets.Sensor.Humidity humidity)
+                    {
+                        if (_canCollectOdorDisplayData && _pidSamples.Count < PID_MAX_DATA_COUNT)
                             _tempSamples.Add(humidity.Celsius);
                     }
                 }

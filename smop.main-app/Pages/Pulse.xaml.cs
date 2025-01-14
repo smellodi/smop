@@ -38,14 +38,11 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
         _stageDisplays.Clear();
 
-        var maxChannelId = Devices.MaxOdorModuleCount;
-        var channelsExist = new bool[maxChannelId];
+        var channelsExist = new bool[Devices.MaxOdorModuleCount];
 
         foreach (var session in setup.Sessions)
-            foreach (var pulse in session.Pulses)
-                foreach (var channel in pulse.Channels)
-                    if (channel.Flow > 0 || channel.Active)
-                        channelsExist[channel.Id - 1] = true;
+            foreach (var channel in session.GetActiveChannels())
+                channelsExist[channel.Id - 1] = true;
 
         CreateChannelStageIndicators(channelsExist);
 
@@ -161,10 +158,10 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
     private void SetStage(PulseIntervals? intervals, PulseProps? pulse, Stage stage)
     {
-        if (_stage == stage)
-        {
-            return;
-        }
+        //if (_stage == stage)
+        //{
+        //    return;
+        //}
 
         _stage = stage;
 

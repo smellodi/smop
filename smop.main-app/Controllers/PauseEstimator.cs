@@ -82,6 +82,26 @@ internal class PauseEstimator: INotifyPropertyChanged
         }
     }
 
+    public bool UseCleanupPidLevel
+    {
+        get => _useCleanupPidLevel;
+        set
+        {
+            _useCleanupPidLevel = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseCleanupPidLevel)));
+        }
+    }
+
+    public double CleanupPidLevel
+    {
+        get => _cleanupPidLevel;
+        set
+        {
+            _cleanupPidLevel = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CleanupPidLevel)));
+        }
+    }
+
     public double? ExampleSaturation => _exampleFlow == null ? null : GetSaturationDuration(new float[] { (float)(_exampleFlow ?? 0) }, false);
     public double? ExampleCleanup => _exampleFlow == null ? null : GetCleanupDuration(new float[] { (float)(_exampleFlow ?? 0) }, false);
 
@@ -97,6 +117,8 @@ internal class PauseEstimator: INotifyPropertyChanged
         MinCleanupDuration = settings.PauseEstimator_MinCleanupDuration;
         CleanupGain = settings.PauseEstimator_CleanupGain;
         CleanupExpGain = settings.PauseEstimator_CleanupExpGain;
+        UseCleanupPidLevel = settings.PauseEstimator_UseCleanupPIDLevel;
+        CleanupPidLevel = settings.PauseEstimator_CleanupPIDLevel;
     }
 
     public void Save()
@@ -109,6 +131,8 @@ internal class PauseEstimator: INotifyPropertyChanged
         settings.PauseEstimator_MinCleanupDuration = MinCleanupDuration;
         settings.PauseEstimator_CleanupGain = CleanupGain;
         settings.PauseEstimator_CleanupExpGain = CleanupExpGain;
+        settings.PauseEstimator_UseCleanupPIDLevel = UseCleanupPidLevel;
+        settings.PauseEstimator_CleanupPIDLevel = CleanupPidLevel;
 
         settings.Save();
     }
@@ -160,6 +184,9 @@ internal class PauseEstimator: INotifyPropertyChanged
     double _minCleanupDuration = 2.5;
     double _cleanupGain = 0.8;
     double _cleanupExpGain = 0.03;
+
+    bool _useCleanupPidLevel = false;
+    double _cleanupPidLevel = 0.055;
 
     double? _exampleFlow = null;
 }

@@ -94,3 +94,16 @@ public class NullableNumberToString : IValueConverter
             return double.TryParse(s, out double result) ? result : null;
     }
 }
+
+public class BoolInverse : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return !(bool)value;
+    }
+
+    public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return !(bool)value;
+    }
+}

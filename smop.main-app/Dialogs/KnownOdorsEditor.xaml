@@ -100,7 +100,8 @@
                        Text="Full name"/>
             <TextBlock Grid.Column="2"
                        Style="{StaticResource ColHeader}"
-                       Text="PID"/>
+                       Text="PID"
+                       ToolTip="change from the base level at 40 sccm flow rate"/>
             <TextBlock Grid.Column="3"
                        Style="{StaticResource ColHeader}">
                 <Run>Min</Run>
@@ -114,7 +115,8 @@
                 <Run>sccm</Run>
             </TextBlock>
             <TextBlock Grid.Column="5"
-                       Style="{StaticResource ColHeader}">
+                       Style="{StaticResource ColHeader}"
+                       ToolTip="(set to 120 for any other chemicals)">
                 <Run>Critical</Run>
                 <LineBreak/>
                 <Run>sccm</Run>
@@ -130,8 +132,8 @@
                 Click="AddItem_Click"/>
 
         <Grid Grid.Row="3"
-              DataContext="{Binding PidLevelInspector}"
-              Width="250"
+              DataContext="{Binding ChemicalLevelInspector}"
+              Width="300"
               Margin="2,6,6,6">
             <Grid.RowDefinitions>
                 <RowDefinition/>
@@ -153,22 +155,85 @@
             <Label Grid.Row="1" Grid.Column="0"
                    Content="Base PID, V"/>
             <TextBox Grid.Row="1" Grid.Column="1"
-                     Text="{Binding Path=BasePID, Mode=TwoWay}"/>
+                     Text="{Binding Path=BasePid, Mode=TwoWay}">
+                <TextBox.ToolTip>
+                    <TextBlock>
+                        <Run FontWeight="Bold" FontStyle="Italic">b</Run>
+                        <Run> in </Run>
+                        <LineBreak/>
+                        <Run FontStyle="Italic">level = 100% * (p - b) / (dp + c)</Run>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">level</Run>
+                        <Run> is the chemical level, as a percentage</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">p</Run>
+                        <Run> is an average of PID measurements with the last 2 seconds of the pulse</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">dp</Run>
+                        <Run> is the value from the PID column</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">c</Run>
+                        <Run> is the temperature compensation for PID</Run>
+                    </TextBlock>
+                </TextBox.ToolTip>
+            </TextBox>
 
             <Label Grid.Row="2" Grid.Column="0"
-                   Content="Base PID temp, C"/>
+                   Content="Base temperature, C"/>
             <TextBox Grid.Row="2" Grid.Column="1"
-                     Text="{Binding Path=BasePIDTemp, Mode=TwoWay}"/>
+                     Text="{Binding Path=BaseTemp, Mode=TwoWay}"
+                     ToolTip="the temperature at which measurements for the PID column should be acquired"/>
 
             <Label Grid.Row="3" Grid.Column="0"
-                   Content="PID temperature compensation factor"/>
+                   Content="PID temperature compensation power"/>
             <TextBox Grid.Row="3" Grid.Column="1"
-                     Text="{Binding Path=PIDCompPower, Mode=TwoWay}"/>
+                     Text="{Binding Path=PidTempCompPower, Mode=TwoWay}">
+                <TextBox.ToolTip>
+                    <TextBlock>
+                        <Run FontWeight="Bold" FontStyle="Italic">p</Run>
+                        <Run> in </Run>
+                        <LineBreak/>
+                        <Run FontStyle="Italic">c = g * (t - bt)</Run>
+                        <Run FontStyle="Italic" BaselineAlignment="Superscript">p</Run>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">c</Run>
+                        <Run> is the PID compensation</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">t</Run>
+                        <Run> is the measured temperature</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">bt</Run>
+                        <Run> is the base temperature</Run>
+                    </TextBlock>
+                </TextBox.ToolTip>
+            </TextBox>
 
             <Label Grid.Row="4" Grid.Column="0"
                    Content="PID temperature compensation gain"/>
             <TextBox Grid.Row="4" Grid.Column="1"
-                     Text="{Binding Path=PIDCompGain, Mode=TwoWay}"/>
+                     Text="{Binding Path=PidTempCompGain, Mode=TwoWay}">
+                <TextBox.ToolTip>
+                    <TextBlock>
+                        <Run FontWeight="Bold" FontStyle="Italic">g</Run>
+                        <Run> in </Run>
+                        <LineBreak/>
+                        <Run FontStyle="Italic">c = g * (t - bt)</Run>
+                        <Run FontStyle="Italic" BaselineAlignment="Superscript">p</Run>
+                        <LineBreak/>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">c</Run>
+                        <Run> is the PID compensation</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">t</Run>
+                        <Run> is the measured temperature</Run>
+                        <LineBreak/>
+                        <Run FontWeight="Bold" FontStyle="Italic">bt</Run>
+                        <Run> is the base temperature</Run>
+                    </TextBlock>
+                </TextBox.ToolTip>
+            </TextBox>
         </Grid>
 
         <WrapPanel Grid.Row="4"

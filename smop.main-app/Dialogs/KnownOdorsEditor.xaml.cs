@@ -1,6 +1,5 @@
 ﻿using Smop.MainApp.Controllers;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -10,7 +9,7 @@ public partial class KnownOdorsEditor : Window
 {
     public ObservableCollection<OdorChannelProperties> Items { get; set; } = new(new KnownOdors());
 
-    public PidLevelInspector PidLevelInspector { get; } = new PidLevelInspector();
+    public ChemicalLevelInspector ChemicalLevelInspector { get; } = new ChemicalLevelInspector();
 
     public KnownOdorsEditor()
     {
@@ -40,7 +39,7 @@ public partial class KnownOdorsEditor : Window
         var newKnwonOdors = new KnownOdors(Items);
         newKnwonOdors.Save();
         
-        PidLevelInspector.Save();
+        ChemicalLevelInspector.Save();
         
         DialogResult = true;
     }

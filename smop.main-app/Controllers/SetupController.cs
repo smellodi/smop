@@ -488,11 +488,11 @@ public class SetupController
 
             var pid = _pidSamples.Average();
             var temp = _tempSamples.Average();
-            var pli = new PidLevelInspector();
+            var cli = new ChemicalLevelInspector();
             
-            var expectedPID = pli.ComputePidLevel(channel.Properties.PidCheckLevel, pid, temp);
+            var pidLevel = cli.ComputePidLevel(channel.Properties.PidCheckLevel, pid, temp);
 
-            result.Add(new ChemicalLevel(channel.Name, expectedPID));
+            result.Add(new ChemicalLevel(channel.Name, pidLevel));
 
             count += 1;
         }

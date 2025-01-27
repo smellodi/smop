@@ -24,6 +24,7 @@ public class EventLogger : Logger<EventLogger.Record>, ILog
     public static EventLogger Instance => _instance ??= new();
 
     public string Name => "events";
+    public string Extension => "txt";
 
     public void Add(string type, params string[] data)
     {

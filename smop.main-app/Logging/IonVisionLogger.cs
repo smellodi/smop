@@ -30,6 +30,7 @@ public class IonVisionLogger : Logger<IonVisionLogger.Record>, ILog
     public static IonVisionLogger Instance => _instance ??= new();
 
     public string Name => "dms";
+    public string Extension => "json";
 
     public void Add(IonVision.Defs.ScanResult data)
     {

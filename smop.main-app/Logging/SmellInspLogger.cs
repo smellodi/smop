@@ -52,6 +52,7 @@ public class SmellInspLogger : Logger<SmellInspLogger.Record>, ILog
     public static SmellInspLogger Instance => _instance ??= new();
 
     public string Name => "snt";
+    public string Extension => "txt";
 
     public void Add(SmellInsp.Data data)
     {

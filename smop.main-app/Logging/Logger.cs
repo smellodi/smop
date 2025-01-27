@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Windows;
 
 namespace Smop.MainApp.Logging;
 
@@ -31,6 +30,7 @@ public abstract class RecordBase
 public interface ILog
 {
     public string Name { get; }
+    public string Extension { get; }
 
     public bool Save(string filename);
     public void Clear();
@@ -63,7 +63,7 @@ public static class Logger
 
             foreach (var log in logs)
             {
-                var filename = logLocation.GetFileName(log.Name);
+                var filename = logLocation.GetFileName(log.Name, log.Extension);
                 if (!log.Save(filename))
                 {
                     failedToSave.Add(filename);
@@ -203,9 +203,9 @@ public class LogLocation
         return SavingResult.Cancel;
     }
 
-    public string GetFileName(string logName)
+    public string GetFileName(string logName, string extension)
     {
-        return Path.Combine(Folder, logName + ".txt");
+        return Path.Combine(Folder, $"{logName}.{extension}");
     }
 
     public void EnsureLocationExists()

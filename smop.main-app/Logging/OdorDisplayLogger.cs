@@ -63,6 +63,7 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
     public static OdorDisplayLogger Instance => _instance ??= new();
 
     public string Name => "odor_display";
+    public string Extension => "txt";
 
     public void Add(Data data)
     {

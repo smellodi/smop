@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using Param = Smop.IonVision.Defs.Parameter;
+using MinMax = Smop.IonVision.Defs.Range;
+
 namespace Smop.IonVision;
 
 public class Response<T>
@@ -33,7 +36,7 @@ internal class API : IMinimalAPI
         var host = $"http://{ip}/api";
         _client = new RestClient(host, config =>
         {
-            config.MaxTimeout = 5000;
+            config.Timeout = TimeSpan.FromSeconds(5);
             config.ThrowOnAnyError = false;
         });
         _client.AddDefaultHeader("Content-Type", "application/json");
@@ -129,42 +132,42 @@ internal class API : IMinimalAPI
 
     /// <summary>Retrieves a list of parameters</summary>
     /// <returns>Parameters</returns>
-    public Task<Response<Defs.Parameter[]>> GetParameters() => Get<Defs.Parameter[]>("parameter");
+    public Task<Response<Param[]>> GetParameters() => Get<Param[]>("parameter");
 
     /// <summary>Creates a new parameter</summary>
     /// <param name="parameter">New parameter definition</param>
     /// <returns>Parameter as name</returns>
-    public Task<Response<ParameterAsId>> CreateParameter(Defs.ParameterDefinition parameter) => Create<Defs.ParameterDefinition, ParameterAsId>("parameter", parameter, true);
+    public Task<Response<ParameterAsId>> CreateParameter(ParameterDefinition parameter) => Create<ParameterDefinition, ParameterAsId>("parameter", parameter, true);
 
     /// <summary>Retrieves the parameter definition</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Parameter definition</returns>
-    public Task<Response<Defs.ParameterDefinition>> GetParameterDefinition(Defs.Parameter parameter) => Get<Defs.ParameterDefinition>($"parameter/{parameter.Id}", true);
+    public Task<Response<ParameterDefinition>> GetParameterDefinition(Param parameter) => Get<ParameterDefinition>($"parameter/{parameter.Id}", true);
 
     /// <summary>Creates a new parameter (valid only if no scan was performed with this parameter)</summary>
     /// <param name="parameter">Parameter definition</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> UpdateParameterDefinition(Defs.ParameterDefinition parameter) => Set($"parameter/{parameter.Id}", parameter, true);
+    public Task<Response<Confirm>> UpdateParameterDefinition(ParameterDefinition parameter) => Set($"parameter/{parameter.Id}", parameter, true);
 
     /// <summary>Deletes the parameter</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> DeleteParameter(Defs.Parameter parameter) => Remove($"parameter/{parameter.Id}");
+    public Task<Response<Confirm>> DeleteParameter(Param parameter) => Remove($"parameter/{parameter.Id}");
 
     /// <summary>Retrieves the parameter metadata</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>Metadata</returns>
-    public Task<Response<ParameterMetadata>> GetParameterMedatada(Defs.Parameter parameter) => Get<ParameterMetadata>($"parameter/{parameter.Id}/metadata", true);
+    public Task<Response<ParameterMetadata>> GetParameterMedatada(Param parameter) => Get<ParameterMetadata>($"parameter/{parameter.Id}/metadata", true);
 
     /// <summary>Retrieves the parameter scan IDs</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>List of scan IDs</returns>
-    public Task<Response<string[]>> GetParameterResults(Defs.Parameter parameter) => Get<string[]>($"parameter/{parameter.Id}/results");
+    public Task<Response<string[]>> GetParameterResults(Param parameter) => Get<string[]>($"parameter/{parameter.Id}/results");
 
     /// <summary>Retrieves gases that can be detected with this parameter</summary>
     /// <param name="parameter">Parameter</param>
     /// <returns>List of gases</returns>
-    public Task<Response<Dictionary<string, string[]>>> GetParameterGases(Defs.Parameter parameter) => Get<Dictionary<string, string[]>>($"parameter/{parameter.Id}/gasDetection");
+    public Task<Response<Dictionary<string, string[]>>> GetParameterGases(Param parameter) => Get<Dictionary<string, string[]>>($"parameter/{parameter.Id}/gasDetection");
 
     /// <summary>Retrieves available parameter templates</summary>
     /// <param name="name">the name to search for</param>
@@ -179,7 +182,7 @@ internal class API : IMinimalAPI
     /// <summary>Retrieves the parameter template</summary>
     /// <param name="name">template name</param>
     /// <returns>Template as the parameter definition</returns>
-    public Task<Response<Defs.ParameterDefinition>> GetParameterTemplate(string name) => Get<Defs.ParameterDefinition>($"parameterTemplate/{name}");
+    public Task<Response<ParameterDefinition>> GetParameterTemplate(string name) => Get<ParameterDefinition>($"parameterTemplate/{name}");
 
     /// <summary>Retrieves the parameter template metadata</summary>
     /// <param name="name">template name</param>
@@ -233,13 +236,13 @@ internal class API : IMinimalAPI
     /// NOTE! Not working, use <see cref="GetProjectDefinition(string)"/> instead.</summary>
     /// <param name="name">Project name</param>
     /// <returns>List of project parameters</returns>
-    public Task<Response<Defs.Parameter[]>> GetProjectParameters(string name) => Get<Defs.Parameter[]>($"project/{name}/sequence");
+    public Task<Response<Param[]>> GetProjectParameters(string name) => Get<Param[]>($"project/{name}/sequence");
 
     /// <summary>Sets the project list of parameters</summary>
     /// <param name="name">Project name</param>
     /// <param name="parameters">List of parameters</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetProjectParameters(string name, Defs.Parameter[] parameters) => Set($"project/{name}/sequence", parameters);
+    public Task<Response<Confirm>> SetProjectParameters(string name, Param[] parameters) => Set($"project/{name}/sequence", parameters);
 
     #endregion
 
@@ -252,7 +255,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets current sample flow adjustment values</summary>
     /// <param name="values">Flow adjustment values</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSampleFlow(Defs.Range values) => Set("controller/sample/flow", values);
+    public Task<Response<Confirm>> SetSampleFlow(MinMax values) => Set("controller/sample/flow", values);
 
     /// <summary>Gets current sample flow pid controller values</summary>
     /// <returns>Flow pid controller values</returns>
@@ -279,7 +282,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets current sensor flow adjustment values</summary>
     /// <param name="values">Flow adjustment values</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSensorFlow(Defs.Range values) => Set("controller/sensor/flow", values);
+    public Task<Response<Confirm>> SetSensorFlow(MinMax values) => Set("controller/sensor/flow", values);
 
     /// <summary>Gets current sensor flow pid controller values</summary>
     /// <returns>Flow pid controller values</returns>
@@ -306,7 +309,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets current sample gas heater temperature adjustment values</summary>
     /// <param name="values">Gas heater temperature adjustment values</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSampleHeaterTemp(Defs.Range values) => Set("controller/sample/heaterTemperature", values);
+    public Task<Response<Confirm>> SetSampleHeaterTemp(MinMax values) => Set("controller/sample/heaterTemperature", values);
 
     /// <summary>Gets current sample gas heater temperature pid controller values</summary>
     /// <returns>Gas heater temperature pid controller values</returns>
@@ -333,7 +336,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the sample temperature</summary>
     /// <param name="values">Temperature</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSampleTemperature(Defs.Range values) => Set("controller/sample/temperature", values);
+    public Task<Response<Confirm>> SetSampleTemperature(MinMax values) => Set("controller/sample/temperature", values);
 
     /// <summary>Gets the sensor temperature</summary>
     /// <returns>Temperature</returns>
@@ -342,7 +345,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the sensor temperature</summary>
     /// <param name="values">Temperature</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSensorTemperature(Defs.Range values) => Set("controller/sensor/temperature", values);
+    public Task<Response<Confirm>> SetSensorTemperature(MinMax values) => Set("controller/sensor/temperature", values);
 
     /// <summary>Gets the ambient temperature</summary>
     /// <returns>Temperature</returns>
@@ -351,7 +354,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the ambient temperature</summary>
     /// <param name="values">Temperature</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetAmbientTemperature(Defs.Range values) => Set("controller/senambientsor/temperature", values);
+    public Task<Response<Confirm>> SetAmbientTemperature(MinMax values) => Set("controller/senambientsor/temperature", values);
 
     /// <summary>Gets the sample pressure</summary>
     /// <returns>Pressure</returns>
@@ -360,7 +363,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the sample pressure</summary>
     /// <param name="values">Pressure</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSamplePressure(Defs.Range values) => Set("controller/sample/pressure", values);
+    public Task<Response<Confirm>> SetSamplePressure(MinMax values) => Set("controller/sample/pressure", values);
 
     /// <summary>Gets the sensor pressure</summary>
     /// <returns>Pressure</returns>
@@ -369,7 +372,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the sensor pressure</summary>
     /// <param name="values">Pressure</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSensorPressure(Defs.Range values) => Set("controller/sensor/pressure", values);
+    public Task<Response<Confirm>> SetSensorPressure(MinMax values) => Set("controller/sensor/pressure", values);
 
     /// <summary>Gets the ambient pressure</summary>
     /// <returns>Pressure</returns>
@@ -378,7 +381,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the ambient pressure</summary>
     /// <param name="values">Pressure</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetAmbientPressure(Defs.Range values) => Set("controller/senambientsor/pressure", values);
+    public Task<Response<Confirm>> SetAmbientPressure(MinMax values) => Set("controller/senambientsor/pressure", values);
 
     /// <summary>Gets the sample humidity</summary>
     /// <returns>Humidity</returns>
@@ -387,7 +390,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the sample humidity</summary>
     /// <param name="values">Humidity</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSampleHumidity(Defs.Range values) => Set("controller/sample/humidity", values);
+    public Task<Response<Confirm>> SetSampleHumidity(MinMax values) => Set("controller/sample/humidity", values);
 
     /// <summary>Gets the sensor humidity</summary>
     /// <returns>Humidity</returns>
@@ -396,7 +399,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the sensor humidity</summary>
     /// <param name="values">Humidity</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetSensorHumidity(Defs.Range values) => Set("controller/sensor/humidity", values);
+    public Task<Response<Confirm>> SetSensorHumidity(MinMax values) => Set("controller/sensor/humidity", values);
 
     /// <summary>Gets the ambient humidity</summary>
     /// <returns>Humidity</returns>
@@ -405,7 +408,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets the ambient humidity</summary>
     /// <param name="values">Humidity</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetAmbientHumidity(Defs.Range values) => Set("controller/senambientsor/humidity", values);
+    public Task<Response<Confirm>> SetAmbientHumidity(MinMax values) => Set("controller/senambientsor/humidity", values);
 
     /// <summary>Gets FET temperature</summary>
     /// <returns>FET temperature</returns>
@@ -414,7 +417,7 @@ internal class API : IMinimalAPI
     /// <summary>Sets FET temperature</summary>
     /// <param name="values">FET temperature</param>
     /// <returns>Confirmation message</returns>
-    public Task<Response<Confirm>> SetFETTemperature(Defs.Range values) => Set("controller/miscellaneous/fetTemperature", values);
+    public Task<Response<Confirm>> SetFETTemperature(MinMax values) => Set("controller/miscellaneous/fetTemperature", values);
 
     #endregion
 
@@ -456,7 +459,7 @@ internal class API : IMinimalAPI
 
     /// <summary>Retrieves the latest scan</summary>
     /// <returns>Scan data</returns>
-    public Task<Response<Defs.ScanResult>> GetLatestResult() => Get<Defs.ScanResult>("results/latest");
+    public Task<Response<ScanResult>> GetLatestResult() => Get<ScanResult>("results/latest");
 
     /// <summary>Retrieves gases of the latest scan</summary>
     /// <returns>Gases</returns>
@@ -465,7 +468,7 @@ internal class API : IMinimalAPI
     /// <summary>Retrieves the scan</summary>
     /// <param name="id">Scan id</param>
     /// <returns>Scan data</returns>
-    public Task<Response<Defs.ScanResult>> GetResult(string id) => Get<Defs.ScanResult>($"results/id/{id}");
+    public Task<Response<ScanResult>> GetResult(string id) => Get<ScanResult>($"results/id/{id}");
 
     /// <summary>Deletes the scan</summary>
     /// <param name="id">Scan id</param>

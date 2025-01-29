@@ -2,6 +2,7 @@
 using Smop.MainApp.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Smop.MainApp.Controllers;
@@ -202,12 +203,14 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         {
             if (_pulseIndex == 0)
             {
-                _odorDisplay.OpenChannels(session.GetActiveChannels());
+                await Task.Delay(100);
+                _odorDisplay.OpenValves(session.GetActiveChannelIds());
             }
         }
         else
         {
-            _odorDisplay.OpenChannels(pulse.Channels, session.Intervals.Pulse);
+            var ids = pulse.Channels.Where(c => c.Active).Select(c => c.Id);
+            _odorDisplay.OpenValves(ids.ToArray(), session.Intervals.Pulse);
         }
 
         if (session.Intervals.HasDms)
@@ -257,7 +260,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         {
             if (_pulseIndex == session.Pulses.Length - 1)
             {
-                _odorDisplay.CloseChannels(session.GetActiveChannels());
+                _odorDisplay.CloseValves(session.GetActiveChannelIds());
             }
         }
         //else

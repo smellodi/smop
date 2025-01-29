@@ -122,7 +122,7 @@ public class SetupController
         );
 
         System.Threading.Thread.Sleep(100);
-        COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "stop cleaning up");
+        COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(actuators.ToArray()), "stop cleaning up");
 
         finishedAction?.Invoke();
     }
@@ -212,7 +212,7 @@ public class SetupController
     {
         await Task.Delay(150);
 
-        if (!COMHelper.ShowErrorIfAny(_odController.OpenChannels(_odorChannels), "release odors"))
+        if (!COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(_odorChannels), "release odors"))
             return;
 
         App.IonVision?.SetScanResultComment(new { Pulse = _odorChannels.ToDmsComment() });
@@ -250,7 +250,7 @@ public class SetupController
 
         _canCollectOdorDisplayData = false;
 
-        COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop odors");
+        COMHelper.ShowErrorIfAny(_odController.ShutdownChannels(_odorChannels), "stop odors");
 
         await WaitUntilCleanedUp(pauseEstimator.UseCleanupPidLevel, pauseEstimator.CleanupPidLevel, pauseEstimator.GetCleanupDuration(flows));
 
@@ -456,7 +456,7 @@ public class SetupController
                 ch.Flow = ch.ID == channel.ID ? ChemicalLevel.TestFlow : 0;
             }
 
-            COMHelper.ShowErrorIfAny(_odController.OpenChannels(odorChannels), "release odors");
+            COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(odorChannels), "release odors");
 
             var saturationDuration = pauseEstimator.GetSaturationDuration(Array.Empty<float>());   // use maximum duration
             LogOD?.Invoke(this, new LogHandlerArgs($"{channel.Name} was released, waiting {saturationDuration:F1}s for the mixture to stabilize..."));
@@ -475,7 +475,7 @@ public class SetupController
 
             _canCollectOdorDisplayData = false;
 
-            COMHelper.ShowErrorIfAny(_odController.CloseChannels(_odorChannels), "stop the odor");
+            COMHelper.ShowErrorIfAny(_odController.ShutdownChannels(_odorChannels), "stop the odor");
 
             progress = 100f * (3 * count + 2) / (3 * enabledChannels.Count());
             MeasurementProgress?.Invoke(this, (float)Math.Round(progress));

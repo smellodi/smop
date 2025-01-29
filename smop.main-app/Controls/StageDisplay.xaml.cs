@@ -122,6 +122,6 @@ public partial class StageDisplay : UserControl, INotifyPropertyChanged
     private static string FlowToStr(double ccm, out bool isShownAsCcm)
     {
         isShownAsCcm = ccm < 1000;
-        return isShownAsCcm ? ccm.ToString() : ((double)ccm / 1000).ToString("0.##");
+        return isShownAsCcm ? ccm.ToString("0.##") : ((double)ccm / 1000).ToString("0.##");
     }
 }

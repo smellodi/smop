@@ -51,12 +51,47 @@ internal class OdorDisplayController
         foreach (var channel in channels)
         {
             actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow)//,
-                //KeyValuePair.Create(Device.Controller.OdorantValve, 0f)
+                KeyValuePair.Create(Device.Controller.OdorantFlow, channel.Flow)
             )));
         }
 
         return Send(new SetActuators(actuators.ToArray()));
+    }
+
+    public Comm.Result OpenValves(int[] channelIds, float durationSec = 0)
+    {
+        var actuators = new List<Actuator>();
+        foreach (var id in channelIds)
+        {
+            if (durationSec <= 0)
+                actuators.Add(new Actuator((Device.ID)id, new ActuatorCapabilities(
+                    ActuatorCapabilities.OdorantValveOpenPermanently
+                )));
+            else
+                actuators.Add(new Actuator((Device.ID)id, new ActuatorCapabilities()
+                {
+                    { Device.Controller.OdorantValve, durationSec * 1000 },
+                }));
+        }
+
+        return Send(new SetActuators(actuators.ToArray()));
+    }
+
+    public Comm.Result SetFlowsAndValves(OdorChannels channels)
+    {
+        var actuators = channels
+            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
+            .Select(odorChannel => new Actuator(odorChannel.ID, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.OdorantFlow, odorChannel.Flow),
+                odorChannel.Flow > 0 ? ActuatorCapabilities.OdorantValveOpenPermanently : ActuatorCapabilities.OdorantValveClose
+            )));
+
+        return Send(new SetActuators(actuators.ToArray()));
+    }
+
+    public Comm.Result SetFlowsAndValves(Actuator[] actuators)
+    {
+        return Send(new SetActuators(actuators));
     }
 
     public Comm.Result StopFlows(Device.ID[] channels)
@@ -74,60 +109,20 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result OpenChannels(PulseChannelProps[] channels, float durationSec = 0)
+    public Comm.Result CloseValves(int[] channelIds)
     {
         var actuators = new List<Actuator>();
-        foreach (var channel in channels)
+        foreach (var id in channelIds)
         {
-            if (channel.Active)
-            {
-                if (durationSec <= 0)
-                    actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities(
-                        ActuatorCapabilities.OdorantValveOpenPermanently
-                    )));
-                else
-                    actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
-                    {
-                        { Device.Controller.OdorantValve, durationSec * 1000 },
-                    }));
-            }
-        }
-
-        return Send(new SetActuators(actuators.ToArray()));
-    }
-
-    public Comm.Result CloseChannels(PulseChannelProps[] channels)
-    {
-        var actuators = new List<Actuator>();
-        foreach (var channel in channels)
-        {
-            actuators.Add(new Actuator((Device.ID)channel.Id, new ActuatorCapabilities()
-            {
-                { Device.Controller.OutputValve, 0 },
-            }));
-        }
-
-        return Send(new SetActuators(actuators.ToArray()));
-    }
-
-    public Comm.Result OpenChannels(OdorChannels channels)
-    {
-        var actuators = channels
-            .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))
-            .Select(odorChannel => new Actuator(odorChannel.ID, new ActuatorCapabilities(
-                KeyValuePair.Create(Device.Controller.OdorantFlow, odorChannel.Flow),
-                odorChannel.Flow > 0 ? ActuatorCapabilities.OdorantValveOpenPermanently : ActuatorCapabilities.OdorantValveClose
+            actuators.Add(new Actuator((Device.ID)id, new ActuatorCapabilities(
+                ActuatorCapabilities.OdorantValveClose
             )));
+        }
 
         return Send(new SetActuators(actuators.ToArray()));
     }
 
-    public Comm.Result OpenChannels(Actuator[] actuators)
-    {
-        return Send(new SetActuators(actuators));
-    }
-
-    public Comm.Result CloseChannels(OdorChannels channels)
+    public Comm.Result ShutdownChannels(OdorChannels channels)
     {
         var actuators = channels
             .Where(odorChannel => !string.IsNullOrWhiteSpace(odorChannel.Name))

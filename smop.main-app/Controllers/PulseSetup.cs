@@ -68,14 +68,17 @@ public class SessionProps(float humidity, PulseIntervals intervals)
         r.Shuffle(_pulses);
     }
 
-    public PulseChannelProps[] GetActiveChannels()
+    public int[] GetActiveChannelIds()
     {
-        var activeChannels = new List<PulseChannelProps>();
+        var activeChannelIds = new HashSet<int>();
         foreach (var pulse in _pulses)
             foreach (var channel in pulse.Channels)
-                if (channel.Flow > 0 || channel.Active)
-                    activeChannels.Add(channel);
-        return activeChannels.ToArray();
+                if ((channel.Flow > 0 || channel.Active) && !activeChannelIds.Contains(channel.Id))
+                {
+                    activeChannelIds.Add(channel.Id);
+                }
+
+        return activeChannelIds.ToArray();
     }
 
     // Internal

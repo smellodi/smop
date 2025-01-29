@@ -68,7 +68,7 @@ public class OdorReproducerController
         if (_odorDisplay.IsOpen)
         {
             System.Threading.Thread.Sleep(100);
-            LogIO.Add(_odController.CloseChannels(_odorChannels), "StopOdors", LogSource.OD);
+            LogIO.Add(_odController.ShutdownChannels(_odorChannels), "StopOdors", LogSource.OD);
         }
     }
 
@@ -89,7 +89,7 @@ public class OdorReproducerController
         {
             var actuators = recipe.ToOdorPrinterActuators();
             if (actuators.Length > 0)
-                COMHelper.ShowErrorIfAny(_odController.OpenChannels(actuators.ToArray()), "release odors");
+                COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(actuators.ToArray()), "release odors");
         }
 
         // update the solution

@@ -41,8 +41,8 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         var channelsExist = new bool[Devices.MaxOdorModuleCount];
 
         foreach (var session in setup.Sessions)
-            foreach (var channel in session.GetActiveChannels())
-                channelsExist[channel.Id - 1] = true;
+            foreach (var channelId in session.GetActiveChannelIds())
+                channelsExist[channelId - 1] = true;
 
         CreateChannelStageIndicators(channelsExist);
 

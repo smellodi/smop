@@ -5,7 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="750" d:DesignWidth="1000"
+      d:DesignHeight="950" d:DesignWidth="1000"
       Title="Setup"
       Focusable="True"
       KeyDown="Page_KeyDown"
@@ -45,6 +45,10 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLight}"/>
         </Style>
+
+        <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
+            <Setter Property="Height" Value="26"/>
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -72,13 +76,34 @@
             <Border Grid.Column="0" Style="{StaticResource SidePanel}">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="auto"/>
-                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
                     </Grid.RowDefinitions>
 
                     <local:PulseGeneratorSettings x:Name="pulseGeneratorSettings" Grid.Row="0"/>
 
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
+
+                    <StackPanel Grid.Row="2">
+                        <Separator Margin="0,8"/>
+                        <Grid>
+                            <CheckBox x:Name="chkUseDilutionUnit"
+                                  Content="Use dilution unit"
+                                  Checked="UseDilutionUnit_Checked"
+                                  Unchecked="UseDilutionUnit_Unchecked"/>
+                            <WrapPanel HorizontalAlignment="Right">
+                                <Label Padding="0,5"
+                                       Content="1:"
+                                       IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"/>
+                                <TextBox x:Name="txbDilutionRatio"
+                                         IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"
+                                         Text="{Binding Path=Settings.DilutionRatio, Mode=TwoWay}"
+                                         Width="46"
+                                         KeyUp="DilutionRatio_KeyUp"/>
+                            </WrapPanel>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
             </Border>
 

@@ -16,6 +16,8 @@ namespace Smop.MainApp.Pages;
 
 public partial class Setup : Page, IPage<object?>
 {
+    public SetupSettings Settings { get; } = new();
+
     public event EventHandler<object?>? Next;
 
     public Setup()
@@ -690,6 +692,32 @@ public partial class Setup : Page, IPage<object?>
         if (dialog.ShowDialog() == true)
         {
             _ctrl.AcquireOdorChannelsInfo();
+        }
+    }
+
+    private void UseDilutionUnit_Checked(object sender, RoutedEventArgs e)
+    {
+        var dilutionRatio = Settings.DilutionRatio;
+        if (dilutionRatio >= 1 && dilutionRatio <= 10000)
+        {
+            _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
+        }
+    }
+
+    private void UseDilutionUnit_Unchecked(object sender, RoutedEventArgs e)
+    {
+        _ctrl.SetDilutionUnitActivity(false);
+    }
+
+    private void DilutionRatio_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            var dilutionRatio = Settings.DilutionRatio;
+            if (dilutionRatio >= 1 && dilutionRatio <= 10000)
+            {
+                _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
+            }
         }
     }
 }

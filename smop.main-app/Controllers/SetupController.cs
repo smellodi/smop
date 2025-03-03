@@ -515,6 +515,32 @@ public class SetupController
             .ToArray();
     }
 
+    public void SetDilutionUnitActivity(bool isEnabled, float dilutionRatio = 0)
+    {
+        float limit = OdorDisplay.Device.MaxBaseAirFlowRate / (OdorDisplay.Device.MaxOdoredAirFlowRate / 1000);
+
+        // we decrease odoredAirFLow from its possible maximum value if the dilution ratio is above the limit,
+        // and decrease the clearAirFow from its possible maximum value if the dilution ration is below it.
+
+        float clearAirFlow = dilutionRatio >= limit
+            ? OdorDisplay.Device.MaxBaseAirFlowRate
+            : (float)dilutionRatio / OdorDisplay.Device.MaxBaseAirFlowRate;
+        float odoredAirFlow = dilutionRatio >= limit
+            ? OdorDisplay.Device.MaxBaseAirFlowRate * 1000 / dilutionRatio
+            : OdorDisplay.Device.MaxOdoredAirFlowRate;
+
+        var actuators = new ODPackets.Actuator[]
+        {
+            new(OdorDisplay.Device.ID.DilutionAir, new ODPackets.ActuatorCapabilities(
+                KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, isEnabled ? odoredAirFlow : 0f),
+                KeyValuePair.Create(OdorDisplay.Device.Controller.DilutionAirFlow, isEnabled ? clearAirFlow : 0f),
+                isEnabled ? ODPackets.ActuatorCapabilities.OutputValveOpenPermanently : ODPackets.ActuatorCapabilities.OutputValveClose
+            ))
+        };
+
+        COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(actuators.ToArray()), "dilution unit: " + (isEnabled ? "activated" : "deactivated"));
+    }
+
     // Internal
 
     record class ChannelAndProps(OdorChannel Channel, OdorChannelProperties? Props);

@@ -96,11 +96,19 @@ public class Actuator
         Capabilities = caps;
 
         var address = (byte)((byte)id | Packet.DEVICE_MASK);
-        var maxFlowRate = id == Device.ID.Base || id == Device.ID.DilutionAir ? Device.MaxBaseAirFlowRate : Device.MaxOdoredAirFlowRate;
 
         var query = new List<byte> { address };
         foreach (var (ctrl, value) in caps)
         {
+            var maxFlowRate = id switch
+            {
+                Device.ID.Base => Device.MaxBaseAirFlowRate,
+                Device.ID.DilutionAir => ctrl == Device.Controller.OdorantFlow 
+                    ? Device.MaxOdoredAirFlowRate
+                    : Device.MaxBaseAirFlowRate,
+                _ => Device.MaxOdoredAirFlowRate
+            };
+
             query.Add((byte)ctrl);
             FourBytes controllerValue = ctrl switch
             {

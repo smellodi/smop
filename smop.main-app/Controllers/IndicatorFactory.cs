@@ -128,7 +128,20 @@ internal static class IndicatorFactory
 
     private static ChannelIndicator? CreateIndicator(Device.ID deviceID, Device.Capability cap, int sensorSubID, bool isSameDeviceAsPrevious)
     {
-        (string? name, string? subname, string? units, int precision) = (cap, sensorSubID) switch
+        var mfc1Name = deviceID switch
+        {
+            Device.ID.Base => "Humid. flow",
+            Device.ID.DilutionAir => "Odor. flow",
+            _ => "Flow"
+        };
+        var mfc2Name = deviceID switch
+        {
+            Device.ID.Base => "Dry flow",
+            Device.ID.DilutionAir => "Clean flow",
+            _ => "Flow"
+        };
+
+        (string ? name, string? subname, string? units, int precision) = (cap, sensorSubID) switch
         {
             (Device.Capability.PID, 0) => ("PID", null, "mV", 1),
             (Device.Capability.BeadThermistor, 0) => ("Bead therm.", null, "°C", 1),
@@ -142,15 +155,13 @@ internal static class IndicatorFactory
             (Device.Capability.InputAirHumiditySensor, 1) => ("Input humid.", "T", "°C", 1),
             (Device.Capability.PressureSensor, 0) => ("Pressure", null, "mBar", 1),
             (Device.Capability.PressureSensor, 1) => ("Pressure", "T", "°C", 1),
-            (Device.Capability.OdorantFlowSensor, 0) => (deviceID == Device.ID.Base ? "Humid. flow" : "Flow", null,
-                                                         deviceID == Device.ID.Base ? "l/min" : "sccm", 1),
-            (Device.Capability.OdorantFlowSensor, 1) => (deviceID == Device.ID.Base ? "Humid. flow" : "Flow",
-                                                         "P", "mBar", 1),
-            (Device.Capability.OdorantFlowSensor, 2) => (deviceID == Device.ID.Base ? "Humid. flow" : "Flow",
-                                                         "T", "°C", 1),
-            (Device.Capability.DilutionAirFlowSensor, 0) => ("Dilut. flow", null, "l/min", 1),
-            (Device.Capability.DilutionAirFlowSensor, 1) => ("Dilut. flow", "P", "mBar", 1),
-            (Device.Capability.DilutionAirFlowSensor, 2) => ("Dilut. flow", "T", "°C", 1),
+            (Device.Capability.OdorantFlowSensor, 0) => (mfc1Name, null, 
+                deviceID == Device.ID.Base ? "l/min" : "sccm", 1),
+            (Device.Capability.OdorantFlowSensor, 1) => (mfc1Name, "P", "mBar", 1),
+            (Device.Capability.OdorantFlowSensor, 2) => (mfc1Name, "T", "°C", 1),
+            (Device.Capability.DilutionAirFlowSensor, 0) => (mfc2Name, null, "l/min", 1),
+            (Device.Capability.DilutionAirFlowSensor, 1) => (mfc2Name, "P", "mBar", 1),
+            (Device.Capability.DilutionAirFlowSensor, 2) => (mfc2Name, "T", "°C", 1),
             (Device.Capability.OdorantValveSensor, 0) => ("Valve", null, null, 0),
             (Device.Capability.OutputValveSensor, 0) => ("Output valve", null, null, 0),
             _ => (null, null, null, 0)

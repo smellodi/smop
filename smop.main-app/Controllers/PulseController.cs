@@ -96,7 +96,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
     public void Stop()
     {
         var channelIDs = new List<OdorDisplay.Device.ID>();
-        for (int i = 1; i < PulseChannels.MaxCount; i++)
+        for (int i = 1; i <= PulseChannels.MaxCount; i++)
             channelIDs.Add((OdorDisplay.Device.ID)i);
 
         _odorDisplay.StopFlows(channelIDs.ToArray());

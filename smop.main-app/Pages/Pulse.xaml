@@ -110,13 +110,13 @@
                     Content="Flows"/>
                 <WrapPanel>
                     <Label Style="{StaticResource MeasurementLabel}"
-                        Content="Humidified air"/>
-                    <Label x:Name="lblHumidifiedAirFlow" Style="{StaticResource MeasurementValue}"
+                        Content="Base unit"/>
+                    <Label x:Name="lblBaseAirFlow" Style="{StaticResource MeasurementValue}"
                        Content="0"/>
                 </WrapPanel>
                 <WrapPanel>
                     <Label Style="{StaticResource MeasurementLabel}"
-                        Content="Dilution air"/>
+                        Content="Dilution unit"/>
                     <Label x:Name="lblDilutionAirFlow" Style="{StaticResource MeasurementValue}"
                        Content="0"/>
                 </WrapPanel>
@@ -159,9 +159,9 @@
 
                 <Label Style="{StaticResource SubHeader}"
                     Content="Valves"/>
-                <CheckBox x:Name="chkOdorantValveOpened" Style="{StaticResource MeasurementValve}"
+                <CheckBox x:Name="chkHumidifierValveOpened" Style="{StaticResource MeasurementValve}"
                     Content="Humidified air"/>
-                <CheckBox x:Name="chkOutputValveOpened" Style="{StaticResource MeasurementValve}"
+                <CheckBox x:Name="chkDilutionValveOpened" Style="{StaticResource MeasurementValve}"
                     Content="Dilution air"/>
             </StackPanel>
 

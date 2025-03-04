@@ -697,8 +697,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void UseDilutionUnit_Checked(object sender, RoutedEventArgs e)
     {
-        var dilutionRatio = Settings.DilutionRatio;
-        if (dilutionRatio >= 1 && dilutionRatio <= 10000)
+        if (float.TryParse(txbDilutionRatio.Text, out float dilutionRatio) && dilutionRatio >= 1 && dilutionRatio <= 10000)
         {
             _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
         }
@@ -713,8 +712,7 @@ public partial class Setup : Page, IPage<object?>
     {
         if (e.Key == Key.Enter)
         {
-            var dilutionRatio = Settings.DilutionRatio;
-            if (dilutionRatio >= 1 && dilutionRatio <= 10000)
+            if (float.TryParse(txbDilutionRatio.Text, out float dilutionRatio) && dilutionRatio >= 1 && dilutionRatio <= 10000)
             {
                 _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
             }

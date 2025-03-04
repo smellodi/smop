@@ -251,6 +251,9 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         {
             if (m.Device == OdorDisplay.Device.ID.Base)
             {
+                float humidifiedAirFlow = 0;
+                float dryAirFlow = 0;
+
                 foreach (var sv in m.SensorValues)
                 {
                     switch (sv.Sensor)
@@ -285,20 +288,17 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (Sensor.Gas)sv;
-                                lblHumidifiedAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mBar, {v.Celsius:F1} °C";
+                                humidifiedAirFlow = v.SLPM;
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
                             {
                                 var v = (Sensor.Gas)sv;
-                                lblDilutionAirFlow.Content = $"{v.SLPM:F1} l/min, {v.Millibars:F1} mBar, {v.Celsius:F1} °C";
+                                dryAirFlow = v.SLPM;
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
-                            chkOdorantValveOpened.IsChecked = ((Sensor.Valve)sv).Opened;
-                            break;
-                        case OdorDisplay.Device.Sensor.OutputValveSensor:
-                            chkOutputValveOpened.IsChecked = ((Sensor.Valve)sv).Opened;
+                            chkHumidifierValveOpened.IsChecked = ((Sensor.Valve)sv).Opened;
                             break;
                         case OdorDisplay.Device.Sensor.PID:
                             lblPID.Content = $"{((Sensor.PID)sv).Volts * 1000:F1} mV";
@@ -308,6 +308,37 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                             break;
                     }
                 }
+
+                lblBaseAirFlow.Content = $"{humidifiedAirFlow:F2} : {dryAirFlow:F1} l/min";
+            }
+            else if (m.Device == OdorDisplay.Device.ID.DilutionAir)
+            {
+                float odoredAirFlow = 0;
+                float clearnAirFLow = 0;
+
+                foreach (var sv in m.SensorValues)
+                {
+                    switch (sv.Sensor)
+                    {
+                        case OdorDisplay.Device.Sensor.OdorantFlowSensor:
+                            {
+                                var v = (Sensor.Gas)sv;
+                                odoredAirFlow = v.SLPM;
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
+                            {
+                                var v = (Sensor.Gas)sv;
+                                clearnAirFLow = v.SLPM;
+                                break;
+                            }
+                        case OdorDisplay.Device.Sensor.OutputValveSensor:
+                            chkDilutionValveOpened.IsChecked = ((Sensor.Valve)sv).Opened;
+                            break;
+                    }
+                }
+
+                lblDilutionAirFlow.Content = $"{1000*odoredAirFlow:F0} sccm : {clearnAirFLow:F1} l/min";
             }
             else if (_odorChannelObservers?.ContainsKey(m.Device) ?? false)
             {

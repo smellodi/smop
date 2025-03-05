@@ -59,9 +59,6 @@
     <Setting Name="Reproduction_SniffingDelay" Type="System.Single" Scope="User">
       <Value Profile="(Default)">5</Value>
     </Setting>
-    <Setting Name="Reproduction_Humidity" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">15</Value>
-    </Setting>
     <Setting Name="Reproduction_UseDmsCache" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
@@ -85,12 +82,6 @@
     </Setting>
     <Setting Name="PulseEditor_Height" Type="System.Double" Scope="User">
       <Value Profile="(Default)">500</Value>
-    </Setting>
-    <Setting Name="Pulses_Humidity" Type="System.Single" Scope="User">
-      <Value Profile="(Default)">15</Value>
-    </Setting>
-    <Setting Name="Setup_HumidityAutoAdjustment" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="KnownOdors" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
@@ -133,6 +124,12 @@
     </Setting>
     <Setting Name="Setup_DilutionRatio" Type="System.Single" Scope="User">
       <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="Setup_Humidity" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">15</Value>
+    </Setting>
+    <Setting Name="Setup_HumidityAutoAdjustment" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

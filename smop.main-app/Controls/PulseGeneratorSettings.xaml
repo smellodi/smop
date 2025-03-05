@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              mc:Ignorable="d" 
              d:DesignHeight="300"
              d:DesignWidth="300"
@@ -13,9 +12,6 @@
         <Style x:Key="OdorName" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Margin" Value="4, 0"/>
-        </Style>
-        <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-            <Setter Property="FontSize" Value="14"/>
         </Style>
     </UserControl.Resources>
 
@@ -52,36 +48,10 @@
             </Grid>
         </StackPanel>
 
-        <UserControl x:Name="uscRandomize"
-                     Style="{StaticResource Setting}"
-                     Tag="Randomize pulse order">
-            <CheckBox x:Name="chkRandomize"
-                      FontSize="16"
-                      VerticalAlignment="Center"
-                      Checked="Randomize_CheckedChanged"
-                      Unchecked="Randomize_CheckedChanged"/>
-        </UserControl>
-        <Separator Margin="0,8,0,0"/>
-        <Label Style="{StaticResource Section}"
-               Content="Air settings:"/>
-        <UserControl x:Name="uscHumidity"
-                     Style="{StaticResource Setting}"
-                     Tag="Humidity, %">
-            <TextBox x:Name="txbHumidity" Grid.Column="0"
-                     Style="{StaticResource Value}"
-                     KeyUp="Humidity_KeyUp">
-                <TextBox.Text>
-                    <Binding Path="Humidity" UpdateSourceTrigger="LostFocus">
-                        <Binding.ValidationRules>
-                            <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
-        </UserControl>
-        <CheckBox Content="auto-adjustment"
-                  HorizontalAlignment="Right"
-                  IsChecked="{Binding HumidityAutoAdjustment}"/>
+        <CheckBox x:Name="chkRandomize"
+                  Content="Randomize pulse order"
+                  Checked="Randomize_CheckedChanged"
+                  Unchecked="Randomize_CheckedChanged"/>
 
         <Separator Margin="0,8,0,0"/>
         <StackPanel Grid.Column="0">

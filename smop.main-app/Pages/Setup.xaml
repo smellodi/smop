@@ -3,9 +3,10 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:utils="clr-namespace:Smop.MainApp.Utils"
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="950" d:DesignWidth="1000"
+      d:DesignHeight="1050" d:DesignWidth="1000"
       Title="Setup"
       Focusable="True"
       KeyDown="Page_KeyDown"
@@ -44,6 +45,9 @@
         <Style x:Key="StatusTextBorder" TargetType="{x:Type Border}">
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorderLight}"/>
+        </Style>
+        <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="14"/>
         </Style>
 
         <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource {x:Type CheckBox}}">
@@ -86,10 +90,13 @@
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
 
                     <StackPanel Grid.Row="2">
-                        <Separator Margin="0,8"/>
+                        <Separator Margin="0,8,0,0"/>
+                        <Label Style="{StaticResource Section}"
+                               Content="Air settings:"/>
+
                         <Grid>
                             <CheckBox x:Name="chkUseDilutionUnit"
-                                  Content="Use dilution unit"
+                                  Content="Dilute odored air"
                                   Checked="UseDilutionUnit_Checked"
                                   Unchecked="UseDilutionUnit_Unchecked"/>
                             <WrapPanel HorizontalAlignment="Right">
@@ -97,12 +104,40 @@
                                        Content="1:"
                                        IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"/>
                                 <TextBox x:Name="txbDilutionRatio"
+                                         Style="{StaticResource Value}"
                                          IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"
-                                         Text="{Binding Path=Settings.DilutionRatio, Mode=TwoWay}"
-                                         Width="46"
-                                         KeyUp="DilutionRatio_KeyUp"/>
+                                         Width="86"
+                                         KeyUp="DilutionRatio_KeyUp">
+                                    <TextBox.Text>
+                                        <Binding Path="Settings.DilutionRatio" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                            <Binding.ValidationRules>
+                                                <utils:RangeRule Min="1" Max="10000" IsInteger="True"/>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
                             </WrapPanel>
                         </Grid>
+
+                        <UserControl x:Name="uscHumidity"
+                                     Style="{StaticResource Setting}"
+                                     Tag="Humidity, %">
+                            <TextBox x:Name="txbHumidity"
+                                     Style="{StaticResource Value}"
+                                     KeyUp="Humidity_KeyUp">
+                                <TextBox.Text>
+                                    <Binding Path="Settings.Humidity" Mode="TwoWay" UpdateSourceTrigger="LostFocus">
+                                        <Binding.ValidationRules>
+                                            <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
+                                        </Binding.ValidationRules>
+                                    </Binding>
+                                </TextBox.Text>
+                            </TextBox>
+                        </UserControl>
+
+                        <CheckBox Content="automatic"
+                                  HorizontalAlignment="Right"
+                                  IsChecked="{Binding Path=Settings.HumidityAutoAdjustment, Mode=TwoWay}"/>
                     </StackPanel>
                 </Grid>
             </Border>

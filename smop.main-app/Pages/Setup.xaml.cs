@@ -51,24 +51,16 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.SetupChanged += (s, e) => UpdateUI();
         pulseGeneratorSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
-        pulseGeneratorSettings.HumidityChanged += (s, e) =>
-        {
-            _ctrl.SetHumidityLevel(e);
-            HumidityController.Instance.TargetHumidity = e;
-        };
-        pulseGeneratorSettings.HumidityAutoAdjustmentChanged += (s, e) =>
-        {
-            HumidityController.Instance.IsEnabled = e;
-        };
 
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         odorReproductionSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
-        odorReproductionSettings.HumidityChanged += (s, e) =>
+
+        Settings.HumidityChanged += (s, e) =>
         {
             _ctrl.SetHumidityLevel(e);
             HumidityController.Instance.TargetHumidity = e;
         };
-        odorReproductionSettings.HumidityAutoAdjustmentChanged += (s, e) =>
+        Settings.HumidityAutoAdjustmentChanged += (s, e) =>
         {
             HumidityController.Instance.IsEnabled = e;
         };
@@ -377,12 +369,9 @@ public partial class Setup : Page, IPage<object?>
                 chkShowThermistorIndicators.IsChecked ?? false,
                 chkShowPressureIndicators.IsChecked ?? false);
 
-            var settings = Properties.Settings.Default;
-            var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
-
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
-            _ctrl.SetHumidityLevel(humidity);
+            _ctrl.SetHumidityLevel(Settings.Humidity);
 
             if (_odorDisplayCleanupFile != null)
             {
@@ -470,8 +459,7 @@ public partial class Setup : Page, IPage<object?>
             App.ML.LaunchMlExe(settings.Reproduction_ML_CmdParams);
         }
 
-        var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
-        if (!_ctrl.SetHumidityLevel(humidity))
+        if (!_ctrl.SetHumidityLevel(Settings.Humidity))
             return;
 
         await _ctrl.MeasureSample();
@@ -633,9 +621,7 @@ public partial class Setup : Page, IPage<object?>
 
         UpdateUI();
 
-        var settings = Properties.Settings.Default;
-        var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
-        if (!_ctrl.SetHumidityLevel(humidity))
+        if (!_ctrl.SetHumidityLevel(Settings.Humidity))
             return;
 
         var chemicalLevels = await _ctrl.CheckChemicalLevels();
@@ -697,7 +683,7 @@ public partial class Setup : Page, IPage<object?>
 
     private void UseDilutionUnit_Checked(object sender, RoutedEventArgs e)
     {
-        if (float.TryParse(txbDilutionRatio.Text, out float dilutionRatio) && dilutionRatio >= 1 && dilutionRatio <= 10000)
+        if (!Validation.GetHasError(txbDilutionRatio) && float.TryParse(txbDilutionRatio.Text, out float dilutionRatio))
         {
             _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
         }
@@ -708,11 +694,22 @@ public partial class Setup : Page, IPage<object?>
         _ctrl.SetDilutionUnitActivity(false);
     }
 
+    private void Humidity_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            if (!Validation.GetHasError(txbHumidity) && float.TryParse(txbHumidity.Text, out float value))
+            {
+                Settings.Humidity = value;
+            }
+        }
+    }
+
     private void DilutionRatio_KeyUp(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
         {
-            if (float.TryParse(txbDilutionRatio.Text, out float dilutionRatio) && dilutionRatio >= 1 && dilutionRatio <= 10000)
+            if (!Validation.GetHasError(txbDilutionRatio) && float.TryParse(txbDilutionRatio.Text, out float dilutionRatio))
             {
                 _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
             }

@@ -148,29 +148,6 @@
         </UserControl-->
 
         <Separator Margin="0,8,0,0"/>
-        <Label Style="{StaticResource Section}"
-               Content="Air settings:"/>
-        <UserControl x:Name="uscHumidity"
-                     Style="{StaticResource Setting}"
-                     Tag="Humidity, %">
-            <TextBox x:Name="txbHumidity" Grid.Column="0"
-                     Style="{StaticResource Value}"
-                     KeyUp="Humidity_KeyUp">
-                <TextBox.Text>
-                    <Binding Path="Humidity" UpdateSourceTrigger="LostFocus">
-                        <Binding.ValidationRules>
-                            <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
-        </UserControl>
-
-        <CheckBox Content="auto-adjustment"
-                  HorizontalAlignment="Right"
-                  IsChecked="{Binding HumidityAutoAdjustment}"/>
-        
-        <Separator Margin="0,8,0,0"/>
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>

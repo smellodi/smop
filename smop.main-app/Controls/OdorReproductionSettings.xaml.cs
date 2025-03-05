@@ -126,22 +126,8 @@ public partial class OdorReproductionSettings : UserControl
         }
     }*/
 
-    public float Humidity
-    {
-        get => Properties.Settings.Default.Reproduction_Humidity;
-        set { SetHumidity(value); }
-    }
-
-    public bool HumidityAutoAdjustment
-    {
-        get => Properties.Settings.Default.Setup_HumidityAutoAdjustment;
-        set { SetHumidityAutoAdjustment(value); }
-    }
-
     public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
-    public event EventHandler<float>? HumidityChanged;
-    public event EventHandler<bool>? HumidityAutoAdjustmentChanged;
 
     public OdorReproductionSettings()
     {
@@ -259,40 +245,8 @@ public partial class OdorReproductionSettings : UserControl
 
         _currentInput = input;
     }
-    private void SetHumidity(float newHumidity)
-    {
-        var oldHumidity = Properties.Settings.Default.Reproduction_Humidity;
-        if (oldHumidity != newHumidity)
-        {
-            Properties.Settings.Default.Reproduction_Humidity = newHumidity;
-            Properties.Settings.Default.Save();
-            HumidityChanged?.Invoke(this, newHumidity);
-        }
-    }
-
-    private void SetHumidityAutoAdjustment(bool value)
-    {
-        var prevValue = Properties.Settings.Default.Setup_HumidityAutoAdjustment;
-        if (prevValue != value)
-        {
-            Properties.Settings.Default.Setup_HumidityAutoAdjustment = value;
-            Properties.Settings.Default.Save();
-            HumidityAutoAdjustmentChanged?.Invoke(this, value);
-        }
-    }
 
     // UI
-
-    private void Humidity_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
-    {
-        if (e.Key == System.Windows.Input.Key.Enter)
-        {
-            if (float.TryParse(txbHumidity.Text, out float value) && value >= 0 && value < 90)
-            {
-                SetHumidity(value);
-            }
-        }
-    }
 
     private void PauseEstimator_Click(object sender, RoutedEventArgs e)
     {

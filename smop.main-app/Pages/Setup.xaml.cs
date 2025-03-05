@@ -51,7 +51,7 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.SetupChanged += (s, e) => UpdateUI();
         pulseGeneratorSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         pulseGeneratorSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
-        pulseGeneratorSettings.HumidityChanged += (s, e) =>
+        /*pulseGeneratorSettings.HumidityChanged += (s, e) =>
         {
             _ctrl.SetHumidityLevel(e);
             HumidityController.Instance.TargetHumidity = e;
@@ -59,16 +59,26 @@ public partial class Setup : Page, IPage<object?>
         pulseGeneratorSettings.HumidityAutoAdjustmentChanged += (s, e) =>
         {
             HumidityController.Instance.IsEnabled = e;
-        };
+        };*/
 
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         odorReproductionSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
-        odorReproductionSettings.HumidityChanged += (s, e) =>
+        /*odorReproductionSettings.HumidityChanged += (s, e) =>
         {
             _ctrl.SetHumidityLevel(e);
             HumidityController.Instance.TargetHumidity = e;
         };
         odorReproductionSettings.HumidityAutoAdjustmentChanged += (s, e) =>
+        {
+            HumidityController.Instance.IsEnabled = e;
+        };*/
+
+        Settings.HumidityChanged += (s, e) =>
+        {
+            _ctrl.SetHumidityLevel(e);
+            HumidityController.Instance.TargetHumidity = e;
+        };
+        Settings.HumidityAutoAdjustmentChanged += (s, e) =>
         {
             HumidityController.Instance.IsEnabled = e;
         };
@@ -308,6 +318,19 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
+    /*
+    private void SetHumidity(float newHumidity)
+    {
+        _ctrl.SetHumidityLevel(newHumidity);
+        HumidityController.Instance.TargetHumidity = newHumidity;
+    }
+
+    private void SetHumidityAutoAdjustment(bool value)
+    {
+        HumidityController.Instance.IsEnabled = value;
+    }*/
+
+
     // Event handlers
 
     private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
@@ -377,12 +400,12 @@ public partial class Setup : Page, IPage<object?>
                 chkShowThermistorIndicators.IsChecked ?? false,
                 chkShowPressureIndicators.IsChecked ?? false);
 
-            var settings = Properties.Settings.Default;
-            var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
+            //var settings = Properties.Settings.Default;
+            //var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
 
             _ctrl.EnumOdorChannels(_indicatorController.ApplyOdorChannelProps);
             _ctrl.InitializeOdorPrinter();
-            _ctrl.SetHumidityLevel(humidity);
+            _ctrl.SetHumidityLevel(Settings.Humidity);
 
             if (_odorDisplayCleanupFile != null)
             {
@@ -470,8 +493,8 @@ public partial class Setup : Page, IPage<object?>
             App.ML.LaunchMlExe(settings.Reproduction_ML_CmdParams);
         }
 
-        var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
-        if (!_ctrl.SetHumidityLevel(humidity))
+        //var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
+        if (!_ctrl.SetHumidityLevel(Settings.Humidity))
             return;
 
         await _ctrl.MeasureSample();
@@ -633,9 +656,9 @@ public partial class Setup : Page, IPage<object?>
 
         UpdateUI();
 
-        var settings = Properties.Settings.Default;
-        var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
-        if (!_ctrl.SetHumidityLevel(humidity))
+        //var settings = Properties.Settings.Default;
+        //var humidity = _storage.SetupType == SetupType.OdorReproduction ? settings.Reproduction_Humidity : settings.Pulses_Humidity;
+        if (!_ctrl.SetHumidityLevel(Settings.Humidity))
             return;
 
         var chemicalLevels = await _ctrl.CheckChemicalLevels();
@@ -706,6 +729,17 @@ public partial class Setup : Page, IPage<object?>
     private void UseDilutionUnit_Unchecked(object sender, RoutedEventArgs e)
     {
         _ctrl.SetDilutionUnitActivity(false);
+    }
+
+    private void Humidity_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            if (float.TryParse(txbHumidity.Text, out float value) && value >= 0 && value < 90)
+            {
+                Settings.Humidity = value;
+            }
+        }
     }
 
     private void DilutionRatio_KeyUp(object sender, KeyEventArgs e)

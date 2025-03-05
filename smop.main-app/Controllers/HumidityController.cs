@@ -66,7 +66,7 @@ internal class HumidityController
 
         _odorDisplay.Data += OdorDisplay_Data;
 
-        _targetHumidity = Properties.Settings.Default.Pulses_Humidity;
+        _targetHumidity = Properties.Settings.Default.Setup_Humidity;
         _currentHumidity = _targetHumidity;
 
         if (_isEnabled)

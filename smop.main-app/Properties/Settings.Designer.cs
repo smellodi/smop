@@ -154,7 +154,21 @@ namespace Smop.MainApp.Properties {
                 this["Comm_IonVision_SetupFilename"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection Comm_IonVision_IgnoreVersionWarning
+        {
+            get
+            {
+                return ((global::System.Collections.Specialized.StringCollection)(this["Comm_IonVision_IgnoreVersionWarning"]));
+            }
+            set
+            {
+                this["Comm_IonVision_IgnoreVersionWarning"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -176,17 +190,6 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["Pulses_Randomize"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection Comm_IonVision_IgnoreVersionWarning {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["Comm_IonVision_IgnoreVersionWarning"]));
-            }
-            set {
-                this["Comm_IonVision_IgnoreVersionWarning"] = value;
             }
         }
         
@@ -247,18 +250,6 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["Reproduction_SniffingDelay"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("15")]
-        public float Reproduction_Humidity {
-            get {
-                return ((float)(this["Reproduction_Humidity"]));
-            }
-            set {
-                this["Reproduction_Humidity"] = value;
             }
         }
         
@@ -355,30 +346,6 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["PulseEditor_Height"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("15")]
-        public float Pulses_Humidity {
-            get {
-                return ((float)(this["Pulses_Humidity"]));
-            }
-            set {
-                this["Pulses_Humidity"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool Setup_HumidityAutoAdjustment {
-            get {
-                return ((bool)(this["Setup_HumidityAutoAdjustment"]));
-            }
-            set {
-                this["Setup_HumidityAutoAdjustment"] = value;
             }
         }
         
@@ -547,6 +514,30 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["Setup_DilutionRatio"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public float Setup_Humidity {
+            get {
+                return ((float)(this["Setup_Humidity"]));
+            }
+            set {
+                this["Setup_Humidity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool Setup_HumidityAutoAdjustment {
+            get {
+                return ((bool)(this["Setup_HumidityAutoAdjustment"]));
+            }
+            set {
+                this["Setup_HumidityAutoAdjustment"] = value;
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace Smop.MainApp.Controllers;
+﻿using System;
+
+namespace Smop.MainApp.Controllers;
 
 public class SetupSettings
 {
@@ -17,4 +19,37 @@ public class SetupSettings
             }
         }
     }
+
+    public float Humidity
+    {
+        get => Properties.Settings.Default.Setup_Humidity;
+        set
+        {
+            if (Properties.Settings.Default.Setup_Humidity != value)
+            {
+                Properties.Settings.Default.Setup_Humidity = value;
+                Properties.Settings.Default.Save();
+
+                HumidityChanged?.Invoke(this, value);
+            }
+        }
+    }
+
+    public bool HumidityAutoAdjustment
+    {
+        get => Properties.Settings.Default.Setup_HumidityAutoAdjustment;
+        set
+        {
+            if (Properties.Settings.Default.Setup_HumidityAutoAdjustment != value)
+            {
+                Properties.Settings.Default.Setup_HumidityAutoAdjustment = value;
+                Properties.Settings.Default.Save();
+
+                HumidityAutoAdjustmentChanged?.Invoke(this, value);
+            }
+        }
+    }
+
+    public event EventHandler<float>? HumidityChanged;
+    public event EventHandler<bool>? HumidityAutoAdjustmentChanged;
 }

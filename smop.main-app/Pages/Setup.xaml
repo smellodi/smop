@@ -135,7 +135,7 @@
                             </TextBox>
                         </UserControl>
 
-                        <CheckBox Content="automatic"
+                        <CheckBox Content="auto-adjust"
                                   HorizontalAlignment="Right"
                                   IsChecked="{Binding Path=Settings.HumidityAutoAdjustment, Mode=TwoWay}"/>
                     </StackPanel>

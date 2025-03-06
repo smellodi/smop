@@ -118,7 +118,7 @@
                     <Label Style="{StaticResource MeasurementLabel}"
                         Content="Dilution unit"/>
                     <Label x:Name="lblDilutionAirFlow" Style="{StaticResource MeasurementValue}"
-                       Content="0"/>
+                       Content="-"/>
                 </WrapPanel>
 
                 <Label Style="{StaticResource SubHeader}"
@@ -160,9 +160,9 @@
                 <Label Style="{StaticResource SubHeader}"
                     Content="Valves"/>
                 <CheckBox x:Name="chkHumidifierValveOpened" Style="{StaticResource MeasurementValve}"
-                    Content="Humidified air"/>
+                    Content="Humidifier"/>
                 <CheckBox x:Name="chkDilutionValveOpened" Style="{StaticResource MeasurementValve}"
-                    Content="Dilution air"/>
+                    Content="Diluter"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2"

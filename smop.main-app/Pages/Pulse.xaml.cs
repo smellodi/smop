@@ -133,25 +133,25 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                     Style = (Style)Resources["MeasurementValve"]
                 };
 
-                var valueTop = new Run();
-                var valueMiddle = new Run();
-                var valueBottom = new Run();
+                var flow = new Run();
+                var pressure = new Run();
+                var temperature = new Run();
                 var value = new TextBlock
                 {
                     Style = (Style)Resources["MeasurementValues"],
                 };
-                value.Inlines.Add(valueTop);
+                value.Inlines.Add(flow);
                 value.Inlines.Add(new LineBreak());
-                value.Inlines.Add(valueMiddle);
+                value.Inlines.Add(pressure);
                 value.Inlines.Add(new LineBreak());
-                value.Inlines.Add(valueBottom);
+                value.Inlines.Add(temperature);
 
                 container.Children.Add(label);
                 container.Children.Add(valve);
                 container.Children.Add(value);
                 stpChannels.Children.Add(container);
 
-                _odorChannelObservers.Add(m.Device, (valueTop, valueMiddle, valueBottom, valve));
+                _odorChannelObservers.Add(m.Device, (flow, pressure, temperature, valve));
             }
         }
     }
@@ -286,17 +286,11 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
-                            {
-                                var v = (Sensor.Gas)sv;
-                                humidifiedAirFlow = v.SLPM;
-                                break;
-                            }
+                            humidifiedAirFlow = ((Sensor.Gas)sv).SLPM;
+                            break;
                         case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
-                            {
-                                var v = (Sensor.Gas)sv;
-                                dryAirFlow = v.SLPM;
-                                break;
-                            }
+                            dryAirFlow = ((Sensor.Gas)sv).SLPM;
+                            break;
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
                             chkHumidifierValveOpened.IsChecked = ((Sensor.Valve)sv).Opened;
                             break;
@@ -321,17 +315,11 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                     switch (sv.Sensor)
                     {
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
-                            {
-                                var v = (Sensor.Gas)sv;
-                                odoredAirFlow = v.SLPM;
-                                break;
-                            }
+                            odoredAirFlow = ((Sensor.Gas)sv).SLPM;
+                            break;
                         case OdorDisplay.Device.Sensor.DilutionAirFlowSensor:
-                            {
-                                var v = (Sensor.Gas)sv;
-                                clearnAirFLow = v.SLPM;
-                                break;
-                            }
+                            clearnAirFLow = ((Sensor.Gas)sv).SLPM;
+                            break;
                         case OdorDisplay.Device.Sensor.OutputValveSensor:
                             chkDilutionValveOpened.IsChecked = ((Sensor.Valve)sv).Opened;
                             break;
@@ -342,7 +330,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
             }
             else if (_odorChannelObservers?.ContainsKey(m.Device) ?? false)
             {
-                var observer = _odorChannelObservers[m.Device];
+                var (flow, pressure, temperature, valve) = _odorChannelObservers[m.Device];
                 foreach (var sv in m.SensorValues)
                 {
                     switch (sv.Sensor)
@@ -350,13 +338,13 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
                         case OdorDisplay.Device.Sensor.OdorantFlowSensor:
                             {
                                 var v = (Sensor.Gas)sv;
-                                observer.Item1.Text = $"{v.SLPM * 1000:F1} sccm";
-                                observer.Item2.Text = $"{v.Millibars:F1} mBar";
-                                observer.Item3.Text = $"{v.Celsius:F1} °C";
+                                flow.Text = $"{v.SLPM * 1000:F1} sccm";
+                                pressure.Text = $"{v.Millibars:F1} mBar";
+                                temperature.Text = $"{v.Celsius:F1} °C";
                                 break;
                             }
                         case OdorDisplay.Device.Sensor.OdorantValveSensor:
-                            observer.Item4.IsChecked = ((Sensor.Valve)sv).Opened;
+                            valve.IsChecked = ((Sensor.Valve)sv).Opened;
                             break;
                     }
                 }

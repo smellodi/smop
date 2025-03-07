@@ -17,14 +17,14 @@ public enum SavingResult
 
 public abstract class RecordBase
 {
+    public static string Delim => "\t";
+
     public long Timestamp { get; }
 
     public RecordBase() : base()
     {
         Timestamp = Utils.Timestamp.Ms;
     }
-
-    protected static string Delim => "\t";
 }
 
 public interface ILog

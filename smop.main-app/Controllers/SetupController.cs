@@ -63,6 +63,13 @@ public class SetupController
     public void SaveSetup()
     {
         _odorChannels.Save();
+
+        Dictionary<OdorDisplay.Device.ID, string> channelNames = new();
+        foreach (var ch in _odorChannels)
+        {
+            channelNames.Add(ch.ID, ch.Name);
+        }
+        _odorDisplayLogger.SetChannelNames(channelNames);
     }
 
     public void ShutDown()
@@ -750,7 +757,7 @@ public class SetupController
     {
         await COMHelper.Do(() =>
         {
-            _odorDisplayLogger.Add(data);
+            //_odorDisplayLogger.Add(data);
 
             foreach (var measurement in data.Measurements)
             {

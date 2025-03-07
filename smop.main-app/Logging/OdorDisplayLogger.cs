@@ -29,27 +29,6 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
             _fields = values.ToArray();
         }
 
-        public static string MakeHeader(Data data)
-        {
-            var names = new List<string>
-            {
-                "Timestamp",
-                "DeviceTimestamp"
-            };
-            foreach (Sensors m in data.Measurements)
-            {
-                foreach (var sv in m.SensorValues)
-                {
-                    foreach (string name in sv.ValueNames)
-                    {
-                        names.Add(name);
-                    }
-                }
-            }
-
-            return string.Join(Delim, names);
-        }
-
         public override string ToString()
         {
             return string.Join(Delim, _fields);
@@ -67,21 +46,53 @@ public class OdorDisplayLogger : Logger<OdorDisplayLogger.Record>, ILog
 
     public void Add(Data data)
     {
+        if (!IsEnabled)
+            return;
+
         if (_records.Count == 0)
         {
-            Header = Record.MakeHeader(data);
+            Header = MakeHeader(data);
         }
 
-        if (IsEnabled)
-        {
-            var record = new Record(data);
-            _records.Add(record);
-        }
+        var record = new Record(data);
+        _records.Add(record);
+    }
+
+    public void SetChannelNames(Dictionary<OdorDisplay.Device.ID, string> names)
+    {
+        _channelNames = names;
     }
 
     // Internal
 
     static OdorDisplayLogger? _instance = null;
 
+    Dictionary<OdorDisplay.Device.ID, string> _channelNames = [];
+
     protected OdorDisplayLogger() : base() { }
+
+    private string MakeHeader(Data data)
+    {
+        var names = new List<string>
+            {
+                "Timestamp",
+                "DeviceTimestamp"
+            };
+        foreach (Sensors m in data.Measurements)
+        {
+            var channelName = _channelNames.GetValueOrDefault(m.Device, m.Device.ToString());
+            if (string.IsNullOrEmpty(channelName))
+                channelName = m.Device.ToString();
+
+            foreach (var sv in m.SensorValues)
+            {
+                foreach (string valueName in sv.ValueNames)
+                {
+                    names.Add($"{channelName}_{valueName}");
+                }
+            }
+        }
+
+        return string.Join(RecordBase.Delim, names);
+    }
 }

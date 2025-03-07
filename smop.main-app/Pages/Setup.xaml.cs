@@ -561,6 +561,8 @@ public partial class Setup : Page, IPage<object?>
 
     private async void Start_Click(object sender, RoutedEventArgs e)
     {
+        _ctrl.SaveSetup();
+
         if (_storage.SetupType == SetupType.OdorReproduction)
         {
             if (_mlIsConnected && App.ML != null)
@@ -568,7 +570,6 @@ public partial class Setup : Page, IPage<object?>
                 btnStart.IsEnabled = false;
 
                 await _ctrl.ConfigureML();
-                _ctrl.SaveSetup();
                 UpdateUI();
 
                 var targetFlows = new List<OdorReproducerController.OdorChannelConfig>();

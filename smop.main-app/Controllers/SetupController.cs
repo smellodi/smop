@@ -9,6 +9,8 @@ using IVDefs = Smop.IonVision.Defs;
 using System.IO;
 using System.Text.Json;
 using Smop.MainApp.Dialogs;
+using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace Smop.MainApp.Controllers;
 
@@ -125,6 +127,32 @@ public class SetupController
         COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(actuators.ToArray()), "stop cleaning up");
 
         finishedAction?.Invoke();
+    }
+
+    public static CheckBox CreateChassisHeaterFlag(OdorChannel odorChannel)
+    {
+        var chk = new CheckBox()
+        {
+            Tag = odorChannel.ID,
+            ToolTip = "#" + odorChannel.ID.ToString()[4..]
+        };
+
+        var nameBinding = new Binding(nameof(OdorChannel.Name))
+        {
+            Source = odorChannel,
+            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+        };
+        BindingOperations.SetBinding(chk, CheckBox.ToolTipProperty, nameBinding);
+
+        var widthBinding = new Binding(nameof(chk.Height))
+        {
+            RelativeSource = new RelativeSource(RelativeSourceMode.Self),
+            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+            Mode = BindingMode.OneWay,
+        };
+        BindingOperations.SetBinding(chk, CheckBox.WidthProperty, widthBinding);
+
+        return chk;
     }
 
     public async Task<bool> InitializeIonVision(IonVision.Communicator ionVision)
@@ -540,6 +568,15 @@ public class SetupController
 
         COMHelper.ShowErrorIfAny(_odController.SetFlowsAndValves(actuators.ToArray()), "dilution unit: " + (isEnabled ? "activated" : "deactivated"));
     }
+
+    public void SetChassisHeaterTemperature(OdorDisplay.Device.ID device, float temperature) =>
+        COMHelper.ShowErrorIfAny(_odController.SetChassisHeater(temperature, device), $"chassis heater on {device}: {temperature} °C");
+
+    public void SetChassisHeaterTemperature(OdorDisplay.Device.ID[] devices, float temperature) =>
+        COMHelper.ShowErrorIfAny(_odController.SetChassisHeater(temperature, devices), $"chassis heater: {temperature} °C");
+
+    public void TurnOffChassisHeater(OdorDisplay.Device.ID device) =>
+        COMHelper.ShowErrorIfAny(_odController.SetChassisHeater(0, device), $"chassis heater on {device}: off");
 
     // Internal
 

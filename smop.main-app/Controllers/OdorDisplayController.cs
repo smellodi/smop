@@ -134,6 +134,15 @@ internal class OdorDisplayController
         return Send(new SetActuators(actuators.ToArray()));
     }
 
+    public Comm.Result SetChassisHeater(float value, params Device.ID[] devices)
+    {
+        return Send(new SetActuators(devices.Select(device =>
+            new Actuator(device, new ActuatorCapabilities(
+                KeyValuePair.Create(Device.Controller.ChassisTemperature, value)
+            ))).ToArray()
+        ));
+    }
+
     // Internal
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));

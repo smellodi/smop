@@ -154,21 +154,7 @@ namespace Smop.MainApp.Properties {
                 this["Comm_IonVision_SetupFilename"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection Comm_IonVision_IgnoreVersionWarning
-        {
-            get
-            {
-                return ((global::System.Collections.Specialized.StringCollection)(this["Comm_IonVision_IgnoreVersionWarning"]));
-            }
-            set
-            {
-                this["Comm_IonVision_IgnoreVersionWarning"] = value;
-            }
-        }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -190,6 +176,17 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["Pulses_Randomize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection Comm_IonVision_IgnoreVersionWarning {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["Comm_IonVision_IgnoreVersionWarning"]));
+            }
+            set {
+                this["Comm_IonVision_IgnoreVersionWarning"] = value;
             }
         }
         
@@ -538,6 +535,18 @@ namespace Smop.MainApp.Properties {
             }
             set {
                 this["Setup_HumidityAutoAdjustment"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public float Setup_ChassisHeaterTemperature {
+            get {
+                return ((float)(this["Setup_ChassisHeaterTemperature"]));
+            }
+            set {
+                this["Setup_ChassisHeaterTemperature"] = value;
             }
         }
     }

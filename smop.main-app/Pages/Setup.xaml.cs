@@ -55,11 +55,6 @@ public partial class Setup : Page, IPage<object?>
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         odorReproductionSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
 
-        Settings.HumidityChanged += (s, e) =>
-        {
-            _ctrl.SetHumidityLevel(e);
-            HumidityController.Instance.TargetHumidity = e;
-        };
         Settings.HumidityAutoAdjustmentChanged += (s, e) =>
         {
             HumidityController.Instance.IsEnabled = e;
@@ -99,6 +94,8 @@ public partial class Setup : Page, IPage<object?>
 
             App.ML?.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
         }
+
+        CreateChassisHeaterFlags();
 
         _odorDisplayCleanupFile = odorDisplayCleanupFile;
 
@@ -300,6 +297,25 @@ public partial class Setup : Page, IPage<object?>
         }
     }
 
+    private void CreateChassisHeaterFlags()
+    {
+        wrpChassisHeaterFlags.Children.Clear();
+        _ctrl.EnumOdorChannels(ch => {
+            CheckBox chk = SetupController.CreateChassisHeaterFlag(ch);
+            chk.Checked += (s, e) =>
+            {
+                if (!Validation.GetHasError(chk) && float.TryParse(txbChassisHeaterTemperature.Text, out float temperature))
+                {
+                    _ctrl.SetChassisHeaterTemperature((OdorDisplay.Device.ID)chk.Tag, temperature);
+                }
+            };
+
+            chk.Unchecked += (s, e) => _ctrl.TurnOffChassisHeater((OdorDisplay.Device.ID)chk.Tag);
+
+            wrpChassisHeaterFlags.Children.Add(chk);
+        });
+    }
+
     // Event handlers
 
     private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
@@ -459,8 +475,8 @@ public partial class Setup : Page, IPage<object?>
             App.ML.LaunchMlExe(settings.Reproduction_ML_CmdParams);
         }
 
-        if (!_ctrl.SetHumidityLevel(Settings.Humidity))
-            return;
+        //if (!_ctrl.SetHumidityLevel(Settings.Humidity))
+        //    return;
 
         await _ctrl.MeasureSample();
 
@@ -621,8 +637,8 @@ public partial class Setup : Page, IPage<object?>
 
         UpdateUI();
 
-        if (!_ctrl.SetHumidityLevel(Settings.Humidity))
-            return;
+        //if (!_ctrl.SetHumidityLevel(Settings.Humidity))
+        //    return;
 
         var chemicalLevels = await _ctrl.CheckChemicalLevels();
         var lines = chemicalLevels?.Select(gasFlow => $"{gasFlow.OdorName}: {gasFlow.Level:F1} %") ?? new string[] { "Failed to measure gas levels" };
@@ -694,24 +710,41 @@ public partial class Setup : Page, IPage<object?>
         _ctrl.SetDilutionUnitActivity(false);
     }
 
+    private void DilutionRatio_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            UseDilutionUnit_Checked(this, e);
+        }
+    }
+
+    private void ChassisHeaterTemperature_KeyUp(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            if (!Validation.GetHasError(txbChassisHeaterTemperature) && float.TryParse(txbChassisHeaterTemperature.Text, out float temperature))
+            {
+                var channelIDs = wrpChassisHeaterFlags.Children
+                    .OfType<CheckBox>()
+                    .Where(chk => chk.IsChecked == true)
+                    .Select(chk => (OdorDisplay.Device.ID)chk.Tag)
+                    .ToArray();
+                if (channelIDs.Length > 0)
+                {
+                    _ctrl.SetChassisHeaterTemperature(channelIDs, temperature);
+                }
+            }
+        }
+    }
+
     private void Humidity_KeyUp(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
         {
             if (!Validation.GetHasError(txbHumidity) && float.TryParse(txbHumidity.Text, out float value))
             {
-                Settings.Humidity = value;
-            }
-        }
-    }
-
-    private void DilutionRatio_KeyUp(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Enter)
-        {
-            if (!Validation.GetHasError(txbDilutionRatio) && float.TryParse(txbDilutionRatio.Text, out float dilutionRatio))
-            {
-                _ctrl.SetDilutionUnitActivity(true, dilutionRatio);
+                _ctrl.SetHumidityLevel(value);
+                HumidityController.Instance.TargetHumidity = value;
             }
         }
     }

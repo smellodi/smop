@@ -50,6 +50,19 @@ public class SetupSettings
         }
     }
 
+    public float ChassisHeaterTemperature
+    {
+        get => Properties.Settings.Default.Setup_ChassisHeaterTemperature;
+        set
+        {
+            if (Properties.Settings.Default.Setup_ChassisHeaterTemperature != value)
+            {
+                Properties.Settings.Default.Setup_ChassisHeaterTemperature = value;
+                Properties.Settings.Default.Save();
+            }
+        }
+    }
+
     public event EventHandler<float>? HumidityChanged;
     public event EventHandler<bool>? HumidityAutoAdjustmentChanged;
 }

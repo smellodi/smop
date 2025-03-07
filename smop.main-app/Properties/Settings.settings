@@ -131,5 +131,8 @@
     <Setting Name="Setup_HumidityAutoAdjustment" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="Setup_ChassisHeaterTemperature" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">30</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

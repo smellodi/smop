@@ -569,6 +569,7 @@ public class SetupController
             new(OdorDisplay.Device.ID.DilutionAir, new ODPackets.ActuatorCapabilities(
                 KeyValuePair.Create(OdorDisplay.Device.Controller.OdorantFlow, isEnabled ? odoredAirFlow : 0f),
                 KeyValuePair.Create(OdorDisplay.Device.Controller.DilutionAirFlow, isEnabled ? clearAirFlow : 0f),
+                isEnabled ? ODPackets.ActuatorCapabilities.OdorantValveOpenPermanently : ODPackets.ActuatorCapabilities.OdorantValveClose,
                 isEnabled ? ODPackets.ActuatorCapabilities.OutputValveOpenPermanently : ODPackets.ActuatorCapabilities.OutputValveClose
             ))
         };

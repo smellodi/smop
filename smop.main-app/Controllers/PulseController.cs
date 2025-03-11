@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Smop.MainApp.Controllers;
 
 [Flags]
-internal enum Stage
+internal enum PulseStage
 {
     None = 0x00,
     InitialPause = 0x01,
@@ -22,11 +22,11 @@ internal enum Stage
 
 internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVision) : IDisposable
 {
-    public class StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, Stage stage, int sessionID, int pulseID) : EventArgs
+    public class StageChangedEventArgs(PulseIntervals? intervals, PulseProps? pulse, PulseStage stage, int sessionID, int pulseID) : EventArgs
     {
         public PulseIntervals? Intervals { get; } = intervals;
         public PulseProps? Pulse { get; } = pulse;
-        public Stage Stage { get; } = stage;
+        public PulseStage Stage { get; } = stage;
         public int SessionID { get; } = sessionID;
         public int PulseID { get; } = pulseID;
     }
@@ -121,8 +121,8 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
     int _sessionIndex = -1;
     int _pulseIndex = -1;
 
-    Stage _currentStage = Stage.None;
-    Stage _extraStages = Stage.None;
+    PulseStage _currentStage = PulseStage.None;
+    PulseStage _extraStages = PulseStage.None;
 
     DispatchOnce? _delayedAction = null;
     DispatchOnce? _delayedActionDms = null;
@@ -146,14 +146,14 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
                 _odorDisplay.SetHumidity(session.Humidity);
             }
 
-            _extraStages |= Stage.NewSession;
+            _extraStages |= PulseStage.NewSession;
 
             _pulseIndex = -1;
             _delayedAction = DispatchOnce.Do(0.1, RunNextPulse);
         }
         else
         {
-            StageChanged?.Invoke(this, new StageChangedEventArgs(null, null, Stage.Finished, 0, 0));
+            StageChanged?.Invoke(this, new StageChangedEventArgs(null, null, PulseStage.Finished, 0, 0));
         }
     }
 
@@ -170,13 +170,13 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
             _odorDisplay.SetFlows(pulse.Channels);
 
-            _extraStages |= Stage.NewPulse;
+            _extraStages |= PulseStage.NewPulse;
 
             _delayedAction = DispatchOnce.Do(session.Intervals.InitialPause, StartPulse);
 
             if (session.Intervals.InitialPause > 0)
             {
-                PublishStage(Stage.InitialPause);
+                PublishStage(PulseStage.InitialPause);
             }
         }
         else
@@ -220,7 +220,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
         if (!session.Intervals.HasDms || session.Intervals.DmsDelay > 0 || _ionVision == null)  /// otherwise <see cref="PublishStage"/> will be called by <see cref="StartDMS"/>
         {
-            PublishStage(Stage.Pulse);
+            PublishStage(PulseStage.Pulse);
         }
 
         _delayedAction = DispatchOnce.Do(session.Intervals.Pulse, FinishPulse);
@@ -246,7 +246,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
         _delayedActionDmsScanProgress = DispatchOnce.Do(DMS_PROGRESS_CHECK_INTERVAL, CheckDmsScanProgress);
 
-        PublishStage(Stage.Pulse | Stage.DMS);
+        PublishStage(PulseStage.Pulse | PulseStage.DMS);
     }
 
     private async void FinishPulse()
@@ -270,7 +270,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
         if (session.Intervals.FinalPause > 0)
         {
-            PublishStage(Stage.FinalPause);
+            PublishStage(PulseStage.FinalPause);
         }
 
         if (_ionVision != null && session.Intervals.HasDms)
@@ -283,7 +283,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         }
     }
 
-    private void PublishStage(Stage stage)
+    private void PublishStage(PulseStage stage)
     {
         var session = _setup.Sessions[_sessionIndex];
         var pulse = session.Pulses[_pulseIndex];
@@ -291,14 +291,14 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         _currentStage = stage | _extraStages;
 
         StageChanged?.Invoke(this, new StageChangedEventArgs(session.Intervals, pulse, _currentStage, _sessionIndex + 1, _pulseIndex + 1));
-        _extraStages = Stage.None;
+        _extraStages = PulseStage.None;
     }
 
     private async void CheckDmsScanProgress()
     {
         _delayedActionDmsScanProgress = null;
 
-        if (_ionVision == null || !_currentStage.HasFlag(Stage.Pulse))
+        if (_ionVision == null || !_currentStage.HasFlag(PulseStage.Pulse))
         {
             return;
         }

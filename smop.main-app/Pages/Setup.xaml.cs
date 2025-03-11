@@ -66,33 +66,42 @@ public partial class Setup : Page, IPage<object?>
         ((App)Application.Current).AddCleanupAction(() => { App.ML?.Dispose(); });
     }
 
-    public void Init(SetupType type, string? odorDisplayCleanupFile)
+    public void Init(TaskType task, string? odorDisplayCleanupFile)
     {
-        if (type == SetupType.PulseGenerator)
-        {
-            _ctrl.AcquireOdorChannelsInfo();
-            pulseGeneratorSettings.Init();
+        _ctrl.AcquireOdorChannelsInfo();
 
+        HumidityController.Instance.Init();
+
+        if (task == TaskType.PulseGenerator)
+        {
             if (!_isInitilized)
             {
                 _ctrl.EnumOdorChannels(pulseGeneratorSettings.AddOdorChannel);
             }
         }
-        else if (type == SetupType.OdorReproduction)
+        else if (task == TaskType.OdorReproduction)
         {
-            odorReproductionSettings.Init();
-
             if (App.ML == null)
             {
                 App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
                 App.ML.StatusChanged += ML_StatusChanged;
                 App.ML.Error += ML_Error;
 
-                _ctrl.AcquireOdorChannelsInfo();
                 _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
             }
 
             App.ML?.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
+        }
+        else if (task == TaskType.HumanTests)
+        {
+            if (!_isInitilized)
+            {
+                _ctrl.EnumOdorChannels(humanTestSettings.AddOdorChannel);
+            }
+        }
+        else
+        {
+            throw new Exception($"Task type '{task}' is not yet supported");
         }
 
         CreateChassisHeaterFlags();
@@ -101,8 +110,9 @@ public partial class Setup : Page, IPage<object?>
 
         //cnvDmsScan.Children.Clear();
 
-        pulseGeneratorSettings.Visibility = type == SetupType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
-        odorReproductionSettings.Visibility = type == SetupType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
+        pulseGeneratorSettings.Visibility = task == TaskType.PulseGenerator ? Visibility.Visible : Visibility.Collapsed;
+        odorReproductionSettings.Visibility = task == TaskType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
+        humanTestSettings.Visibility = task == TaskType.HumanTests ? Visibility.Visible : Visibility.Collapsed;
 
         //btnCheckChemicalLevels.Visibility = Storage.Instance.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? Visibility.Collapsed : Visibility.Visible;
 
@@ -192,15 +202,15 @@ public partial class Setup : Page, IPage<object?>
         btnCheckChemicalLevels.IsEnabled = isODReady &&
             !_isCheckngChemicalLevels &&
             !isMeasuringSomething;
+        stpTargetOdorActions.Visibility = _storage.TaskType == TaskType.OdorReproduction ? Visibility.Visible : Visibility.Collapsed;
 
-        if (_storage.SetupType == SetupType.PulseGenerator)
+        if (_storage.TaskType == TaskType.PulseGenerator)
         {
             btnStart.IsEnabled = (App.IonVision == null || _ionVisionIsReady) &&
                 isODReady &&
                 pulseGeneratorSettings.Setup != null;
-            stpTargetOdorActions.Visibility = Visibility.Collapsed;
         }
-        else if (_storage.SetupType == SetupType.OdorReproduction)
+        else if (_storage.TaskType == TaskType.OdorReproduction)
         {
             bool isDmsReady = _ctrl.DmsScan != null && _ctrl.ParamDefinition != null;
             bool isSntReady = _ctrl.SntSample != null || isDmsReady;
@@ -222,6 +232,14 @@ public partial class Setup : Page, IPage<object?>
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
             odorReproductionSettings.IsMLConnected = _mlIsConnected;
             odorReproductionSettings.IsEnabled = !isMeasuringSomething;
+        }
+        else if (_storage.TaskType == TaskType.HumanTests)
+        {
+            btnStart.IsEnabled = true;
+        }
+        else
+        {
+            throw new Exception($"Task type '{_storage.TaskType}' is not yet supported");
         }
 
         _dmsPlotTypes[(int)Plot.ComparisonOperation.None].IsEnabled = _dmsScans.Count > 0;
@@ -563,7 +581,7 @@ public partial class Setup : Page, IPage<object?>
     {
         _ctrl.SaveSetup();
 
-        if (_storage.SetupType == SetupType.OdorReproduction)
+        if (_storage.TaskType == TaskType.OdorReproduction)
         {
             if (_mlIsConnected && App.ML != null)
             {
@@ -604,7 +622,7 @@ public partial class Setup : Page, IPage<object?>
                 Next?.Invoke(this, new OdorReproducerController.Config(App.ML, targetFlows.ToArray(), targetMeasurement, dataSize));
             }
         }
-        else if (_storage.SetupType == SetupType.PulseGenerator)
+        else if (_storage.TaskType == TaskType.PulseGenerator)
         {
             var pulseGenSetup = pulseGeneratorSettings.Setup;
 
@@ -612,6 +630,14 @@ public partial class Setup : Page, IPage<object?>
             {
                 Next?.Invoke(this, pulseGenSetup);
             }
+        }
+        else if (_storage.TaskType == TaskType.HumanTests)
+        {
+            Next?.Invoke(this, humanTestSettings.Settings);
+        }
+        else
+        {
+            throw new Exception($"Task type '{_storage.TaskType}' is not yet supported");
         }
     }
 

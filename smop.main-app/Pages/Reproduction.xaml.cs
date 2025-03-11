@@ -23,6 +23,8 @@ public partial class Reproduction : Page, IPage<Navigation>
     {
         InitializeComponent();
 
+        Name = "OdorReproduction";
+
         _inactiveElementStyle = FindResource("Element") as Style;
         _activeElementStyle = FindResource("ActiveElement") as Style;
         _recipeValueStyle = FindResource("RecipeValue") as Style;

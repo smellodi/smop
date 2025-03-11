@@ -1,0 +1,45 @@
+﻿<UserControl x:Class="Smop.MainApp.Controls.HumanTestsSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:utils="clr-namespace:Smop.MainApp.Utils"
+             mc:Ignorable="d" 
+             d:DesignHeight="300"
+             d:DesignWidth="300">
+    
+    <UserControl.Resources>
+        <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="Width" Value="98"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </UserControl.Resources>
+
+    <StackPanel>
+        <Label Style="{StaticResource Section}"
+               Content="Human Test settings:"/>
+
+        <Grid>
+            <Label Content="Number of blocks"/>
+            <TextBox x:Name="txbRepetitions"
+                     Style="{StaticResource Value}"
+                     HorizontalAlignment="Right">
+                <TextBox.Text>
+                    <Binding Path="Repetitions"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="50" IsInteger="True"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </Grid>
+
+        <CheckBox Content="Randomize trials"
+                  IsChecked="{Binding IsRandomized}"/>
+
+        <CheckBox Content="Practice the procedure"
+                  IsChecked="{Binding IsPracticingProcedure}"/>
+    </StackPanel>
+</UserControl>

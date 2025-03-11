@@ -26,11 +26,6 @@ public partial class PulseGeneratorSettings : UserControl
         DataContext = this;
     }
 
-    public void Init()
-    {
-        HumidityController.Instance.Init();
-    }
-
     public void AddOdorChannel(OdorChannel odorChannel)
     {
         var lblID = new Label()

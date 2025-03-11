@@ -6,7 +6,7 @@
       xmlns:utils="clr-namespace:Smop.MainApp.Utils"
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
       mc:Ignorable="d" 
-      d:DesignHeight="840" d:DesignWidth="1100"
+      d:DesignHeight="950" d:DesignWidth="1100"
       Title="Setup"
       Focusable="True"
       KeyDown="Page_KeyDown"
@@ -82,6 +82,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
 
@@ -89,7 +90,9 @@
 
                     <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
 
-                    <StackPanel Grid.Row="2">
+                    <local:HumanTestsSettings x:Name="humanTestSettings" Grid.Row="2"/>
+
+                    <StackPanel Grid.Row="3">
                         <Separator Margin="0,8,0,0"/>
                         <Label Style="{StaticResource Section}"
                                Content="Air settings:"/>
@@ -102,11 +105,12 @@
                             <WrapPanel HorizontalAlignment="Right">
                                 <Label Padding="0,5"
                                        Content="1:"
+                                       VerticalContentAlignment="Center"
                                        IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"/>
                                 <TextBox x:Name="txbDilutionRatio"
                                          Style="{StaticResource Value}"
                                          IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"
-                                         Width="86"
+                                         Width="98"
                                          KeyUp="DilutionRatio_KeyUp">
                                     <TextBox.Text>
                                         <Binding Path="Settings.DilutionRatio"

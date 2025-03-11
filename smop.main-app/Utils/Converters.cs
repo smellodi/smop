@@ -31,13 +31,17 @@ public class BoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return (bool)value ? Visibility.Visible : Visibility.Hidden;
+        bool isInversed = (bool?)parameter == true;
+        return (bool)value ?
+            (isInversed ? Visibility.Hidden : Visibility.Visible) :
+            (isInversed ? Visibility.Visible : Visibility.Hidden);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        bool isInversed = (bool?)parameter == true;
         var visibility = (Visibility)value;
-        return visibility == Visibility.Visible;
+        return isInversed ? visibility == Visibility.Hidden : visibility == Visibility.Visible;
     }
 }
 

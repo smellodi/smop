@@ -3,6 +3,7 @@ using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Pages;
 using Smop.OdorDisplay.Packets;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +23,8 @@ public partial class MainWindow : Window
         _setupPage.Next += SetupPage_Next;
         _pulsePage.Next += Page_Next;
         _reproductionPage.Next += Page_Next;
+        _humanTestsComparisonPage.Next += Page_Next;
+        _humanTestsRatingPage.Next += Page_Next;
         _finishedPage.Next += Page_Next;
         _finishedPage.RequestSaving += FinishedPage_RequestSaving;
 
@@ -49,6 +52,8 @@ public partial class MainWindow : Window
     readonly Setup _setupPage = new();
     readonly Pulse _pulsePage = new();
     readonly Reproduction _reproductionPage = new();
+    readonly HumanTestComparison _humanTestsComparisonPage = new();
+    readonly HumanTestRating _humanTestsRatingPage = new();
     readonly Finished _finishedPage = new();
 
     readonly Storage _storage = Storage.Instance;
@@ -112,17 +117,30 @@ public partial class MainWindow : Window
     {
         if (param is Controllers.PulseSetup pulseSetup)
         {
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.PulseGenerator));
+            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _pulsePage.Name));
 
             Content = _pulsePage;
             _pulsePage.Start(pulseSetup);
         }
         else if (param is Controllers.OdorReproducerController.Config config)
         {
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.OdorReproduction));
+            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _reproductionPage.Name));
 
             Content = _reproductionPage;
             _reproductionPage.Start(config);
+        }
+        else if (param is Controllers.HumanTests.Settings humanTestSettings)
+        {
+            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsComparisonPage.Name));
+
+            Content = _humanTestsComparisonPage;
+            _humanTestsComparisonPage.Start(humanTestSettings);
+            //Content = _humanTestsRatingPage;
+            //_humanTestsRatingPage.Start(humanTestSettings);
+        }
+        else
+        {
+            throw new Exception($"Task type '{_storage.TaskType}' is not yet supported");
         }
     }
 
@@ -145,8 +163,7 @@ public partial class MainWindow : Window
 
             DispatchOnce.Do(0.1, () => Dispatcher.Invoke(SaveData, true));  // let the page to change, then try to save data
         }
-        else if (next == Navigation.PulseGeneratorSetup ||
-                 next == Navigation.OdorReproductionSetup)
+        else if (next == Navigation.Setup)
         {
             OdorDisplayLogger.Instance.Clear();
             EventLogger.Instance.Clear();
@@ -155,9 +172,16 @@ public partial class MainWindow : Window
             _storage.SetupPage = next;
 
             var odorDisplayCleanupFile = sender is Connect connectPage ? connectPage.OdorDisplayCleanupFile : null;
-            _setupPage.Init(_storage.SetupType, odorDisplayCleanupFile);
+            _setupPage.Init(_storage.TaskType, odorDisplayCleanupFile);
 
             Content = _setupPage;
+        }
+        else if (next == Navigation.Test && sender == _humanTestsComparisonPage)
+        {
+            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsRatingPage.Name));
+
+            Content = _humanTestsRatingPage;
+            _humanTestsRatingPage.Start(_humanTestsComparisonPage.Settings!);
         }
         else
         {

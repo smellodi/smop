@@ -106,10 +106,10 @@ public class SetupController
             using var controller = new PulseController(setup, null);
             controller.StageChanged += (s, e) =>
             {
-                HasInitializationFinished = e.Stage.HasFlag(Stage.Finished);
-                if (e.Stage.HasFlag(Stage.NewSession))
+                HasInitializationFinished = e.Stage.HasFlag(PulseStage.Finished);
+                if (e.Stage.HasFlag(PulseStage.NewSession))
                     LogOD?.Invoke(this, new LogHandlerArgs($"Cleaning up: Session {e.SessionID}"));
-                else if (e.Stage.HasFlag(Stage.Pulse))
+                else if (e.Stage.HasFlag(PulseStage.Pulse))
                     LogOD?.Invoke(this, new LogHandlerArgs($"Cleaning up: Pulse {e.PulseID}"));
             };
 

@@ -549,5 +549,29 @@ namespace Smop.MainApp.Properties {
                 this["Setup_ChassisHeaterTemperature"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HumanTest_Randomize {
+            get {
+                return ((bool)(this["HumanTest_Randomize"]));
+            }
+            set {
+                this["HumanTest_Randomize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public int HumanTest_Repetitions {
+            get {
+                return ((int)(this["HumanTest_Repetitions"]));
+            }
+            set {
+                this["HumanTest_Repetitions"] = value;
+            }
+        }
     }
 }

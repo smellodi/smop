@@ -143,6 +143,14 @@ internal class OdorDisplayController
         ));
     }
 
+    public Comm.Result SetExternalValveState(bool isOpened)
+    {
+        var actuator = new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+                isOpened ? ActuatorCapabilities.OutputValveOpenPermanently : ActuatorCapabilities.OutputValveClose
+            ));
+        return Send(new SetActuators([actuator]));
+    }
+
     // Internal
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(OdorDisplayController));

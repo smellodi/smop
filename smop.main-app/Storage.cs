@@ -20,7 +20,13 @@ public enum SimulationTarget
     All = 15
 }
 
-public enum SetupType { Undefined, PulseGenerator, OdorReproduction }
+public enum TaskType
+{ 
+    Undefined,
+    PulseGenerator,
+    OdorReproduction,
+    HumanTests
+}
 
 /// <summary>
 /// Cross-app storage, mainly used to share the app state
@@ -33,35 +39,9 @@ public class Storage : INotifyPropertyChanged
 
     // Variables
 
-    public SetupType SetupType
-    {
-        get => _setupType;
-        set
-        {
-            _setupType = value;
-            _setupPage = _setupType switch
-            {
-                SetupType.OdorReproduction => Navigation.OdorReproductionSetup,
-                SetupType.PulseGenerator => Navigation.PulseGeneratorSetup,
-                _ => throw new Exception($"Setup type {_setupType} is not supported")
-            };
-        }
-    }
+    public TaskType TaskType { get; set; } = TaskType.Undefined;
 
-    public Navigation SetupPage
-    {
-        get => _setupPage;
-        set
-        {
-            _setupPage = value;
-            _setupType = _setupPage switch
-            {
-                Navigation.OdorReproductionSetup => SetupType.OdorReproduction,
-                Navigation.PulseGeneratorSetup => SetupType.PulseGenerator,
-                _ => throw new Exception($"Setup type {_setupPage} is not supported")
-            };
-        }
-    }
+    public Navigation SetupPage { get; set; } = Navigation.Exit;
 
     public SimulationTarget Simulating { get; private set; } = SimulationTarget.Nothing;
 
@@ -172,8 +152,6 @@ public class Storage : INotifyPropertyChanged
     const double ZOOM_MAX = 3.0;
     const double ZOOM_STEP = 0.1;
 
-    SetupType _setupType = SetupType.Undefined;
-    Navigation _setupPage = Navigation.Exit;
     double _zoomLevel;
 
     private Storage()

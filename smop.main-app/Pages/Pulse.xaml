@@ -238,9 +238,10 @@
                     </Grid>
 
                     <StackPanel x:Name="stpDMS"
-                        Visibility="Hidden">
-                        <Label x:Name="lblDmsProgress" Style="{StaticResource Stage}"
-                            HorizontalContentAlignment="Center"/>
+                                Visibility="Hidden">
+                        <Label x:Name="lblDmsProgress"
+                               Style="{StaticResource Stage}"
+                               HorizontalContentAlignment="Center"/>
                     </StackPanel>
 
                     <local:WaitingInstruction x:Name="wtiWaiting"

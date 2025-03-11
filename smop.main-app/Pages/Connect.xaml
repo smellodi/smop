@@ -195,6 +195,12 @@
                         IsEnabled="{Binding HasOutputConnection, Mode=OneWay}"
                         Content="Generate pulses"
                         Click="GeneratePulses_Click"/>
+                <Button x:Name="btnHumanTests"
+                        Margin="0,4"
+                        Width="Auto"
+                        IsEnabled="{Binding HasOutputConnection, Mode=OneWay}"
+                        Content="Human tests"
+                        Click="HumanTests_Click"/>
                 <Button x:Name="btnReproduceOdor"
                         Margin="0,4"
                         Width="Auto"

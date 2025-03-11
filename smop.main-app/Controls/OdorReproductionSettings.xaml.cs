@@ -141,11 +141,6 @@ public partial class OdorReproductionSettings : UserControl
         txbCmdParams.IsEnabled = ML.Communicator.CanLaunchML;
     }
 
-    public void Init()
-    {
-        HumidityController.Instance.Init();
-    }
-
     public void SetMeasurementSource(MeasurementSouce sources)
     {
         uscSntSampleCount.Visibility = sources.HasFlag(MeasurementSouce.SNT) ? Visibility.Visible : Visibility.Collapsed;

@@ -93,6 +93,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\HumanTestsSettings.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Dialogs\IonVisionSetupEditor.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -134,5 +134,11 @@
     <Setting Name="Setup_ChassisHeaterTemperature" Type="System.Single" Scope="User">
       <Value Profile="(Default)">30</Value>
     </Setting>
+    <Setting Name="HumanTest_Randomize" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="HumanTest_Repetitions" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

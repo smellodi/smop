@@ -536,13 +536,22 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
     private void GeneratePulses_Click(object? sender, RoutedEventArgs e)
     {
+        _storage.TaskType = TaskType.PulseGenerator;
         SaveSettings();
-        Next?.Invoke(this, Navigation.PulseGeneratorSetup);
+        Next?.Invoke(this, Navigation.Setup);
+    }
+
+    private void HumanTests_Click(object sender, RoutedEventArgs e)
+    {
+        _storage.TaskType = TaskType.HumanTests;
+        SaveSettings();
+        Next?.Invoke(this, Navigation.Setup);
     }
 
     private void ReproduceOdor_Click(object? sender, RoutedEventArgs e)
     {
+        _storage.TaskType = TaskType.OdorReproduction;
         SaveSettings();
-        Next?.Invoke(this, Navigation.OdorReproductionSetup);
+        Next?.Invoke(this, Navigation.Setup);
     }
 }

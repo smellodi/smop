@@ -28,6 +28,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         InitializeComponent();
 
         DataContext = this;
+        Name = "Pulses";
 
         ((App)Application.Current).AddCleanupAction(CleanUp);
     }
@@ -69,7 +70,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
     PulseController? _controller = null;
 
-    Stage _stage = Stage.None;
+    PulseStage _stage = PulseStage.None;
 
     DispatchOnce? _delayedAction = null;
 
@@ -156,7 +157,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         }
     }
 
-    private void SetStage(PulseIntervals? intervals, PulseProps? pulse, Stage stage)
+    private void SetStage(PulseIntervals? intervals, PulseProps? pulse, PulseStage stage)
     {
         //if (_stage == stage)
         //{
@@ -165,7 +166,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
         _stage = stage;
 
-        if (stage.HasFlag(Stage.NewSession) && intervals != null)
+        if (stage.HasFlag(PulseStage.NewSession) && intervals != null)
         {
             psdInitialPause.Duration = (int)(intervals.InitialPause * 1000);
             psdFinalPause.Duration = (int)(intervals.FinalPause * 1000);
@@ -174,7 +175,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
             runSessionCount.Text = _controller?.SessionCount.ToString() ?? "0";
         }
 
-        if (stage.HasFlag(Stage.NewPulse) && pulse != null)
+        if (stage.HasFlag(PulseStage.NewPulse) && pulse != null)
         {
             foreach (var stageDisplay in _stageDisplays)
             {
@@ -186,16 +187,16 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
             runPulseCount.Text = _controller?.PulseCount.ToString() ?? "0";
         }
 
-        IsInitialPause = stage.HasFlag(Stage.InitialPause);
+        IsInitialPause = stage.HasFlag(PulseStage.InitialPause);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInitialPause)));
 
-        IsFinalPause = stage.HasFlag(Stage.FinalPause);
+        IsFinalPause = stage.HasFlag(PulseStage.FinalPause);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFinalPause)));
 
-        stpDMS.Visibility = stage.HasFlag(Stage.DMS) ? Visibility.Visible : Visibility.Hidden;
+        stpDMS.Visibility = stage.HasFlag(PulseStage.DMS) ? Visibility.Visible : Visibility.Hidden;
         lblDmsProgress.Content = "DMS: started...";
 
-        var isPulse = stage.HasFlag(Stage.Pulse);
+        var isPulse = stage.HasFlag(PulseStage.Pulse);
         foreach (var stageDisplay in _stageDisplays)
         {
             stageDisplay.Value.IsCurrent = isPulse && (pulse?.Channels.Any(ch => ch.Id == stageDisplay.Key && ch.Active) ?? false);
@@ -206,14 +207,14 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
         //if (_postStageDisplay != null)
         psdPost.IsCurrent = isPulse;
 
-        stage = stage & ~Stage.NewPulse & ~Stage.NewSession;
+        stage = stage & ~PulseStage.NewPulse & ~PulseStage.NewSession;
         var pause = stage switch
         {
-            Stage.InitialPause => intervals?.InitialPause ?? 0,
-            Stage.Pulse => intervals?.Pulse ?? 0,
-            (Stage.Pulse | Stage.DMS) => -1,
-            Stage.FinalPause => intervals?.FinalPause ?? 0,
-            Stage.None or Stage.Finished => 0,
+            PulseStage.InitialPause => intervals?.InitialPause ?? 0,
+            PulseStage.Pulse => intervals?.Pulse ?? 0,
+            (PulseStage.Pulse | PulseStage.DMS) => -1,
+            PulseStage.FinalPause => intervals?.FinalPause ?? 0,
+            PulseStage.None or PulseStage.Finished => 0,
             _ => throw new NotImplementedException($"Stage '{_stage}' does not exist")
         };
 
@@ -228,7 +229,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
             lblWaitingTime.Content = " ";
         }
 
-        if (stage == Stage.Finished)
+        if (stage == PulseStage.Finished)
         {
             CleanUp();
             Next?.Invoke(this, Navigation.Finished);
@@ -366,7 +367,7 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
             Focus();
         }
 
-        SetStage(null, null, Stage.None);
+        SetStage(null, null, PulseStage.None);
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)

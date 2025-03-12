@@ -1,5 +1,4 @@
 ﻿using Smop.MainApp.Controllers.HumanTests;
-using Smop.MainApp.Controls;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -14,14 +13,20 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
     public bool IsInstruction => _stage == Stage.Initial;
     public bool IsQuestion => _stage == Stage.Question;
     public Brush Mixture1Color => _controller?.MixtureID == 1 ? 
-        (_stage == Stage.SniffingMixture ? ODOR_BRUSH_SNIFFING : 
-            (_stage == Stage.Question ? ODOR_BRUSH_READY : ODOR_BRUSH_INACTIVE)) :
-        ODOR_BRUSH_READY;
+        (_stage == Stage.SniffingMixture ? Controllers.HumanTests.Brushes.Active : 
+            (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Selected : Controllers.HumanTests.Brushes.Inactive)) :
+        Controllers.HumanTests.Brushes.Selected;
     public Brush Mixture2Color => _controller?.MixtureID == 2 ?
-        (_stage == Stage.SniffingMixture ? ODOR_BRUSH_SNIFFING :
-            (_stage == Stage.Question ? ODOR_BRUSH_READY : ODOR_BRUSH_INACTIVE)) :
-        (_controller?.MixtureID == 1 ? ODOR_BRUSH_INACTIVE : ODOR_BRUSH_READY);
+        (_stage == Stage.SniffingMixture ? Controllers.HumanTests.Brushes.Active :
+            (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Selected : Controllers.HumanTests.Brushes.Inactive)) :
+        (_controller?.MixtureID == 1 ? Controllers.HumanTests.Brushes.Inactive : Controllers.HumanTests.Brushes.Selected);
     public string StageInfo => $"Block {_controller?.BlockID}, Comparison {_controller?.ComparisonID}";
+    public string InstructionText => _stage switch
+    {
+        Stage.WaitingMixture => "Wait",
+        Stage.SniffingMixture => "Sniff",
+        _ => ""
+    };
 
     public Settings? Settings { get; private set; }
 
@@ -64,10 +69,6 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
 
     // Internal
 
-    readonly Brush ODOR_BRUSH_INACTIVE = Brushes.LightGray;
-    readonly Brush ODOR_BRUSH_SNIFFING = new SolidColorBrush(Color.FromRgb(0, 0xA0, 0));
-    readonly Brush ODOR_BRUSH_READY = new SolidColorBrush(Color.FromRgb(0, 0x40, 0));
-
     ComparisonController? _controller = null;
 
     Stage _stage = Stage.Initial;
@@ -84,26 +85,25 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
         _stage = stage;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
+        //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InstructionText)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstruction)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuestion)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Mixture1Color)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Mixture2Color)));
 
+        wtiWaiting.Text = InstructionText;
+
         if (stage == Stage.WaitingMixture)
         {
-            wtiWaiting.Text = "Wait";
             wtiWaiting.Start(Mixture.WaitingInterval);
         }
         else if (stage == Stage.SniffingMixture)
         {
-            wtiWaiting.Text = "Sniff";
             wtiWaiting.Start(Mixture.SniffingInterval);
         }
         else if (stage == Stage.Question)
         {
-            wtiWaiting.Text = " ";
             wtiWaiting.Reset();
-            lblWaitingTime.Content = " ";
         }
         else if (stage == Stage.Finished)
         {
@@ -156,17 +156,6 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
             CleanUp();
             Next?.Invoke(this, Navigation.Setup);
         }
-    }
-
-    private void Waiting_TimeUpdated(object sender, WaitingInstruction.TimeUpdatedEventArgs e)
-    {
-        /*
-        double remainingTime = wtiWaiting.WaitingTime - e.Duration;
-        if (remainingTime > 0)
-            lblWaitingTime.Content = (wtiWaiting.WaitingTime - e.Duration).ToTime(wtiWaiting.WaitingTime);
-        else
-            lblWaitingTime.Content = " ";
-        */
     }
 
     private void Submit_Click(object sender, RoutedEventArgs e)

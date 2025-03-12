@@ -1,5 +1,4 @@
-﻿using Smop.Common;
-using Smop.MainApp.Controllers.HumanTests;
+﻿using Smop.MainApp.Controllers.HumanTests;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -14,9 +13,16 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 {
     public bool IsInstruction => _stage == Stage.Initial;
     public bool CanReleaseOdor => _stage == Stage.Ready;
-    public bool CanRate => _hasSniffed;
-    public bool CanSubmit => IsInstruction || (_hasSniffed && _stage != Stage.SniffingMixture && HasRatings);
+    public bool CanRate { get; private set; } = false;
+    public bool CanSubmit => IsInstruction || (CanRate && _stage != Stage.SniffingMixture && HasRatings);
     public string StageInfo => $"Odor #{_controller?.MixtureId}";
+    public string InstructionText => _stage switch
+    {
+        Stage.WaitingMixture => "Wait",
+        Stage.Ready => CanRate ? "Select the matching descriptions" : "Ready to release the odor",
+        Stage.SniffingMixture => "Sniff",
+        _ => ""
+    };
     public string SubmitButtonText => _stage == Stage.Initial ? "Continue" : "Submit";
 
     public event EventHandler<Navigation>? Next;
@@ -25,6 +31,8 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     public HumanTestRating()
     {
         InitializeComponent();
+
+        CreateRatingControls(RatingWords.English);
 
         DataContext = this;
         Name = "HumanTestsRating";
@@ -56,18 +64,45 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 
     // Internal
 
+    const int RatingButtonsPerRow = 4;
+
     RatingController? _controller = null;
 
     Stage _stage = Stage.Initial;
-    bool _hasSniffed = false;
 
-    DispatchOnce? _delayedAction = null;
+    private void CreateRatingControls(string[] words)
+    {
+        int row = 0;
+        int col = 0;
+
+        var style = (Style)FindResource("Rating");
+
+        foreach (var word in words)
+        {
+            var control = new ToggleButton()
+            {
+                Style = style,
+                Content = word,
+            };
+            control.Click += RatingButton_Click;
+
+            if (col == RatingButtonsPerRow)
+            {
+                row += 1;
+                col = Math.Max(0, RatingButtonsPerRow - (words.Length - row * RatingButtonsPerRow)) / 2;
+            }
+
+            Grid.SetRow(control, row);
+            Grid.SetColumn(control, col);
+
+            col += 1;
+
+            grdRatingButtons.Children.Add(control);
+        }
+    }
 
     private void CleanUp()
     {
-        _delayedAction?.Close();
-        _delayedAction = null;
-
         _controller?.Stop();
         _controller?.Dispose();
         _controller = null;
@@ -77,33 +112,32 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     {
         _stage = stage;
 
+        wtiWaiting.Text = InstructionText;
+
         if (_stage == Stage.WaitingMixture)
         {
-            wtiWaiting.Text = "Wait";
             wtiWaiting.Start(Mixture.WaitingInterval);
 
             ClearRatingButtons();
             EnableRatingButtons(false);
 
-            _hasSniffed = false;
+            CanRate = false;
         }
         else if (stage == Stage.Ready)
         {
-            wtiWaiting.Text = "Ready to release the odor";
             wtiWaiting.Reset();
         }
 
         else if (stage == Stage.SniffingMixture)
         {
-            wtiWaiting.Text = "Sniff the oder, then select matched descriptions";
             wtiWaiting.Start(Mixture.SniffingInterval);
 
-            if (!_hasSniffed)
+            if (!CanRate)
             {
                 EnableRatingButtons(true);
             }
 
-            _hasSniffed = true;
+            CanRate = true;
         }
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstruction)));
@@ -111,6 +145,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRate)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanSubmit)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
+        //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InstructionText)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SubmitButtonText)));
     }
 
@@ -130,18 +165,16 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
         }
     }
 
-    private string[] GetRatings() =>
-        grdRatingButtons.Children
+    private string[] GetRatings() => grdRatingButtons.Children
             .OfType<ToggleButton>()
             .Where(tbn => tbn.IsChecked == true)
             .Select(tbn => (string)tbn.Content)
             .ToArray();
 
-    private bool HasRatings =>
-        grdRatingButtons.Children
+    private bool HasRatings => grdRatingButtons.Children
             .OfType<ToggleButton>()
             .Where(tbn => tbn.IsChecked == true)
-            .Count() > 0;
+            .Any();
 
     // UI events
 

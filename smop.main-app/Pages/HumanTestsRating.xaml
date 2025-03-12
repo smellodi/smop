@@ -6,6 +6,7 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:utils="clr-namespace:Smop.MainApp.Utils"
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
+      xmlns:ht="clr-namespace:Smop.MainApp.Controllers.HumanTests"
       mc:Ignorable="d" 
       d:DesignHeight="746" d:DesignWidth="800"
       Title="Pulse"
@@ -29,6 +30,27 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="{StaticResource BrushFontDark}"/>
             <Setter Property="Padding" Value="0,8,0,4"/>
+        </Style>
+        <Style x:Key="Rating" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Background" Value="{x:Static ht:Brushes.Active}"/>
+            <Setter Property="Foreground" Value="{x:Static ht:Brushes.Foreground}"/>
+            <Setter Property="BorderBrush" Value="{x:Static ht:Brushes.Selected}"/>
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="{x:Static ht:Brushes.Selected}"/>
+                </Trigger>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsMouseOver" Value="True"/>
+                        <Condition Property="IsChecked" Value="False"/>
+                    </MultiTrigger.Conditions>
+                    <Setter Property="Background" Value="{x:Static ht:Brushes.Focused}"/>
+                </MultiTrigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="{x:Static ht:Brushes.Selected}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Page.Resources>
 
@@ -61,31 +83,17 @@
                                           Margin="24,12"
                                           Height="60"
                                           Width="200"
-                                          VerticalContentAlignment="Bottom"
-                                          Text="Wait"/>
+                                          VerticalContentAlignment="Bottom"/>
 
                 <Button IsEnabled="{Binding CanReleaseOdor}"
-                        Width="126"
-                        Content="Release"
+                        Width="146"
+                        Content="Release the odor"
                         Click="ReleaseOdor_Click"/>
             </StackPanel>
 
             <Grid x:Name="grdRatingButtons" Grid.Row="1"
                   Width="600"
                   Height="320">
-                <Grid.Resources>
-                    <Style x:Key="Rating" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
-                        <Setter Property="Margin" Value="8"/>
-                        <Setter Property="Background" Value="#FF00A000"/>
-                        <Setter Property="Foreground" Value="#FFFFFFFF"/>
-                        <Setter Property="BorderBrush" Value="#FF004000"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Background" Value="#FF004000"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Resources>
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -100,100 +108,7 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-
-                <ToggleButton Grid.Row="0" Grid.Column="0"
-                        Style="{StaticResource Rating}"
-                        Content="biting"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="0" Grid.Column="1"
-                        Style="{StaticResource Rating}"
-                        Content="flowery"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="0" Grid.Column="2"
-                        Style="{StaticResource Rating}"
-                        Content="deodorized"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="0" Grid.Column="3"
-                        Style="{StaticResource Rating}"
-                        Content="subtle"
-                        Click="RatingButton_Click"/>
-
-                <ToggleButton Grid.Row="1" Grid.Column="0"
-                        Style="{StaticResource Rating}"
-                        Content="foul"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="1" Grid.Column="1"
-                        Style="{StaticResource Rating}"
-                        Content="fresh"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="1" Grid.Column="2"
-                        Style="{StaticResource Rating}"
-                        Content="damp"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="1" Grid.Column="3"
-                        Style="{StaticResource Rating}"
-                        Content="individual"
-                        Click="RatingButton_Click"/>
-
-                <ToggleButton Grid.Row="2" Grid.Column="0"
-                        Style="{StaticResource Rating}"
-                        Content="clean"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="2" Grid.Column="1"
-                        Style="{StaticResource Rating}"
-                        Content="cold"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="2" Grid.Column="2"
-                        Style="{StaticResource Rating}"
-                        Content="musty"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="2" Grid.Column="3"
-                        Style="{StaticResource Rating}"
-                        Content="natural"
-                        Click="RatingButton_Click"/>
-
-                <ToggleButton Grid.Row="3" Grid.Column="0"
-                        Style="{StaticResource Rating}"
-                        Content="neutral"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="3" Grid.Column="1"
-                        Style="{StaticResource Rating}"
-                        Content="pungent"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="3" Grid.Column="2"
-                        Style="{StaticResource Rating}"
-                        Content="salty"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="3" Grid.Column="3"
-                        Style="{StaticResource Rating}"
-                        Content="sour"
-                        Click="RatingButton_Click"/>
-
-                <ToggleButton Grid.Row="4" Grid.Column="0"
-                        Style="{StaticResource Rating}"
-                        Content="sweaty"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="4" Grid.Column="1"
-                        Style="{StaticResource Rating}"
-                        Content="strong"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="4" Grid.Column="2"
-                        Style="{StaticResource Rating}"
-                        Content="smelly"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="4" Grid.Column="3"
-                        Style="{StaticResource Rating}"
-                        Content="sweet"
-                        Click="RatingButton_Click"/>
-
-                <ToggleButton Grid.Row="5" Grid.Column="1"
-                        Style="{StaticResource Rating}"
-                        Content="unpleasant"
-                        Click="RatingButton_Click"/>
-                <ToggleButton Grid.Row="5" Grid.Column="2"
-                        Style="{StaticResource Rating}"
-                        Content="warm"
-                        Click="RatingButton_Click"/>
+                <!-- to be filled in the colde -->
             </Grid>
 
         </Grid>
@@ -201,11 +116,14 @@
         <TextBlock Grid.Row="1"
                    Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}}"
                    FontSize="20"
-                   MaxWidth="600"
                    TextWrapping="Wrap"
                    TextAlignment="Center"
                    VerticalAlignment="Center">
-            Sniff an odor as many times as needed, select the words that describe the odor and then press “Submit” button
+            <Run>Sniff an odor as many times as needed,</Run>
+            <LineBreak/>
+            <Run>select the words that describe the odor</Run>
+            <LineBreak/>
+            <Run>and then press “Submit” button</Run>
         </TextBlock>
 
         <StackPanel Grid.Row="2"

@@ -85,6 +85,7 @@ internal class ComparisonController(Settings settings) : IDisposable
     //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
     readonly OdorDisplayController _odorDisplay = new();
+    readonly Session _session = new(settings);
 
     readonly EventLogger _eventLogger = EventLogger.Instance;
     readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
@@ -93,8 +94,6 @@ internal class ComparisonController(Settings settings) : IDisposable
     int _blockIndex = -1;
     int _comparisonIndex = -1;
     int _mixtureIndex = -1;
-
-    Session _session = new Session(settings);
 
     Stage _currentStage = Stage.Initial;
 

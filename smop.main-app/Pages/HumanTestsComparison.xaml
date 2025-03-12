@@ -84,9 +84,7 @@
                 <StackPanel Grid.Column="1">
                     <local:WaitingInstruction x:Name="wtiWaiting"
                                               Margin="24,12"
-                                              Height="50"
-                                              Text="Wait"
-                                              TimeUpdated="Waiting_TimeUpdated"/>
+                                              Height="50"/>
                     <Label x:Name="lblWaitingTime" 
                            HorizontalContentAlignment="Center"
                            Foreground="{StaticResource BrushFontDark}"
@@ -127,11 +125,12 @@
         <TextBlock Grid.Row="1"
                    Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}}"
                    FontSize="20"
-                   MaxWidth="600"
                    TextWrapping="Wrap"
                    TextAlignment="Center"
                    VerticalAlignment="Center">
-            Sniff several pairs of odors as instructed and answer the questions
+            <Run>Sniff several pairs of odors as instructed</Run>
+            <LineBreak/>
+            <Run>and answer the questions</Run>
         </TextBlock>
 
         <StackPanel Grid.Row="2"

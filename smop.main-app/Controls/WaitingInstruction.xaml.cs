@@ -67,7 +67,6 @@ public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, I
     public WaitingInstruction()
     {
         InitializeComponent();
-        DataContext = this;
 
         Unloaded += WaitingInstruction_Unloaded;
 

@@ -32,8 +32,6 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     {
         InitializeComponent();
 
-        CreateRatingControls(RatingWords.English);
-
         DataContext = this;
         Name = "HumanTestsRating";
 
@@ -44,13 +42,16 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     {
         try
         {
+            CreateRatingControls(RatingWords.Get(settings.Language));
+
             _controller = new RatingController(settings);
             _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Stage));
         }
-        catch
+        catch (Exception ex)
         {
-            MessageBox.Show("Failed to initialize the test. Make sure the following odors are loaded:\nCyclohexanone, Limonene, Cytronellyl acetate",
-                "Human test", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show("Failed to initialize the test. Make sure the following odors are loaded:\nCyclohexanone, Limonene, Cytronellyl acetate" +
+                $"\n\nInternal info: {ex.Message}",
+                "Human Tests", MessageBoxButton.OK, MessageBoxImage.Error);
             Next?.Invoke(this, Navigation.Setup);
         }
     }

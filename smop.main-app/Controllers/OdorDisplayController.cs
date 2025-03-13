@@ -145,7 +145,7 @@ internal class OdorDisplayController
 
     public Comm.Result SetExternalValveState(bool isOpened)
     {
-        var actuator = new Actuator(Device.ID.Odor1, new ActuatorCapabilities(
+        var actuator = new Actuator(Device.ID.Odor5, new ActuatorCapabilities(
                 isOpened ? ActuatorCapabilities.OutputValveOpenPermanently : ActuatorCapabilities.OutputValveClose
             ));
         return Send(new SetActuators([actuator]));

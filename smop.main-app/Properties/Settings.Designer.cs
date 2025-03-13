@@ -573,5 +573,17 @@ namespace Smop.MainApp.Properties {
                 this["HumanTest_Repetitions"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3")]
+        public int HumanTest_PracticingTrialCount {
+            get {
+                return ((int)(this["HumanTest_PracticingTrialCount"]));
+            }
+            set {
+                this["HumanTest_PracticingTrialCount"] = value;
+            }
+        }
     }
 }

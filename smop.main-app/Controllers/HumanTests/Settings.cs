@@ -24,7 +24,18 @@ public class Settings
         }
     }
 
+    public int PracticingTrialCount
+    {
+        get => Properties.Settings.Default.HumanTest_PracticingTrialCount;
+        set
+        {
+            Properties.Settings.Default.HumanTest_PracticingTrialCount = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
     public bool IsPracticingProcedure { get; set; } = true;
+    public Language Language { get; set; } = Language.Finnish;
 
     public Dictionary<OdorDisplay.Device.ID, string> Channels { get; } = new();
 }

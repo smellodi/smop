@@ -2,44 +2,99 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
+             xmlns:ht="clr-namespace:Smop.MainApp.Controllers.HumanTests"
              mc:Ignorable="d" 
-             d:DesignHeight="300"
-             d:DesignWidth="300">
+             d:DesignHeight="158"
+             d:DesignWidth="250">
     
     <UserControl.Resources>
+        <utils:BoolInverse x:Key="inverse"/>
+        
+        <ObjectDataProvider x:Key="languages" MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="ht:Language"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        
         <Style x:Key="Value" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
             <Setter Property="Width" Value="98"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
     </UserControl.Resources>
 
-    <StackPanel>
-        <Label Style="{StaticResource Section}"
+    <Grid Height="Auto">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="86"/>
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Grid.ColumnSpan="2"
+               Style="{StaticResource Section}"
                Content="Human Test settings:"/>
 
-        <Grid>
-            <Label Content="Number of blocks"/>
-            <TextBox x:Name="txbRepetitions"
-                     Style="{StaticResource Value}"
-                     HorizontalAlignment="Right">
+        <Label Grid.Row="1" Grid.Column="0"
+               VerticalAlignment="Center"
+               Content="Language"/>
+        <ComboBox Grid.Row="1" Grid.Column="1"
+                  Margin="-2"
+                  VerticalAlignment="Stretch"
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Source={StaticResource languages}}"
+                  SelectedItem="{Binding Path=Language, Mode=TwoWay}"/>
+
+        <CheckBox x:Name="chkPractice" Grid.Row="2" Grid.Column="0"
+                  Content="Practicing"
+                  IsChecked="{Binding IsPracticingProcedure}"/>
+        <WrapPanel Grid.Row="2" Grid.Column="1">
+            <TextBox Style="{StaticResource Value}"
+                     IsEnabled="{Binding IsChecked, ElementName=chkPractice}"
+                     Width="38">
                 <TextBox.Text>
-                    <Binding Path="Repetitions"
+                    <Binding Path="PracticingTrialCount"
                              Mode="TwoWay"
                              UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
-                            <utils:RangeRule Min="0" Max="50" IsInteger="True"/>
+                            <utils:RangeRule Min="1" Max="10" IsInteger="True"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-        </Grid>
+            <Label>times</Label>
+        </WrapPanel>
 
-        <CheckBox Content="Randomize trials"
+        <Label Grid.Row="3" Grid.Column="0"
+               IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
+               Content="Number of blocks"/>
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 VerticalAlignment="Stretch"
+                 Width="Auto"
+                 IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
+                 Style="{StaticResource Value}">
+            <TextBox.Text>
+                <Binding Path="Repetitions"
+                         Mode="TwoWay"
+                         UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                        <utils:RangeRule Min="0" Max="50" IsInteger="True"/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+
+        <CheckBox Grid.Row="4" Grid.Column="0"
+                  Content="Randomize trials"
+                  IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
                   IsChecked="{Binding IsRandomized}"/>
-
-        <CheckBox Content="Practice the procedure"
-                  IsChecked="{Binding IsPracticingProcedure}"/>
-    </StackPanel>
+    </Grid>
 </UserControl>

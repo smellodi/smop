@@ -1,11 +1,7 @@
-﻿using ScottPlot.Drawing.Colormaps;
-using Smop.MainApp.Utils.Extensions;
+﻿using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Joins;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace Smop.MainApp.Controllers.HumanTests;
@@ -18,6 +14,13 @@ internal enum Stage
     SniffingMixture,
     Question,
     Finished,
+}
+
+public enum Language
+{
+    Finnish,
+    English,
+    German,
 }
 
 internal static class Brushes
@@ -101,17 +104,18 @@ internal class Session
         if (settings.IsPracticingProcedure)
         {
             var empty = new Mixture("empty", [], settings.Channels);
-            blocks.Add(new Block(false, [
-                new Comparison(empty, empty),
-                new Comparison(empty, empty),
-                new Comparison(empty, empty),
-            ]));
+            var comparisons = new List<Comparison>();
+
+            for (int i = 0; i < settings.PracticingTrialCount; i++)
+                comparisons.Add(new Comparison(empty, empty));
+
+            blocks.Add(new Block(false, comparisons.ToArray()));
         }
         else
         {
             var allMixtures = OdorDisplayHelper.GetAllMixtures(settings.Channels);
-            var stress = allMixtures.First();
-            var theRest = allMixtures.Skip(1);
+            var stress = allMixtures.First(mix => mix.Name == "stress");
+            var theRest = allMixtures.Where(mix => mix.Name != "stress");
 
             for (int i = 0; i < settings.Repetitions; i++)
             {
@@ -128,13 +132,13 @@ internal static class OdorDisplayHelper
     public static int[] GetChannelIds(Dictionary<OdorDisplay.Device.ID, string> channels) => channels
         .Where(ch =>
             ch.Value.Contains(LIMONENE, StringComparison.CurrentCultureIgnoreCase) ||
-            ch.Value.Contains(CYCLOHEXANONE, StringComparison.CurrentCultureIgnoreCase) ||
-            ch.Value.Contains(CITRONELLYL_ACETATE, StringComparison.CurrentCultureIgnoreCase))
+            ch.Value.Contains(CYCLOHEX, StringComparison.CurrentCultureIgnoreCase) ||
+            ch.Value.Contains(CITRONEL, StringComparison.CurrentCultureIgnoreCase))
         .Select(ch => (int)ch.Key)
         .ToArray();
 
     public static Mixture[] GetAllMixtures(Dictionary<OdorDisplay.Device.ID, string> channels) => [
-        new Mixture("stress", STRESS, channels),    // keep this the first
+        new Mixture("stress", STRESS, channels),
         new Mixture("control", CONTROL, channels),
         new Mixture("far", STRESS_FAR, channels),
         new Mixture("medium", STRESS_MEDIUM, channels),
@@ -145,24 +149,69 @@ internal static class OdorDisplayHelper
     // Internal
 
     const string LIMONENE = "lim";
-    const string CYCLOHEXANONE = "hex";
-    const string CITRONELLYL_ACETATE = "citron";
+    const string CYCLOHEX = "hex";
+    const string CITRONEL = "citron";
 
-    static KeyValuePair<string, float>[] CONTROL = [new(LIMONENE, 8.3f), new(CYCLOHEXANONE, 2.0f), new(CITRONELLYL_ACETATE, 100f)];
-    static KeyValuePair<string, float>[] STRESS = [new(LIMONENE, 16.1f), new(CYCLOHEXANONE, 4.8f), new(CITRONELLYL_ACETATE, 100f)];
-    static KeyValuePair<string, float>[] STRESS_CLOSE = [new(LIMONENE, 19.0f), new(CYCLOHEXANONE, 5.3f), new(CITRONELLYL_ACETATE, 100f)];
-    static KeyValuePair<string, float>[] STRESS_MEDIUM = [new(LIMONENE, 11.1f), new(CYCLOHEXANONE, 4.6f), new(CITRONELLYL_ACETATE, 100f)];
-    static KeyValuePair<string, float>[] STRESS_FAR = [new(LIMONENE, 21.3f), new(CYCLOHEXANONE, 3.8f), new(CITRONELLYL_ACETATE, 62f)];
-    static KeyValuePair<string, float>[] DISSIMILAR = [new(LIMONENE, 5.3f), new(CYCLOHEXANONE, 2.9f), new(CITRONELLYL_ACETATE, 77f)];
+    static readonly KeyValuePair<string, float>[] CONTROL = [
+        new(LIMONENE, 8.3f),
+        new(CYCLOHEX, 2.0f),
+        new(CITRONEL, 100f)];
+    static readonly KeyValuePair<string, float>[] STRESS = [
+        new(LIMONENE, 10.1f), 
+        new(CYCLOHEX, 3.0f), 
+        new(CITRONEL, 62.5f)];
+    static readonly KeyValuePair<string, float>[] STRESS_CLOSE = [
+        new(LIMONENE, 9.5f), 
+        new(CYCLOHEX, 2.66f), 
+        new(CITRONEL, 50f)];
+    static readonly KeyValuePair<string, float>[] STRESS_MEDIUM = [
+        new(LIMONENE, 7.75f), 
+        new(CYCLOHEX, 3.22f), 
+        new(CITRONEL, 70f)];
+    static readonly KeyValuePair<string, float>[] STRESS_FAR = [
+        new(LIMONENE, 17.75f),
+        new(CYCLOHEX, 3.22f),
+        new(CITRONEL, 52.5f)];
+    static readonly KeyValuePair<string, float>[] DISSIMILAR = [
+        new(LIMONENE, 4.8f),
+        new(CYCLOHEX, 10f),
+        new(CITRONEL, 100f)];
 }
 
 public static class RatingWords
 {
-    public static string[] English => [
-        "biting", "flowery", "deodorized", "subtle", "foul", "fresh",
-        "damp", "individual", "cold", "musty", "natural", "neutral",
-        "salty", "clean", "sour", "sweaty", "strong", "pungent",
-        "smelly", "sweet", "unpleasant", "warm"
+    public static string[] Get(Language lang) =>
+        (string[]?)typeof(RatingWords).GetProperty(lang.ToString())?.GetValue(null) ??
+        throw new NotImplementedException($"Language {lang} is not supported yet");
+
+    public static string[] Finnish => [
+        "hikinen", "pistävä", "neutraali",
+        "tunkkainen", "raikas", "voimakas",
+        "puhdas", "epämiellyttävä", "mieto",
+        "paha", "ummehtunut", "likainen",
+        "makea", "hapan", "suolainen",
+        "deodoranttinen", "miellyttävä", "imelä",
+        "mätä", "ruokainen", "ominaistuoksuinen",
+        "kostea"
     ];
-    public static string[] Finnish => [];
+    public static string[] English => [
+        "biting", "flowery", "deodorized",
+        "subtle", "foul", "fresh",
+        "damp", "individual", "cold",
+        "musty", "natural", "neutral",
+        "salty", "clean", "sour",
+        "sweaty", "strong", "pungent",
+        "smelly", "sweet", "unpleasant",
+        "warm"
+    ];
+    public static string[] German => [
+        "schweißig", "sauer", "NEG-angenehm",
+        "neutral", "intensiv", "stinkend",
+        "käsig", "süß", "frisch",
+        "angenehm", "muffig", "faulig",
+        "stechend", "beißend", "salzig",
+        "stark", "fischig", "streng",
+        "warm", "feucht", "eklig",
+        "herb"
+    ];
 }

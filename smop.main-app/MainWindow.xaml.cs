@@ -133,10 +133,10 @@ public partial class MainWindow : Window
         {
             _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsComparisonPage.Name));
 
-            //Content = _humanTestsComparisonPage;
-            //_humanTestsComparisonPage.Start(humanTestSettings);
-            Content = _humanTestsRatingPage;
-            _humanTestsRatingPage.Start(humanTestSettings);
+            Content = _humanTestsComparisonPage;
+            _humanTestsComparisonPage.Start(humanTestSettings);
+            //Content = _humanTestsRatingPage;
+            //_humanTestsRatingPage.Start(humanTestSettings);
         }
         else
         {

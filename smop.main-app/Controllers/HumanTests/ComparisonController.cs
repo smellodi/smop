@@ -154,7 +154,7 @@ internal class ComparisonController(Settings settings) : IDisposable
 
         PublishStage(Stage.WaitingMixture);
 
-        _delayedAction = DispatchOnce.Do(Mixture.WaitingInterval, OpenParticipantValve);
+        _delayedAction = DispatchOnce.Do(settings.WaitingInterval, OpenParticipantValve);
     }
 
     private void OpenParticipantValve()
@@ -165,7 +165,7 @@ internal class ComparisonController(Settings settings) : IDisposable
 
         PublishStage(Stage.SniffingMixture);
 
-        _delayedAction = DispatchOnce.Do(Mixture.SniffingInterval, CloseParticipantValve);
+        _delayedAction = DispatchOnce.Do(settings.SniffingInterval, CloseParticipantValve);
     }
 
     private void CloseParticipantValve()

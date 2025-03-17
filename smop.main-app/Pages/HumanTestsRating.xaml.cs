@@ -117,7 +117,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 
         if (_stage == Stage.WaitingMixture)
         {
-            wtiWaiting.Start(Mixture.WaitingInterval);
+            wtiWaiting.Start(_controller?.Settings.WaitingInterval ?? 0);
 
             ClearRatingButtons();
             EnableRatingButtons(false);
@@ -131,7 +131,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 
         else if (stage == Stage.SniffingMixture)
         {
-            wtiWaiting.Start(Mixture.SniffingInterval);
+            wtiWaiting.Start(_controller?.Settings.SniffingInterval ?? 0);
 
             if (!CanRate)
             {

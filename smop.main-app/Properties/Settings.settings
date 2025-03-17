@@ -143,5 +143,14 @@
     <Setting Name="HumanTest_PracticingTrialCount" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
+    <Setting Name="HumanTest_WaitingInterval" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">9</Value>
+    </Setting>
+    <Setting Name="HumanTest_SniffingInterval" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
+    <Setting Name="HumanTest_Mixtures" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

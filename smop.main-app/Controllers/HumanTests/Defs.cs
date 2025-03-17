@@ -34,21 +34,14 @@ internal static class Brushes
 
 internal class Mixture
 {
-    /// <summary>
-    /// Mixture preparation interval, in seconds
-    /// </summary>
-    public static double WaitingInterval => 9;
-    /// <summary>
-    /// Mixture sniffing interval, in seconds
-    /// </summary>
-    public static double SniffingInterval => 4;
-
     public string Name { get; }
     public PulseChannelProps[] Channels { get; }
+    public bool IsStress { get; }
 
     public Mixture(string name, KeyValuePair<string, float>[] flows, Dictionary<OdorDisplay.Device.ID, string> channels)
     {
         Name = name;
+        IsStress = name.ToLower() == "stress";
 
         var pulse = new List<PulseChannelProps>();
         foreach (var kv in flows)
@@ -114,8 +107,8 @@ internal class Session
         else
         {
             var allMixtures = OdorDisplayHelper.GetAllMixtures(settings.Channels);
-            var stress = allMixtures.First(mix => mix.Name == "stress");
-            var theRest = allMixtures.Where(mix => mix.Name != "stress");
+            var stress = allMixtures.First(mix => mix.IsStress);
+            var theRest = allMixtures.Where(mix => !mix.IsStress);
 
             for (int i = 0; i < settings.Repetitions; i++)
             {
@@ -137,45 +130,25 @@ internal static class OdorDisplayHelper
         .Select(ch => (int)ch.Key)
         .ToArray();
 
-    public static Mixture[] GetAllMixtures(Dictionary<OdorDisplay.Device.ID, string> channels) => [
-        new Mixture("stress", STRESS, channels),
-        new Mixture("control", CONTROL, channels),
-        new Mixture("far", STRESS_FAR, channels),
-        new Mixture("medium", STRESS_MEDIUM, channels),
-        new Mixture("close", STRESS_CLOSE, channels),
-        new Mixture("dissimilar", DISSIMILAR, channels),
-    ];
+    public static Mixture[] GetAllMixtures(Dictionary<OdorDisplay.Device.ID, string> channels)
+    {
+        static KeyValuePair<string, float>[] ToKeyValue(MixtureComponents comp) => 
+        [
+            new(LIMONENE, comp.Limonene),
+            new(CYCLOHEX, comp.Cyclohexanone),
+            new(CITRONEL, comp.CitronellylAcetate),
+        ];
+
+        var settings = new Settings();
+
+        return settings.Mixtures.Select(mix => new Mixture(mix.Name, ToKeyValue(mix), channels)).ToArray();
+    }
 
     // Internal
 
     const string LIMONENE = "lim";
     const string CYCLOHEX = "hex";
     const string CITRONEL = "citron";
-
-    static readonly KeyValuePair<string, float>[] CONTROL = [
-        new(LIMONENE, 8.3f),
-        new(CYCLOHEX, 2.0f),
-        new(CITRONEL, 100f)];
-    static readonly KeyValuePair<string, float>[] STRESS = [
-        new(LIMONENE, 10.1f), 
-        new(CYCLOHEX, 3.0f), 
-        new(CITRONEL, 62.5f)];
-    static readonly KeyValuePair<string, float>[] STRESS_CLOSE = [
-        new(LIMONENE, 9.5f), 
-        new(CYCLOHEX, 2.66f), 
-        new(CITRONEL, 50f)];
-    static readonly KeyValuePair<string, float>[] STRESS_MEDIUM = [
-        new(LIMONENE, 7.75f), 
-        new(CYCLOHEX, 3.22f), 
-        new(CITRONEL, 70f)];
-    static readonly KeyValuePair<string, float>[] STRESS_FAR = [
-        new(LIMONENE, 17.75f),
-        new(CYCLOHEX, 3.22f),
-        new(CITRONEL, 52.5f)];
-    static readonly KeyValuePair<string, float>[] DISSIMILAR = [
-        new(LIMONENE, 4.8f),
-        new(CYCLOHEX, 10f),
-        new(CITRONEL, 100f)];
 }
 
 public static class RatingWords

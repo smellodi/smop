@@ -16,6 +16,8 @@ namespace Smop.MainApp.Controllers.HumanTests
 
         public int MixtureId => _mixtureIndex + 1;
 
+        public Settings Settings => settings;
+
         public event EventHandler<StageChangedEventArgs>? StageChanged;
 
         public void Dispose()
@@ -109,7 +111,7 @@ namespace Smop.MainApp.Controllers.HumanTests
 
             PublishStage(Stage.WaitingMixture);
 
-            _delayedAction = DispatchOnce.Do(Mixture.WaitingInterval, () => PublishStage(Stage.Ready));
+            _delayedAction = DispatchOnce.Do(settings.WaitingInterval, () => PublishStage(Stage.Ready));
         }
 
         private void OpenParticipantValve()
@@ -120,7 +122,7 @@ namespace Smop.MainApp.Controllers.HumanTests
 
             PublishStage(Stage.SniffingMixture);
 
-            _delayedAction = DispatchOnce.Do(Mixture.SniffingInterval, CloseParticipantValve);
+            _delayedAction = DispatchOnce.Do(settings.SniffingInterval, CloseParticipantValve);
         }
 
         private void CloseParticipantValve()

@@ -95,11 +95,11 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
 
         if (stage == Stage.WaitingMixture)
         {
-            wtiWaiting.Start(Mixture.WaitingInterval);
+            wtiWaiting.Start(Settings?.WaitingInterval ?? 0);
         }
         else if (stage == Stage.SniffingMixture)
         {
-            wtiWaiting.Start(Mixture.SniffingInterval);
+            wtiWaiting.Start(Settings?.SniffingInterval ?? 0);
         }
         else if (stage == Stage.Question)
         {

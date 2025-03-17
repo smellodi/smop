@@ -585,5 +585,41 @@ namespace Smop.MainApp.Properties {
                 this["HumanTest_PracticingTrialCount"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("9")]
+        public double HumanTest_WaitingInterval {
+            get {
+                return ((double)(this["HumanTest_WaitingInterval"]));
+            }
+            set {
+                this["HumanTest_WaitingInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public double HumanTest_SniffingInterval {
+            get {
+                return ((double)(this["HumanTest_SniffingInterval"]));
+            }
+            set {
+                this["HumanTest_SniffingInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string HumanTest_Mixtures {
+            get {
+                return ((string)(this["HumanTest_Mixtures"]));
+            }
+            set {
+                this["HumanTest_Mixtures"] = value;
+            }
+        }
     }
 }

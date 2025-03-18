@@ -16,8 +16,6 @@ public partial class KnownOdorsEditor : Window
         InitializeComponent();
 
         DialogTools.HideWindowButtons(this);
-
-        DataContext = this;
     }
 
     // Internal

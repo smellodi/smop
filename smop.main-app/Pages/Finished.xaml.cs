@@ -18,8 +18,6 @@ public partial class Finished : Page, IPage<Navigation>
     public Finished()
     {
         InitializeComponent();
-
-        DataContext = this;
     }
 
     public void DisableSaving()

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
+        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
         Title="Pulse setup file editor"
         MinHeight="594"
         MinWidth="310"

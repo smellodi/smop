@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:Smop.MainApp.Controls" 
              mc:Ignorable="d"
              x:Name="display"
-             d:DesignHeight="80" d:DesignWidth="200">
+             d:DesignHeight="80"
+             d:DesignWidth="200">
     
     <UserControl.Resources>
         <Style TargetType="Label">

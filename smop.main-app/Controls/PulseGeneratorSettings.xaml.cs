@@ -23,7 +23,6 @@ public partial class PulseGeneratorSettings : UserControl
     public PulseGeneratorSettings()
     {
         InitializeComponent();
-        DataContext = this;
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)

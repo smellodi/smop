@@ -32,7 +32,6 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     {
         InitializeComponent();
 
-        DataContext = this;
         Name = "HumanTestsRating";
 
         ((App)Application.Current).AddCleanupAction(CleanUp);

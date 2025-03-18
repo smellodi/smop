@@ -10,7 +10,6 @@ public partial class HumanTestsSettings : UserControl
     public HumanTestsSettings()
     {
         InitializeComponent();
-        DataContext = Settings;
     }
 
     public void AddOdorChannel(OdorChannel odorChannel)

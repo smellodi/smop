@@ -11,8 +11,6 @@ public partial class PauseEstimatorEditor : Window
 
         DialogTools.HideWindowButtons(this);
         DialogTools.SetCentralPosition(this);
-
-        DataContext = _pauseEstimator;
     }
 
     // Internal

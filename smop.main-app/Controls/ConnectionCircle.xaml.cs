@@ -25,7 +25,6 @@ public partial class ConnectionCircle : UserControl, INotifyPropertyChanged
     public ConnectionCircle()
     {
         InitializeComponent();
-        DataContext = this;
     }
 
     // Internal

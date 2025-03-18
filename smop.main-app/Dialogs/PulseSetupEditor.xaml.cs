@@ -109,8 +109,6 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         DialogTools.HideWindowButtons(this);
         DialogTools.SetCentralPosition(this);
 
-        DataContext = this;
-
         _pulseChannelFlowValid = FindResource("TextBoxWithoutError") as Style;
         _pulseChannelFlowInvalid = FindResource("TextBoxWithError") as Style;
 

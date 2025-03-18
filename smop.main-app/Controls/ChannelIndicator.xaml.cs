@@ -254,8 +254,6 @@ public partial class ChannelIndicator : UserControl, INotifyPropertyChanged
         InitializeComponent();
         WarningThreshold = double.PositiveInfinity;
 
-        DataContext = this;
-
         cmdChannels.SelectionChanged += Channels_SelectionChanged;
     }
 

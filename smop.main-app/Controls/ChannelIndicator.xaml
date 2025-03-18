@@ -5,8 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              mc:Ignorable="d" 
-             Name="channelIndicator"
-             d:DesignHeight="80" d:DesignWidth="120">
+             d:DesignHeight="80"
+             d:DesignWidth="120"
+             DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
+             Name="channelIndicator">
 
     <UserControl.Resources>
         <utils:BoolToVisibilityConverter x:Key="bool2vis"/>

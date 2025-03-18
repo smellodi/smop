@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Smop.MainApp.Dialogs"
         mc:Ignorable="d"
+        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
         Title="Known odors"
         Height="560"
         Width="444"

@@ -60,8 +60,6 @@ public partial class Setup : Page, IPage<object?>
             HumidityController.Instance.IsEnabled = e;
         };
 
-        DataContext = this;
-
         ((App)Application.Current).AddCleanupAction(_ctrl.ShutDown);
         ((App)Application.Current).AddCleanupAction(() => { App.ML?.Dispose(); });
     }

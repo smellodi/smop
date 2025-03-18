@@ -34,8 +34,6 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         _greenButtonImage = new(Utils.Resources.GetUri("Assets/images/button-green.png"));
 
-        DataContext = this;
-
         UpdatePortList(cmbOdorDisplayCommPort);
         UpdatePortList(cmbSmellInspCommPort);
 

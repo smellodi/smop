@@ -6,9 +6,10 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              xmlns:ht="clr-namespace:Smop.MainApp.Controllers.HumanTests"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="400"
-             d:DesignWidth="250">
+             d:DesignWidth="250"
+             DataContext="{Binding Path=Settings, RelativeSource={RelativeSource Self}}">
     
     <UserControl.Resources>
         <utils:BoolInverse x:Key="inverse"/>
@@ -144,6 +145,10 @@
                   IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
                   IsChecked="{Binding IsRandomized}"/>
 
+        <Separator Grid.Row="7" Grid.ColumnSpan="2"
+                   VerticalAlignment="Top"/>
+        <Label Grid.Row="7" Grid.Column="0"
+               Content="MIXTURES"/>
         <Label Grid.Row="7" Grid.Column="1"
                Padding="0"
                Content="Lim  C-hex  Cit.a."/>

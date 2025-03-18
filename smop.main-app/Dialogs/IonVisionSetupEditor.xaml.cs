@@ -32,8 +32,6 @@ public partial class IonVisionSetupEditor : Window, INotifyPropertyChanged, IDis
 
         DialogTools.HideWindowButtons(this);
         DialogTools.SetCentralPosition(this);
-
-        DataContext = this;
     }
 
     public void Load(string filename)

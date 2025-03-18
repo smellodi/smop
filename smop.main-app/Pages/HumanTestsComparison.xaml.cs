@@ -37,7 +37,6 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
     {
         InitializeComponent();
 
-        DataContext = this;
         Name = "HumanTestsComparison";
 
         ((App)Application.Current).AddCleanupAction(CleanUp);

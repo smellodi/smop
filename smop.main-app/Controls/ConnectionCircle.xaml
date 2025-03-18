@@ -5,10 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Smop.MainApp.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="20" d:DesignWidth="20">
-    <UserControl.Resources>
-        
-    </UserControl.Resources>
+             d:DesignHeight="20"
+             d:DesignWidth="20"
+             DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
+
     <Ellipse Width="10"
              Height="10"
              Fill="{Binding IndicatorColor, FallbackValue=Green}"/>

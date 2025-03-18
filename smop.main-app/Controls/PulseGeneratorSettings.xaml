@@ -6,6 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="300"
              d:DesignWidth="300"
+             DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
              Loaded="UserControl_Loaded">
 
     <UserControl.Resources>

@@ -40,8 +40,6 @@ public partial class InputBox : Window, INotifyPropertyChanged
 
         DialogTools.HideWindowButtons(this);
 
-        DataContext = this;
-
         _inputType = inputType;
 
         Title = title;

@@ -27,7 +27,6 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
     {
         InitializeComponent();
 
-        DataContext = this;
         Name = "Pulses";
 
         ((App)Application.Current).AddCleanupAction(CleanUp);

@@ -5,9 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              xmlns:local="clr-namespace:Smop.MainApp.Controls"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="460"
-             d:DesignWidth="300">
+             d:DesignWidth="300"
+             DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
     
     <UserControl.Resources>
         <utils:RangeRule x:Key="maxInterationsValidator" Min="0" Max="100" IsInteger="True"/>

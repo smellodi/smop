@@ -89,7 +89,7 @@
 
                 <Button IsEnabled="{Binding CanReleaseOdor}"
                         Width="146"
-                        Content="Release the odor"
+                        Content="{Binding Path=Strings.ReleaseOdor}"
                         Click="ReleaseOdor_Click"/>
             </StackPanel>
 
@@ -118,15 +118,11 @@
         <TextBlock Grid.Row="1"
                    Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}}"
                    FontSize="20"
+                   Width="360"
                    TextWrapping="Wrap"
                    TextAlignment="Center"
-                   VerticalAlignment="Center">
-            <Run>Sniff an odor as many times as needed,</Run>
-            <LineBreak/>
-            <Run>select the words that describe the odor</Run>
-            <LineBreak/>
-            <Run>and then press “Submit” button</Run>
-        </TextBlock>
+                   VerticalAlignment="Center"
+                   Text="{Binding Path=Strings.RatingInstruction}"/>
 
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"

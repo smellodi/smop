@@ -16,13 +16,6 @@ internal enum Stage
     Finished,
 }
 
-public enum Language
-{
-    Finnish,
-    English,
-    German,
-}
-
 internal static class Brushes
 {
     public static Brush Foreground => System.Windows.Media.Brushes.White;
@@ -149,42 +142,4 @@ internal static class OdorDisplayHelper
     const string LIMONENE = "lim";
     const string CYCLOHEX = "hex";
     const string CITRONEL = "citron";
-}
-
-public static class RatingWords
-{
-    public static string[] Get(Language lang) =>
-        (string[]?)typeof(RatingWords).GetProperty(lang.ToString())?.GetValue(null) ??
-        throw new NotImplementedException($"Language {lang} is not supported yet");
-
-    public static string[] Finnish => [
-        "hikinen", "pistävä", "neutraali",
-        "tunkkainen", "raikas", "voimakas",
-        "puhdas", "epämiellyttävä", "mieto",
-        "paha", "ummehtunut", "likainen",
-        "makea", "hapan", "suolainen",
-        "deodoranttinen", "miellyttävä", "imelä",
-        "mätä", "ruokainen", "ominaistuoksuinen",
-        "kostea"
-    ];
-    public static string[] English => [
-        "biting", "flowery", "deodorized",
-        "subtle", "foul", "fresh",
-        "damp", "individual", "cold",
-        "musty", "natural", "neutral",
-        "salty", "clean", "sour",
-        "sweaty", "strong", "pungent",
-        "smelly", "sweet", "unpleasant",
-        "warm"
-    ];
-    public static string[] German => [
-        "schweißig", "sauer", "NEG-angenehm",
-        "neutral", "intensiv", "stinkend",
-        "käsig", "süß", "frisch",
-        "angenehm", "muffig", "faulig",
-        "stechend", "beißend", "salzig",
-        "stark", "fischig", "streng",
-        "warm", "feucht", "eklig",
-        "herb"
-    ];
 }

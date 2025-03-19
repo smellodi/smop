@@ -21,14 +21,16 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
             (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Selected : Controllers.HumanTests.Brushes.Inactive)) :
         (_controller?.MixtureID == 1 ? Controllers.HumanTests.Brushes.Inactive : Controllers.HumanTests.Brushes.Selected);
     public string StageInfo => $"Block {_controller?.BlockID}, Comparison {_controller?.ComparisonID}";
-    public string InstructionText => _stage switch
+    public string? InstructionText => _stage switch
     {
-        Stage.WaitingMixture => "Wait",
-        Stage.SniffingMixture => "Sniff",
-        _ => ""
+        Stage.WaitingMixture => Strings?.Wait,
+        Stage.SniffingMixture => Strings?.Sniff,
+        _ => null
     };
 
     public Settings? Settings { get; private set; }
+
+    public IUiStrings? Strings { get; private set; }
 
     public event EventHandler<Navigation>? Next;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,6 +47,9 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
     public void Start(Settings settings)
     {
         Settings = settings;
+
+        Strings = UiStrings.Get(settings.Language);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Strings)));
 
         try
         {
@@ -84,13 +89,12 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
         _stage = stage;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
-        //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InstructionText)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstruction)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuestion)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Mixture1Color)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Mixture2Color)));
 
-        wtiWaiting.Text = InstructionText;
+        wtiWaiting.Text = InstructionText ?? "";
 
         if (stage == Stage.WaitingMixture)
         {

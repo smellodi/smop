@@ -66,6 +66,7 @@
             <StackPanel Grid.Row="0"
                         VerticalAlignment="Center">
                 <Label x:Name="lblInfo"
+                       Foreground="#FFCCCCCC"
                        Content="{Binding StageInfo}"
                        HorizontalContentAlignment="Center"/>
             </StackPanel>
@@ -80,8 +81,9 @@
                 <Label Grid.Column="0"
                        Style="{StaticResource Odor}"
                        Background="{Binding Mixture1Color}"
-                       HorizontalAlignment="Right"
-                       Content="Odor 1"/>
+                       HorizontalAlignment="Right">
+                    <TextBlock Text="{Binding Path=Strings.Odor, StringFormat='{}{0} 1'}"/>
+                </Label>
 
                 <StackPanel Grid.Column="1">
                     <local:WaitingInstruction x:Name="wtiWaiting"
@@ -98,8 +100,9 @@
                 <Label Grid.Column="2"
                        Style="{StaticResource Odor}"
                        Background="{Binding Mixture2Color}"
-                       HorizontalAlignment="Left"
-                       Content="Odor 2"/>
+                       HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding Path=Strings.Odor, StringFormat='{}{0} 2'}"/>
+                </Label>
             </Grid>
 
             <StackPanel Grid.Row="2"
@@ -107,14 +110,14 @@
                         Visibility="{Binding IsQuestion, Converter={StaticResource bool2vis}}">
                 <Label FontSize="20"
                        HorizontalContentAlignment="Center"
-                       Content="Are the presented odors identical?"/>
+                       Content="{Binding Path=Strings.ComparisonQuestion}"/>
                 <WrapPanel HorizontalAlignment="Center">
-                    <Button Content="Yes"
+                    <Button Content="{Binding Path=Strings.Yes}"
                             Tag="True"
                             Width="84"
                             Margin="12"
                             Click="AnswerButton_Click"/>
-                    <Button Content="No"
+                    <Button Content="{Binding Path=Strings.No}"
                             Tag="False"
                             Width="84"
                             Margin="12"
@@ -128,12 +131,10 @@
                    Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}}"
                    FontSize="20"
                    TextWrapping="Wrap"
+                   Width="360"
                    TextAlignment="Center"
-                   VerticalAlignment="Center">
-            <Run>Sniff several pairs of odors as instructed</Run>
-            <LineBreak/>
-            <Run>and answer the questions</Run>
-        </TextBlock>
+                   VerticalAlignment="Center"
+                   Text="{Binding Path=Strings.ComparisonInstruction}"/>
 
         <StackPanel Grid.Row="2"
                     Orientation="Horizontal"
@@ -141,7 +142,7 @@
             <Button x:Name="btnSubmit"
                     Style="{StaticResource Next}"
                     Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}}"
-                    Content="Continue"
+                    Content="{Binding Path=Strings.Continue}"
                     Click="Submit_Click"/>
         </StackPanel>
 

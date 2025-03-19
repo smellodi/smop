@@ -15,15 +15,18 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     public bool CanReleaseOdor => _stage == Stage.Ready;
     public bool CanRate { get; private set; } = false;
     public bool CanSubmit => IsInstruction || (CanRate && _stage != Stage.SniffingMixture && HasRatings);
-    public string StageInfo => $"Odor #{_controller?.MixtureId}";
-    public string InstructionText => _stage switch
+    public string StageInfo => $"{Strings?.Odor} #{_controller?.MixtureId}";
+    public string? InstructionText => _stage switch
     {
-        Stage.WaitingMixture => "Wait",
-        Stage.Ready => CanRate ? "Select the matching descriptions" : "Ready to release the odor",
-        Stage.SniffingMixture => "Sniff",
-        _ => ""
+        Stage.WaitingMixture => Strings?.Wait,
+        Stage.Ready => CanRate ? Strings?.SelectWords : Strings?.OdorReady,
+        Stage.SniffingMixture => Strings?.Sniff,
+        _ => null
     };
-    public string SubmitButtonText => _stage == Stage.Initial ? "Continue" : "Submit";
+
+    public IUiStrings? Strings { get; private set; }
+
+    public string? SubmitButtonText => _stage == Stage.Initial ? Strings?.Continue : Strings?.Submit;
 
     public event EventHandler<Navigation>? Next;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -39,9 +42,12 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 
     public void Start(Settings settings)
     {
+        Strings = UiStrings.Get(settings.Language);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Strings)));
+
         try
         {
-            CreateRatingControls(RatingWords.Get(settings.Language));
+            CreateRatingControls(Strings.RatingWords);
 
             _controller = new RatingController(settings);
             _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Stage));
@@ -112,7 +118,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
     {
         _stage = stage;
 
-        wtiWaiting.Text = InstructionText;
+        wtiWaiting.Text = InstructionText ?? "";
 
         if (_stage == Stage.WaitingMixture)
         {
@@ -145,7 +151,6 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRate)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanSubmit)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
-        //PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InstructionText)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SubmitButtonText)));
     }
 

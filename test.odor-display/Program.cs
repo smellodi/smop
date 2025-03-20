@@ -133,7 +133,7 @@ _com.Inserted += (s, e) => Dispatcher.CurrentDispatcher.Invoke(() =>
 });
 
 Console.WriteLine("Available ports:");
-var ports = COMUtils.Ports;
+var ports = COMUtils.FtdiPorts;
 if (ports.Length == 0)
 {
     Console.WriteLine("  none");

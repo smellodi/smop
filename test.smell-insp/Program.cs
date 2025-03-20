@@ -33,7 +33,7 @@ _com.Inserted += (s, e) => Dispatcher.CurrentDispatcher.Invoke(() =>
 });
 
 Console.WriteLine("Available ports:");
-var ports = Smop.Common.COMUtils.Ports;
+var ports = _com.Ports;
 if (ports.Length == 0)
 {
     Console.WriteLine("  none");

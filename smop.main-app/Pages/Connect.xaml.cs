@@ -47,12 +47,12 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         _usb.Inserted += (s, e) => Dispatcher.Invoke(() =>
         {
-            UpdatePortList(cmbOdorDisplayCommPort, Common.COMUtils.OdorDisplayPort);
+            UpdatePortList(cmbOdorDisplayCommPort, _usb.OdorDisplayPort);
             UpdatePortList(cmbSmellInspCommPort);
         });
         _usb.Removed += (s, e) => Dispatcher.Invoke(() =>
         {
-            UpdatePortList(cmbOdorDisplayCommPort, Common.COMUtils.OdorDisplayPort);
+            UpdatePortList(cmbOdorDisplayCommPort, _usb.OdorDisplayPort);
             UpdatePortList(cmbSmellInspCommPort);
         });
 
@@ -81,13 +81,13 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     string IonVisionSetupFilename = "Assets/ion-vision/default.json";
     IonVision.Communicator? _ionVision = null;
 
-    private static void UpdatePortList(ComboBox cmb, Common.COMUtils.Port? defaultPort = null)
+    private void UpdatePortList(ComboBox cmb, Common.COMUtils.Port? defaultPort = null)
     {
         var current = cmb.SelectedValue ?? defaultPort?.Name;
 
         cmb.Items.Clear();
 
-        var availablePorts = System.IO.Ports.SerialPort.GetPortNames();
+        var availablePorts = _usb.Ports.Select(port => port.Name);
         var ports = new HashSet<string>(availablePorts);
         foreach (var port in ports)
         {

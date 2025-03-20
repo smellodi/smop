@@ -1,12 +1,9 @@
 ﻿using FTD2XX_NET;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
-using System.Threading.Channels;
-using System.Windows.Controls.Primitives;
 
 namespace Smop.Common;
 
@@ -18,8 +15,9 @@ public class COMUtils : IDisposable
     /// <summary>
     /// Port descriptor
     /// </summary>
-    public class Port(string name, string? description, string? manufacturer)
+    public class Port(string id, string name, string? description, string? manufacturer)
     {
+        public string ID { get; } = id;
         public string Name { get; } = name;
         public string? Description { get; } = description;
         public string? Manufacturer { get; } = manufacturer;
@@ -37,12 +35,17 @@ public class COMUtils : IDisposable
     /// <summary>
     /// List of all COM ports in the system
     /// </summary>
-    public static Port[] Ports => _cachedPorts ??= GetAvailableFDTIPorts() ?? GetAvailableCOMPorts();
+    public Port[] Ports => GetAvailableCOMPorts();
+
+    /// <summary>
+    /// List of all COM ports in the system
+    /// </summary>
+    public static Port[] FtdiPorts => GetAvailableFDTIPorts();
 
     /// <summary>
     /// Most likely SMOP port, i.e. the one that has a known description
     /// </summary>
-    public static Port? OdorDisplayPort => Ports.FirstOrDefault(port => port.Manufacturer?.Contains("TUNI") ?? false);
+    public static Port? OdorDisplayPort => FtdiPorts.FirstOrDefault(port => port.Manufacturer?.Contains("TUNI") ?? false);
 
     public COMUtils()
     {
@@ -70,7 +73,7 @@ public class COMUtils : IDisposable
         Removed
     }
 
-    static Port[]? _cachedPorts = null;
+    readonly List<Port> _cachedPorts = new();
 
     readonly List<ManagementEventWatcher> _watchers = new();
 
@@ -81,31 +84,36 @@ public class COMUtils : IDisposable
 
         watcher.EventArrived += (s, e) =>
         {
-            _cachedPorts = null;
-            Port? port = null;
-
             try
             {
-                var target = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-                port = CreateCOMPort(target.Properties);
-                target.Dispose();
+                using var target = (ManagementBaseObject)e.NewEvent["TargetInstance"];
+                switch (actionType)
+                {
+                    case ActionType.Inserted:
+                        var port = CreateCOMPort(target.Properties);
+                        if (port != null)
+                        {
+                            _cachedPorts.Add(port);
+                            Inserted?.Invoke(this, port);
+                        }
+                        break;
+                    case ActionType.Removed:
+                        var deviceID = GetDeviceID(target.Properties);
+                        if (deviceID != null)
+                        {
+                            var cachedPort = _cachedPorts.FirstOrDefault(port => port.ID == deviceID);
+                            if (cachedPort != null)
+                            {
+                                _cachedPorts.Remove(cachedPort);
+                                Removed?.Invoke(this, cachedPort);
+                            }
+                        }
+                        break;
+                }
             }
             catch (Exception ex)
             {
                 ScreenLogger.Print("USB ERROR: " + ex.Message);
-            }
-
-            if (port != null)
-            {
-                switch (actionType)
-                {
-                    case ActionType.Inserted:
-                        Inserted?.Invoke(this, port);
-                        break;
-                    case ActionType.Removed:
-                        Removed?.Invoke(this, port);
-                        break;
-                }
             }
         };
 
@@ -121,7 +129,7 @@ public class COMUtils : IDisposable
         }
     }
 
-    private static Port[]? GetAvailableFDTIPorts()
+    private static Port[] GetAvailableFDTIPorts()
     {
         try
         {
@@ -133,7 +141,7 @@ public class COMUtils : IDisposable
             var devices = new FTDI.FT_DEVICE_INFO_NODE[deviceCount];
             var ftdi_res = ftdi.GetDeviceList(devices);
 
-            var result = devices.Select(dev =>
+            return devices.Select(dev =>
             {
                 Port? result = null;
 
@@ -161,7 +169,7 @@ public class COMUtils : IDisposable
                     if (ftdi_res != FTDI.FT_STATUS.FT_OK)
                         return null;
 
-                    result = new Port(comName, dev.Description, data.Manufacturer ?? dev.SerialNumber); //-V3080
+                    result = new Port(dev.SerialNumber, comName, dev.Description, data.Manufacturer ?? dev.SerialNumber); //-V3080
                 }
                 finally
                 {
@@ -172,15 +180,14 @@ public class COMUtils : IDisposable
                 }
                 return result;
             }).Where(port => port != null).Select(port => port!).ToArray();
-            return result.Length > 0 ? result : null;
         }
         catch
         {
-            return null;
+            return Array.Empty<Port>();
         }
     }
 
-    private static Port[] GetAvailableCOMPorts()
+    private Port[] GetAvailableCOMPorts()
     {
         var portNames = SerialPort.GetPortNames();
 
@@ -192,13 +199,14 @@ public class COMUtils : IDisposable
             ManagementBaseObject[]? records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
             ports = records.Select(rec =>
                 {
+                    var id = rec["DeviceID"]?.ToString();
                     var name =
                         portNames.FirstOrDefault(name => rec["Caption"]?.ToString()?.Contains($"({name})") ?? false) ??
                         portNames.FirstOrDefault(name => rec["DeviceID"]?.ToString()?.Contains($"{name}") ?? false) ??
                         "";
                     var description = rec["Description"]?.ToString();
                     var manufacturer = rec["Manufacturer"]?.ToString();
-                    return new Port(name, description, manufacturer);
+                    return new Port(id, name, description, manufacturer);
                 })
                 .Where(p => p.Name.StartsWith("COM"));
         }
@@ -207,10 +215,19 @@ public class COMUtils : IDisposable
             ScreenLogger.Print("USB ERROR: " + ex.Message);
         }
 
+        _cachedPorts.Clear();
+        if (ports != null)
+        {
+            foreach (var port in ports)
+            {
+                _cachedPorts.Add(port);
+            }
+        }
+
         return ports?.ToArray() ?? Array.Empty<Port>();
     }
 
-    private static Port? CreateCOMPort(PropertyDataCollection props)
+    private static Port? CreateCOMPort(PropertyDataCollection props, string? deviceName = null)
     {
         string? deviceID = null;
         string? descrition = null;
@@ -242,13 +259,34 @@ public class COMUtils : IDisposable
                     var name = (string?)rec.Properties["Name"]?.Value;
                     if (name?.Contains("(COM") ?? false)
                     {
-                        return CreateCOMPort(rec.Properties);
+                        return CreateCOMPort(rec.Properties, name);
                     }
                 }
             }
         }
 
-        return deviceID == null ? null : new Port(deviceID, descrition, manufacturer);
+        return deviceID == null ? null : new Port(deviceID, deviceName ?? "COMXX", descrition, manufacturer);
+    }
+
+    private static string? GetDeviceID(PropertyDataCollection props)
+    {
+        string? deviceID = null;
+
+        foreach (PropertyData property in props)
+        {
+            if (property.Name == "DeviceID")
+            {
+                deviceID = (string?)property.Value;
+            }
+            else if (property.Name == "Dependent")  // this handles Win32_USBControllerDevice, as Win32_SerialPort stopped working
+            {
+                var usbControllerID = (string)property.Value;
+                usbControllerID = usbControllerID.Replace("\"", "").Replace(@"\\", @"\");
+                deviceID = usbControllerID.Split('=')[1];
+            }
+        }
+
+        return deviceID;
     }
 
     // Debugging

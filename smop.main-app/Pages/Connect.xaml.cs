@@ -1,4 +1,5 @@
-﻿using Smop.MainApp.Controllers;
+﻿using Smop.Common;
+using Smop.MainApp.Controllers;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
@@ -47,12 +48,12 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
 
         _usb.Inserted += (s, e) => Dispatcher.Invoke(() =>
         {
-            UpdatePortList(cmbOdorDisplayCommPort, _usb.OdorDisplayPort);
+            UpdatePortList(cmbOdorDisplayCommPort, COMUtils.OdorDisplayPort?.Name);
             UpdatePortList(cmbSmellInspCommPort);
         });
         _usb.Removed += (s, e) => Dispatcher.Invoke(() =>
         {
-            UpdatePortList(cmbOdorDisplayCommPort, _usb.OdorDisplayPort);
+            UpdatePortList(cmbOdorDisplayCommPort, COMUtils.OdorDisplayPort?.Name);
             UpdatePortList(cmbSmellInspCommPort);
         });
 
@@ -81,9 +82,9 @@ public partial class Connect : Page, IPage<Navigation>, INotifyPropertyChanged
     string IonVisionSetupFilename = "Assets/ion-vision/default.json";
     IonVision.Communicator? _ionVision = null;
 
-    private void UpdatePortList(ComboBox cmb, Common.COMUtils.Port? defaultPort = null)
+    private void UpdatePortList(ComboBox cmb, string? defaultPortName = null)
     {
-        var current = cmb.SelectedValue ?? defaultPort?.Name;
+        var current = cmb.SelectedValue ?? defaultPortName;
 
         cmb.Items.Clear();
 

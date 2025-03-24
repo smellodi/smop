@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Management;
+using System.Threading;
 
 namespace Smop.Common;
 
@@ -73,6 +74,8 @@ public class COMUtils : IDisposable
         Removed
     }
 
+    const int FtdiCommandInterval = 50; // ms
+
     readonly List<Port> _cachedPorts = new();
 
     readonly List<ManagementEventWatcher> _watchers = new();
@@ -131,60 +134,88 @@ public class COMUtils : IDisposable
 
     private static Port[] GetAvailableFDTIPorts()
     {
+        Port[] ports = [];
+
         try
         {
             var ftdi = new FTDI();
 
             uint deviceCount = 0;
-            ftdi.GetNumberOfDevices(ref deviceCount);
+            var response = ftdi.GetNumberOfDevices(ref deviceCount);
+            System.Diagnostics.Debug.WriteLine($"[FTDI] Device count: {deviceCount}");
+
+            if (deviceCount == 0)
+                return ports;
 
             var devices = new FTDI.FT_DEVICE_INFO_NODE[deviceCount];
-            var ftdi_res = ftdi.GetDeviceList(devices);
 
-            return devices.Select(dev =>
+            int attemptsLeft = 100; // weirdly, the device descriptor becomes valid only after reading it multiple times
+            do
             {
-                Port? result = null;
+                Thread.Sleep(FtdiCommandInterval);
+                response = ftdi.GetDeviceList(devices);
+            } while (devices[0].LocId == 0 && attemptsLeft-- > 0);
 
-                try
+            Thread.Sleep(FtdiCommandInterval);
+            System.Diagnostics.Debug.WriteLine($"[FTDI] Got device descriptors ({response}), after {100 - attemptsLeft} attempts");
+
+            ports = devices.Select(dev =>
                 {
-                    ftdi_res = ftdi.OpenBySerialNumber(dev.SerialNumber);
-                    if (ftdi_res != FTDI.FT_STATUS.FT_OK)
-                        return null;
+                    Port? result = null;
 
-                    ftdi_res = ftdi.GetCOMPort(out string comName);
-                    if (ftdi_res != FTDI.FT_STATUS.FT_OK)
-                        return null;
-
-                    FTDI.FT_EEPROM_DATA data;
-                    ftdi_res = dev.Type switch
+                    try
                     {
-                        FTDI.FT_DEVICE.FT_DEVICE_232R => ftdi.ReadFT232REEPROM((FTDI.FT232R_EEPROM_STRUCTURE)(data = new FTDI.FT232R_EEPROM_STRUCTURE())),
-                        FTDI.FT_DEVICE.FT_DEVICE_232H => ftdi.ReadFT232HEEPROM((FTDI.FT232H_EEPROM_STRUCTURE)(data = new FTDI.FT232H_EEPROM_STRUCTURE())),
-                        FTDI.FT_DEVICE.FT_DEVICE_2232 => ftdi.ReadFT2232EEPROM((FTDI.FT2232_EEPROM_STRUCTURE)(data = new FTDI.FT2232_EEPROM_STRUCTURE())),
-                        FTDI.FT_DEVICE.FT_DEVICE_2232H => ftdi.ReadFT2232HEEPROM((FTDI.FT2232H_EEPROM_STRUCTURE)(data = new FTDI.FT2232H_EEPROM_STRUCTURE())),
-                        FTDI.FT_DEVICE.FT_DEVICE_4232H => ftdi.ReadFT4232HEEPROM((FTDI.FT4232H_EEPROM_STRUCTURE)(data = new FTDI.FT4232H_EEPROM_STRUCTURE())),
-                        FTDI.FT_DEVICE.FT_DEVICE_X_SERIES => ftdi.ReadXSeriesEEPROM((FTDI.FT_XSERIES_EEPROM_STRUCTURE)(data = new FTDI.FT_XSERIES_EEPROM_STRUCTURE())),
-                        _ => ftdi.ReadFT232BEEPROM((FTDI.FT232B_EEPROM_STRUCTURE)(data = new FTDI.FT232B_EEPROM_STRUCTURE())),
-                    };
-                    if (ftdi_res != FTDI.FT_STATUS.FT_OK)
-                        return null;
+                        response = ftdi.OpenByLocation(dev.LocId);
+                        Thread.Sleep(FtdiCommandInterval);
+                        System.Diagnostics.Debug.WriteLine($"[FTDI] Device '{dev.SerialNumber}' opened ({response})");
+                        if (response != FTDI.FT_STATUS.FT_OK)
+                            return null;
 
-                    result = new Port(dev.SerialNumber, comName, dev.Description, data.Manufacturer ?? dev.SerialNumber); //-V3080
-                }
-                finally
-                {
-                    if (ftdi.IsOpen)
-                    {
-                        ftdi.Close();
+                        response = ftdi.GetCOMPort(out string comName);
+                        Thread.Sleep(FtdiCommandInterval);
+                        System.Diagnostics.Debug.WriteLine($"[FTDI] Got COM port name ({response})");
+                        if (response != FTDI.FT_STATUS.FT_OK)
+                            return null;
+
+                        FTDI.FT_EEPROM_DATA data;
+                        response = dev.Type switch
+                        {
+                            FTDI.FT_DEVICE.FT_DEVICE_232R => ftdi.ReadFT232REEPROM((FTDI.FT232R_EEPROM_STRUCTURE)(data = new FTDI.FT232R_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_232H => ftdi.ReadFT232HEEPROM((FTDI.FT232H_EEPROM_STRUCTURE)(data = new FTDI.FT232H_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_2232 => ftdi.ReadFT2232EEPROM((FTDI.FT2232_EEPROM_STRUCTURE)(data = new FTDI.FT2232_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_2232H => ftdi.ReadFT2232HEEPROM((FTDI.FT2232H_EEPROM_STRUCTURE)(data = new FTDI.FT2232H_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_4232H => ftdi.ReadFT4232HEEPROM((FTDI.FT4232H_EEPROM_STRUCTURE)(data = new FTDI.FT4232H_EEPROM_STRUCTURE())),
+                            FTDI.FT_DEVICE.FT_DEVICE_X_SERIES => ftdi.ReadXSeriesEEPROM((FTDI.FT_XSERIES_EEPROM_STRUCTURE)(data = new FTDI.FT_XSERIES_EEPROM_STRUCTURE())),
+                            _ => ftdi.ReadFT232BEEPROM((FTDI.FT232B_EEPROM_STRUCTURE)(data = new FTDI.FT232B_EEPROM_STRUCTURE())),
+                        };
+
+                        Thread.Sleep(FtdiCommandInterval);
+                        System.Diagnostics.Debug.WriteLine($"[FTDI] Got data ({response})");
+                        if (response != FTDI.FT_STATUS.FT_OK)
+                            return null;
+
+                        result = new Port(dev.SerialNumber, comName, dev.Description, data.Manufacturer ?? dev.SerialNumber); //-V3080
                     }
-                }
-                return result;
-            }).Where(port => port != null).Select(port => port!).ToArray();
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[USB] {ex.Message}");
+                    }
+                    finally
+                    {
+                        if (ftdi.IsOpen)
+                        {
+                            ftdi.Close();
+                        }
+                    }
+                    return result;
+                })
+                .Where(port => port != null)
+                .Select(port => port!)
+                .ToArray();
         }
-        catch
-        {
-            return Array.Empty<Port>();
-        }
+        catch { }
+
+        return ports;
     }
 
     private Port[] GetAvailableCOMPorts()

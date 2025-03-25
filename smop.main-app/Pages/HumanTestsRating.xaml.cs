@@ -83,6 +83,10 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 
         var style = (Style)FindResource("Rating");
 
+        grdRatingButtons.RowDefinitions.Clear();
+        for (int i = 0; i < Math.Ceiling((double)words.Length / grdRatingButtons.ColumnDefinitions.Count); i++)
+            grdRatingButtons.RowDefinitions.Add(new RowDefinition());
+
         foreach (var word in words)
         {
             var control = new ToggleButton()

@@ -3,6 +3,7 @@ using Smop.MainApp.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Channels;
 
 namespace Smop.MainApp.Controllers.HumanTests
 {
@@ -36,9 +37,12 @@ namespace Smop.MainApp.Controllers.HumanTests
 
         public void Start()
         {
-            _odorDisplay.OpenValves(OdorDisplayHelper.GetChannelIds(settings.Channels));
+            if (!settings.IsPracticingProcedure)
+            {
+                _odorDisplay.OpenValves(OdorDisplayHelper.GetChannelIds(settings.Channels));
+            }
 
-            _eventLogger.Add("start", "rating");
+            _eventLogger.Add("start", settings.IsPracticingProcedure ? "practice" : "rating");
             _mixtureIndex = 0;
 
             StartPulse(_mixtures[_mixtureIndex]);
@@ -95,7 +99,9 @@ namespace Smop.MainApp.Controllers.HumanTests
         readonly OdorDisplayController _odorDisplay = new();
         readonly EventLogger _eventLogger = EventLogger.Instance;
 
-        readonly Mixture[] _mixtures = OdorDisplayHelper.GetAllMixtures(settings.Channels);
+        readonly Mixture[] _mixtures = settings.IsPracticingProcedure ?
+            [new Mixture("empty", [], settings.Channels)] :
+            OdorDisplayHelper.GetAllMixtures(settings.Channels);
         readonly Dictionary<string, string[]> _ratings = new();
 
         int _mixtureIndex = -1;

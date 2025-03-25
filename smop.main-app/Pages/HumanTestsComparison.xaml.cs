@@ -111,14 +111,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
         else if (stage == Stage.Finished)
         {
             CleanUp();
-            if (Settings?.IsPracticingProcedure == true)
-            {
-                Next?.Invoke(this, Navigation.Finished);
-            }
-            else
-            {
-                Next?.Invoke(this, Navigation.Test);
-            }
+            Next?.Invoke(this, Navigation.Test);
         }
     }
 

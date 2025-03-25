@@ -44,14 +44,17 @@ internal class EnglishStrings : IUiStrings
     public string ComparisonQuestion => "Are the presented odors identical?";
     public string RatingInstruction => "Sniff an odor as many times as needed, select the words that describe the odor and then press “Submit” button";
     public string[] RatingWords => [
-        "biting", "flowery", "deodorized",
-        "subtle", "foul", "fresh",
-        "damp", "individual", "cold",
-        "musty", "natural", "neutral",
-        "salty", "clean", "sour",
-        "sweaty", "strong", "pungent",
-        "smelly", "sweet", "unpleasant",
-        "warm"
+        "sweaty", "sour", "strong",
+        "pungent", "musky", "salty",
+        "sweet", "fresh", "stinky",
+        "smelly", "musty", "clean",
+        "fishy", "warm", "foul",
+        "unpleasant", "neutral", "gross",
+        "bad", "natural", "stale",
+        "sharp", "dirty", "wet",
+        "cheesy"
+        //"biting", "flowery", "deodorized",
+        //"subtle", "damp", "individual", "cold",
     ];
     public string Yes => "Yes";
     public string No => "No";
@@ -79,7 +82,8 @@ internal class FinnishStrings : IUiStrings
         "makea", "hapan", "suolainen",
         "deodoranttinen", "miellyttävä", "imelä",
         "mätä", "ruokainen", "ominaistuoksuinen",
-        "kostea"
+        "kostea", "kalamainen", "lämmin",
+        "virtsainen"
     ];
     public string Yes => "Kyllä";
     public string No => "Ei";
@@ -106,7 +110,8 @@ internal class GermanStrings : IUiStrings
         "stechend", "beißend", "salzig",
         "stark", "fischig", "streng",
         "warm", "feucht", "eklig",
-        "herb"
+        "herb", "urin", "deodoriert",
+        "abgestanden"
     ];
     public string Yes => "Ja";
     public string No => "Nein";

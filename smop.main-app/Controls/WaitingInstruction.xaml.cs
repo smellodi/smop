@@ -8,9 +8,17 @@ namespace Smop.MainApp.Controls;
 
 public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, IDisposable
 {
-    public class TimeUpdatedEventArgs(double duration) : EventArgs
+    public class TimeUpdatedEventArgs(double passed, double remaining) : EventArgs
     {
-        public double Duration => duration;
+        /// <summary>
+        /// Time in seconds passed since the progress has started
+        /// </summary>
+        public double Passed => passed;
+
+        /// <summary>
+        /// Time in seconds remaining until the progress is finished
+        /// </summary>
+        public double Remaining => remaining;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -137,7 +145,7 @@ public partial class WaitingInstruction : UserControl, INotifyPropertyChanged, I
 
         Progress = progress;
 
-        TimeUpdated?.Invoke(this, new TimeUpdatedEventArgs(duration));
+        TimeUpdated?.Invoke(this, new TimeUpdatedEventArgs(duration, WaitingTime - duration));
 
         if (progress >= 1.0)
         {

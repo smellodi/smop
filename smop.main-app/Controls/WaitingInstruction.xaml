@@ -7,15 +7,15 @@
              mc:Ignorable="d"
              d:DesignHeight="50"
              d:DesignWidth="250"
-             DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}">
+             DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
+             FontSize="16">
     
     <Grid HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock Margin="0,8"
-                   FontSize="16"
                    TextWrapping="Wrap"
                    HorizontalAlignment="Center"
                    TextAlignment="Center"
@@ -26,18 +26,5 @@
                      BorderBrush="{StaticResource BrushInput}"
                      Foreground="{StaticResource BrushPanel}"
                      Visibility="Hidden"/>
-        <!--StackPanel HorizontalAlignment="Center">
-            <TextBlock x:Name="lblInstruction"
-                       Margin="0,8"
-                       TextWrapping="Wrap"
-                       HorizontalAlignment="Center"
-                       Text="{Binding Text}"/>
-            <ProgressBar x:Name="prbProgress"
-                         Height="2"
-                         MinWidth="100"
-                         BorderBrush="{StaticResource BrushInput}"
-                         Foreground="{StaticResource BrushPanel}"
-                         Visibility="Hidden"/>
-        </StackPanel-->
     </Grid>
 </UserControl>

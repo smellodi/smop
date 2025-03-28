@@ -393,9 +393,9 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
     private void Waiting_TimeUpdated(object sender, WaitingInstruction.TimeUpdatedEventArgs e)
     {
-        double remainingTime = wtiWaiting.WaitingTime - e.Duration;
+        double remainingTime = e.Remaining;
         if (remainingTime > 0)
-            lblWaitingTime.Content = (wtiWaiting.WaitingTime - e.Duration).ToTime(wtiWaiting.WaitingTime);
+            lblWaitingTime.Content = remainingTime.ToTime(wtiWaiting.WaitingTime);
         else
             lblWaitingTime.Content = " ";
     }

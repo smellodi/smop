@@ -14,13 +14,15 @@ internal class ComparisonController(Settings settings) : IDisposable
         public int MixtureId { get; } = mixtureId;
     }
 
-    public event EventHandler<StageChangedEventArgs>? StageChanged;
+    public const double PAUSE_BETWEEN_BLOCKS = 60; // seconds
 
     public int BlockID => _blockIndex + 1;
     public int ComparisonID => _comparisonIndex + 1;
     public int MixtureID => _mixtureIndex + 1;
 
     public int BlockCount => settings.Repetitions;
+
+    public event EventHandler<StageChangedEventArgs>? StageChanged;
 
     public void Dispose()
     {
@@ -54,6 +56,17 @@ internal class ComparisonController(Settings settings) : IDisposable
         RunNextBlock();
     }
 
+    public void Continue()
+    {
+        if (_currentStage == Stage.UserControlledPause)
+        {
+            _delayedAction?.Dispose();
+            _delayedAction = null;
+
+            RunNextBlock();
+        }
+    }
+
     public void ForceToFinish()
     {
         if (_session.Blocks.Length > 0)
@@ -75,17 +88,27 @@ internal class ComparisonController(Settings settings) : IDisposable
 
         comparison.AreSame = areSame;
 
-        _eventLogger.Add("answer", areSame.ToString());
+        _eventLogger.Add("answer", areSame ? "same" : "different");
 
-        RunNextComparison();
+        if (PAUSE_BETWEEN_TRIALS > 0)
+        {
+            PublishStage(Stage.TimedPause);
+            _delayedAction = DispatchOnce.Do(PAUSE_BETWEEN_TRIALS, RunNextComparison);
+        }
+        else
+        {
+            RunNextComparison();
+        }
     }
 
     // Internal
 
     //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
+    const double PAUSE_BETWEEN_TRIALS = 4;  // seconds
+
     readonly OdorDisplayController _odorDisplay = new();
-    readonly Session _session = new(settings);
+    readonly ComparisonSession _session = new(settings);
 
     readonly EventLogger _eventLogger = EventLogger.Instance;
     readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
@@ -105,7 +128,7 @@ internal class ComparisonController(Settings settings) : IDisposable
     {
         _blockIndex += 1;
 
-        if (_session.Blocks.Length > _blockIndex)
+        if (_blockIndex < _session.Blocks.Length)
         {
             var block = _session.Blocks[_blockIndex];
             _eventLogger.Add("block", _blockIndex.ToString());
@@ -119,7 +142,7 @@ internal class ComparisonController(Settings settings) : IDisposable
                 foreach (var comp in block.Comparisons)
                     _eventLogger.Add("comparison", comp.ToString() ?? "");
 
-            StageChanged?.Invoke(this, new StageChangedEventArgs(Stage.Finished));
+            PublishStage(Stage.Finished);
         }
     }
 
@@ -130,12 +153,17 @@ internal class ComparisonController(Settings settings) : IDisposable
         _comparisonIndex += 1;
         _mixtureIndex = 0;
 
-        if (block.Comparisons.Length > _comparisonIndex)
+        if (_comparisonIndex < block.Comparisons.Length)
         {
             var comparison = block.Comparisons[_comparisonIndex];
             _eventLogger.Add("pair", _comparisonIndex.ToString());
 
             StartPulse(comparison.Mixtures[_mixtureIndex]);
+        }
+        else if (PAUSE_BETWEEN_BLOCKS > 0 && _blockIndex < _session.Blocks.Length - 1)
+        {
+            PublishStage(Stage.UserControlledPause);
+            _delayedAction = DispatchOnce.Do(PAUSE_BETWEEN_BLOCKS, RunNextBlock);
         }
         else
         {

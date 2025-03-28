@@ -76,7 +76,7 @@ public class Settings
         {
             if (!string.IsNullOrEmpty(Properties.Settings.Default.HumanTest_Mixtures))
             {
-                _mixtures = JsonSerializer.Deserialize<MixtureComponents[]>(Properties.Settings.Default.HumanTest_Mixtures) ?? _mixtures;
+                //_mixtures = JsonSerializer.Deserialize<MixtureComponents[]>(Properties.Settings.Default.HumanTest_Mixtures) ?? _mixtures;
             }
         }
         catch { }
@@ -96,7 +96,7 @@ public class Settings
         new MixtureComponents() { Name = "Stress close", Limonene = 9.5f, Cyclohexanone = 2.66f, CitronellylAcetate = 50f },
         new MixtureComponents() { Name = "Stress medium", Limonene = 7.75f, Cyclohexanone = 3.22f, CitronellylAcetate = 70f },
         new MixtureComponents() { Name = "Stress far", Limonene = 17.8f, Cyclohexanone = 3.22f, CitronellylAcetate = 52.5f },
-        new MixtureComponents() { Name = "Dissimilar",  Limonene = 4.8f, Cyclohexanone = 10f, CitronellylAcetate = 100f },
+        //new MixtureComponents() { Name = "Dissimilar",  Limonene = 4.8f, Cyclohexanone = 10f, CitronellylAcetate = 100f },
     ];
 }
 

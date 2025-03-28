@@ -363,7 +363,7 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="13" Grid.Column="0"
+        <!--Label Grid.Row="13" Grid.Column="0"
                Content="{Binding Path=Mixtures[5].Name, Mode=OneTime}">
         </Label>
         <TextBox Grid.Row="13" Grid.Column="1"
@@ -404,6 +404,6 @@
                     </Binding.ValidationRules>
                 </Binding>
             </TextBox.Text>
-        </TextBox>
+        </TextBox-->
     </Grid>
 </UserControl>

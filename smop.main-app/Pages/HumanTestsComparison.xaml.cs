@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Controllers.HumanTests;
+using Smop.MainApp.Utils.Extensions;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -12,19 +13,22 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
 {
     public bool IsInstruction => _stage == Stage.Initial;
     public bool IsQuestion => _stage == Stage.Question;
+    public bool IsUserControlledPause => _stage == Stage.UserControlledPause;
+    public bool IsTimedPause => _stage == Stage.TimedPause;
     public Brush Mixture1Color => _controller?.MixtureID == 1 ? 
         (_stage == Stage.SniffingMixture ? Controllers.HumanTests.Brushes.Active : 
-            (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Selected : Controllers.HumanTests.Brushes.Inactive)) :
-        Controllers.HumanTests.Brushes.Selected;
+            (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Done : Controllers.HumanTests.Brushes.Inactive)) :
+        Controllers.HumanTests.Brushes.Done;
     public Brush Mixture2Color => _controller?.MixtureID == 2 ?
         (_stage == Stage.SniffingMixture ? Controllers.HumanTests.Brushes.Active :
-            (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Selected : Controllers.HumanTests.Brushes.Inactive)) :
-        (_controller?.MixtureID == 1 ? Controllers.HumanTests.Brushes.Inactive : Controllers.HumanTests.Brushes.Selected);
+            (_stage == Stage.Question ? Controllers.HumanTests.Brushes.Done : Controllers.HumanTests.Brushes.Inactive)) :
+        (_controller?.MixtureID == 1 ? Controllers.HumanTests.Brushes.Inactive : Controllers.HumanTests.Brushes.Done);
     public string StageInfo => $"Block {_controller?.BlockID}, Comparison {_controller?.ComparisonID}";
     public string? InstructionText => _stage switch
     {
         Stage.WaitingMixture => Strings?.Wait,
         Stage.SniffingMixture => Strings?.Sniff,
+        Stage.UserControlledPause => Strings?.ContinueWhenReady,
         _ => null
     };
 
@@ -40,6 +44,18 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
         InitializeComponent();
 
         Name = "HumanTestsComparison";
+
+        wtiWaiting.TimeUpdated += (s, e) =>
+        {
+            if (IsUserControlledPause)
+            {
+                Dispatcher.Invoke(() => lblWaitingTime.Content = Math.Max(0, e.Remaining).ToTime(wtiWaiting.WaitingTime));
+            }
+            else
+            {
+                Dispatcher.Invoke(() => lblWaitingTime.Content = "");
+            }
+        };
 
         ((App)Application.Current).AddCleanupAction(CleanUp);
     }
@@ -91,6 +107,8 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstruction)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuestion)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUserControlledPause)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTimedPause)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Mixture1Color)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Mixture2Color)));
 
@@ -107,6 +125,10 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
         else if (stage == Stage.Question)
         {
             wtiWaiting.Reset();
+        }
+        else if (stage == Stage.UserControlledPause)
+        {
+            wtiWaiting.Start(ComparisonController.PAUSE_BETWEEN_BLOCKS);
         }
         else if (stage == Stage.Finished)
         {
@@ -163,5 +185,10 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IDisposable,
     {
         bool areSame = (string?)((Button)sender)?.Tag == "True";
         _controller?.SetAnswer(areSame);
+    }
+
+    private void NextBlock_Click(object sender, RoutedEventArgs e)
+    {
+        _controller?.Continue();
     }
 }

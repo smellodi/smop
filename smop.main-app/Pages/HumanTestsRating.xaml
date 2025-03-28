@@ -90,7 +90,26 @@
                 <Button IsEnabled="{Binding CanReleaseOdor}"
                         Width="146"
                         Content="{Binding Path=Strings.ReleaseOdor}"
-                        Click="ReleaseOdor_Click"/>
+                        Click="ReleaseOdor_Click">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="True">
+                                    <Setter Property="BorderBrush" Value="#FF004000"/>
+                                    <Setter Property="Background" Value="#FF448822"/>
+                                    <Setter Property="Foreground" Value="#CCFFFFFF"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FF66BB44"/>
+                                    <Setter Property="BorderBrush" Value="#FF004000"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#FF669944"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
             </StackPanel>
 
             <Grid x:Name="grdRatingButtons" Grid.Row="1"

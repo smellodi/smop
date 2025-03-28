@@ -18,7 +18,7 @@
 
     <Page.Resources>
         <utils:BoolToVisibilityConverter x:Key="bool2vis"/>
-        <sys:Boolean x:Key="inverted">True</sys:Boolean>
+        <sys:Boolean x:Key="IsInverted">True</sys:Boolean>
 
         <Style x:Key="Header" TargetType="Label">
             <Setter Property="FontSize" Value="20"/>
@@ -56,7 +56,7 @@
             Text="Comparison"/>
 
         <Grid Grid.Row="1"
-              Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}, ConverterParameter={StaticResource inverted}}">
+              Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}, ConverterParameter={StaticResource IsInverted}}">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="Auto"/>
@@ -81,6 +81,7 @@
                 <Label Grid.Column="0"
                        Style="{StaticResource Odor}"
                        Background="{Binding Mixture1Color}"
+                       Visibility="{Binding IsUserControlledPause, Converter={StaticResource bool2vis}, ConverterParameter={StaticResource IsInverted}}"
                        HorizontalAlignment="Right">
                     <TextBlock Text="{Binding Path=Strings.Odor, StringFormat='{}{0} 1'}"/>
                 </Label>
@@ -88,22 +89,38 @@
                 <StackPanel Grid.Column="1">
                     <local:WaitingInstruction x:Name="wtiWaiting"
                                               Margin="24,12"
-                                              Height="50"/>
+                                              Height="80"
+                                              VerticalContentAlignment="Bottom"/>
                     <Label x:Name="lblWaitingTime" 
                            HorizontalContentAlignment="Center"
                            Foreground="{StaticResource BrushFontDark}"
                            FontWeight="Bold"
                            FontSize="14"
                            Content=" "/>
+                    <Button Style="{StaticResource Next}"
+                            Visibility="{Binding IsUserControlledPause, Converter={StaticResource bool2vis}}"
+                            Height="42"
+                            HorizontalAlignment="Center"
+                            Content="{Binding Path=Strings.Continue}"
+                            Click="NextBlock_Click"/>
                 </StackPanel>
 
                 <Label Grid.Column="2"
                        Style="{StaticResource Odor}"
                        Background="{Binding Mixture2Color}"
+                       Visibility="{Binding IsUserControlledPause, Converter={StaticResource bool2vis}, ConverterParameter={StaticResource IsInverted}}"
                        HorizontalAlignment="Left">
                     <TextBlock Text="{Binding Path=Strings.Odor, StringFormat='{}{0} 2'}"/>
                 </Label>
             </Grid>
+
+            <StackPanel Grid.Row="1"
+                        Visibility="{Binding IsTimedPause, Converter={StaticResource bool2vis}}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <Label FontSize="20"
+                       Content="{Binding Path=Strings.Done}"/>
+            </StackPanel>
 
             <StackPanel Grid.Row="2"
                         VerticalAlignment="Center"
@@ -124,7 +141,6 @@
                             Click="AnswerButton_Click"/>
                 </WrapPanel>
             </StackPanel>
-
         </Grid>
 
         <TextBlock Grid.Row="1"

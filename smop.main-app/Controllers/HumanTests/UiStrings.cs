@@ -25,6 +25,8 @@ public interface IUiStrings
     string OdorReady { get; }
     string Sniff { get; }
     string Odor { get; }
+    string Done { get; }
+    string ContinueWhenReady { get; }
 }
 
 internal static class UiStrings
@@ -66,14 +68,16 @@ internal class EnglishStrings : IUiStrings
     public string OdorReady => "Ready to release the odor";
     public string Sniff => "Sniff";
     public string Odor => "Odor";
+    public string Done => "Done!";
+    public string ContinueWhenReady => "Take a break if needed, then continue the test";
 }
 
 
 internal class FinnishStrings : IUiStrings
 {
-    public string ComparisonInstruction => "Haista useita hajuparia ohjeiden mukaan ja vastaa kysymyksiin";
-    public string ComparisonQuestion => "Ovatko esitetyt hajut identtisiä?";
-    public string RatingInstruction => "Haista hajua niin monta kertaa kuin tarvitset, valitse sanat, jotka kuvaavat hajua ja paina sitten ”Lähetä” painiketta";
+    public string ComparisonInstruction => "Seuraavaksi sinulle esitetään tuoksupareja. Arvioi ovatko tuoksuparin tuoksut samat vai erilaiset.";
+    public string ComparisonQuestion => "Olivatko esitetyt tuoksut samanlaiset?";
+    public string RatingInstruction => "Seuraavaksi on vuorossa tuoksujen arviointi eri tuoksuja kuvaavilla sanoilla. Muista, että voit haistaa jokaista tuoksua niin monta kertaa kuin haluat. Käy tuoksua kuvaava sanalista huolella läpi ja valitse hiirellä kaikki ne sanat, jotka mielestäsi kuvaavat tuoksua. Voit myös olla valitsematta yhtään sanaa. Paina sitten ”Lähetä” painiketta";
     public string[] RatingWords => [
         "hikinen", "pistävä", "neutraali",
         "tunkkainen", "raikas", "voimakas",
@@ -87,14 +91,16 @@ internal class FinnishStrings : IUiStrings
     ];
     public string Yes => "Kyllä";
     public string No => "Ei";
-    public string ReleaseOdor => "Päästä haju vapaaksi";
+    public string ReleaseOdor => "Käynnistä tuoksu";
     public string Continue => "Jatka";
-    public string Submit => "Lähetä";
+    public string Submit => "Valmis";
     public string Wait => "Odota";
     public string SelectWords => "Valitse sopivat kuvaukset";
-    public string OdorReady => "Valmis päästämään hajun vapaaksi";
+    public string OdorReady => "Tuoksu on valmis käynnistettäväksi";
     public string Sniff => "Haista";
     public string Odor => "Haju";
+    public string Done => "Valmis!";
+    public string ContinueWhenReady => "Pidä tauko, jos tarvitset, ja jatka sitten testiä";
 }
 
 internal class GermanStrings : IUiStrings
@@ -123,4 +129,6 @@ internal class GermanStrings : IUiStrings
     public string OdorReady => "Bereit, den Geruch freizusetzen";
     public string Sniff => "Riechen";
     public string Odor => "Geruch";
+    public string Done => "Done!";
+    public string ContinueWhenReady => "Mach eine Pause, wenn du brauchst, und setze dann den Test fort";
 }

@@ -13,6 +13,8 @@ internal enum Stage
     Ready,
     SniffingMixture,
     Question,
+    TimedPause,
+    UserControlledPause,
     Finished,
 }
 
@@ -23,6 +25,7 @@ internal static class Brushes
     public static Brush Active => new SolidColorBrush(Color.FromRgb(0, 0xA0, 0));
     public static Brush Focused => new SolidColorBrush(Color.FromRgb(0x40, 0xB8, 0x40));
     public static Brush Selected => new SolidColorBrush(Color.FromRgb(0, 0x40, 0));
+    public static Brush Done => new SolidColorBrush(Color.FromRgb(0x40, 0x40, 0x40));
 }
 
 internal class Mixture
@@ -30,11 +33,15 @@ internal class Mixture
     public string Name { get; }
     public PulseChannelProps[] Channels { get; }
     public bool IsStress { get; }
+    public bool IsControl { get; }
+    public bool IsTarget => IsStress || IsControl;
+    public bool IsMLProduced => !IsStress && !IsControl;
 
     public Mixture(string name, KeyValuePair<string, float>[] flows, Dictionary<OdorDisplay.Device.ID, string> channels)
     {
         Name = name;
         IsStress = name.ToLower() == "stress";
+        IsControl = name.ToLower() == "control";
 
         var pulse = new List<PulseChannelProps>();
         foreach (var kv in flows)
@@ -77,12 +84,12 @@ internal class Block
     }
 }
 
-internal class Session
+internal class ComparisonSession
 {
     public int[] UsedChannelIds { get; }
     public Block[] Blocks { get; private set; } = [];
 
-    public Session(Settings settings)
+    public ComparisonSession(Settings settings)
     {
         UsedChannelIds = OdorDisplayHelper.GetChannelIds(settings.Channels);
 
@@ -101,11 +108,14 @@ internal class Session
         {
             var allMixtures = OdorDisplayHelper.GetAllMixtures(settings.Channels);
             var stress = allMixtures.First(mix => mix.IsStress);
-            var theRest = allMixtures.Where(mix => !mix.IsStress);
+            var control = allMixtures.First(mix => mix.IsControl);
+            var againstStress = allMixtures.Where(mix => !mix.IsStress);
+            var againstControl = allMixtures.Where(mix => !mix.IsControl);
 
             for (int i = 0; i < settings.Repetitions; i++)
             {
-                blocks.Add(new Block(settings.IsRandomized, theRest.Select(mix => new Comparison(stress, mix)).ToArray()));
+                blocks.Add(new Block(settings.IsRandomized, againstStress.Select(mix => new Comparison(stress, mix)).ToArray()));
+                blocks.Add(new Block(settings.IsRandomized, againstControl.Select(mix => new Comparison(control, mix)).ToArray()));
             }
         }
 

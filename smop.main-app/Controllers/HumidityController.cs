@@ -89,7 +89,9 @@ internal class HumidityController
         _timer.Stop();
     }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
     {
         foreach (var measurement in data.Measurements)
         {

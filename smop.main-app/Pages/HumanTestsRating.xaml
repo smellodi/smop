@@ -6,12 +6,11 @@
       xmlns:sys="clr-namespace:System;assembly=mscorlib"
       xmlns:utils="clr-namespace:Smop.MainApp.Utils"
       xmlns:local="clr-namespace:Smop.MainApp.Controls"
-      xmlns:ht="clr-namespace:Smop.MainApp.Controllers.HumanTests"
       mc:Ignorable="d" 
       d:DesignHeight="746"
       d:DesignWidth="800"
       DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
-      Title="Pulse"
+      Title="Ratings"
       Focusable="True"
       KeyDown="Page_KeyDown"
       Loaded="Page_Loaded"
@@ -35,22 +34,37 @@
         </Style>
         <Style x:Key="Rating" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
             <Setter Property="Margin" Value="8"/>
-            <Setter Property="Background" Value="{x:Static ht:Brushes.Active}"/>
-            <Setter Property="Foreground" Value="{x:Static ht:Brushes.Foreground}"/>
-            <Setter Property="BorderBrush" Value="{x:Static ht:Brushes.Selected}"/>
+            <Setter Property="Background" Value="{StaticResource BrushHTButtonActive}"/>
+            <Setter Property="Foreground" Value="{StaticResource BrushHTButtonForeground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BrushHTButtonSelected}"/>
             <Style.Triggers>
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="{x:Static ht:Brushes.Selected}"/>
+                    <Setter Property="Background" Value="{StaticResource BrushHTButtonSelected}"/>
                 </Trigger>
                 <MultiTrigger>
                     <MultiTrigger.Conditions>
                         <Condition Property="IsMouseOver" Value="True"/>
                         <Condition Property="IsChecked" Value="False"/>
                     </MultiTrigger.Conditions>
-                    <Setter Property="Background" Value="{x:Static ht:Brushes.Focused}"/>
+                    <Setter Property="Background" Value="{StaticResource BrushHTButtonFocused}"/>
                 </MultiTrigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="{x:Static ht:Brushes.Selected}"/>
+                    <Setter Property="Background" Value="{StaticResource BrushHTButtonSelected}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ReleaseOdor" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Setter Property="BorderBrush" Value="{StaticResource BrushHTButtonClickableBorder}"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BrushHTButtonClickable}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BrushHTButtonMouseOver}"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BrushHTButtonMouseDown}"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -87,28 +101,11 @@
                                           Width="200"
                                           VerticalContentAlignment="Bottom"/>
 
-                <Button IsEnabled="{Binding CanReleaseOdor}"
+                <Button Style="{StaticResource ReleaseOdor}"
+                        IsEnabled="{Binding CanReleaseOdor}"
                         Width="146"
                         Content="{Binding Path=Strings.ReleaseOdor}"
                         Click="ReleaseOdor_Click">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                            <Style.Triggers>
-                                <Trigger Property="IsEnabled" Value="True">
-                                    <Setter Property="BorderBrush" Value="#FF004000"/>
-                                    <Setter Property="Background" Value="#FF448822"/>
-                                    <Setter Property="Foreground" Value="#CCFFFFFF"/>
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#FF66BB44"/>
-                                    <Setter Property="BorderBrush" Value="#FF004000"/>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter Property="Background" Value="#FF669944"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
                 </Button>
             </StackPanel>
 
@@ -129,7 +126,7 @@
         <TextBlock Grid.Row="1"
                    Visibility="{Binding IsInstruction, Converter={StaticResource bool2vis}}"
                    FontSize="20"
-                   Width="360"
+                   Width="560"
                    TextWrapping="Wrap"
                    TextAlignment="Center"
                    VerticalAlignment="Center"

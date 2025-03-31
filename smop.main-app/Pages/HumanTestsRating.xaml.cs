@@ -9,7 +9,7 @@ using System.Windows.Input;
 
 namespace Smop.MainApp.Pages;
 
-public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INotifyPropertyChanged
+public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, IDisposable, INotifyPropertyChanged
 {
     public bool IsInstruction => _stage == Stage.Initial;
     public bool CanReleaseOdor => _stage == Stage.Ready;
@@ -23,6 +23,8 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
         Stage.SniffingMixture => Strings?.Sniff,
         _ => null
     };
+
+    public Settings? Settings { get; private set; }
 
     public IUiStrings? Strings { get; private set; }
 
@@ -42,6 +44,8 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IDisposable, INo
 
     public void Start(Settings settings)
     {
+        Settings = settings;
+        
         Strings = UiStrings.Get(settings.Language);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Strings)));
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Smop.MainApp.Controllers.HumanTests;
 
-internal class ComparisonController(Settings settings) : IDisposable
+internal class OneOutController(Settings settings) : IDisposable
 {
     public class StageChangedEventArgs(Stage stage, int mixtureId = 0) : EventArgs
     {
@@ -14,13 +14,8 @@ internal class ComparisonController(Settings settings) : IDisposable
         public int MixtureId { get; } = mixtureId;
     }
 
-    public double PauseBetweenBlocks => 60; // seconds
-
-    public int BlockID => _blockIndex + 1;
-    public int ComparisonID => _comparisonIndex + 1;
+    public int TripletID => _tripletIndex + 1;
     public int MixtureID => _mixtureIndex + 1;
-
-    public int BlockCount => settings.Repetitions;
 
     public event EventHandler<StageChangedEventArgs>? StageChanged;
 
@@ -53,26 +48,14 @@ internal class ComparisonController(Settings settings) : IDisposable
 
         _eventLogger.Add("start", settings.IsPracticingProcedure ? "practice" : "comparison");
 
-        RunNextBlock();
-    }
-
-    public void Continue()
-    {
-        if (_currentStage == Stage.UserControlledPause)
-        {
-            _delayedAction?.Dispose();
-            _delayedAction = null;
-
-            RunNextBlock();
-        }
+        RunNextTriplet();
     }
 
     public void ForceToFinish()
     {
-        if (_session.Blocks.Length > 0)
+        if (_session.Triplets.Length > 0)
         {
-            _blockIndex = _session.Blocks.Length - 1;
-            _comparisonIndex = _session.Blocks[_blockIndex].Comparisons.Length - 1;
+            _tripletIndex = _session.Triplets.Length - 1;
         }
     }
 
@@ -81,23 +64,23 @@ internal class ComparisonController(Settings settings) : IDisposable
         _odorDisplay.StopFlows(_session.UsedChannelIds.Select(id => (OdorDisplay.Device.ID)id).ToArray());
     }
 
-    public void SetAnswer(bool areSame)
+    public void SetAnswer(string answer)
     {
-        var block = _session.Blocks[_blockIndex];
-        var comparison = block.Comparisons[_comparisonIndex];
+        var tripet = _session.Triplets[_tripletIndex];
 
-        comparison.AreSame = areSame;
+        tripet.Answer = int.TryParse(answer, out int id) ? id : 0;
+        System.Diagnostics.Debug.WriteLine(tripet);
 
-        _eventLogger.Add("answer", areSame ? "same" : "different");
+        _eventLogger.Add("answer", answer);
 
         if (PauseBetweenTrials > 0)
         {
             PublishStage(Stage.TimedPause);
-            _delayedAction = DispatchOnce.Do(PauseBetweenTrials, RunNextComparison);
+            _delayedAction = DispatchOnce.Do(PauseBetweenTrials, RunNextTriplet);
         }
         else
         {
-            RunNextComparison();
+            RunNextTriplet();
         }
     }
 
@@ -108,14 +91,13 @@ internal class ComparisonController(Settings settings) : IDisposable
     readonly double PauseBetweenTrials = 4;  // seconds
 
     readonly OdorDisplayController _odorDisplay = new();
-    readonly ComparisonSession _session = new(settings);
+    readonly OneOutSession _session = new(settings);
 
     readonly EventLogger _eventLogger = EventLogger.Instance;
     readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
     readonly SmellInspLogger _smellInspLogger = SmellInspLogger.Instance;
 
-    int _blockIndex = -1;
-    int _comparisonIndex = -1;
+    int _tripletIndex = -1;
     int _mixtureIndex = -1;
 
     Stage _currentStage = Stage.Initial;
@@ -124,58 +106,29 @@ internal class ComparisonController(Settings settings) : IDisposable
 
     bool _isDisposed = false;
 
-    private void RunNextBlock()
+    private void RunNextTriplet()
     {
-        _blockIndex += 1;
+        _tripletIndex += 1;
 
-        if (_blockIndex < _session.Blocks.Length)
+        if (_tripletIndex < _session.Triplets.Length)
         {
-            var block = _session.Blocks[_blockIndex];
-            _eventLogger.Add("block", _blockIndex.ToString());
+            var triplet = _session.Triplets[_tripletIndex];
+            _eventLogger.Add("triplet", _tripletIndex.ToString());
 
-            _comparisonIndex = -1;
-            _delayedAction = DispatchOnce.Do(0.1, RunNextComparison);
+            _mixtureIndex = 0;
+            StartPulse(triplet.Mixtures[_mixtureIndex]);
         }
         else
         {
-            foreach (var block in _session.Blocks)
-                foreach (var comp in block.Comparisons)
-                    _eventLogger.Add("comparison", comp.ToString() ?? "");
+            foreach (var triplet in _session.Triplets)
+                _eventLogger.Add("triplet", triplet.ToString());
 
             PublishStage(Stage.Finished);
         }
     }
 
-    private void RunNextComparison()
-    {
-        var block = _session.Blocks[_blockIndex];
-
-        _comparisonIndex += 1;
-        _mixtureIndex = 0;
-
-        if (_comparisonIndex < block.Comparisons.Length)
-        {
-            var comparison = block.Comparisons[_comparisonIndex];
-            _eventLogger.Add("pair", _comparisonIndex.ToString());
-
-            StartPulse(comparison.Mixtures[_mixtureIndex]);
-        }
-        else if (PauseBetweenBlocks > 0 && _blockIndex < _session.Blocks.Length - 1)
-        {
-            PublishStage(Stage.UserControlledPause);
-            _delayedAction = DispatchOnce.Do(PauseBetweenBlocks, RunNextBlock);
-        }
-        else
-        {
-            _delayedAction = DispatchOnce.Do(0.1, RunNextBlock);
-        }
-    }
-
     private void StartPulse(Mixture mixture)
     {
-        var block = _session.Blocks[_blockIndex];
-        var comparison = block.Comparisons[_comparisonIndex];
-
         _eventLogger.Add("mixture", _mixtureIndex.ToString(), mixture.Name, mixture.ToString());
 
         _odorDisplay.SetFlows(mixture.Channels);
@@ -202,13 +155,12 @@ internal class ComparisonController(Settings settings) : IDisposable
 
         _eventLogger.Add("valve", "close");
 
-        var block = _session.Blocks[_blockIndex];
-        var comparison = block.Comparisons[_comparisonIndex];
+        var triplet = _session.Triplets[_tripletIndex];
 
         _mixtureIndex += 1;
 
-        if (_mixtureIndex < 2)
-            StartPulse(comparison.Mixtures[_mixtureIndex]);
+        if (_mixtureIndex < 3)
+            StartPulse(triplet.Mixtures[_mixtureIndex]);
         else
             PublishStage(Stage.Question);
     }

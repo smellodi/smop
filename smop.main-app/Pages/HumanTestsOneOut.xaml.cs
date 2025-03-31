@@ -1,5 +1,4 @@
 ﻿using Smop.MainApp.Controllers.HumanTests;
-using Smop.MainApp.Utils.Extensions;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -8,7 +7,7 @@ using System.Windows.Input;
 
 namespace Smop.MainApp.Pages;
 
-public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPage, IDisposable, INotifyPropertyChanged
+public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, IDisposable, INotifyPropertyChanged
 {
     #region TrialStage
     public TrialStage TrialStage
@@ -20,12 +19,12 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
     public static readonly DependencyProperty TrialStageProperty = DependencyProperty.Register(
         nameof(TrialStage),
         typeof(TrialStage),
-        typeof(HumanTestComparison),
+        typeof(HumanTestOneOut),
         new FrameworkPropertyMetadata(new TrialStage(Stage.Initial, 0), new PropertyChangedCallback(TrialStageProperty_Changed)));
 
     private static void TrialStageProperty_Changed(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
-        if (sender is HumanTestComparison instance)
+        if (sender is HumanTestOneOut instance)
         {
             instance.PropertyChanged?.Invoke(instance, new PropertyChangedEventArgs(nameof(TrialStage)));
         }
@@ -34,14 +33,13 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
 
     public bool IsInstruction => _stage == Stage.Initial;
     public bool IsQuestion => _stage == Stage.Question;
-    public bool IsUserControlledPause => _stage == Stage.UserControlledPause;
     public bool IsTimedPause => _stage == Stage.TimedPause;
-    public string StageInfo => $"Block {_controller?.BlockID}, Comparison {_controller?.ComparisonID}";
+
+    public string StageInfo => $"Triplet {_controller?.TripletID}";
     public string? InstructionText => _stage switch
     {
         Stage.WaitingMixture => Strings?.Wait,
         Stage.SniffingMixture => Strings?.Sniff,
-        Stage.UserControlledPause => Strings?.ContinueWhenReady,
         _ => null
     };
 
@@ -52,23 +50,11 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
     public event EventHandler<Navigation>? Next;
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public HumanTestComparison()
+    public HumanTestOneOut()
     {
         InitializeComponent();
 
-        Name = "HumanTestsComparison";
-
-        wtiWaiting.TimeUpdated += (s, e) =>
-        {
-            if (IsUserControlledPause)
-            {
-                Dispatcher.Invoke(() => lblWaitingTime.Content = Math.Max(0, e.Remaining).ToTime(wtiWaiting.WaitingTime));
-            }
-            else
-            {
-                Dispatcher.Invoke(() => lblWaitingTime.Content = "");
-            }
-        };
+        Name = "HumanTestsOneOut";
 
         ((App)Application.Current).AddCleanupAction(CleanUp);
     }
@@ -82,7 +68,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
 
         try
         {
-            _controller = new ComparisonController(settings);
+            _controller = new OneOutController(settings);
             _controller.StageChanged += (s, e) => Dispatcher.Invoke(() => SetStage(e.Stage));
         }
         catch
@@ -102,7 +88,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
 
     // Internal
 
-    ComparisonController? _controller = null;
+    OneOutController? _controller = null;
 
     Stage _stage = Stage.Initial;
 
@@ -120,7 +106,6 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstruction)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuestion)));
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUserControlledPause)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTimedPause)));
 
         TrialStage = new TrialStage(stage, _controller?.MixtureID ?? 0);
@@ -129,6 +114,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
 
         if (stage == Stage.WaitingMixture)
         {
+            Grid.SetColumn(wtiWaiting, (_controller?.MixtureID ?? 2) - 1);
             wtiWaiting.Start(Settings?.WaitingInterval ?? 0);
         }
         else if (stage == Stage.SniffingMixture)
@@ -138,10 +124,6 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
         else if (stage == Stage.Question)
         {
             wtiWaiting.Reset();
-        }
-        else if (stage == Stage.UserControlledPause)
-        {
-            wtiWaiting.Start(_controller?.PauseBetweenBlocks ?? 0);
         }
         else if (stage == Stage.Finished)
         {
@@ -194,14 +176,12 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
         _controller?.Start();
     }
 
-    private void AnswerButton_Click(object sender, RoutedEventArgs e)
+    private void Odor_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        bool areSame = (string?)((Button)sender)?.Tag == "True";
-        _controller?.SetAnswer(areSame);
-    }
-
-    private void NextBlock_Click(object sender, RoutedEventArgs e)
-    {
-        _controller?.Continue();
+        if (_stage == Stage.Question)
+        {
+            string? id = (string?)((Label)sender)?.Tag ?? "";
+            _controller?.SetAnswer(id);
+        }
     }
 }

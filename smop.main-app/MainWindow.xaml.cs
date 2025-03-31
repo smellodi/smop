@@ -24,6 +24,7 @@ public partial class MainWindow : Window
         _pulsePage.Next += Page_Next;
         _reproductionPage.Next += Page_Next;
         _humanTestsComparisonPage.Next += Page_Next;
+        _humanTestsOneOutPage.Next += Page_Next;
         _humanTestsRatingPage.Next += Page_Next;
         _finishedPage.Next += Page_Next;
         _finishedPage.RequestSaving += FinishedPage_RequestSaving;
@@ -53,6 +54,7 @@ public partial class MainWindow : Window
     readonly Pulse _pulsePage = new();
     readonly Reproduction _reproductionPage = new();
     readonly HumanTestComparison _humanTestsComparisonPage = new();
+    readonly HumanTestOneOut _humanTestsOneOutPage = new();
     readonly HumanTestRating _humanTestsRatingPage = new();
     readonly Finished _finishedPage = new();
 
@@ -135,8 +137,10 @@ public partial class MainWindow : Window
 
             Content = _humanTestsComparisonPage;
             _humanTestsComparisonPage.Start(humanTestSettings);
-            //Content = _humanTestsRatingPage;
-            //_humanTestsRatingPage.Start(humanTestSettings);
+            //Content = _humanTestsOneOutPage;
+            //_humanTestsOneOutPage.Start(humanTestSettings);
+            //Content = _humanTestsOneOutPage;
+            //_humanTestsOneOutPage.Start(humanTestSettings);
         }
         else
         {
@@ -176,12 +180,22 @@ public partial class MainWindow : Window
 
             Content = _setupPage;
         }
-        else if (next == Navigation.Test && sender == _humanTestsComparisonPage)
+        else if (next == Navigation.Test)
         {
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsRatingPage.Name));
+            if (sender == _humanTestsComparisonPage)
+            {
+                _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsOneOutPage.Name));
 
-            Content = _humanTestsRatingPage;
-            _humanTestsRatingPage.Start(_humanTestsComparisonPage.Settings!);
+                Content = _humanTestsOneOutPage;
+                _humanTestsOneOutPage.Start(_humanTestsComparisonPage.Settings!);
+            }
+            else if (sender == _humanTestsOneOutPage)
+            {
+                _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsRatingPage.Name));
+
+                Content = _humanTestsRatingPage;
+                _humanTestsRatingPage.Start(_humanTestsOneOutPage.Settings!);
+            }
         }
         else
         {

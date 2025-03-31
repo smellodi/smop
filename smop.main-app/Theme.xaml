@@ -42,4 +42,15 @@
     <SolidColorBrush x:Key="BrushPanelDisabled" Color="{StaticResource ColorDisabledDark}" />
     <SolidColorBrush x:Key="BrushPanelDisabledLight" Color="{StaticResource ColorDisabledLightDarker}" />
 
+    <!-- Human Test brushes -->
+    <SolidColorBrush x:Key="BrushHTButtonForeground" Color="White" />
+    <SolidColorBrush x:Key="BrushHTButtonInactive" Color="LightGray" />
+    <SolidColorBrush x:Key="BrushHTButtonActive" Color="#FF00A000" />
+    <SolidColorBrush x:Key="BrushHTButtonFocused" Color="#FF40B840" />
+    <SolidColorBrush x:Key="BrushHTButtonSelected" Color="#FF004000" />
+    <SolidColorBrush x:Key="BrushHTButtonDone" Color="#FF404040" />
+    <SolidColorBrush x:Key="BrushHTButtonClickableBorder" Color="#FF004400" />
+    <SolidColorBrush x:Key="BrushHTButtonClickable" Color="#FF448822" />
+    <SolidColorBrush x:Key="BrushHTButtonMouseOver" Color="#FF66BB44" />
+    <SolidColorBrush x:Key="BrushHTButtonMouseDown" Color="#FF669944" />
 </ResourceDictionary>

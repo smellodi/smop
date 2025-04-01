@@ -73,11 +73,11 @@ internal class Comparison(Mixture mixture1, Mixture mixture2)
     public override string ToString() => $"{mixture1.Name}\t{mixture2.Name}\t{AreSame}";
 }
 
-internal class Block
+internal class ComparisonBlock
 {
     public Comparison[] Comparisons { get; }
 
-    public Block(bool isRandomized, Comparison[] comparisons)
+    public ComparisonBlock(bool isRandomized, Comparison[] comparisons)
     {
         Comparisons = comparisons;
 
@@ -92,13 +92,13 @@ internal class Block
 internal class ComparisonSession
 {
     public int[] UsedChannelIds { get; }
-    public Block[] Blocks { get; private set; } = [];
+    public ComparisonBlock[] Blocks { get; private set; } = [];
 
     public ComparisonSession(Settings settings)
     {
         UsedChannelIds = OdorDisplayHelper.GetChannelIds(settings.Channels);
 
-        var blocks = new List<Block>();
+        var blocks = new List<ComparisonBlock>();
         if (settings.IsPracticingProcedure)
         {
             var empty = new Mixture("empty", [], settings.Channels);
@@ -107,7 +107,7 @@ internal class ComparisonSession
             for (int i = 0; i < settings.PracticingTrialCount; i++)
                 comparisons.Add(new Comparison(empty, empty));
 
-            blocks.Add(new Block(false, comparisons.ToArray()));
+            blocks.Add(new ComparisonBlock(false, comparisons.ToArray()));
         }
         else
         {
@@ -119,8 +119,8 @@ internal class ComparisonSession
 
             for (int i = 0; i < settings.Repetitions; i++)
             {
-                blocks.Add(new Block(settings.IsRandomized, againstStress.Select(mix => new Comparison(stress, mix)).ToArray()));
-                blocks.Add(new Block(settings.IsRandomized, againstControl.Select(mix => new Comparison(control, mix)).ToArray()));
+                blocks.Add(new ComparisonBlock(settings.IsRandomized, againstStress.Select(mix => new Comparison(stress, mix)).ToArray()));
+                blocks.Add(new ComparisonBlock(settings.IsRandomized, againstControl.Select(mix => new Comparison(control, mix)).ToArray()));
             }
         }
 
@@ -132,13 +132,12 @@ internal class Triplet(Mixture mixture1, Mixture mixture2, Mixture mixture3)
 {
     public Mixture[] Mixtures { get; } = [mixture1, mixture2, mixture3];
     public int Answer { get; set; } = 0;
-    public int OneOutID => mixture1.Name == mixture2.Name ? 3 :
+    public int OneOutID =>
+        mixture1.Name == mixture2.Name ? 3 :
         mixture1.Name == mixture3.Name ? 2 : 1;
     public bool IsCorrect => Answer == OneOutID;
 
     public override string ToString() => $"{mixture1.Name}\t{mixture2.Name}\t{mixture3.Name}\t{OneOutID}\t{Answer}\t{IsCorrect}";
-
-    // Internal
 }
 
 internal class OneOutSession

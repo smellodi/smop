@@ -83,7 +83,7 @@ internal class FinnishStrings : IUiStrings
     public string RatingInstruction => "Seuraavaksi on vuorossa tuoksujen arviointi eri tuoksuja kuvaavilla sanoilla. Muista, että voit haistaa jokaista tuoksua niin monta kertaa kuin haluat. Käy tuoksua kuvaava sanalista huolella läpi ja valitse hiirellä kaikki ne sanat, jotka mielestäsi kuvaavat tuoksua. Voit myös olla valitsematta yhtään sanaa. Paina sitten ”Valmis” painiketta";
     public string OneOutInstruction => "Seuraavaksi sinulle esitetään yhteensä 3 tuoksua. Esitettävistä tuoksuista kaksi ovat samoja ja yksi on erilainen. Sinun tehtävänäsi on arvioida mikä tuoksuista oli mielestäsi erilainen.";
     public string ComparisonQuestion => "Olivatko esitetyt tuoksut samanlaiset?";
-    public string OneOutQuestion => "Valitse laatikko ja numero jonka tuoksu erosi muista";
+    public string OneOutQuestion => "Valitse laatikko ja numero jonka haju erosi muista";
     public string[] RatingWords => [
         "hikinen", "pistävä", "neutraali",
         "tunkkainen", "raikas", "voimakas",

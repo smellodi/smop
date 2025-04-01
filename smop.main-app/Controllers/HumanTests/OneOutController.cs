@@ -14,6 +14,8 @@ internal class OneOutController(Settings settings) : IDisposable
         public int MixtureId { get; } = mixtureId;
     }
 
+    public double PauseBetweenBlocks => 60; // seconds
+
     public int TripletID => _tripletIndex + 1;
     public int MixtureID => _mixtureIndex + 1;
 
@@ -49,6 +51,17 @@ internal class OneOutController(Settings settings) : IDisposable
         _eventLogger.Add("start", settings.IsPracticingProcedure ? "practice" : "comparison");
 
         RunNextTriplet();
+    }
+
+    public void Continue()
+    {
+        if (_currentStage == Stage.UserControlledPause)
+        {
+            _delayedAction?.Dispose();
+            _delayedAction = null;
+
+            RunNextTriplet();
+        }
     }
 
     public void ForceToFinish()
@@ -89,6 +102,7 @@ internal class OneOutController(Settings settings) : IDisposable
     //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
     readonly double PauseBetweenTrials = 4;  // seconds
+    readonly int BlockSize = 4;
 
     readonly OdorDisplayController _odorDisplay = new();
     readonly OneOutSession _session = new(settings);
@@ -108,7 +122,17 @@ internal class OneOutController(Settings settings) : IDisposable
 
     private void RunNextTriplet()
     {
-        _tripletIndex += 1;
+        if (_currentStage != Stage.UserControlledPause)
+        {
+            _tripletIndex += 1;
+
+            if (_tripletIndex > 0 && _tripletIndex < _session.Triplets.Length && (_tripletIndex % BlockSize) == 0)
+            {
+                PublishStage(Stage.UserControlledPause);
+                _delayedAction = DispatchOnce.Do(PauseBetweenBlocks, RunNextTriplet);
+                return;
+            }
+        }
 
         if (_tripletIndex < _session.Triplets.Length)
         {
@@ -121,7 +145,7 @@ internal class OneOutController(Settings settings) : IDisposable
         else
         {
             foreach (var triplet in _session.Triplets)
-                _eventLogger.Add("triplet", triplet.ToString());
+                _eventLogger.Add("one-out", triplet.ToString());
 
             PublishStage(Stage.Finished);
         }

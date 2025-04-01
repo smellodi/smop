@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Controllers.HumanTests;
+using Smop.MainApp.Utils.Extensions;
 using System;
 using System.ComponentModel;
 using System.Windows;
@@ -33,6 +34,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
 
     public bool IsInstruction => _stage == Stage.Initial;
     public bool IsQuestion => _stage == Stage.Question;
+    public bool IsUserControlledPause => _stage == Stage.UserControlledPause;
     public bool IsTimedPause => _stage == Stage.TimedPause;
 
     public string StageInfo => $"Triplet {_controller?.TripletID}";
@@ -40,6 +42,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
     {
         Stage.WaitingMixture => Strings?.Wait,
         Stage.SniffingMixture => Strings?.Sniff,
+        Stage.UserControlledPause => Strings?.ContinueWhenReady,
         _ => null
     };
 
@@ -55,6 +58,18 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
         InitializeComponent();
 
         Name = "HumanTestsOneOut";
+
+        wtiWaiting.TimeUpdated += (s, e) =>
+        {
+            if (IsUserControlledPause)
+            {
+                Dispatcher.Invoke(() => lblWaitingTime.Content = Math.Max(0, e.Remaining).ToTime(wtiWaiting.WaitingTime));
+            }
+            else
+            {
+                Dispatcher.Invoke(() => lblWaitingTime.Content = "");
+            }
+        };
 
         ((App)Application.Current).AddCleanupAction(CleanUp);
     }
@@ -106,6 +121,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StageInfo)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsInstruction)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuestion)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUserControlledPause)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsTimedPause)));
 
         TrialStage = new TrialStage(stage, _controller?.MixtureID ?? 0);
@@ -114,7 +130,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
 
         if (stage == Stage.WaitingMixture)
         {
-            Grid.SetColumn(wtiWaiting, (_controller?.MixtureID ?? 2) - 1);
+            Grid.SetColumn(stpWaiting, (_controller?.MixtureID ?? 2) - 1);
             wtiWaiting.Start(Settings?.WaitingInterval ?? 0);
         }
         else if (stage == Stage.SniffingMixture)
@@ -124,6 +140,11 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
         else if (stage == Stage.Question)
         {
             wtiWaiting.Reset();
+        }
+        else if (stage == Stage.UserControlledPause)
+        {
+            Grid.SetColumn(stpWaiting, 1);
+            wtiWaiting.Start(_controller?.PauseBetweenBlocks ?? 0);
         }
         else if (stage == Stage.Finished)
         {
@@ -183,5 +204,10 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
             string? id = (string?)((Label)sender)?.Tag ?? "";
             _controller?.SetAnswer(id);
         }
+    }
+
+    private void Continue_Click(object sender, RoutedEventArgs e)
+    {
+        _controller?.Continue();
     }
 }

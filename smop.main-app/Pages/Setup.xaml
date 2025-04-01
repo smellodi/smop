@@ -357,7 +357,7 @@
             <Button x:Name="btnCheckChemicalLevels"
                     Style="{StaticResource Next}"
                     IsEnabled="False"
-                    Content="Check chemical levels"
+                    Content="Check level of chemicals"
                     Click="CheckChemicalLevels_Click"/>
             <Button Grid.Column="3"
                     Margin="-12,12"

@@ -36,6 +36,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
     public bool IsQuestion => _stage == Stage.Question;
     public bool IsUserControlledPause => _stage == Stage.UserControlledPause;
     public bool IsTimedPause => _stage == Stage.TimedPause;
+
     public string StageInfo => $"Block {_controller?.BlockID}, Comparison {_controller?.ComparisonID}";
     public string? InstructionText => _stage switch
     {

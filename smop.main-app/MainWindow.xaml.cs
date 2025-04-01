@@ -139,8 +139,8 @@ public partial class MainWindow : Window
             _humanTestsComparisonPage.Start(humanTestSettings);
             //Content = _humanTestsOneOutPage;
             //_humanTestsOneOutPage.Start(humanTestSettings);
-            //Content = _humanTestsOneOutPage;
-            //_humanTestsOneOutPage.Start(humanTestSettings);
+            //Content = _humanTestsRatingPage;
+            //_humanTestsRatingPage.Start(humanTestSettings);
         }
         else
         {

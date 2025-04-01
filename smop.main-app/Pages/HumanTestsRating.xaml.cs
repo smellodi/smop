@@ -76,7 +76,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
 
     const bool CAN_CONTINUE_WITHOUT_RATINGS = true;
 
-    const int RatingButtonsPerRow = 4;
+    const int RatingButtonsPerRow = 5;
 
     RatingController? _controller = null;
 
@@ -90,8 +90,12 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
         var style = (Style)FindResource("Rating");
 
         grdRatingButtons.RowDefinitions.Clear();
-        for (int i = 0; i < Math.Ceiling((double)words.Length / grdRatingButtons.ColumnDefinitions.Count); i++)
-            grdRatingButtons.RowDefinitions.Add(new RowDefinition());
+        grdRatingButtons.ColumnDefinitions.Clear();
+
+        for (int i = 0; i < Math.Ceiling((double)words.Length / RatingButtonsPerRow); i++)
+            grdRatingButtons.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+        for (int i = 0; i < RatingButtonsPerRow; i++)
+            grdRatingButtons.ColumnDefinitions.Add(new ColumnDefinition());
 
         foreach (var word in words)
         {

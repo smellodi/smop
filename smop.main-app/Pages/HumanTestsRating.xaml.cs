@@ -14,7 +14,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
     public bool IsInstruction => _stage == Stage.Initial;
     public bool CanReleaseOdor => _stage == Stage.Ready;
     public bool CanRate { get; private set; } = false;
-    public bool CanSubmit => IsInstruction || (CanRate && _stage != Stage.SniffingMixture && (HasRatings || CAN_CONTINUE_WITHOUT_RATINGS));
+    public bool CanSubmit => IsInstruction || (CanRate && _stage != Stage.SniffingMixture && (HasRatings || Settings?.AllowEmptyRatings == true));
     public string StageInfo => $"{Strings?.Odor} #{_controller?.MixtureID}";
     public string? InstructionText => _stage switch
     {
@@ -73,8 +73,6 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
 
 
     // Internal
-
-    const bool CAN_CONTINUE_WITHOUT_RATINGS = true;
 
     const int RatingButtonsPerRow = 5;
 

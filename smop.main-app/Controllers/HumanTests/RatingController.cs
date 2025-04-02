@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Smop.MainApp.Controllers.HumanTests
 {
@@ -7,7 +8,10 @@ namespace Smop.MainApp.Controllers.HumanTests
         public RatingController(Settings settings) : base("ratings", settings)
         {
             _mixtures = _settings.IsPracticingProcedure
-                ? [new Mixture("empty", [], _settings.Channels)]
+                ? Enumerable
+                    .Range(0, _settings.PracticingTrialCount)
+                    .Select(i => new Mixture($"empty{i}", [], _settings.Channels))
+                    .ToArray()
                 : OdorDisplayHelper.GetAllMixtures(_settings.Channels);
         }
 
@@ -56,8 +60,6 @@ namespace Smop.MainApp.Controllers.HumanTests
         }
 
         // Internal
-
-        //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
         readonly Mixture[] _mixtures;
         readonly Dictionary<string, string[]> _ratings = new();

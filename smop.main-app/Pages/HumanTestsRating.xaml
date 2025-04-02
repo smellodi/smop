@@ -110,14 +110,8 @@
             </StackPanel>
 
             <Grid x:Name="grdRatingButtons" Grid.Row="1"
-                  Width="660"
+                  Width="750"
                   Height="360">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
                 <!-- to be filled in the colde -->
             </Grid>
 

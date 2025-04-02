@@ -7,7 +7,7 @@
              xmlns:utils="clr-namespace:Smop.MainApp.Utils"
              xmlns:ht="clr-namespace:Smop.MainApp.Controllers.HumanTests"
              mc:Ignorable="d"
-             d:DesignHeight="400"
+             d:DesignHeight="480"
              d:DesignWidth="250"
              DataContext="{Binding Path=Settings, RelativeSource={RelativeSource Self}}">
     
@@ -27,9 +27,8 @@
         </Style>
 
         <Style x:Key="MixFlow" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-            <Setter Property="Width" Value="28"/>
+            <Setter Property="Margin" Value="1,0"/>
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="1"/>
         </Style>
 
         <Style TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
@@ -37,389 +36,363 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Height="Auto">
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="86"/>
-        </Grid.ColumnDefinitions>
-
-        <Label Grid.Row="0" Grid.ColumnSpan="2"
-               Style="{StaticResource Section}"
+    <StackPanel>
+        <Label Style="{StaticResource Section}"
                Content="Human Test settings:"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="1" Grid.Column="0"
-               Content="Language"/>
-        <ComboBox Grid.Row="1" Grid.Column="1"
-                  Margin="-2"
-                  VerticalAlignment="Stretch"
-                  HorizontalAlignment="Stretch"
-                  ItemsSource="{Binding Source={StaticResource languages}}"
-                  SelectedItem="{Binding Path=Language, Mode=TwoWay}"/>
+            <Label Grid.Row="0" Grid.Column="0"
+                   Content="Language"/>
+            <ComboBox Grid.Row="0" Grid.Column="1"
+                      Margin="-2"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding Source={StaticResource languages}}"
+                      SelectedItem="{Binding Path=Language, Mode=TwoWay}"/>
 
-        <CheckBox x:Name="chkPractice" Grid.Row="2" Grid.Column="0"
-                  Content="Practicing"
-                  IsChecked="{Binding IsPracticingProcedure}"/>
-        <WrapPanel Grid.Row="2" Grid.Column="1">
-            <TextBox Style="{StaticResource Value}"
-                     IsEnabled="{Binding IsChecked, ElementName=chkPractice}"
-                     Width="38">
+            <CheckBox x:Name="chkPractice" Grid.Row="1" Grid.Column="0"
+                      Content="Practicing"
+                      IsChecked="{Binding IsPracticingProcedure}"/>
+            <WrapPanel Grid.Row="1" Grid.Column="1">
+                <TextBox Style="{StaticResource Value}"
+                         IsEnabled="{Binding IsChecked, ElementName=chkPractice}"
+                         Width="38">
+                    <TextBox.Text>
+                        <Binding Path="PracticingTrialCount"
+                                 Mode="TwoWay"
+                                 UpdateSourceTrigger="PropertyChanged">
+                            <Binding.ValidationRules>
+                                <utils:RangeRule Min="1" Max="10" IsInteger="True"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
+                <Label>times</Label>
+            </WrapPanel>
+
+            <Label Grid.Row="2" Grid.Column="0"
+                   Content="Participant ID"/>
+            <TextBox Grid.Row="2" Grid.Column="1"
+                     Width="Auto"
+                     Style="{StaticResource Value}">
                 <TextBox.Text>
-                    <Binding Path="PracticingTrialCount"
+                    <Binding Path="ParticipantID"
                              Mode="TwoWay"
                              UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
-                            <utils:RangeRule Min="1" Max="10" IsInteger="True"/>
+                            <utils:RangeRule Min="1" Max="100" IsInteger="True"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
             </TextBox>
-            <Label>times</Label>
-        </WrapPanel>
 
-        <Label Grid.Row="3" Grid.Column="0"
-               Content="Participant ID"/>
-        <TextBox Grid.Row="3" Grid.Column="1"
-                 Width="Auto"
-                 Style="{StaticResource Value}">
-            <TextBox.Text>
-                <Binding Path="ParticipantID"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="1" Max="100" IsInteger="True"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <Label Grid.Row="3" Grid.Column="0"
+                   IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
+                   Content="Number of blocks"/>
+            <TextBox Grid.Row="3" Grid.Column="1"
+                     Width="Auto"
+                     IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="ComparisonBlockCount"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="50" IsInteger="True"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <Label Grid.Row="4" Grid.Column="0"
-               IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
-               Content="Number of blocks"/>
-        <TextBox Grid.Row="4" Grid.Column="1"
-                 Width="Auto"
-                 IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
-                 Style="{StaticResource Value}">
-            <TextBox.Text>
-                <Binding Path="ComparisonBlockCount"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="50" IsInteger="True"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <Label Grid.Row="4" Grid.Column="0"
+                   Content="Waiting interval, sec"/>
+            <TextBox Grid.Row="4" Grid.Column="1"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="WaitingInterval"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="3" Max="50" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <Label Grid.Row="5" Grid.Column="0"
-               Content="Waiting interval, sec"/>
-        <TextBox Grid.Row="5" Grid.Column="1"
-                 Style="{StaticResource Value}">
-            <TextBox.Text>
-                <Binding Path="WaitingInterval"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="3" Max="50" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <Label Grid.Row="5" Grid.Column="0"
+                   Content="Sniffing interval, sec"/>
+            <TextBox Grid.Row="5" Grid.Column="1"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="SniffingInterval"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="2" Max="20" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <Label Grid.Row="6" Grid.Column="0"
-               Content="Sniffing interval, sec"/>
-        <TextBox Grid.Row="6" Grid.Column="1"
-                 Style="{StaticResource Value}">
-            <TextBox.Text>
-                <Binding Path="SniffingInterval"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="2" Max="20" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <Label Grid.Row="6" Grid.Column="0"
+                   Content="Pause between blocks, sec"/>
+            <TextBox Grid.Row="6" Grid.Column="1"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="PauseBetweenBlocks"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="120" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <CheckBox Grid.Row="7" Grid.Column="0"
-                  Content="Randomize trials"
-                  IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
-                  IsChecked="{Binding IsRandomized}"/>
+            <Label Grid.Row="7" Grid.Column="0"
+                   Content="Pause between trials, sec"/>
+            <TextBox Grid.Row="7" Grid.Column="1"
+                     Style="{StaticResource Value}">
+                <TextBox.Text>
+                    <Binding Path="PauseBetweenTrials"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="10" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <Separator Grid.Row="8" Grid.ColumnSpan="2"
-                   VerticalAlignment="Top"/>
-        <Label Grid.Row="8" Grid.Column="0"
-               Content="MIXTURES"/>
-        <Label Grid.Row="8" Grid.Column="1"
-               Padding="0"
-               Content="Lim  C-hex  Cit.a."/>
+            <CheckBox Grid.Row="8" Grid.ColumnSpan="2"
+                      Content="Allow skipping ratings"
+                      IsChecked="{Binding AllowEmptyRatings, Mode=TwoWay}"/>
 
-        <Label Grid.Row="9" Grid.Column="0"
-               Content="{Binding Path=Mixtures[0].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="9" Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[0].Limonene"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="9" Grid.Column="1"
-                 HorizontalAlignment="Center"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[0].Cyclohexanone"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="9" Grid.Column="1"
-                 HorizontalAlignment="Right"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[0].CitronellylAcetate"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <CheckBox Grid.Row="9" Grid.Column="0"
+                      Content="Randomize trials"
+                      IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
+                      IsChecked="{Binding IsRandomized, Mode=TwoWay}"/>
+        </Grid>
 
-        <Label Grid.Row="10" Grid.Column="0"
-               Content="{Binding Path=Mixtures[1].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="10" Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[1].Limonene"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="10" Grid.Column="1"
-                 HorizontalAlignment="Center"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[1].Cyclohexanone"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="10" Grid.Column="1"
-                 HorizontalAlignment="Right"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[1].CitronellylAcetate"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+        <Separator VerticalAlignment="Top"/>
 
-        <Label Grid.Row="11" Grid.Column="0"
-               Content="{Binding Path=Mixtures[2].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="11" Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[2].Limonene"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="11" Grid.Column="1"
-                 HorizontalAlignment="Center"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[2].Cyclohexanone"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="11" Grid.Column="1"
-                 HorizontalAlignment="Right"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[2].CitronellylAcetate"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
+            
+            <Label Grid.Row="0" Grid.Column="0"
+                   Content="MIXTURES"/>
+            <Label Grid.Row="0" Grid.Column="1">Lim</Label>
+            <Label Grid.Row="0" Grid.Column="2">C-hex</Label>
+            <Label Grid.Row="0" Grid.Column="3">Cit.a.</Label>
 
-        <Label Grid.Row="12" Grid.Column="0"
-               Content="{Binding Path=Mixtures[3].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="12" Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[3].Limonene"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="12" Grid.Column="1"
-                 HorizontalAlignment="Center"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[3].Cyclohexanone"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="12" Grid.Column="1"
-                 HorizontalAlignment="Right"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[3].CitronellylAcetate"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <Label Grid.Row="1" Grid.Column="0"
+                   Content="{Binding Path=Mixtures[0].Name, Mode=OneTime}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[0].Limonene"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="1" Grid.Column="2" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[0].Cyclohexanone"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[0].CitronellylAcetate"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <Label Grid.Row="13" Grid.Column="0"
-               Content="{Binding Path=Mixtures[4].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="13" Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[4].Limonene"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="13" Grid.Column="1"
-                 HorizontalAlignment="Center"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[4].Cyclohexanone"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="13" Grid.Column="1"
-                 HorizontalAlignment="Right"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[4].CitronellylAcetate"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
+            <Label Grid.Row="2" Grid.Column="0"
+                   Content="{Binding Path=Mixtures[1].Name, Mode=OneTime}"/>
+            <TextBox Grid.Row="2" Grid.Column="1" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[1].Limonene"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="2" Grid.Column="2" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[1].Cyclohexanone"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="2" Grid.Column="3" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[1].CitronellylAcetate"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
 
-        <!--Label Grid.Row="13" Grid.Column="0"
-               Content="{Binding Path=Mixtures[5].Name, Mode=OneTime}">
-        </Label>
-        <TextBox Grid.Row="13" Grid.Column="1"
-                 HorizontalAlignment="Left"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[5].Limonene"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="13" Grid.Column="1"
-                 HorizontalAlignment="Center"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[5].Cyclohexanone"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox>
-        <TextBox Grid.Row="13" Grid.Column="1"
-                 HorizontalAlignment="Right"
-                 Style="{StaticResource MixFlow}">
-            <TextBox.Text>
-                <Binding Path="Mixtures[5].CitronellylAcetate"
-                         Mode="TwoWay"
-                         UpdateSourceTrigger="PropertyChanged">
-                    <Binding.ValidationRules>
-                        <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
-                    </Binding.ValidationRules>
-                </Binding>
-            </TextBox.Text>
-        </TextBox-->
-    </Grid>
+            <Label Grid.Row="3" Grid.Column="0"
+                   Content="{Binding Path=Mixtures[2].Name, Mode=OneTime}"/>
+            <TextBox Grid.Row="3" Grid.Column="1" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[2].Limonene"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="3" Grid.Column="2" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[2].Cyclohexanone"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="3" Grid.Column="3" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[2].CitronellylAcetate"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+
+            <Label Grid.Row="4" Grid.Column="0"
+                   Content="{Binding Path=Mixtures[3].Name, Mode=OneTime}"/>
+            <TextBox Grid.Row="4" Grid.Column="1" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[3].Limonene"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="4" Grid.Column="2" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[3].Cyclohexanone"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="4" Grid.Column="3" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[3].CitronellylAcetate"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+
+            <Label Grid.Row="5" Grid.Column="0"
+                   Content="{Binding Path=Mixtures[4].Name, Mode=OneTime}"/>
+            <TextBox Grid.Row="5" Grid.Column="1" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[4].Limonene"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="5" Grid.Column="2" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[4].Cyclohexanone"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <TextBox Grid.Row="5" Grid.Column="3" Style="{StaticResource MixFlow}">
+                <TextBox.Text>
+                    <Binding Path="Mixtures[4].CitronellylAcetate"
+                             Mode="TwoWay"
+                             UpdateSourceTrigger="PropertyChanged">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </Grid>
+    </StackPanel>
 </UserControl>

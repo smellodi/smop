@@ -47,10 +47,10 @@ internal class ComparisonController : CommonController
 
         _eventLogger.Add("answer", areSame ? "same" : "different");
 
-        if (PauseBetweenTrials > 0)
+        if (_settings.PauseBetweenTrials > 0)
         {
             PublishStage(Stage.TimedPause);
-            _delayedAction = DispatchOnce.Do(PauseBetweenTrials, RunNextComparison);
+            _delayedAction = DispatchOnce.Do(_settings.PauseBetweenTrials, RunNextComparison);
         }
         else
         {
@@ -103,10 +103,10 @@ internal class ComparisonController : CommonController
 
             StartPulse(comparison.Mixtures[_mixtureIndex]);
         }
-        else if (PauseBetweenBlocks > 0 && _blockIndex < _session.Blocks.Length - 1)
+        else if (_settings.PauseBetweenBlocks > 0 && _blockIndex < _session.Blocks.Length - 1)
         {
             PublishStage(Stage.UserControlledPause);
-            _delayedAction = DispatchOnce.Do(PauseBetweenBlocks, RunNextBlock);
+            _delayedAction = DispatchOnce.Do(_settings.PauseBetweenBlocks, RunNextBlock);
         }
         else
         {

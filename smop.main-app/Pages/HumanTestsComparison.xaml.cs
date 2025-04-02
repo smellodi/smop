@@ -42,7 +42,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
     {
         Stage.WaitingMixture => Strings?.Wait,
         Stage.SniffingMixture => Strings?.Sniff,
-        Stage.UserControlledPause => Strings?.ContinueWhenReady,
+        Stage.UserControlledPause => Strings?.TakeABreak,
         _ => null
     };
 
@@ -142,7 +142,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
         }
         else if (stage == Stage.UserControlledPause)
         {
-            wtiWaiting.Start(CommonController.PauseBetweenBlocks);
+            wtiWaiting.Start(Settings?.PauseBetweenBlocks ?? 0);
         }
         else if (stage == Stage.Finished)
         {

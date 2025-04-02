@@ -28,7 +28,7 @@ public interface IUiStrings
     string Sniff { get; }
     string Odor { get; }
     string Done { get; }
-    string ContinueWhenReady { get; }
+    string TakeABreak { get; }
 }
 
 internal static class UiStrings
@@ -73,17 +73,17 @@ internal class EnglishStrings : IUiStrings
     public string Sniff => "Sniff";
     public string Odor => "Odor";
     public string Done => "Done!";
-    public string ContinueWhenReady => "Take a break, then continue the test";
+    public string TakeABreak => "Wait. The test will soon continue automatically.";
 }
 
 
 internal class FinnishStrings : IUiStrings
 {
     public string ComparisonInstruction => "Seuraavaksi sinulle esitetään tuoksupareja. Arvioi ovatko tuoksuparin tuoksut samat vai erilaiset.";
-    public string RatingInstruction => "Seuraavaksi on vuorossa tuoksujen arviointi eri tuoksuja kuvaavilla sanoilla. Muista, että voit haistaa jokaista tuoksua niin monta kertaa kuin haluat. Käy tuoksua kuvaava sanalista huolella läpi ja valitse hiirellä kaikki ne sanat, jotka mielestäsi kuvaavat tuoksua. Voit myös olla valitsematta yhtään sanaa. Paina sitten ”Valmis” painiketta";
+    public string RatingInstruction => "Seuraavaksi on vuorossa tuoksujen arviointi eri tuoksuja kuvaavilla sanoilla. Muista, että voit haistaa jokaista tuoksua niin monta kertaa kuin haluat. Käy tuoksua kuvaava sanalista huolella läpi ja valitse hiirellä kaikki ne sanat, jotka mielestäsi kuvaavat tuoksua. Voit myös olla valitsematta yhtään sanaa. Paina sitten ”Valmis” painiketta.";
     public string OneOutInstruction => "Seuraavaksi sinulle esitetään yhteensä 3 tuoksua. Esitettävistä tuoksuista kaksi ovat samoja ja yksi on erilainen. Sinun tehtävänäsi on arvioida mikä tuoksuista oli mielestäsi erilainen.";
     public string ComparisonQuestion => "Olivatko esitetyt tuoksut samanlaiset?";
-    public string OneOutQuestion => "Valitse laatikko ja numero jonka haju erosi muista";
+    public string OneOutQuestion => "Valitse laatikko ja numero jonka haju erosi muista.";
     public string[] RatingWords => [
         "hikinen", "pistävä", "neutraali",
         "tunkkainen", "raikas", "voimakas",
@@ -106,7 +106,7 @@ internal class FinnishStrings : IUiStrings
     public string Sniff => "Haista";
     public string Odor => "Haju";
     public string Done => "Valmis!";
-    public string ContinueWhenReady => "Pidä tauko, ja jatka sitten testiä";
+    public string TakeABreak => "Tauko. Testi jatkuu pian automaattisesti.";
 }
 
 internal class GermanStrings : IUiStrings
@@ -115,7 +115,7 @@ internal class GermanStrings : IUiStrings
     public string RatingInstruction => "Rieche an einem Geruch so oft wie nötig, wähle die Wörter aus, die den Geruch beschreiben, und drücke dann die „Absenden“-Taste";
     public string OneOutInstruction => "Anschließend werden dir insgesamt drei Düfte präsentiert. Zwei der präsentierten Düfte sind gleich, einer ist anders. Deine Aufgabe ist es, zu beurteilen, welcher der Düfte deiner Meinung nach anders ist.";
     public string ComparisonQuestion => "Sind die präsentierten Gerüche identisch?";
-    public string OneOutQuestion => "Wählen Sie einen Duft, der sich von den anderen abhebt";
+    public string OneOutQuestion => "Wählen Sie einen Duft, der sich von den anderen abhebt.";
     public string[] RatingWords => [
         "schweißig", "sauer", "NEG-angenehm",
         "neutral", "intensiv", "stinkend",
@@ -138,5 +138,5 @@ internal class GermanStrings : IUiStrings
     public string Sniff => "Riechen";
     public string Odor => "Geruch";
     public string Done => "Done!";
-    public string ContinueWhenReady => "Mach eine Pause, und setze dann den Test fort";
+    public string TakeABreak => "Warten Sie. Der Test wird bald automatisch fortgesetzt.";
 }

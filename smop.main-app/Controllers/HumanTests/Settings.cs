@@ -35,6 +35,36 @@ public class Settings
         }
     }
 
+    public double PauseBetweenBlocks
+    {
+        get => Properties.Settings.Default.HumanTest_PauseBetweenBlocks;
+        set
+        {
+            Properties.Settings.Default.HumanTest_PauseBetweenBlocks = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public double PauseBetweenTrials
+    {
+        get => Properties.Settings.Default.HumanTest_PauseBetweenTrials;
+        set
+        {
+            Properties.Settings.Default.HumanTest_PauseBetweenTrials = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public bool AllowEmptyRatings
+    {
+        get => Properties.Settings.Default.HumanTest_AllowEmptyRatings;
+        set
+        {
+            Properties.Settings.Default.HumanTest_AllowEmptyRatings = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
     public bool IsPracticingProcedure { get; set; } = true;
     public Language Language { get; set; } = Language.Finnish;
     public int ParticipantID { get; set; } = 1;

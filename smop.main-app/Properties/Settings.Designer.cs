@@ -621,5 +621,41 @@ namespace Smop.MainApp.Properties {
                 this["HumanTest_Mixtures"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("30")]
+        public double HumanTest_PauseBetweenBlocks {
+            get {
+                return ((double)(this["HumanTest_PauseBetweenBlocks"]));
+            }
+            set {
+                this["HumanTest_PauseBetweenBlocks"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HumanTest_AllowEmptyRatings {
+            get {
+                return ((bool)(this["HumanTest_AllowEmptyRatings"]));
+            }
+            set {
+                this["HumanTest_AllowEmptyRatings"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public double HumanTest_PauseBetweenTrials {
+            get {
+                return ((double)(this["HumanTest_PauseBetweenTrials"]));
+            }
+            set {
+                this["HumanTest_PauseBetweenTrials"] = value;
+            }
+        }
     }
 }

@@ -13,8 +13,6 @@ internal abstract class CommonController : IDisposable
         public Stage Stage { get; } = stage;
     }
 
-    public static double PauseBetweenBlocks => 30; // seconds
-
     public string Name { get; }
     public int MixtureID => _mixtureIndex + 1;
 
@@ -64,8 +62,6 @@ internal abstract class CommonController : IDisposable
     }
 
     // Internal
-
-    protected readonly double PauseBetweenTrials = 4;  // seconds
 
     protected readonly Settings _settings;
     protected readonly OdorDisplayController _odorDisplay = new();

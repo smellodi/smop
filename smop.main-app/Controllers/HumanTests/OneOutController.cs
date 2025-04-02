@@ -45,10 +45,10 @@ internal class OneOutController : CommonController
 
         _eventLogger.Add("answer", answer);
 
-        if (PauseBetweenTrials > 0)
+        if (_settings.PauseBetweenTrials > 0)
         {
             PublishStage(Stage.TimedPause);
-            _delayedAction = DispatchOnce.Do(PauseBetweenTrials, RunNextTriplet);
+            _delayedAction = DispatchOnce.Do(_settings.PauseBetweenTrials, RunNextTriplet);
         }
         else
         {
@@ -57,8 +57,6 @@ internal class OneOutController : CommonController
     }
 
     // Internal
-
-    //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
     readonly int BlockSize = 4;
 
@@ -75,7 +73,7 @@ internal class OneOutController : CommonController
             if (_tripletIndex > 0 && _tripletIndex < _session.Triplets.Length && (_tripletIndex % BlockSize) == 0)
             {
                 PublishStage(Stage.UserControlledPause);
-                _delayedAction = DispatchOnce.Do(PauseBetweenBlocks, RunNextTriplet);
+                _delayedAction = DispatchOnce.Do(_settings.PauseBetweenBlocks, RunNextTriplet);
                 return;
             }
         }

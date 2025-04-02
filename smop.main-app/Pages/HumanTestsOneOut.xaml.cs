@@ -42,7 +42,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
     {
         Stage.WaitingMixture => Strings?.Wait,
         Stage.SniffingMixture => Strings?.Sniff,
-        Stage.UserControlledPause => Strings?.ContinueWhenReady,
+        Stage.UserControlledPause => Strings?.TakeABreak,
         _ => null
     };
 
@@ -144,7 +144,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
         else if (stage == Stage.UserControlledPause)
         {
             Grid.SetColumn(stpWaiting, 1);
-            wtiWaiting.Start(CommonController.PauseBetweenBlocks);
+            wtiWaiting.Start(Settings?.PauseBetweenBlocks ?? 0);
         }
         else if (stage == Stage.Finished)
         {

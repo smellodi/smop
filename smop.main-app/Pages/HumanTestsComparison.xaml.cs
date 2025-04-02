@@ -142,7 +142,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
         }
         else if (stage == Stage.UserControlledPause)
         {
-            wtiWaiting.Start(_controller?.PauseBetweenBlocks ?? 0);
+            wtiWaiting.Start(CommonController.PauseBetweenBlocks);
         }
         else if (stage == Stage.Finished)
         {

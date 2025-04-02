@@ -73,7 +73,7 @@ internal class EnglishStrings : IUiStrings
     public string Sniff => "Sniff";
     public string Odor => "Odor";
     public string Done => "Done!";
-    public string ContinueWhenReady => "Take a break if needed, then continue the test";
+    public string ContinueWhenReady => "Take a break, then continue the test";
 }
 
 
@@ -106,7 +106,7 @@ internal class FinnishStrings : IUiStrings
     public string Sniff => "Haista";
     public string Odor => "Haju";
     public string Done => "Valmis!";
-    public string ContinueWhenReady => "Pidä tauko, jos tarvitset, ja jatka sitten testiä";
+    public string ContinueWhenReady => "Pidä tauko, ja jatka sitten testiä";
 }
 
 internal class GermanStrings : IUiStrings
@@ -138,5 +138,5 @@ internal class GermanStrings : IUiStrings
     public string Sniff => "Riechen";
     public string Odor => "Geruch";
     public string Done => "Done!";
-    public string ContinueWhenReady => "Mach eine Pause, wenn du brauchst, und setze dann den Test fort";
+    public string ContinueWhenReady => "Mach eine Pause, und setze dann den Test fort";
 }

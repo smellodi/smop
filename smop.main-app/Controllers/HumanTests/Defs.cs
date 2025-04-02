@@ -69,8 +69,9 @@ internal class Comparison(Mixture mixture1, Mixture mixture2)
 {
     public Mixture[] Mixtures { get; } = [mixture1, mixture2];
     public bool AreSame { get; set; } = false;
+    public string Answer => AreSame ? "same" : "different";
 
-    public override string ToString() => $"{mixture1.Name}\t{mixture2.Name}\t{AreSame}";
+    public override string ToString() => $"{mixture1.Name}\t{mixture2.Name}\t{Answer}";
 }
 
 internal class ComparisonBlock
@@ -91,13 +92,10 @@ internal class ComparisonBlock
 
 internal class ComparisonSession
 {
-    public int[] UsedChannelIds { get; }
     public ComparisonBlock[] Blocks { get; private set; } = [];
 
     public ComparisonSession(Settings settings)
     {
-        UsedChannelIds = OdorDisplayHelper.GetChannelIds(settings.Channels);
-
         var blocks = new List<ComparisonBlock>();
         if (settings.IsPracticingProcedure)
         {
@@ -117,15 +115,24 @@ internal class ComparisonSession
             var againstStress = allMixtures.Where(mix => !mix.IsStress);
             var againstControl = allMixtures.Where(mix => !mix.IsControl);
 
-            for (int i = 0; i < settings.Repetitions; i++)
-            {
-                blocks.Add(new ComparisonBlock(settings.IsRandomized, againstStress.Select(mix => new Comparison(stress, mix)).ToArray()));
-                blocks.Add(new ComparisonBlock(settings.IsRandomized, againstControl.Select(mix => new Comparison(control, mix)).ToArray()));
-            }
+            var stressSet = new BlockSet(stress, againstStress);
+            var controlSet = new BlockSet(control, againstControl);
+
+            BlockSet[] sets = settings.ParticipantID % 2 == 0
+                ? [stressSet, controlSet]
+                : [controlSet, stressSet];
+
+            for (int i = 0; i < settings.ComparisonBlockCount; i++)
+                foreach (var set in sets)
+                    blocks.Add(new ComparisonBlock(settings.IsRandomized, set.Other.Select(mix => new Comparison(set.Target, mix)).ToArray()));
         }
 
         Blocks = blocks.ToArray();
     }
+
+    // Internal
+
+    record class BlockSet(Mixture Target, IEnumerable<Mixture> Other);
 }
 
 internal class Triplet(Mixture mixture1, Mixture mixture2, Mixture mixture3)
@@ -142,13 +149,10 @@ internal class Triplet(Mixture mixture1, Mixture mixture2, Mixture mixture3)
 
 internal class OneOutSession
 {
-    public int[] UsedChannelIds { get; }
     public Triplet[] Triplets { get; }
 
     public OneOutSession(Settings settings)
     {
-        UsedChannelIds = OdorDisplayHelper.GetChannelIds(settings.Channels);
-
         var r = new Random();
 
         var triplets = new List<Triplet>();

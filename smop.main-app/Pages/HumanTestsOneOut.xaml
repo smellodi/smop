@@ -108,13 +108,13 @@
                            FontSize="14"
                            Margin="0,8"
                            Content=" "/>
-                    <Button Style="{StaticResource Next}"
+                    <!--Button Style="{StaticResource Next}"
                             Visibility="{Binding IsUserControlledPause, Converter={StaticResource bool2vis}}"
                             Height="42"
                             Margin="0"
                             HorizontalAlignment="Center"
                             Content="{Binding Path=Strings.Continue}"
-                            Click="Continue_Click"/>
+                            Click="Continue_Click"/-->
                 </StackPanel>
             </Grid>
 

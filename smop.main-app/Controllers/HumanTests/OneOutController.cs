@@ -1,61 +1,25 @@
 ﻿using Smop.Common;
-using Smop.MainApp.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Smop.MainApp.Controllers.HumanTests;
 
-internal class OneOutController(Settings settings) : IDisposable
+internal class OneOutController : CommonController
 {
-    public class StageChangedEventArgs(Stage stage, int mixtureId = 0) : EventArgs
-    {
-        public Stage Stage { get; } = stage;
-        public int MixtureId { get; } = mixtureId;
-    }
-
-    public double PauseBetweenBlocks => 60; // seconds
-
     public int TripletID => _tripletIndex + 1;
-    public int MixtureID => _mixtureIndex + 1;
 
-    public event EventHandler<StageChangedEventArgs>? StageChanged;
-
-    public void Dispose()
+    public OneOutController(Settings settings) : base("one-out", settings)
     {
-        if (_isDisposed)
-            return;
-
-        _isDisposed = true;
-
-        _delayedAction?.Stop();
-        _delayedAction?.Dispose();
-        _delayedAction = null;
-
-        OdorDisplay.CommPort.Instance.Data -= OdorDisplay_Data;
-        SmellInsp.CommPort.Instance.Data -= SmellInsp_Data;
-
-        GC.SuppressFinalize(this);
+        _session = new OneOutSession(settings);
     }
 
-    public void Start()
+    public override void Start()
     {
-        OdorDisplay.CommPort.Instance.Data += OdorDisplay_Data;
-        SmellInsp.CommPort.Instance.Data += SmellInsp_Data;
-
-        if (!settings.IsPracticingProcedure)
-        {
-            _odorDisplay.OpenValves(_session.UsedChannelIds);
-        }
-
-        _eventLogger.Add("start", settings.IsPracticingProcedure ? "practice" : "comparison");
-
+        base.Start();
         RunNextTriplet();
     }
 
     public void Continue()
     {
-        if (_currentStage == Stage.UserControlledPause)
+        if (IsPaused)
         {
             _delayedAction?.Dispose();
             _delayedAction = null;
@@ -70,11 +34,6 @@ internal class OneOutController(Settings settings) : IDisposable
         {
             _tripletIndex = _session.Triplets.Length - 1;
         }
-    }
-
-    public void Stop()
-    {
-        _odorDisplay.StopFlows(_session.UsedChannelIds.Select(id => (OdorDisplay.Device.ID)id).ToArray());
     }
 
     public void SetAnswer(string answer)
@@ -101,28 +60,15 @@ internal class OneOutController(Settings settings) : IDisposable
 
     //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
-    readonly double PauseBetweenTrials = 4;  // seconds
     readonly int BlockSize = 4;
 
-    readonly OdorDisplayController _odorDisplay = new();
-    readonly OneOutSession _session = new(settings);
-
-    readonly EventLogger _eventLogger = EventLogger.Instance;
-    readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
-    readonly SmellInspLogger _smellInspLogger = SmellInspLogger.Instance;
+    readonly OneOutSession _session;
 
     int _tripletIndex = -1;
-    int _mixtureIndex = -1;
-
-    Stage _currentStage = Stage.Initial;
-
-    DispatchOnce? _delayedAction = null;
-
-    bool _isDisposed = false;
 
     private void RunNextTriplet()
     {
-        if (_currentStage != Stage.UserControlledPause)
+        if (!IsPaused)
         {
             _tripletIndex += 1;
 
@@ -145,63 +91,22 @@ internal class OneOutController(Settings settings) : IDisposable
         else
         {
             foreach (var triplet in _session.Triplets)
-                _eventLogger.Add("one-out", triplet.ToString());
+                _eventLogger.Add(Name, triplet.ToString());
 
             PublishStage(Stage.Finished);
         }
     }
 
-    private void StartPulse(Mixture mixture)
+    protected override Mixture? GetNextMixture()
     {
-        _eventLogger.Add("mixture", _mixtureIndex.ToString(), mixture.Name, mixture.ToString());
-
-        _odorDisplay.SetFlows(mixture.Channels);
-
-        PublishStage(Stage.WaitingMixture);
-
-        _delayedAction = DispatchOnce.Do(settings.WaitingInterval, OpenParticipantValve);
-    }
-
-    private void OpenParticipantValve()
-    {
-        _odorDisplay.SetExternalValveState(true);
-
-        _eventLogger.Add("valve", "open");
-
-        PublishStage(Stage.SniffingMixture);
-
-        _delayedAction = DispatchOnce.Do(settings.SniffingInterval, CloseParticipantValve);
-    }
-
-    private void CloseParticipantValve()
-    {
-        _odorDisplay.SetExternalValveState(false);
-
-        _eventLogger.Add("valve", "close");
-
         var triplet = _session.Triplets[_tripletIndex];
 
         _mixtureIndex += 1;
 
-        if (_mixtureIndex < 3)
-            StartPulse(triplet.Mixtures[_mixtureIndex]);
-        else
-            PublishStage(Stage.Question);
+        return _mixtureIndex < triplet.Mixtures.Length
+            ? triplet.Mixtures[_mixtureIndex]
+            : null;
     }
 
-    private void PublishStage(Stage stage)
-    {
-        _currentStage = stage;
-        StageChanged?.Invoke(this, new StageChangedEventArgs(_currentStage));
-    }
-
-    private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
-    {
-        await Task.Run(() => _odorDisplayLogger.Add(data));
-    }
-
-    private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
-    {
-        await Task.Run(() => _smellInspLogger.Add(data));
-    }
+    protected override Stage GetStageAfterMixture() => Stage.Question;
 }

@@ -1,64 +1,26 @@
 ﻿using Smop.Common;
-using Smop.MainApp.Logging;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Smop.MainApp.Controllers.HumanTests;
 
-internal class ComparisonController(Settings settings) : IDisposable
+internal class ComparisonController : CommonController
 {
-    public class StageChangedEventArgs(Stage stage, int mixtureId = 0) : EventArgs
-    {
-        public Stage Stage { get; } = stage;
-        public int MixtureId { get; } = mixtureId;
-    }
-
-    public double PauseBetweenBlocks => 60; // seconds
-
     public int BlockID => _blockIndex + 1;
     public int ComparisonID => _comparisonIndex + 1;
-    public int MixtureID => _mixtureIndex + 1;
 
-    public int BlockCount => settings.Repetitions;
-
-    public event EventHandler<StageChangedEventArgs>? StageChanged;
-
-    public void Dispose()
+    public ComparisonController(Settings settings) : base("comparison", settings)
     {
-        if (_isDisposed)
-            return;
-
-        _isDisposed = true;
-
-        _delayedAction?.Stop();
-        _delayedAction?.Dispose();
-        _delayedAction = null;
-
-        OdorDisplay.CommPort.Instance.Data -= OdorDisplay_Data;
-        SmellInsp.CommPort.Instance.Data -= SmellInsp_Data;
-
-        GC.SuppressFinalize(this);
+        _session = new ComparisonSession(settings);
     }
 
-    public void Start()
+    public override void Start()
     {
-        OdorDisplay.CommPort.Instance.Data += OdorDisplay_Data;
-        SmellInsp.CommPort.Instance.Data += SmellInsp_Data;
-
-        if (!settings.IsPracticingProcedure)
-        {
-            _odorDisplay.OpenValves(_session.UsedChannelIds);
-        }
-
-        _eventLogger.Add("start", settings.IsPracticingProcedure ? "practice" : "comparison");
-
+        base.Start();
         RunNextBlock();
     }
 
     public void Continue()
     {
-        if (_currentStage == Stage.UserControlledPause)
+        if (IsPaused)
         {
             _delayedAction?.Dispose();
             _delayedAction = null;
@@ -74,11 +36,6 @@ internal class ComparisonController(Settings settings) : IDisposable
             _blockIndex = _session.Blocks.Length - 1;
             _comparisonIndex = _session.Blocks[_blockIndex].Comparisons.Length - 1;
         }
-    }
-
-    public void Stop()
-    {
-        _odorDisplay.StopFlows(_session.UsedChannelIds.Select(id => (OdorDisplay.Device.ID)id).ToArray());
     }
 
     public void SetAnswer(bool areSame)
@@ -105,24 +62,10 @@ internal class ComparisonController(Settings settings) : IDisposable
 
     //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
-    readonly double PauseBetweenTrials = 4;  // seconds
-
-    readonly OdorDisplayController _odorDisplay = new();
-    readonly ComparisonSession _session = new(settings);
-
-    readonly EventLogger _eventLogger = EventLogger.Instance;
-    readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
-    readonly SmellInspLogger _smellInspLogger = SmellInspLogger.Instance;
+    readonly ComparisonSession _session;
 
     int _blockIndex = -1;
     int _comparisonIndex = -1;
-    int _mixtureIndex = -1;
-
-    Stage _currentStage = Stage.Initial;
-
-    DispatchOnce? _delayedAction = null;
-
-    bool _isDisposed = false;
 
     private void RunNextBlock()
     {
@@ -140,7 +83,7 @@ internal class ComparisonController(Settings settings) : IDisposable
         {
             foreach (var block in _session.Blocks)
                 foreach (var comp in block.Comparisons)
-                    _eventLogger.Add("comparison", comp.ToString() ?? "");
+                    _eventLogger.Add(Name, comp.ToString());
 
             PublishStage(Stage.Finished);
         }
@@ -171,61 +114,17 @@ internal class ComparisonController(Settings settings) : IDisposable
         }
     }
 
-    private void StartPulse(Mixture mixture)
+    protected override Mixture? GetNextMixture()
     {
-        var block = _session.Blocks[_blockIndex];
-        var comparison = block.Comparisons[_comparisonIndex];
-
-        _eventLogger.Add("mixture", _mixtureIndex.ToString(), mixture.Name, mixture.ToString());
-
-        _odorDisplay.SetFlows(mixture.Channels);
-
-        PublishStage(Stage.WaitingMixture);
-
-        _delayedAction = DispatchOnce.Do(settings.WaitingInterval, OpenParticipantValve);
-    }
-
-    private void OpenParticipantValve()
-    {
-        _odorDisplay.SetExternalValveState(true);
-
-        _eventLogger.Add("valve", "open");
-
-        PublishStage(Stage.SniffingMixture);
-
-        _delayedAction = DispatchOnce.Do(settings.SniffingInterval, CloseParticipantValve);
-    }
-
-    private void CloseParticipantValve()
-    {
-        _odorDisplay.SetExternalValveState(false);
-
-        _eventLogger.Add("valve", "close");
-
         var block = _session.Blocks[_blockIndex];
         var comparison = block.Comparisons[_comparisonIndex];
 
         _mixtureIndex += 1;
 
-        if (_mixtureIndex < 2)
-            StartPulse(comparison.Mixtures[_mixtureIndex]);
-        else
-            PublishStage(Stage.Question);
+        return _mixtureIndex < comparison.Mixtures.Length
+            ? comparison.Mixtures[_mixtureIndex]
+            : null;
     }
 
-    private void PublishStage(Stage stage)
-    {
-        _currentStage = stage;
-        StageChanged?.Invoke(this, new StageChangedEventArgs(_currentStage));
-    }
-
-    private async void OdorDisplay_Data(object? sender, OdorDisplay.Packets.Data data)
-    {
-        await Task.Run(() => _odorDisplayLogger.Add(data));
-    }
-
-    private async void SmellInsp_Data(object? sender, SmellInsp.Data data)
-    {
-        await Task.Run(() => _smellInspLogger.Add(data));
-    }
+    protected override Stage GetStageAfterMixture() => Stage.Question;
 }

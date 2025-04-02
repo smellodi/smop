@@ -88,7 +88,7 @@
 
                 <StackPanel Grid.Column="1">
                     <local:WaitingInstruction x:Name="wtiWaiting"
-                                              Margin="24,12"
+                                              Margin="24,0"
                                               Height="80"
                                               VerticalContentAlignment="Bottom"/>
                     <Label x:Name="lblWaitingTime" 
@@ -96,13 +96,14 @@
                            Foreground="{StaticResource BrushFontDark}"
                            FontWeight="Bold"
                            FontSize="14"
+                           Margin="0,8"
                            Content=" "/>
-                    <Button Style="{StaticResource Next}"
+                    <!--Button Style="{StaticResource Next}"
                             Visibility="{Binding IsUserControlledPause, Converter={StaticResource bool2vis}}"
                             Height="42"
                             HorizontalAlignment="Center"
                             Content="{Binding Path=Strings.Continue}"
-                            Click="NextBlock_Click"/>
+                            Click="NextBlock_Click"/-->
                 </StackPanel>
 
                 <Label Grid.Column="2"

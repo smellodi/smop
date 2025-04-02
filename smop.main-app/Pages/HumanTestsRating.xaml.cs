@@ -15,7 +15,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
     public bool CanReleaseOdor => _stage == Stage.Ready;
     public bool CanRate { get; private set; } = false;
     public bool CanSubmit => IsInstruction || (CanRate && _stage != Stage.SniffingMixture && (HasRatings || CAN_CONTINUE_WITHOUT_RATINGS));
-    public string StageInfo => $"{Strings?.Odor} #{_controller?.MixtureId}";
+    public string StageInfo => $"{Strings?.Odor} #{_controller?.MixtureID}";
     public string? InstructionText => _stage switch
     {
         Stage.WaitingMixture => Strings?.Wait,
@@ -136,7 +136,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
 
         if (_stage == Stage.WaitingMixture)
         {
-            wtiWaiting.Start(_controller?.Settings.WaitingInterval ?? 0);
+            wtiWaiting.Start(Settings?.WaitingInterval ?? 0);
 
             ClearRatingButtons();
             EnableRatingButtons(false);
@@ -150,7 +150,7 @@ public partial class HumanTestRating : Page, IPage<Navigation>, IHumanTestPage, 
 
         else if (stage == Stage.SniffingMixture)
         {
-            wtiWaiting.Start(_controller?.Settings.SniffingInterval ?? 0);
+            wtiWaiting.Start(Settings?.SniffingInterval ?? 0);
 
             if (!CanRate)
             {

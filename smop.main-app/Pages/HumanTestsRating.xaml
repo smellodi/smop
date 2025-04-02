@@ -110,7 +110,7 @@
             </StackPanel>
 
             <Grid x:Name="grdRatingButtons" Grid.Row="1"
-                  Width="600"
+                  Width="660"
                   Height="360">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>

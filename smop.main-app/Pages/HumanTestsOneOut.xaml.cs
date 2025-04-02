@@ -144,7 +144,7 @@ public partial class HumanTestOneOut : Page, IPage<Navigation>, IHumanTestPage, 
         else if (stage == Stage.UserControlledPause)
         {
             Grid.SetColumn(stpWaiting, 1);
-            wtiWaiting.Start(_controller?.PauseBetweenBlocks ?? 0);
+            wtiWaiting.Start(CommonController.PauseBetweenBlocks);
         }
         else if (stage == Stage.Finished)
         {

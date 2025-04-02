@@ -93,14 +93,30 @@
         </WrapPanel>
 
         <Label Grid.Row="3" Grid.Column="0"
+               Content="Participant ID"/>
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 Width="Auto"
+                 Style="{StaticResource Value}">
+            <TextBox.Text>
+                <Binding Path="ParticipantID"
+                         Mode="TwoWay"
+                         UpdateSourceTrigger="PropertyChanged">
+                    <Binding.ValidationRules>
+                        <utils:RangeRule Min="1" Max="100" IsInteger="True"/>
+                    </Binding.ValidationRules>
+                </Binding>
+            </TextBox.Text>
+        </TextBox>
+
+        <Label Grid.Row="4" Grid.Column="0"
                IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
                Content="Number of blocks"/>
-        <TextBox Grid.Row="3" Grid.Column="1"
+        <TextBox Grid.Row="4" Grid.Column="1"
                  Width="Auto"
                  IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
                  Style="{StaticResource Value}">
             <TextBox.Text>
-                <Binding Path="Repetitions"
+                <Binding Path="ComparisonBlockCount"
                          Mode="TwoWay"
                          UpdateSourceTrigger="PropertyChanged">
                     <Binding.ValidationRules>
@@ -110,9 +126,9 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="4" Grid.Column="0"
+        <Label Grid.Row="5" Grid.Column="0"
                Content="Waiting interval, sec"/>
-        <TextBox Grid.Row="4" Grid.Column="1"
+        <TextBox Grid.Row="5" Grid.Column="1"
                  Style="{StaticResource Value}">
             <TextBox.Text>
                 <Binding Path="WaitingInterval"
@@ -125,9 +141,9 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="5" Grid.Column="0"
+        <Label Grid.Row="6" Grid.Column="0"
                Content="Sniffing interval, sec"/>
-        <TextBox Grid.Row="5" Grid.Column="1"
+        <TextBox Grid.Row="6" Grid.Column="1"
                  Style="{StaticResource Value}">
             <TextBox.Text>
                 <Binding Path="SniffingInterval"
@@ -140,22 +156,22 @@
             </TextBox.Text>
         </TextBox>
 
-        <CheckBox Grid.Row="6" Grid.Column="0"
+        <CheckBox Grid.Row="7" Grid.Column="0"
                   Content="Randomize trials"
                   IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
                   IsChecked="{Binding IsRandomized}"/>
 
-        <Separator Grid.Row="7" Grid.ColumnSpan="2"
+        <Separator Grid.Row="8" Grid.ColumnSpan="2"
                    VerticalAlignment="Top"/>
-        <Label Grid.Row="7" Grid.Column="0"
+        <Label Grid.Row="8" Grid.Column="0"
                Content="MIXTURES"/>
-        <Label Grid.Row="7" Grid.Column="1"
+        <Label Grid.Row="8" Grid.Column="1"
                Padding="0"
                Content="Lim  C-hex  Cit.a."/>
 
-        <Label Grid.Row="8" Grid.Column="0"
+        <Label Grid.Row="9" Grid.Column="0"
                Content="{Binding Path=Mixtures[0].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="8" Grid.Column="1"
+        <TextBox Grid.Row="9" Grid.Column="1"
                  HorizontalAlignment="Left"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -168,7 +184,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="8" Grid.Column="1"
+        <TextBox Grid.Row="9" Grid.Column="1"
                  HorizontalAlignment="Center"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -181,7 +197,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="8" Grid.Column="1"
+        <TextBox Grid.Row="9" Grid.Column="1"
                  HorizontalAlignment="Right"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -195,9 +211,9 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="9" Grid.Column="0"
+        <Label Grid.Row="10" Grid.Column="0"
                Content="{Binding Path=Mixtures[1].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="9" Grid.Column="1"
+        <TextBox Grid.Row="10" Grid.Column="1"
                  HorizontalAlignment="Left"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -210,7 +226,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="9" Grid.Column="1"
+        <TextBox Grid.Row="10" Grid.Column="1"
                  HorizontalAlignment="Center"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -223,7 +239,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="9" Grid.Column="1"
+        <TextBox Grid.Row="10" Grid.Column="1"
                  HorizontalAlignment="Right"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -237,9 +253,9 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="10" Grid.Column="0"
+        <Label Grid.Row="11" Grid.Column="0"
                Content="{Binding Path=Mixtures[2].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="10" Grid.Column="1"
+        <TextBox Grid.Row="11" Grid.Column="1"
                  HorizontalAlignment="Left"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -252,7 +268,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="10" Grid.Column="1"
+        <TextBox Grid.Row="11" Grid.Column="1"
                  HorizontalAlignment="Center"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -265,7 +281,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="10" Grid.Column="1"
+        <TextBox Grid.Row="11" Grid.Column="1"
                  HorizontalAlignment="Right"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -279,9 +295,9 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="11" Grid.Column="0"
+        <Label Grid.Row="12" Grid.Column="0"
                Content="{Binding Path=Mixtures[3].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="11" Grid.Column="1"
+        <TextBox Grid.Row="12" Grid.Column="1"
                  HorizontalAlignment="Left"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -294,7 +310,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="11" Grid.Column="1"
+        <TextBox Grid.Row="12" Grid.Column="1"
                  HorizontalAlignment="Center"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -307,7 +323,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="11" Grid.Column="1"
+        <TextBox Grid.Row="12" Grid.Column="1"
                  HorizontalAlignment="Right"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -321,9 +337,9 @@
             </TextBox.Text>
         </TextBox>
 
-        <Label Grid.Row="12" Grid.Column="0"
+        <Label Grid.Row="13" Grid.Column="0"
                Content="{Binding Path=Mixtures[4].Name, Mode=OneTime}"/>
-        <TextBox Grid.Row="12" Grid.Column="1"
+        <TextBox Grid.Row="13" Grid.Column="1"
                  HorizontalAlignment="Left"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -336,7 +352,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="12" Grid.Column="1"
+        <TextBox Grid.Row="13" Grid.Column="1"
                  HorizontalAlignment="Center"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>
@@ -349,7 +365,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <TextBox Grid.Row="12" Grid.Column="1"
+        <TextBox Grid.Row="13" Grid.Column="1"
                  HorizontalAlignment="Right"
                  Style="{StaticResource MixFlow}">
             <TextBox.Text>

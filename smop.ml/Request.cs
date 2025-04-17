@@ -67,9 +67,9 @@ internal record class Content(string Source);
 
 // DMS measurement is defined in DmsMeasurement.cs
 
-internal record class SntMeasurement(SmellInsp.Data Data) : Content(ML.Source.SNT)
+internal record class SntMeasurement(SmellInsp.FeatureData Data) : Content(ML.Source.SNT)
 {
-    public static SntMeasurement From(SmellInsp.Data data) => new(data);
+    public static SntMeasurement From(SmellInsp.FeatureData data) => new(data);
 }
 
 internal record class PIDMeasurement(float Data) : Content(ML.Source.PID)

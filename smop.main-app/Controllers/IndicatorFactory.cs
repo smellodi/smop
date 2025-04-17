@@ -10,7 +10,7 @@ internal static class IndicatorFactory
 {
     public record class SmellInspChannel(string Type, string Units, int Count);
     public static SmellInspChannel[] SmellInspChannels => new SmellInspChannel[] {
-        new("Resistor", "Ohms", 64),
+        new("Resistor", "Ohms", Smop.SmellInsp.FeatureData.FeatureCount),
         new("Temperature", "°C", 0),
         new("Humidity", "%", 0)
     };

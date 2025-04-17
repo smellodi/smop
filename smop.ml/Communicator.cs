@@ -154,7 +154,7 @@ public class Communicator : IDisposable
         }
     }
 
-    public async Task Publish(SmellInsp.Data data)
+    public async Task Publish(SmellInsp.FeatureData data)
     {
         _lastAction = "PublishSNT";
 

@@ -347,7 +347,7 @@ public class SetupController
         }
         else if (SntSample != null)
         {
-            await App.ML.Publish(SntSample);
+            await App.ML.Publish(SntSample.AsFeatures());
         }
 
         if (settings.Reproduction_UsePID)
@@ -423,7 +423,7 @@ public class SetupController
                 if (line.StartsWith("start"))
                 {
                     var p = line.Split(';');
-                    if (p.Length != 67)
+                    if (p.Length != SmellInsp.Data.ResistantCount + 3)  // header + resistances + temp + humid
                     {
                         continue;
                     }
@@ -431,9 +431,9 @@ public class SetupController
                     try
                     {
                         data.Add(new SmellInsp.Data(
-                            p[1..65].Select(float.Parse).ToArray(),
-                            float.Parse(p[65]),
-                            float.Parse(p[66])
+                            p[1..(SmellInsp.Data.ResistantCount+1)].Select(float.Parse).ToArray(),
+                            float.Parse(p[SmellInsp.Data.ResistantCount+1]),
+                            float.Parse(p[SmellInsp.Data.ResistantCount+2])
                         ));
                     }
                     catch { }
@@ -442,7 +442,7 @@ public class SetupController
 
             if (data.Count > 0)
             {
-                float[] resistances = new float[64];
+                float[] resistances = new float[SmellInsp.Data.ResistantCount];
                 float humidity = 0;
                 float temperature = 0;
                 for (int i = 0; i < data.Count; i++)

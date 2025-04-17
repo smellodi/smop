@@ -256,7 +256,7 @@ public class OdorReproducerController
         {
             SntCollected?.Invoke(this, snt);
             await WaitUntilCleanedUp(useCleanupPidLevel, cleanupPidLevel, cleanupDuration);
-            _ = _ml.Publish(snt);
+            _ = _ml.Publish(snt.AsFeatures());
         }
     }
 

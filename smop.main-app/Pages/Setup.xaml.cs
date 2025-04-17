@@ -533,11 +533,11 @@ public partial class Setup : Page, IPage<object?>
         var ofd = new Microsoft.Win32.OpenFileDialog();
         if (App.IonVision != null)
         {
-            ofd.Filter = "JSON files|*.json|Any file|*.*";
+            ofd.Filter = "JSON files (DMS)|*.json|Any file|*.*";
         }
         else if (_smellInsp.IsOpen)
         {
-            ofd.Filter = "Text files|*.txt|Any file|*.*";
+            ofd.Filter = "Text files (SNT)|*.txt|Any file|*.*";
         }
         else
         {

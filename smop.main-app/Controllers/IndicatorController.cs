@@ -1,5 +1,4 @@
 ﻿using Smop.MainApp.Controls;
-using Smop.OdorDisplay.Packets;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -34,13 +33,13 @@ public class IndicatorController(LiveData graph)
         {
             chi.ChannelIdChanged += (s, e) =>
             {
-                _smellInspResistor = e;
+                _smellInspFeature = e;
                 ResetGraph(chi);
             };
         }
     }
 
-    public void Update(Data data)
+    public void Update(OdorDisplay.Packets.Data data)
     {
         foreach (var m in data.Measurements)
         {
@@ -94,7 +93,7 @@ public class IndicatorController(LiveData graph)
 
     public void Update(SmellInsp.Data data)
     {
-        var value = data.Resistances[_smellInspResistor];
+        var value = data.AsFeatures().Features[_smellInspFeature];
         var source = IndicatorFactory.GetSourceId(IndicatorFactory.SmellInspChannels[0].Type);
         Update(source, value);
 
@@ -144,7 +143,7 @@ public class IndicatorController(LiveData graph)
     readonly LiveData _graph = graph;
 
     ChannelIndicator? _currentIndicator = null;
-    int _smellInspResistor = 0;
+    int _smellInspFeature = 0;
 
     private void ResetGraph(ChannelIndicator? chi, double baseValue = .0)
     {

@@ -112,11 +112,11 @@ internal class ComparisonSession
             var allMixtures = OdorDisplayHelper.GetAllMixtures(settings.Channels);
             var stress = allMixtures.First(mix => mix.IsStress);
             var control = allMixtures.First(mix => mix.IsControl);
-            var againstStress = allMixtures.Where(mix => !mix.IsStress);
-            var againstControl = allMixtures.Where(mix => !mix.IsControl);
+            //var againstStress = allMixtures.Where(mix => !mix.IsStress);
+            //var againstControl = allMixtures.Where(mix => !mix.IsControl);
 
-            var stressSet = new BlockSet(stress, againstStress);
-            var controlSet = new BlockSet(control, againstControl);
+            var stressSet = new BlockSet(stress, allMixtures); //againstStress);
+            var controlSet = new BlockSet(control, allMixtures); //againstControl);
 
             BlockSet[] sets = settings.ParticipantID % 2 == 0
                 ? [stressSet, controlSet]

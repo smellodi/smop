@@ -102,8 +102,12 @@
                 <Label Style="{StaticResource Header}" Grid.Row="0">Sessions</Label>
                 <ListView x:Name="lsvSessions" Grid.Row="1"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          AllowDrop="True"
                           SelectionChanged="Sessions_SelectionChanged"
-                          KeyUp="Sessions_KeyUp"/>
+                          KeyUp="Sessions_KeyUp"
+                          Drop="Sessions_Drop"
+                          PreviewMouseLeftButtonDown="Sessions_PreviewMouseLeftButtonDown"
+                          MouseMove="Sessions_MouseMove"/>
                 <Button Grid.Row="2"
                         Margin="0,2"
                         Content="Add"

@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Controllers;
+using Smop.MainApp.Pages;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -194,7 +195,8 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     int _sessionIndex = -1;
     int _pulseIndex = -1;
     float _lastDmsDelay = 5f;
-    Point _dragStartPoint;
+
+    static Point _dragStartPoint;
 
     SessionProps? Session => _sessionIndex >= 0 ? _sessions[_sessionIndex] : null;
     PulseChannelProps[] Channels => Session != null && _pulseIndex >= 0 ? Session.Pulses[_pulseIndex].Channels : Array.Empty<PulseChannelProps>();
@@ -253,7 +255,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         }
     }
 
-    private object? GetListViewItemUnderMouse(ListView listView, Point position)
+    private static object? GetListViewItemUnderMouse(ListView listView, Point position)
     {
         HitTestResult hitTestResult = VisualTreeHelper.HitTest(listView, position);
         if (hitTestResult != null)
@@ -266,6 +268,61 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             return (current as ListViewItem)?.DataContext;
         }
         return null;
+    }
+
+    static void OnMouseMove(MouseEventArgs e, ListView listview)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed)
+        {
+            Point currentPosition = e.GetPosition(null);
+            Vector diff = _dragStartPoint - currentPosition;
+
+            if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
+            {
+                if (listview.SelectedItem != null)
+                {
+                    DragDrop.DoDragDrop(listview, listview.SelectedItem, DragDropEffects.Move);
+                }
+            }
+        }
+    }
+
+
+    static void OnDropItem(DragEventArgs e, ListView listview, Action<int, int> action)
+    {
+        if (e.Data.GetDataPresent(typeof(string)))
+        {
+            var droppedData = e.Data.GetData(typeof(string));
+            var target = GetListViewItemUnderMouse(listview, e.GetPosition(listview));
+
+            if (droppedData != null)
+            {
+                var targetIndex = target != null ? listview.Items.IndexOf(target) : listview.Items.Count;
+                var sourceIndex = listview.Items.IndexOf(droppedData);
+
+                if (sourceIndex != targetIndex)
+                {
+                    var itemsSource = listview.ItemsSource as System.Collections.IList ?? listview.Items;
+                    if (itemsSource != null)
+                    {
+                        if (targetIndex < sourceIndex)
+                            itemsSource.Remove(droppedData);
+                        itemsSource.Insert(targetIndex, droppedData);
+                        if (targetIndex > sourceIndex)
+                            itemsSource.Remove(droppedData);
+
+                        action(sourceIndex, targetIndex);
+
+                        listview.SelectedIndex = targetIndex < listview.Items.Count ? targetIndex : listview.Items.Count - 1;
+                    }
+                }
+            }
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine(string.Join("\n", e.Data.GetFormats()));
+        }
     }
 
     // UI
@@ -383,9 +440,6 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     private void Sessions_SelectionChanged(object sender, SelectionChangedEventArgs? e)
     {
-        if (Session == null)
-            return;
-
         _sessionIndex = lsvSessions.SelectedIndex;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionHumidity)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionInitialPause)));
@@ -396,7 +450,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
         lsvPulses.Items.Clear();
 
-        if (_sessionIndex >= 0)
+        if (Session != null)
         {
             _pulseIndex = 0;
             int i = 0;
@@ -430,6 +484,30 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
                 Sessions_SelectionChanged(sender, null);
             }
         }
+    }
+
+    private void Sessions_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _dragStartPoint = e.GetPosition(null);
+    }
+
+    private void Sessions_MouseMove(object sender, MouseEventArgs e)
+    {
+        OnMouseMove(e, lsvSessions);
+    }
+
+    private void Sessions_Drop(object sender, DragEventArgs e)
+    {
+        OnDropItem(e, lsvSessions, (from, to) =>
+        {
+            var temp = _sessions[from];
+
+            if (to < from)
+                _sessions.RemoveAt(from);
+            _sessions.Insert(to, temp);
+            if (to > from)
+                _sessions.RemoveAt(from);
+        });
     }
 
     // Pulses
@@ -494,55 +572,14 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     private void Pulses_MouseMove(object sender, MouseEventArgs e)
     {
-        if (e.LeftButton == MouseButtonState.Pressed)
-        {
-            Point currentPosition = e.GetPosition(null);
-            Vector diff = _dragStartPoint - currentPosition;
-
-            // Start drag-and-drop if the mouse has moved sufficiently
-            if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
-            {
-                if (lsvPulses.SelectedItem != null)
-                {
-                    DragDrop.DoDragDrop(lsvPulses, lsvPulses.SelectedItem, DragDropEffects.Move);
-                }
-            }
-        }
+        OnMouseMove(e, lsvPulses);
     }
 
     private void Pulses_Drop(object sender, DragEventArgs e)
     {
-        if (e.Data.GetDataPresent(typeof(string)))
+        OnDropItem(e, lsvPulses, (from, to) =>
         {
-            var droppedData = e.Data.GetData(typeof(string));
-            var target = GetListViewItemUnderMouse(lsvPulses, e.GetPosition(lsvPulses));
-
-            if (droppedData != null)
-            {
-                var targetIndex = target != null ? lsvPulses.Items.IndexOf(target) : lsvPulses.Items.Count;
-                var sourceIndex = lsvPulses.Items.IndexOf(droppedData);
-
-                if (sourceIndex != targetIndex)
-                {
-                    // Swap items in the source collection
-                    var itemsSource = lsvPulses.ItemsSource as System.Collections.IList ?? lsvPulses.Items;
-                    if (itemsSource != null)
-                    {
-                        if (targetIndex < sourceIndex)
-                            itemsSource.Remove(droppedData);
-                        itemsSource.Insert(targetIndex, droppedData);
-                        if (targetIndex > sourceIndex)
-                            itemsSource.Remove(droppedData);
-                    }
-
-                    Session?.Move(sourceIndex, targetIndex);
-                }
-            }
-        }
-        else
-        {
-            System.Diagnostics.Debug.WriteLine(string.Join("\n", e.Data.GetFormats()));
-        }
+            Session?.Move(from, to);
+        });
     }
 }

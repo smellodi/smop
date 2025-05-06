@@ -62,6 +62,21 @@ public class SessionProps(float humidity, PulseIntervals intervals)
         _pulses.RemoveAt(index);
     }
 
+    public void Move(int sourceIndex, int targetIndex)
+    {
+        if (sourceIndex >= 0 && sourceIndex < _pulses.Count &&
+            targetIndex >= 0 && sourceIndex != targetIndex)
+        {
+            var temp = _pulses[sourceIndex];
+
+            if (targetIndex < sourceIndex)
+                _pulses.RemoveAt(sourceIndex);
+            _pulses.Insert(targetIndex, temp);
+            if (targetIndex > sourceIndex)
+                _pulses.RemoveAt(sourceIndex);
+        }
+    }
+
     public void RandomizePulses()
     {
         var r = new Random();

@@ -156,7 +156,7 @@ public class CommPort
                 Error.Success => "OK",
                 Error.InvalidData => "The response missing or excessing data packets",
                 Error.CRC => "Invalid CRC",
-                Error.AccessFailed => "Failed to reading from the port",
+                Error.AccessFailed => "IO failure when communicating with the the port",
                 Error.Timeout => "No response was received within a reasonable time",
                 Error.DeviceError => ack!.Result switch
                 {
@@ -244,7 +244,20 @@ public class CommPort
 
         lock (this)
         {
-            Write(request);
+            try
+            {
+                Write(request);
+            }
+            catch (System.IO.IOException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[] IO error: {ex.Message}");
+                //return Error.AccessFailed;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                //return Error.NotReady;
+            }
 
             if (request.ExpectedResponse == Packets.Type.None)
             {

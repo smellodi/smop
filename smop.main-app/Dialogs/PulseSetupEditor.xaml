@@ -119,8 +119,12 @@
                 <Label Style="{StaticResource Header}" Grid.Row="0">Pulses</Label>
                 <ListView x:Name="lsvPulses" Grid.Row="1"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          AllowDrop="True"
                           SelectionChanged="Pulses_SelectionChanged"
-                          KeyUp="Pulses_KeyUp"/>
+                          KeyUp="Pulses_KeyUp"
+                          Drop="Pulses_Drop"
+                          PreviewMouseLeftButtonDown="Pulses_PreviewMouseLeftButtonDown"
+                          MouseMove="Pulses_MouseMove"/>
                 <Button x:Name="btnAddPulse" Grid.Row="2"
                         Margin="0,2"
                         Content="Add"

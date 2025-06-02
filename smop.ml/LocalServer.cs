@@ -10,9 +10,7 @@ internal class LocalServer : Server
     public override bool IsConnected => true;
     public override string DisplayName => "ready";
 
-    public LocalServer() : base()
-    {
-    }
+    public LocalServer() : base() { }
 
     public override void Dispose()
     {

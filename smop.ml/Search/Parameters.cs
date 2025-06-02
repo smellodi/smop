@@ -1,4 +1,4 @@
-﻿namespace Smop.ML.DiffEvol;
+﻿namespace Smop.ML.Search;
 
 public class Parameters
 {

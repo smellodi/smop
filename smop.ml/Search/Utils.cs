@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Smop.ML.DiffEvol;
+namespace Smop.ML.Search;
 
 internal static class Utils
 {

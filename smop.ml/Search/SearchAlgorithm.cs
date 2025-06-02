@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MatrixD = Smop.ML.DiffEvol.Matrix<double>;
+using MatrixD = Smop.ML.Search.Matrix<double>;
 
-namespace Smop.ML.DiffEvol;
+namespace Smop.ML.Search;
 
 internal static class DebugDisplay
 {
@@ -42,9 +42,9 @@ internal static class DebugDisplay
     */
 }
 
-internal class DiffEvol
+internal class SearchAlgorithm
 {
-    public DiffEvol(Config config)
+    public SearchAlgorithm(Config config)
     {
         _config = config;
         _parameters = new();
@@ -64,179 +64,160 @@ internal class DiffEvol
         _hasDmsSource = config.Sources.Contains(Source.DMS);
 
         // Population size: set of best vectors
-        _candidates = CreateInitialVectors(_channelIDs.Length, FLOW_MIN, FLOW_MAX);
-        Round(_candidates, _parameters.Decimals);
+        _bestVectors = CreateInitialVectors(_channelIDs.Length, VALUE_MIN, VALUE_MAX);
+        Round(_bestVectors, _parameters.Decimals);
 
-        _iterationCandidates = _candidates.Copy();
+        _iterationVectors = _bestVectors.Copy();
 
-        // All measured vectors (flow rates)
-        _allCandidates = new MatrixD(_candidates.RowCount, 0);
+        _candidateIndices = Enumerable.Range(0, _bestVectors.ColumnCount).ToArray();    // range of X and U
 
-        _measrIndices = Enumerable.Range(0, _candidates.ColumnCount).ToArray();    // range of X and U
-
-        _flowVariationDelta = 0.2 * (FLOW_MAX - FLOW_MIN);
+        _valueDelta = 0.2 * (VALUE_MAX - VALUE_MIN);
     }
 
-    public async Task<Recipe?> AddMeasurement(Content content)
+    public bool AddMeasurement(Content content)
     {
         if (!_hasDmsSource && content.Source != Source.SNT)
-            return null;
+            return false;
 
         var measurement = GetMeasurementData(content);
         if (measurement.Length == 0)
-            return null;
+            return false;
 
         // the first measurement is always the target measurement
         if (_target.Length == 0)
         {
-            if (content is DmsMeasurement dms_)
+            if (content is DmsMeasurement dms)
             {
-                _ucv = dms_.Setup.Ucv.Steps == 1 ? dms_.Setup.Ucv.Min : 0;
+                _ucv = dms.Setup.Ucv.Steps == 1 ? dms.Setup.Ucv.Min : 0;
             }
 
             _target = measurement;
 
             DebugDisplay.WriteLine("\nCollecting initial measurements");
         }
-        else 
+        else
         {
-            // Handle the arrived measurement: push it to the stack of measurements, add the  calculate distance and 
+            // Handling the arrived measurement: push it to the stack of candidates
+            // with the vector that was used for this measurement and calculated distance to the target
 
-            var measurementId = _allMeasurements.Count;
-            _allMeasurements.Add(measurement);
+            var candidateId = _testedCandidates.Count;
+            int vectorId = candidateId % _candidateIndices.Length;
 
-            int candId = measurementId % _measrIndices.Length;
-            _allCandidates = _allCandidates.StackColumns(_iterationCandidates.Column(candId));
-
-            var previousDistance = GetDistance(_parameters.Kernel, _target, _allMeasurements[_measrIndices[candId]]);
             _lastDistance = GetDistance(_parameters.Kernel, _target, measurement);
+
+            _testedCandidates.Add(new(_iterationVectors.Column(vectorId), measurement, _lastDistance));
 
             DebugDisplay.Write($" DIST = {_lastDistance,6:F3}");
 
-            if (measurementId < _measrIndices.Length)  // when the candidates are still being initialized, check the grand minima only
+            string[] info = ["  ", "  ", ""];
+
+            // Global minima
+            if (_lastDistance < _grandMinima)
             {
-                if (_lastDistance < _grandMinima)
-                {
-                    _grandMinima = _lastDistance;
-                    _grandMinimaIndex = measurementId;
-                }
+                _grandMinima = _lastDistance;
+                _grandMinimaIndex = candidateId;
+                info[0] = "GM";
             }
-            else  // full DE procedure apllied
+
+            if (candidateId >= _bestVectors.ColumnCount) // after all vectors were initialized
             {
-                // update distance minimas
-
-                var cf = Math.Min(_lastDistance, previousDistance);
-                string[] info = ["  ", "  ", ""];
-
-                var lastId = _allCandidates.ColumnCount - 1;
-
-                // Global minima
-                if (cf < _grandMinima)
-                {
-                    _grandMinima = cf;
-                    _grandMinimaIndex = lastId;
-                    info[0] = "GM";
-                }
-
-                // Minima of the tested vectors
+                // Iteration minima
                 if (_lastDistance < _iterationMinima)
                 {
                     _iterationMinima = _lastDistance;
-                    _iterationMinimaIndex = candId;
+                    _iterationMinimaIndex = vectorId;
                     info[1] = "IM";
                 }
 
-                // replace target vec with trial vec if it has lower cf
+                // replace target vector with trial vector if it has smaller distance
+                var previousDistance = _testedCandidates[_candidateIndices[vectorId]].Distance;
                 if (_lastDistance < previousDistance)
                 {
-                    _candidates.ReplaceColumn(candId, _iterationCandidates.Column(candId));
-                    info[2] = $"[{_measrIndices[candId] + 1} >> {lastId + 1}]";
-                    _measrIndices[candId] = lastId;
+                    _bestVectors.ReplaceColumn(vectorId, _iterationVectors.Column(vectorId));
+                    info[2] = $"[{_candidateIndices[vectorId] + 1} >> {candidateId + 1}]";
+                    _candidateIndices[vectorId] = candidateId;
                 }
 
                 DebugDisplay.Write($" {string.Join(' ', info)}");
             }
 
             DebugDisplay.WriteLine();
-
-            if (_step == _candidates.ColumnCount) // after all candidates are initialized
-            {
-                DebugDisplay.WriteLine($"GM: {_grandMinima:F4} [{FormatRecipe(_channelNames, _allCandidates.Column(_grandMinimaIndex))}]");
-            }
         }
 
+        return true;
+    }
+
+    public async Task<Recipe> GetRecipe()
+    {
         await Task.Delay(100);      // simply, to make ML being not too fast in SMOP interface
 
         Recipe? recipe;
 
-        if (_step < _measrIndices.Length)  // Provide initial recipes
+        if (_testedCandidates.Count < _candidateIndices.Length)  // Provide initial recipes
         {
-            var flows = _candidates.Column(_step);
-            DebugDisplay.Write($"[{_step + 1}] {FormatRecipe(_channelNames, flows)}");
-            recipe = GetRecipe($"Reference #{_step + 1}", flows, false, _lastDistance);
+            var index = _testedCandidates.Count;
+            var vector = _bestVectors.Column(index);
+            DebugDisplay.Write($"[{index + 1}] {FormatRecipe(_channelNames, vector)}");
+            recipe = GetRecipe($"Reference #{index + 1}", vector, false, _lastDistance);
         }
         else  
         {
-            int candId = _step % _measrIndices.Length;
+            int vectorId = _testedCandidates.Count % _bestVectors.ColumnCount;
+            int iterationId = _testedCandidates.Count / _bestVectors.ColumnCount;
 
-            if (candId == 0)   // new iteration starts
+            if (vectorId == 0)   // new iteration starts
             {
-                _iter += 1;
-
-                if (_iter > 1)
+                if (iterationId > 0)
                 {
-                    DebugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{FormatRecipe(_channelNames, _iterationCandidates.Column(_iterationMinimaIndex))}]");
-                    DebugDisplay.WriteLine($"GM: {_grandMinima:F4} [{FormatRecipe(_channelNames, _allCandidates.Column(_grandMinimaIndex))}]");
+                    if (_iterationMinimaIndex >= 0)
+                        DebugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{FormatRecipe(_channelNames, _iterationVectors.Column(_iterationMinimaIndex))}]");
+
+                    DebugDisplay.WriteLine($"GM: {_grandMinima:F4} [{FormatRecipe(_channelNames, _testedCandidates[_grandMinimaIndex].Vector)}]");
 
                     // Make a decision about the proximity of the best guess
 
-                    string? recipeName = null;
+                    string? bestRecipeName = null;
                     if (_grandMinima < _config.Threshold)
                     {
-                        recipeName = "Final recipe";
+                        bestRecipeName = "Final recipe";
                     }
-                    else if (_iter > _config.MaxIterations)
+                    else if (iterationId > _config.MaxIterations)
                     { 
-                        recipeName = $"The best vectors after {_config.MaxIterations} iterations";
+                        bestRecipeName = $"The best vectors after {iterationId} iterations";
                     }
 
-                    if (!string.IsNullOrEmpty(recipeName))
+                    if (!string.IsNullOrEmpty(bestRecipeName))
                     {
-                        _isFinished = true;
-
                         // Send the final recipe
-                        var f = LimitValues(_allCandidates.Column(_grandMinimaIndex), FLOW_MIN, FLOW_MAX);
-                        recipe = GetRecipe(recipeName, f, _isFinished, _lastDistance);
-                        DebugDisplay.WriteLine($"\n{recipeName}  {FormatRecipe(_channelNames, _allCandidates.Column(_grandMinimaIndex))}, DIST = {_grandMinima:F4}\n\nFinished");
-                        return recipe;
+                        var bestVector = _testedCandidates[_grandMinimaIndex].Vector;
+                        var bestValidVector = LimitValues(bestVector, VALUE_MIN, VALUE_MAX);
+                        DebugDisplay.WriteLine($"\n{bestRecipeName}  {FormatRecipe(_channelNames, bestVector)}, DIST = {_grandMinima:F4}\n\nFinished");
+                        return GetRecipe(bestRecipeName, bestValidVector, true, _lastDistance);
                     }
                     else
                     {
                         DebugDisplay.WriteLine("The best vectors are:");
-                        DebugDisplay.WriteLine(FormatRecipesAll(_channelNames, _candidates));
+                        DebugDisplay.WriteLine(FormatRecipesAll(_channelNames, _bestVectors));
                     }
                 }
 
-                DebugDisplay.WriteLine($"\nIteration #{_iter}:");
+                DebugDisplay.WriteLine($"\nIteration #{iterationId}:");
                 _iterationMinima = 1e8;
                 _iterationMinimaIndex = -1;
 
-                var mutated = Mutate(_candidates, _parameters.MutationFactor, FLOW_MIN, FLOW_MAX);   // generate new vectors
-                _iterationCandidates = Crossover(_candidates, mutated, _parameters.CrossoverRate);                // mix old and new vectors
-                Validate(_iterationCandidates, _flowVariationDelta, FLOW_MIN, FLOW_MAX);               // remove repetitions
-                Round(_iterationCandidates, _parameters.Decimals);                          // round flow values
+                var mutatedVectors = Mutate(_bestVectors, _parameters.MutationFactor, VALUE_MIN, VALUE_MAX);   // generate new vectors
+                _iterationVectors = Crossover(_bestVectors, mutatedVectors, _parameters.CrossoverRate);        // mix old and new vectors
+                Validate(_iterationVectors, _valueDelta, VALUE_MIN, VALUE_MAX);          // remove repetitions
+                Round(_iterationVectors, _parameters.Decimals);                          // round values
 
-                DebugDisplay.WriteLine($"Vectors to test:\n{FormatRecipesAll(_channelNames, _iterationCandidates)}");
+                DebugDisplay.WriteLine($"Vectors to test:\n{FormatRecipesAll(_channelNames, _iterationVectors)}");
             }
 
-            var flows = LimitValues(_iterationCandidates.Column(candId), FLOW_MIN, FLOW_MAX);
+            var validVector = LimitValues(_iterationVectors.Column(vectorId), VALUE_MIN, VALUE_MAX);
 
-            DebugDisplay.Write($"[{_step}] {FormatRecipe(_channelNames, _iterationCandidates.Column(candId))}");
-
-            recipe = GetRecipe($"Iteration #{_iter}, Search #{candId + 1}", flows, _isFinished, _lastDistance);
+            DebugDisplay.Write($"[{_testedCandidates.Count + 1}] {FormatRecipe(_channelNames, _iterationVectors.Column(vectorId))}");
+            recipe = GetRecipe($"Iteration #{iterationId}, Search #{vectorId + 1}", validVector, false, _lastDistance);
         }
-
-        _step++;
 
         return recipe;
     }
@@ -245,8 +226,10 @@ internal class DiffEvol
 
     record class MinMax(double Min, double Max);
 
-    const double FLOW_MIN = 0;
-    const double FLOW_MAX = 100;
+    record class Candidate(MatrixD Vector, double[] Measurement, double Distance);
+
+    const double VALUE_MIN = 0;
+    const double VALUE_MAX = 100;
     const int FLOW_DURATION_ENDLESS = -1;
 
     readonly Config _config;
@@ -259,9 +242,10 @@ internal class DiffEvol
 
     readonly bool _hasDmsSource;
 
-    readonly List<double[]> _allMeasurements = new();
-    readonly int[] _measrIndices;       // indices of measurements corresponding to vectors of _candidates
-    readonly double _flowVariationDelta;
+    //readonly List<double[]> _allMeasurements = new();
+    readonly List<Candidate> _testedCandidates = new();
+    readonly int[] _candidateIndices;       // indices of measurements corresponding to vectors of _candidates
+    readonly double _valueDelta;
 
     double _ucv = 0;
     double[] _target = [];
@@ -272,15 +256,8 @@ internal class DiffEvol
     int _iterationMinimaIndex = -1;     // column of _iterationCandidates that corresponds to iteration minima
     double _lastDistance = 1e8;         // last search distance (measured trials only)
 
-    MatrixD _allCandidates;
-    MatrixD _candidates;
-    MatrixD _iterationCandidates;
-
-    int _step = 0;
-    int _iter = 0;      // iteration counter
-
-    bool _isFinished = false;     // switch for terminating the iterative process
-
+    MatrixD _bestVectors;
+    MatrixD _iterationVectors;
 
     private static double[] GetMeasurementData(Content content) => content switch
         {
@@ -300,56 +277,56 @@ internal class DiffEvol
         {
             var props = channel.Props;
             offsets[i] = _channelRanges[i].Min;
-            gains[i] = (_channelRanges[i].Max - _channelRanges[i].Min) / (FLOW_MAX - FLOW_MIN);
+            gains[i] = (_channelRanges[i].Max - _channelRanges[i].Min) / (VALUE_MAX - VALUE_MIN);
             i++;
         }
 
         return (offsets, gains);
     }
 
-    //  Formats gas names N with their flows V as "GAS1=FLOW1 GAS2=FLOW2 ..."
-    private static string FormatRecipe(string[] channelNames, MatrixD recipeFlows)
+    //  Formats variable names with their values as "VAR1=VALUE1 VAR2=VALUE2 ..."
+    private static string FormatRecipe(string[] varNames, MatrixD vector)
     {
-        if (channelNames.Length != recipeFlows.Size)
+        if (varNames.Length != vector.Size)
             return string.Empty;
 
         List<string> result = new();
 
-        for (int i = 0; i < recipeFlows.Size && i < channelNames.Length; i++)
+        for (int i = 0; i < vector.Size && i < varNames.Length; i++)
         {
-            result.Add($"{channelNames[i]} = {recipeFlows[i],-4:F1}");
+            result.Add($"{varNames[i]} = {vector[i],-4:F1}");
         }
 
         return string.Join(" ", result);
     }
 
-    // Formats gas names N with a list of flows V as
-    //   GAS1 FLOW1 FLOW2..
-    //   GAS2 FLOW1 FLOW2..
+    // Formats variable names with a list of values as
+    //   VAR1 VALUE1 VALUE2..
+    //   VAR2 VALUE1 VALUE2..
     //   ..
-    private static string FormatRecipesAll(string[] channelNames, MatrixD allRecipeFlows)
+    private static string FormatRecipesAll(string[] varNames, MatrixD vectors)
     {
         StringBuilder result = new();
-        for (int r = 0; r < allRecipeFlows.RowCount && r < channelNames.Length; r++)
+        for (int r = 0; r < vectors.RowCount && r < varNames.Length; r++)
         {
-            result.Append($"{channelNames[r],-12}");
-            for (int c = 0; c < allRecipeFlows.ColumnCount; c++)
-                result.Append($" {allRecipeFlows[r, c],4:F1}");
+            result.Append($"{varNames[r],-12}");
+            for (int c = 0; c < vectors.ColumnCount; c++)
+                result.Append($" {vectors[r, c],4:F1}");
             result.AppendLine();
         }
         return result.ToString();
     }
 
-    private MatrixD CreateInitialVectors(int channelCount, double flowMin, double flowMax)
+    private MatrixD CreateInitialVectors(int channelCount, double min, double max)
     {
-        var interval = flowMax - flowMin;
-        var center = (flowMax + flowMin) / 2;
+        var interval = max - min;
+        var center = (max + min) / 2;
 
         if (channelCount < 1)
             return new MatrixD(1, 1, center);
 
-        var min = flowMin + interval * 0.12f;
-        var max = flowMax - interval * 0.08f;   // different delta to add some imbalance
+        min = min + interval * 0.12f;
+        max = max - interval * 0.08f;   // different delta to add some imbalance
 
         MatrixD? result = null;
 
@@ -389,38 +366,38 @@ internal class DiffEvol
             _ => throw new NotImplementedException("Kernel not supported")
         };
 
-    private MatrixD Mutate(MatrixD testedFlows, double f, double flowMin, double flowMax)
+    private MatrixD Mutate(MatrixD vectors, double f, double min, double max)
     {
-        var result = new MatrixD(testedFlows.RowCount, 0);
+        var result = new MatrixD(vectors.RowCount, 0);
 
         // Allow to accept mutated vectors with values slightly beyond the
         // limits.The values anyway will be adjusted to bring them within
         // the scope in the LimitValues function
-        var delta = (flowMax - flowMin) * 0.05;   // to each side beyond the limits
-        flowMin = flowMin - delta;
-        flowMax = flowMax + delta;
+        var delta = (max - min) * 0.05;   // to each side beyond the limits
+        min = min - delta;
+        max = max + delta;
 
-        for (int c = 0; c < testedFlows.ColumnCount; c++)
+        for (int c = 0; c < vectors.ColumnCount; c++)
         {
-            var candidate = KeepInRange(testedFlows, c, flowMin, flowMax, (flows, column) => MutateOne(flows, f, column));
+            var candidate = KeepInRange(vectors, c, min, max, (vectors, column) => MutateOne(vectors, column, f));
             result = result.StackColumns(candidate);
         }
 
         return result;
     }
 
-    private MatrixD MutateOne(MatrixD flows, double f, int column)
+    private MatrixD MutateOne(MatrixD vectors, int column, double f)
     {
-        if (column < 0 || column >= flows.ColumnCount)
+        if (column < 0 || column >= vectors.ColumnCount)
             throw new ArgumentException("Mutation: Invalid column");
 
-        // Pick three distinct vectors from flows that are different from "column"
+        // Pick three distinct vectors that are different from "column"
 
-        int[] ids = Enumerable.Range(0, flows.ColumnCount).ToArray();  // random permutation of integers 0..ColumnCount
+        int[] ids = Enumerable.Range(0, vectors.ColumnCount).ToArray();  // random permutation of integers 0..ColumnCount
         _rnd.Shuffle(ids);
 
         // remove index "column"
-        int[] indices = new int[flows.ColumnCount - 1];
+        int[] indices = new int[vectors.ColumnCount - 1];
         for (int i = 0, j = 0; i < ids.Length; i++)
             if (ids[i] != column)
                 indices[j++] = ids[i];
@@ -428,30 +405,30 @@ internal class DiffEvol
         // Compute donor vector from first three vectors
         // pick three distinct dispersion plots (also PID, SNT)
         // (need to be distinct from each other and from x)
-        return flows.Column(indices[1]) + f * (flows.Column(indices[2]) - flows.Column(indices[3]));
+        return vectors.Column(indices[1]) + f * (vectors.Column(indices[2]) - vectors.Column(indices[3]));
     }
 
     // Uses binomial method for combining components from target and donor vectors
-    private MatrixD Crossover(MatrixD testedFlows, MatrixD candidateFlows, double cr)
+    private MatrixD Crossover(MatrixD originalVectors, MatrixD mutetedVectors, double cr)
     {
         // Generate randomly chosen indices to ensure that at least one
         // component of the donor vector is included in the target vector
-        var randomIndices = testedFlows.Row(0).Select(_ => _rnd.Next(testedFlows.ColumnCount)).ToArray();
+        var randomIndices = originalVectors.Row(0).Select(_ => _rnd.Next(originalVectors.ColumnCount)).ToArray();
         
         // Random numbers in [0, 1] for each component of each target vector
-        var crossoverProbabilities = new MatrixD(testedFlows.RowCount, testedFlows.ColumnCount, (r,c) => _rnd.NextDouble());
+        var crossoverProbabilities = new MatrixD(originalVectors.RowCount, originalVectors.ColumnCount, (r,c) => _rnd.NextDouble());
         
         // Combining target and donor vectors to get trial vectors
-        var result = new MatrixD(testedFlows.RowCount, testedFlows.ColumnCount, double.NaN);
+        var result = new MatrixD(originalVectors.RowCount, originalVectors.ColumnCount, double.NaN);
 
-        for (int c = 0; c < testedFlows.ColumnCount; c++)
+        for (int c = 0; c < originalVectors.ColumnCount; c++)
         {
-            for (int r = 0; r < testedFlows.RowCount; r++)
+            for (int r = 0; r < originalVectors.RowCount; r++)
             {
                 if (crossoverProbabilities[r, c] <= cr || randomIndices[r] == c)
-                    result[r, c] = candidateFlows[r, c];
+                    result[r, c] = mutetedVectors[r, c];
                 else                                // OLEG: extreamly rare if cr = 0.8, but
-                    result[r, c] = testedFlows[r, c];     //% happens in 10 - 30 % cases when cr = 0.5
+                    result[r, c] = originalVectors[r, c];     //% happens in 10 - 30 % cases when cr = 0.5
             }
         }
 
@@ -459,54 +436,54 @@ internal class DiffEvol
     }
 
     // Avoid the search algorithm to stuck with testing same or similar vectors
-    private void Validate(MatrixD candidateFlows, double delta, double min, double max)
+    private void Validate(MatrixD vectors, double delta, double min, double max)
     {
         double[] interval = [-delta, delta];
 
         // Replace repeated pairs with random pairs
-        for (int c = 1; c < candidateFlows.ColumnCount; c++)
+        for (int c = 1; c < vectors.ColumnCount; c++)
         {
             for (int i = 0; i < c - 1; i++)
             {
-                var prevColumn = candidateFlows.Column(i);
-                if (candidateFlows.Column(c).Equals(prevColumn))
+                var prevVector = vectors.Column(i);
+                if (vectors.Column(c).Equals(prevVector))
                 {
                     // deviate by +- delta
-                    var candidate = KeepInRange(candidateFlows, i, min, max, (flows, j) =>
-                        flows.Column(j) + new MatrixD(candidateFlows.RowCount, 1, (r, c) =>
+                    var candidate = KeepInRange(vectors, i, min, max, (vectors, j) =>
+                        vectors.Column(j) + new MatrixD(vectors.RowCount, 1, (r, c) =>
                             _rnd.NextDouble(-delta, delta)
                         )
                     );
-                    candidateFlows.ReplaceColumn(i, candidate);
-                    DebugDisplay.WriteLine($"Validator: [{i}] '{prevColumn}' >> '{candidateFlows.Column(i)}'");
+                    vectors.ReplaceColumn(i, candidate);
+                    DebugDisplay.WriteLine($"Validator: [{i}] '{prevVector}' >> '{vectors.Column(i)}'");
                 }
             }
         }
 
-        //  If all flow values of a certain gas are the same..
-        bool[] areAllSame = candidateFlows.Column(0).Select(_ => true).ToArray();
-        for (int c = 1; c < candidateFlows.ColumnCount; c++)
-            for (int r = 0; r < candidateFlows.RowCount; r++)
-                areAllSame[r] = areAllSame[r] && (candidateFlows[r, c - 1] == candidateFlows[r, c]);
+        //  If all variable values are the same..
+        bool[] areAllSame = vectors.Column(0).Select(_ => true).ToArray();
+        for (int c = 1; c < vectors.ColumnCount; c++)
+            for (int r = 0; r < vectors.RowCount; r++)
+                areAllSame[r] = areAllSame[r] && (vectors[r, c - 1] == vectors[r, c]);
 
         // .. then randomize those values a bit
-        for (int r = 0; r < candidateFlows.RowCount; r++)
+        for (int r = 0; r < vectors.RowCount; r++)
         {
             if (areAllSame[r])
             {
-                var prevChannelFlows = candidateFlows.Row(r);
-                var newChannelFlows = KeepInRange(candidateFlows, r, min, max, (flows, i) =>
-                    flows.Row(i) + new MatrixD(1, candidateFlows.ColumnCount, (r, c) =>
+                var variablePreviousValues = vectors.Row(r);
+                var variableNewValues = KeepInRange(vectors, r, min, max, (vectors, i) =>
+                    vectors.Row(i) + new MatrixD(1, vectors.ColumnCount, (r, c) =>
                         _rnd.NextDouble(-delta, delta)
                     )
                 );
-                candidateFlows.ReplaceRow(r, newChannelFlows);
-                DebugDisplay.WriteLine($"Validator: '{prevChannelFlows}' >> '{newChannelFlows}'");
+                vectors.ReplaceRow(r, variableNewValues);
+                DebugDisplay.WriteLine($"Validator: '{variablePreviousValues}' >> '{variableNewValues}'");
             }
         }
     }
 
-    private MatrixD KeepInRange(MatrixD flows, int index, double min, double max, Func<MatrixD, int, MatrixD> createVector)
+    private MatrixD KeepInRange(MatrixD matrix, int index, double min, double max, Func<MatrixD, int, MatrixD> createVector)
     {
         // We try to change vector values so that all stay in the range [min, max]
         // However, we may get scenarios when this is impossible or takes
@@ -518,7 +495,7 @@ internal class DiffEvol
 
         while (maxTrialCount > 0)
         {
-            result = createVector(flows, index);  // the callback create either a column or a row
+            result = createVector(matrix, index);  // the callback create either a column or a row
 
             if (result.All(v => v >= min && v <= max))  // nice, all values are withing the range
                 break;
@@ -577,14 +554,14 @@ internal class DiffEvol
             return matrix[r, c];
         });
 
-    private Recipe GetRecipe(string name, MatrixD flows, bool isFinal, double distance)
+    private Recipe GetRecipe(string name, MatrixD vector, bool isFinal, double distance)
     {
         var (offsets, gains) = GetFlowTransformations();
 
         var channels = new List<ChannelRecipe>();
 
         int i = 0;
-        foreach (var flow in flows)
+        foreach (var flow in vector)
         {
             channels.Add(new ChannelRecipe(
                 _channelIDs[i],

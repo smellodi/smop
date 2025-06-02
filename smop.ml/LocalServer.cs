@@ -21,7 +21,7 @@ internal class LocalServer : Server
 
     // Internal
 
-    DiffEvol.DiffEvol? _diffEvol;
+    Search.SearchAlgorithm? _searchAlgorithm;
 
     protected override async Task SendTextAsync(string data)
     {
@@ -33,11 +33,11 @@ internal class LocalServer : Server
             var json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
             Config config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
 
-            _diffEvol = new DiffEvol.DiffEvol(config);
+            _searchAlgorithm = new Search.SearchAlgorithm(config);
         }
         else if (packet.Type == PacketType.Measurement)
         {
-            if (_diffEvol == null)
+            if (_searchAlgorithm == null)
             {
                 return;
             }
@@ -65,9 +65,9 @@ internal class LocalServer : Server
                 content = null;
             }
 
-            if (content != null)
+            if (content != null && _searchAlgorithm.AddMeasurement(content))
             {
-                recipe = await _diffEvol.AddMeasurement(content);
+                recipe = await _searchAlgorithm.GetRecipe();
             }
 
             if (recipe != null)

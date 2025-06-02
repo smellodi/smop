@@ -1,4 +1,4 @@
-using M = Smop.ML.DiffEvol.Matrix<double>;
+using M = Smop.ML.Search.Matrix<double>;
 
 namespace UnitTests.ML;
 
@@ -377,7 +377,7 @@ public class DeMatrix
     public void RemoveDuplicates()
     {
         M m1 = new(4, 3, new double[4, 3] { { 0, 1, 0 }, { 0, 1, 1 }, { 0, 1, 0 }, { 0, 1, 0 } });
-        M m2 = m1.RemoveDuplicates(Smop.ML.DiffEvol.Direction.Rows);
+        M m2 = m1.RemoveDuplicates(Smop.ML.Search.Direction.Rows);
 
         Assert.False(m2.IsEmpty);
         Assert.False(m2.IsScalar);
@@ -389,7 +389,7 @@ public class DeMatrix
         Assert.Equal(6, m2.Size);
 
         M m3 = new(3, 4, new double[3, 4] { { 0, 1, 0, 0 }, { 0, 1, 0, 1 }, { 1, 0, 1, 1 } });
-        M m4 = m3.RemoveDuplicates(Smop.ML.DiffEvol.Direction.Columns);
+        M m4 = m3.RemoveDuplicates(Smop.ML.Search.Direction.Columns);
 
         Assert.False(m4.IsEmpty);
         Assert.False(m4.IsScalar);
@@ -690,7 +690,7 @@ public class DeMatrix
                 m = M.StackRows(m, ab);
         }
 
-        M m1 = m!.RemoveDuplicates(Smop.ML.DiffEvol.Direction.Rows);
+        M m1 = m!.RemoveDuplicates(Smop.ML.Search.Direction.Rows);
 
         Assert.False(m1.IsEmpty);
         Assert.False(m1.IsScalar);
@@ -701,7 +701,7 @@ public class DeMatrix
         Assert.Equal(3, m1.ColumnCount);
         Assert.Equal(24, m1.Size);
 
-        M m2 = m!.Transpose().RemoveDuplicates(Smop.ML.DiffEvol.Direction.Columns);
+        M m2 = m!.Transpose().RemoveDuplicates(Smop.ML.Search.Direction.Columns);
 
         Assert.False(m2.IsEmpty);
         Assert.False(m2.IsScalar);

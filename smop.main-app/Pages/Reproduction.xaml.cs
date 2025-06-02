@@ -38,7 +38,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     public void Start(OdorReproducerController.Config config)
     {
-        config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Connected);
+        config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Activated);
 
         _proc = new OdorReproducerController(config);
         _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => HandleScanFinished(e, config.DataSize));
@@ -141,6 +141,8 @@ public partial class Reproduction : Page, IPage<Navigation>
         SetActiveElement(ActiveElement.ML);
         SetConnectionColor(cclMLStatus, config.MLComm.IsConnected);
         SetConnectionColor(cclODStatus, OdorDisplay.CommPort.Instance.IsOpen);
+
+        _procConfig.MLComm.Start();
     }
 
     // Internal

@@ -10,13 +10,14 @@ internal abstract class Server : IDisposable
     public event EventHandler<Recipe>? RecipeReceived;
     public event EventHandler<string>? Error;
 
-    public virtual bool IsClientConnected { get; }
+    public virtual bool IsConnected { get; }
+    public virtual string DisplayName { get; }
 
     public abstract void Dispose();
 
     public async Task SendAsync<T>(T packet)
     {
-        if (IsClientConnected)
+        if (IsConnected)
         {
             var data = JsonSerializer.Serialize(packet, _serializerOptions);
             ScreenLogger.Print("[MlServer] sent: " + data.Max(700));

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using static Smop.Common.COMUtils;
 
 namespace Smop.ML;
 
@@ -10,7 +11,8 @@ internal class FileServer : Server
     public static string MLInput = "input.txt";
     public static string MLOutput = "output.txt";
 
-    public override bool IsClientConnected => File.Exists(_input) && File.Exists(_output);
+    public override bool IsConnected => File.Exists(_input) && File.Exists(_output);
+    public override string DisplayName => $"files {MLInput}/{MLOutput}";
 
     public FileServer()
     {

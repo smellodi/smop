@@ -92,7 +92,7 @@ internal abstract class Simulator : IDisposable
             var config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
             _channelIDs = config.Printer.Channels.Select(c => c.Id).ToArray();
             _hasDmsSource = config.Sources.Contains(Source.DMS);
-            _maxSteps = config.MaxIterationNumber;
+            _maxSteps = config.MaxIterations;
             _threshold = config.Threshold;
 
             _step = 0;

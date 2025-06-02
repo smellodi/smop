@@ -315,11 +315,11 @@ public class SetupController
 
         if (ParamDefinition != null)
         {
-            App.ML.Parameter = ParamDefinition;
+            App.ML.DmsParameter = ParamDefinition;
         }
         if (ScopeParameters != null)
         {
-            App.ML.ScopeParameters = ScopeParameters with { Usv = settings.Reproduction_DmsSingleSV };
+            App.ML.DmsScopeParameters = ScopeParameters with { Usv = settings.Reproduction_DmsSingleSV };
         }
 
         _nlog.Info(LogIO.Text(Timestamp.Ms, "ML", "Config", settings.Reproduction_ML_MaxIterations, settings.Reproduction_ML_Threshold,

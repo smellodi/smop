@@ -61,7 +61,7 @@ public record class Recipe(string Name, bool IsFinal, float Distance, ChannelRec
 }
 
 internal record class Printer(ChannelProps[] Channels);
-internal record class Config(string[] Sources, Printer Printer, int MaxIterationNumber, float Threshold, string Algorithm);
+internal record class Config(string[] Sources, Printer Printer, int MaxIterations, float Threshold, string Algorithm);
 
 internal record class Content(string Source);
 

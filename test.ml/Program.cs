@@ -26,28 +26,37 @@ do
 
 // Get server type
 
-Communicator.Type commType = Communicator.Type.Tcp;
+Communicator.Type? commType = null;
 
 Console.Write("\n");
-Console.Write("Should the app use File server rahter than TCP server (Y/n)?   ");
+Console.Write("Server to use: TCP (T), File (F) or Local (L, default)?   ");
 
 do
 {
     var resp = Console.ReadKey();
-    if (resp.Key == ConsoleKey.Y || resp.Key == ConsoleKey.N || resp.Key == ConsoleKey.Enter)
+    try
     {
-        commType = resp.Key == ConsoleKey.N ? Communicator.Type.Tcp : Communicator.Type.File;
-        break;
+        commType = resp.Key switch
+        {
+            ConsoleKey.T => Communicator.Type.Tcp,
+            ConsoleKey.F => Communicator.Type.File,
+            ConsoleKey.L or ConsoleKey.Enter => Communicator.Type.Local,
+            ConsoleKey.Escape => throw new Exception("Interrupted by user"),
+            _ => null
+        };
+    }
+    catch
+    {
+        return;
     }
 
     Console.CursorLeft--;
-} while (true);
-
+} while (commType == null);
 
 Console.Write("\n");
 
-var ml = new Communicator(commType, isSimulating);
-ml.Parameter = Smop.IonVision.SimulatedData.ParameterDefinition;
+var ml = new Communicator((Communicator.Type)commType, isSimulating);
+ml.DmsParameter = Smop.IonVision.SimulatedData.ParameterDefinition;
 ml.RecipeReceived += (s, e) => Print(e);
 
 await Task.Delay(300);  
@@ -62,7 +71,7 @@ var commands = new Dictionary<string, (string, Action?)>()
 {
     { "check", ("checks the connection status", () => Print(ml.IsConnected)) },
     { "dms", ("send DMS data to ML", () => _ = ml.Publish(Smop.IonVision.SimulatedData.ScanResult) ) },
-    { "snt", ("send SNT data to ML", () => _ = ml.Publish(Smop.SmellInsp.SimulatedData.Generate() ) ) },
+    { "snt", ("send SNT data to ML", () => _ = ml.Publish(Smop.SmellInsp.SimulatedData.Generate().AsFeatures() ) ) },
     { "pid", ("send PID data to ML", () => _ = ml.Publish(68.2f) ) },
     { "help", ("displays available commands", null) },
     { "exit", ("exists the app", null) },

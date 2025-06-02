@@ -81,7 +81,7 @@ public partial class Setup : Page, IPage<object?>
         {
             if (App.ML == null)
             {
-                App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
+                App.ML = new ML.Communicator(ML.Communicator.Type.Local, _storage.Simulating.HasFlag(SimulationTarget.ML));
                 App.ML.StatusChanged += ML_StatusChanged;
                 App.ML.Error += ML_Error;
 
@@ -353,7 +353,7 @@ public partial class Setup : Page, IPage<object?>
     private void ML_StatusChanged(object? sender, ML.Status e)
     {
         _nlog.Info(Logging.LogIO.Text(Timestamp.Ms, "ML", "Status", e));
-        _mlIsConnected = e == ML.Status.Connected;
+        _mlIsConnected = e == ML.Status.Activated;
         Dispatcher.Invoke(UpdateUI);
     }
 
@@ -454,7 +454,7 @@ public partial class Setup : Page, IPage<object?>
             {
                 App.ML.Dispose();
 
-                App.ML = new ML.Communicator(ML.Communicator.Type.Tcp, _storage.Simulating.HasFlag(SimulationTarget.ML));
+                App.ML = new ML.Communicator(ML.Communicator.Type.Local, _storage.Simulating.HasFlag(SimulationTarget.ML));
                 App.ML.StatusChanged += ML_StatusChanged;
                 App.ML.Error += ML_Error;
             }

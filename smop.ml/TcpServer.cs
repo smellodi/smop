@@ -9,14 +9,13 @@ using Tcp.NET.Server.Models;
 
 namespace Smop.ML;
 
-public enum Status { Disconnected, Connected }
-
 internal class TcpServer : Server
 {
     public static int Port => 2339;
     public static string LineEnd => "\r\n";
 
-    public override bool IsClientConnected => _server.ConnectionCount > 0;
+    public override bool IsConnected => _server.ConnectionCount > 0;
+    public override string DisplayName => $"port {Port}";
 
     public event EventHandler<Status>? StatusChanged;
 
@@ -65,9 +64,9 @@ internal class TcpServer : Server
 
     private void Server_ConnectionEvent(object sender, TcpConnectionServerEventArgs args)
     {
-        var status = args.ConnectionEventType == PHS.Networking.Enums.ConnectionEventType.Connected ? Status.Connected : Status.Disconnected;
+        var status = args.ConnectionEventType == PHS.Networking.Enums.ConnectionEventType.Connected ? Status.Activated : Status.Deactivated;
 
-        if (status == Status.Connected)
+        if (status == Status.Activated)
         {
             _connectionCheckTaskCancellation?.Cancel();
             try
@@ -78,12 +77,12 @@ internal class TcpServer : Server
             catch (Exception) { }
         }
 
-        _client = status == Status.Connected ? args.Connection : null;
+        _client = status == Status.Activated ? args.Connection : null;
         ScreenLogger.Print($"[MlServer] {status}: {args.Connection?.TcpClient?.Client?.LocalEndPoint}");
 
         StatusChanged?.Invoke(this, status);
 
-        if (status == Status.Connected)
+        if (status == Status.Activated)
         {
             // The following routine sends \0 byte every second to the client. This is the only way to keep tracking whether the client is still connected,
             // as the native server's mechanism to detect disconnection does not function if ping-pong functionality is disabled (and we want it to be disabled,

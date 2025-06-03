@@ -24,6 +24,11 @@ public partial class DebugDisplay : Window
                 System.Diagnostics.Debug.WriteLine(string.Empty);
                 txbOutput.AppendText("\n");
             }
+
+            if (_isScrolledToBottom)
+            {
+                txbOutput.ScrollToEnd();
+            }
         });
     }
 
@@ -34,5 +39,17 @@ public partial class DebugDisplay : Window
             System.Diagnostics.Debug.Write("[ML.DE] " + msg);
             txbOutput.AppendText(msg);
         });
+    }
+
+    // Internal
+
+    bool _isScrolledToBottom = true;
+
+    private void Output_ScrollChanged(object sender, System.Windows.Controls.ScrollChangedEventArgs e)
+    {
+        if (e.VerticalChange > 0)
+        {
+            _isScrolledToBottom = e.ExtentHeight - (e.VerticalOffset + e.ViewportHeight) < 12;
+        }
     }
 }

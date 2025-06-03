@@ -39,37 +39,25 @@
     <StackPanel>
         <Label Style="{StaticResource Section}"
                Content="Human Test settings:"/>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="80"/>
-            </Grid.ColumnDefinitions>
 
-            <Label Grid.Row="0" Grid.Column="0"
-                   Content="Language"/>
-            <ComboBox Grid.Row="0" Grid.Column="1"
-                      Margin="-2"
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Language">
+            <ComboBox Margin="-2"
                       VerticalAlignment="Stretch"
                       HorizontalAlignment="Stretch"
                       ItemsSource="{Binding Source={StaticResource languages}}"
                       SelectedItem="{Binding Path=Language, Mode=TwoWay}"/>
+        </UserControl>
 
-            <CheckBox x:Name="chkPractice" Grid.Row="1" Grid.Column="0"
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="108"/>
+            </Grid.ColumnDefinitions>
+            <CheckBox x:Name="chkPractice" Grid.Column="0"
                       Content="Practicing"
                       IsChecked="{Binding IsPracticingProcedure}"/>
-            <WrapPanel Grid.Row="1" Grid.Column="1">
+            <WrapPanel Grid.Column="1">
                 <TextBox Style="{StaticResource Value}"
                          IsEnabled="{Binding IsChecked, ElementName=chkPractice}"
                          Width="38">
@@ -85,11 +73,11 @@
                 </TextBox>
                 <Label>times</Label>
             </WrapPanel>
+        </Grid>
 
-            <Label Grid.Row="2" Grid.Column="0"
-                   Content="Participant ID"/>
-            <TextBox Grid.Row="2" Grid.Column="1"
-                     Width="Auto"
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Participant ID">
+            <TextBox Width="Auto"
                      Style="{StaticResource Value}">
                 <TextBox.Text>
                     <Binding Path="ParticipantID"
@@ -101,12 +89,12 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+        </UserControl>
 
-            <Label Grid.Row="3" Grid.Column="0"
-                   IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
-                   Content="Number of blocks"/>
-            <TextBox Grid.Row="3" Grid.Column="1"
-                     Width="Auto"
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Number of blocks"
+                     IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}">
+            <TextBox Width="Auto"
                      IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
                      Style="{StaticResource Value}">
                 <TextBox.Text>
@@ -119,11 +107,11 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+        </UserControl>
 
-            <Label Grid.Row="4" Grid.Column="0"
-                   Content="Waiting interval, sec"/>
-            <TextBox Grid.Row="4" Grid.Column="1"
-                     Style="{StaticResource Value}">
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Waiting interval">
+            <TextBox Style="{StaticResource Value}">
                 <TextBox.Text>
                     <Binding Path="WaitingInterval"
                              Mode="TwoWay"
@@ -134,26 +122,26 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+        </UserControl>
 
-            <Label Grid.Row="5" Grid.Column="0"
-                   Content="Sniffing interval, sec"/>
-            <TextBox Grid.Row="5" Grid.Column="1"
-                     Style="{StaticResource Value}">
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Sniffing interval">
+            <TextBox Style="{StaticResource Value}">
                 <TextBox.Text>
                     <Binding Path="SniffingInterval"
-                             Mode="TwoWay"
-                             UpdateSourceTrigger="PropertyChanged">
+                                 Mode="TwoWay"
+                                 UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
                             <utils:RangeRule Min="2" Max="20" IsInteger="False"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+        </UserControl>
 
-            <Label Grid.Row="6" Grid.Column="0"
-                   Content="Pause between blocks, sec"/>
-            <TextBox Grid.Row="6" Grid.Column="1"
-                     Style="{StaticResource Value}">
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Pause between blocks">
+            <TextBox Style="{StaticResource Value}">
                 <TextBox.Text>
                     <Binding Path="PauseBetweenBlocks"
                              Mode="TwoWay"
@@ -164,31 +152,29 @@
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+        </UserControl>
 
-            <Label Grid.Row="7" Grid.Column="0"
-                   Content="Pause between trials, sec"/>
-            <TextBox Grid.Row="7" Grid.Column="1"
-                     Style="{StaticResource Value}">
+        <UserControl Style="{StaticResource Setting}"
+                     Tag="Pause between trials">
+            <TextBox Style="{StaticResource Value}">
                 <TextBox.Text>
                     <Binding Path="PauseBetweenTrials"
-                             Mode="TwoWay"
-                             UpdateSourceTrigger="PropertyChanged">
+                                 Mode="TwoWay"
+                                 UpdateSourceTrigger="PropertyChanged">
                         <Binding.ValidationRules>
                             <utils:RangeRule Min="0" Max="10" IsInteger="False"/>
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
             </TextBox>
+        </UserControl>
 
-            <CheckBox Grid.Row="8" Grid.ColumnSpan="2"
-                      Content="Allow skipping ratings"
-                      IsChecked="{Binding AllowEmptyRatings, Mode=TwoWay}"/>
+        <CheckBox Content="Allow skipping ratings"
+                  IsChecked="{Binding AllowEmptyRatings, Mode=TwoWay}"/>
 
-            <CheckBox Grid.Row="9" Grid.Column="0"
-                      Content="Randomize trials"
-                      IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
-                      IsChecked="{Binding IsRandomized, Mode=TwoWay}"/>
-        </Grid>
+        <CheckBox Content="Randomize trials"
+                  IsEnabled="{Binding IsChecked, ElementName=chkPractice, Converter={StaticResource inverse}}"
+                  IsChecked="{Binding IsRandomized, Mode=TwoWay}"/>
 
         <Separator VerticalAlignment="Top"/>
 

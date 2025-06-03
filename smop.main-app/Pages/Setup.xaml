@@ -80,39 +80,44 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Style="{StaticResource SidePanel}">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
 
-                    <local:PulseGeneratorSettings x:Name="pulseGeneratorSettings" Grid.Row="0"/>
+                        <local:PulseGeneratorSettings x:Name="pulseGeneratorSettings" Grid.Row="0"/>
 
-                    <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
+                        <local:OdorReproductionSettings x:Name="odorReproductionSettings" Grid.Row="1"/>
 
-                    <local:HumanTestsSettings x:Name="humanTestSettings" Grid.Row="2"/>
+                        <local:HumanTestsSettings x:Name="humanTestSettings" Grid.Row="2"/>
 
-                    <StackPanel Grid.Row="3">
-                        <Separator Margin="0,8,0,0"/>
-                        <Label Style="{StaticResource Section}"
-                               Content="Air settings:"/>
+                        <StackPanel Grid.Row="3">
+                            <Separator Margin="0,8,0,0"/>
+                            <Label Style="{StaticResource Section}"
+                                   Content="Air settings:"/>
 
-                        <Grid>
-                            <CheckBox x:Name="chkUseDilutionUnit"
-                                  Content="Dilute odored air"
-                                  Checked="UseDilutionUnit_Checked"
-                                  Unchecked="UseDilutionUnit_Unchecked"/>
-                            <WrapPanel HorizontalAlignment="Right">
-                                <Label Padding="0,5"
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="132"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <CheckBox x:Name="chkUseDilutionUnit" Grid.Column="0"
+                                          Content="Dilute odored air"
+                                          Checked="UseDilutionUnit_Checked"
+                                          Unchecked="UseDilutionUnit_Unchecked"/>
+                                <Label Grid.Column="1"
+                                       Padding="0,5,2,5"
                                        Content="1:"
                                        VerticalContentAlignment="Center"
                                        IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"/>
-                                <TextBox x:Name="txbDilutionRatio"
+                                <TextBox x:Name="txbDilutionRatio" Grid.Column="2"
                                          Style="{StaticResource Value}"
                                          IsEnabled="{Binding IsChecked, ElementName=chkUseDilutionUnit}"
-                                         Width="98"
                                          KeyUp="DilutionRatio_KeyUp">
                                     <TextBox.Text>
                                         <Binding Path="Settings.DilutionRatio"
@@ -124,65 +129,75 @@
                                         </Binding>
                                     </TextBox.Text>
                                 </TextBox>
-                            </WrapPanel>
-                        </Grid>
+                            </Grid>
 
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <Label x:Name="chkUseChassisHeater" Grid.Row="0"
-                                   Content="Chassis heater, °C"/>
-                            <TextBox x:Name="txbChassisHeaterTemperature" Grid.Row="0"
-                                     Style="{StaticResource Value}"
-                                     HorizontalAlignment="Right"
-                                     Width="98"
-                                     KeyUp="ChassisHeaterTemperature_KeyUp">
-                                <TextBox.Text>
-                                    <Binding Path="Settings.ChassisHeaterTemperature"
-                                             Mode="TwoWay"
-                                             UpdateSourceTrigger="PropertyChanged">
-                                        <Binding.ValidationRules>
-                                            <utils:RangeRule Min="20" Max="50" IsInteger="False"/>
-                                        </Binding.ValidationRules>
-                                    </Binding>
-                                </TextBox.Text>
-                            </TextBox>
+                            <UserControl Style="{StaticResource Setting}"
+                                         Tag="Chassis heater, °C">
+                                <TextBox x:Name="txbChassisHeaterTemperature"
+                                         Style="{StaticResource Value}"
+                                         HorizontalAlignment="Stretch"
+                                         KeyUp="ChassisHeaterTemperature_KeyUp">
+                                    <TextBox.Text>
+                                        <Binding Path="Settings.ChassisHeaterTemperature"
+                                                 Mode="TwoWay"
+                                                 UpdateSourceTrigger="PropertyChanged">
+                                            <Binding.ValidationRules>
+                                                <utils:RangeRule Min="20" Max="50" IsInteger="False"/>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </UserControl>
 
-                            <Label Grid.Row="1"
-                                   Margin="24,0,0,0"
-                                   Content="channels:"/>
-                            <WrapPanel x:Name="wrpChassisHeaterFlags" Grid.Row="1"
-                                       HorizontalAlignment="Right">
-                                <!-- checkboxes for each channel, added from the code -->
-                            </WrapPanel>
-                        </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0"
+                                       Margin="24,0,0,0"
+                                       Content="channels:"/>
+                                <WrapPanel x:Name="wrpChassisHeaterFlags" Grid.Column="1"
+                                           HorizontalAlignment="Right">
+                                    <!-- checkboxes for each channel, added from the code -->
+                                </WrapPanel>
+                            </Grid>
 
-                        <UserControl x:Name="uscHumidity"
-                                     Style="{StaticResource Setting}"
-                                     Tag="Humidity, %">
-                            <TextBox x:Name="txbHumidity"
-                                     Style="{StaticResource Value}"
-                                     KeyUp="Humidity_KeyUp">
-                                <TextBox.Text>
-                                    <Binding Path="Settings.Humidity"
-                                             Mode="TwoWay"
-                                             UpdateSourceTrigger="PropertyChanged">
-                                        <Binding.ValidationRules>
-                                            <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
-                                        </Binding.ValidationRules>
-                                    </Binding>
-                                </TextBox.Text>
-                            </TextBox>
-                        </UserControl>
+                            <UserControl x:Name="uscHumidity"
+                                         Style="{StaticResource Setting}"
+                                         Tag="Humidity, %">
+                                <TextBox x:Name="txbHumidity"
+                                         Style="{StaticResource Value}"
+                                         KeyUp="Humidity_KeyUp">
+                                    <TextBox.Text>
+                                        <Binding Path="Settings.Humidity"
+                                                 Mode="TwoWay"
+                                                 UpdateSourceTrigger="PropertyChanged">
+                                            <Binding.ValidationRules>
+                                                <utils:RangeRule Min="0" Max="90" IsInteger="False"/>
+                                            </Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </UserControl>
 
-                        <CheckBox Content="auto-adjust"
-                                  HorizontalAlignment="Right"
-                                  IsChecked="{Binding Path=Settings.HumidityAutoAdjustment, Mode=TwoWay}"/>
-                    </StackPanel>
-                </Grid>
+                            <CheckBox Content="auto-adjust"
+                                      HorizontalAlignment="Right"
+                                      IsChecked="{Binding Path=Settings.HumidityAutoAdjustment, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
             </Border>
+
+            <GridSplitter Grid.Column="1"
+                          Background="LightGray" 
+                          HorizontalAlignment="Left" 
+                          VerticalAlignment="Stretch" 
+                          Width="2"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"/>
+            
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" ResizeBehavior="PreviousAndCurrent"/>
 
             <Grid Grid.Column="1"
                     Margin="12,0">

@@ -516,12 +516,23 @@ public class Matrix<T> : IEnumerable<T>, IEnumerator<T>
     public override string ToString()
     {
         List<string> lines = [];
-        for (int r = 0; r < RowCount; r++)
+        if (IsColumn)
         {
-            string s = string.Empty;
-            for (int c = 0; c < ColumnCount; c++)
-                s += $"{_m[r, c],-8:F2}";
-            lines.Add(s.Trim());
+            for (int r = 0; r < RowCount; r++)
+            {
+                var s = $"{_m[r,0],-8:F2}";
+                lines.Add(s.Trim());
+            }
+        }
+        else
+        {
+            for (int r = 0; r < RowCount; r++)
+            {
+                string s = string.Empty;
+                for (int c = 0; c < ColumnCount; c++)
+                    s += $"{_m[r, c],-8:F2}";
+                lines.Add(s.Trim());
+            }
         }
         return string.Join('\n', lines);
     }
@@ -548,53 +559,3 @@ public class Matrix<T> : IEnumerable<T>, IEnumerator<T>
 
     int _enumIndex = -1;
 }
-/*
-internal static class __MatrixTest
-{
-    public static void Test()
-    {
-        var m1 = new Matrix<double>(3, 4, (r, c) => r + c);  Print("Matrix 3x4", m1);
-        var row = m1.Row(1); Print("Row 1", row);
-        var col = m1.Column(1); Print("Column 1", col);
-        var rowMinus1 = m1.ExcludeRow(1); Print("Without row 1", rowMinus1);
-        var colMinus1 = m1.ExcludeColumn(1); Print("Without column 1", colMinus1);
-
-        var m2 = new Matrix<double>(3, 4, (r, c) => 2f*(r + c)/3); Print("Matrix 3x4", m2);
-
-        var m3 = Matrix<double>.FromRows(new double[][] { [1,0,1], [0,1,0], [3,2,1] }); Print("Matrix from rows 3x3", m3);
-        var m4 = Matrix<double>.FromColumns(new double[][] { [1, 0, 1], [0, 1, 0], [3, 2, 1] }); Print("Matrix from columns 3x3", m4);
-
-        var m5 = m3.StackRows(m4); Print("Matrix stacked rows 6x3", m5);
-        var m6 = m3.StackColumns(m4); Print("Matrix stacked columns 3x6", m6);
-
-        var m7 = Matrix<double>.Permutate([5, 6, 8, 9]); Print("Matrix permuitated Xx4", m7);
-        var m8 = m7.Transpose(); Print("Matrix transposed 4xX", m8);
-
-        var m9 = m5.RemoveDuplicates(Direction.Rows); Print("Matrix with no dupllicated in rows", m9);
-        var m10 = m6.RemoveDuplicates(Direction.Columns); Print("Matrix with no dupllicated in columns", m10);
-
-        var m11 = m5.SubSet(1, 1..3); Print("Matrix subset, 1x2", m11);
-        var m12 = m5.SubSet(2..4, 0); Print("Matrix subset, 2x1", m12);
-
-        var m13 = m3 + m4; Print("Matrices added, 3x3", m13);
-        var m14 = m3 - m4; Print("Matrices subtracted, 3x3", m14);
-
-        var m15 = new Matrix<double>(2, 2, 0); Print("Matrix zero, 2x2", m15);
-
-        System.Diagnostics.Debug.WriteLine($"One element : {m11[1]} == {m5[1, 2]}");
-
-        var m16 = m5.SubSet(2..4, 2..4); Print("Matrix subset, 2x2", m16);
-    }
-
-    private static void Print(string header, Matrix<double> matrix)
-    {
-        System.Diagnostics.Debug.WriteLine(header);
-        for (int r = 0; r < matrix.RowCount; r++)
-        {
-            System.Diagnostics.Debug.Write("  ");
-            for (int c = 0; c < matrix.ColumnCount; c++)
-                System.Diagnostics.Debug.Write($"{matrix[r,c],-8:F2}");
-            System.Diagnostics.Debug.WriteLine("");
-        }
-    }
-}*/

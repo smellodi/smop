@@ -25,6 +25,8 @@ internal abstract class Server : IDisposable
         }
     }
 
+    public virtual void CleanUp() { }
+
     // Internal
 
     protected abstract Task SendTextAsync(string data);

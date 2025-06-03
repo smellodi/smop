@@ -221,6 +221,11 @@ public class Communicator : IDisposable
         }
     }
 
+    public void CleanUp()
+    {
+        _server.CleanUp();
+    }
+
     public void Dispose()
     {
         _lastAction = "Dispose";

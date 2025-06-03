@@ -14,7 +14,16 @@ internal class LocalServer : Server
 
     public override void Dispose()
     {
-        // do nothing here?
+        CleanUp();
+        GC.SuppressFinalize(this);
+    }
+
+    public override void CleanUp()
+    {
+        base.CleanUp();
+
+        _searchAlgorithm?.Dispose();
+        _searchAlgorithm = null;
     }
 
     // Internal

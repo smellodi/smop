@@ -8,7 +8,7 @@ public static class ScreenLogger
 {
     public static void Print(params string[] lines)
     {
-        /*if (_isConsoleApp)
+        if (_isConsoleApp)
         {
             if (lines.Length == 0)
                 Console.WriteLine();
@@ -17,12 +17,12 @@ public static class ScreenLogger
                     Console.WriteLine(line);
         }
         else
-        {*/
+        {
             if (lines.Length == 0)
                 Debug.WriteLine("");
             else foreach (var line in lines)
                     Debug.WriteLine(line);
-        //}
+        }
     }
 
     // Internal

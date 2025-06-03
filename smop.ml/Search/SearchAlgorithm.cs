@@ -7,7 +7,7 @@ using MatrixD = Smop.ML.Search.Matrix<double>;
 
 namespace Smop.ML.Search;
 
-internal class SearchAlgorithm
+internal class SearchAlgorithm : IDisposable
 {
     public SearchAlgorithm(Config config)
     {
@@ -39,6 +39,11 @@ internal class SearchAlgorithm
 
         _processor = new DiffEvol(diffEvolParameters, _channelIDs.Length);
         _processor.RequestFormat += Processor_RequestFormat;
+    }
+
+    public void Dispose()
+    {
+        _processor.Dispose();
     }
 
     public bool AddMeasurement(Content content)

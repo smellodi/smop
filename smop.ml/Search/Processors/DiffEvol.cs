@@ -9,7 +9,7 @@ namespace Smop.ML.Search;
 /// In future, this class may implement interface that would be common
 /// for all iterative algorithms
 /// </summary>
-internal class DiffEvol
+internal class DiffEvol : IDisposable
 {
     public bool HasTarget => _target.Length > 0;
     public static double SearchRange => VALUE_MAX - VALUE_MIN;
@@ -46,13 +46,20 @@ internal class DiffEvol
         _candidateIndices = Enumerable.Range(0, _bestVectors.ColumnCount).ToArray();    // range of X and U
 
         _valueDelta = 0.2 * (VALUE_MAX - VALUE_MIN);
+
+        _debugDisplay.Show();
+    }
+
+    public void Dispose()
+    {
+        _debugDisplay.Close();
     }
 
     public void SetTarget(double[] target)
     {
         _target = target;
 
-        DebugDisplay.WriteLine("\nCollecting initial measurements");
+        _debugDisplay.WriteLine("Collecting initial measurements");
     }
 
     public void AddMeasurement(double[] measurement)
@@ -67,7 +74,7 @@ internal class DiffEvol
 
         _testedCandidates.Add(new(_iterationVectors.Column(vectorId), measurement, _lastDistance));
 
-        DebugDisplay.Write($" DIST = {_lastDistance,6:F3}");
+        _debugDisplay.Write($" DIST = {_lastDistance,6:F3}");
 
         string[] info = ["  ", "  ", ""];
 
@@ -102,10 +109,10 @@ internal class DiffEvol
                 info[2] = $"[{_candidateIndices[vectorId] + 1}]";
             }
 
-            DebugDisplay.Write($" {string.Join(' ', info)}");
+            _debugDisplay.Write($" {string.Join(' ', info)}");
         }
 
-        DebugDisplay.WriteLine();
+        _debugDisplay.WriteLine();
     }
 
     public TestCandidate GetTestCandidate()
@@ -119,7 +126,7 @@ internal class DiffEvol
 
             var formatArgs = new RequestFormatEventArgs(vector);
             RequestFormat?.Invoke(this, formatArgs);
-            DebugDisplay.Write($"[{index + 1}] {formatArgs.Result}");
+            _debugDisplay.Write($"[{index + 1}] {formatArgs.Result}");
 
             result = new TestCandidate($"Reference #{index + 1}", vector, false, _lastDistance);
         }
@@ -137,14 +144,14 @@ internal class DiffEvol
                         var vector = _iterationVectors.Column(_iterationMinimaIndex);
                         var formatArgs = new RequestFormatEventArgs(vector);
                         RequestFormat?.Invoke(this, formatArgs);
-                        DebugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{formatArgs.Result}]");
+                        _debugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{formatArgs.Result}]");
                     }
 
                     {
                         var vector = _testedCandidates[_grandMinimaIndex].Vector;
                         var formatArgs = new RequestFormatEventArgs(vector);
                         RequestFormat?.Invoke(this, formatArgs);
-                        DebugDisplay.WriteLine($"GM: {_grandMinima:F4} [{formatArgs.Result}]");
+                        _debugDisplay.WriteLine($"GM: {_grandMinima:F4} [{formatArgs.Result}]");
                     }
 
                     // Make a decision about the proximity of the best guess
@@ -167,21 +174,21 @@ internal class DiffEvol
 
                         var formatArgs = new RequestFormatEventArgs(bestVector);
                         RequestFormat?.Invoke(this, formatArgs);
-                        DebugDisplay.WriteLine($"\n{bestRecipeName}:\n  {formatArgs.Result}\n  DIST = {_grandMinima:F4}\n\nFinished");
+                        _debugDisplay.WriteLine($"\n{bestRecipeName}:\n  {formatArgs.Result}\n  DIST = {_grandMinima:F4}\n\nFinished");
 
                         return new TestCandidate(bestRecipeName, bestValidVector, true, _lastDistance);
                     }
                     else
                     {
-                        DebugDisplay.WriteLine("The best vectors are:");
+                        _debugDisplay.WriteLine("\nThe best vectors are:");
 
                         var formatArgs = new RequestFormatEventArgs(_bestVectors);
                         RequestFormat?.Invoke(this, formatArgs);
-                        DebugDisplay.WriteLine(formatArgs.Result);
+                        _debugDisplay.WriteLine(formatArgs.Result);
                     }
                 }
 
-                DebugDisplay.WriteLine($"\nIteration #{iterationId}:");
+                _debugDisplay.WriteLine($"Iteration #{iterationId}:");
                 _iterationMinima = 1e8;
                 _iterationMinimaIndex = -1;
 
@@ -193,7 +200,7 @@ internal class DiffEvol
                 {
                     var formatArgs = new RequestFormatEventArgs(_iterationVectors);
                     RequestFormat?.Invoke(this, formatArgs);
-                    DebugDisplay.WriteLine($"Vectors to test:\n{formatArgs.Result}");
+                    _debugDisplay.WriteLine($"\nVectors to test:\n{formatArgs.Result}");
                 }
             }
 
@@ -202,7 +209,7 @@ internal class DiffEvol
             {
                 var formatArgs = new RequestFormatEventArgs(_iterationVectors.Column(vectorId));
                 RequestFormat?.Invoke(this, formatArgs);
-                DebugDisplay.Write($"[{_testedCandidates.Count + 1}] {formatArgs.Result}");
+                _debugDisplay.Write($"[{_testedCandidates.Count + 1}] {formatArgs.Result}");
             }
 
             result = new TestCandidate($"Iteration #{iterationId}, Search #{vectorId + 1}", validVector, false, _lastDistance);
@@ -217,6 +224,8 @@ internal class DiffEvol
 
     const double VALUE_MIN = 0;
     const double VALUE_MAX = 100;
+
+    readonly DebugDisplay _debugDisplay = new();
 
     readonly DiffEvolParameters _parameters;
     readonly Random _rnd = new((int)DateTime.Now.Ticks);
@@ -384,7 +393,7 @@ internal class DiffEvol
             if (temp.RowCount > 1)
                 temp = temp.Transpose();
 
-            DebugDisplay.WriteLine($"Rejected: [{index}] {temp}");
+            _debugDisplay.WriteLine($"Rejected: [{index}] {temp}");
 
             maxTrialCount -= 1;
         }
@@ -396,7 +405,7 @@ internal class DiffEvol
 
             result = new MatrixD(result.RowCount, result.ColumnCount, (r, c) => _rnd.NextDouble(min, max));
 
-            DebugDisplay.WriteLine($"[{index}] Failed to create a vector within the limits. A random vector is generated instead.");
+            _debugDisplay.WriteLine($"[{index}] Failed to create a vector within the limits. A random vector is generated instead.");
         }
 
         return result;
@@ -449,7 +458,7 @@ internal class DiffEvol
                         )
                     );
                     vectors.ReplaceColumn(i, candidate);
-                    DebugDisplay.WriteLine($"Validator: [{i}] '{prevVector}' >> '{vectors.Column(i)}'");
+                    _debugDisplay.WriteLine($"Validator: [{i}] '{prevVector}' >> '{vectors.Column(i)}'");
                 }
             }
         }
@@ -472,7 +481,7 @@ internal class DiffEvol
                     )
                 );
                 vectors.ReplaceRow(r, variableNewValues);
-                DebugDisplay.WriteLine($"Validator: '{variablePreviousValues}' >> '{variableNewValues}'");
+                _debugDisplay.WriteLine($"Validator: '{variablePreviousValues}' >> '{variableNewValues}'");
             }
         }
     }

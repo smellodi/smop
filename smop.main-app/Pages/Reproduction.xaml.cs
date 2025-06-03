@@ -569,6 +569,7 @@ public partial class Reproduction : Page, IPage<Navigation>
 
         if (_procConfig != null)
         {
+            _procConfig.MLComm.CleanUp();
             _procConfig.MLComm.RecipeReceived -= HandleRecipe;
         }
 

@@ -15,10 +15,14 @@ internal class SearchAlgorithm
 
         _channelIDs = config.Printer.Channels.Select(c => c.Id).ToArray();
         _channelNames = config.Printer.Channels.Select(c => c.Odor).ToArray();
-        _channelRanges = config.Printer.Channels.Select(c => new MinMax(
-            double.Parse(c.Props["minFlow"].ToString() ?? "0"),
-            double.Parse(c.Props["maxFlow"].ToString() ?? "100")
-        )).ToArray();
+        _channelRanges = config.Printer.Channels.Select(c => {
+            var min = c.Props.TryGetValue("minFlow", out object? min_) ? min_ : null;
+            var max = c.Props.TryGetValue("maxFlow", out object? max_) ? max_ : null;
+            return new MinMax(
+                double.Parse(min?.ToString() ?? "0"),
+                double.Parse(max?.ToString() ?? "100")
+            );
+        }).ToArray();
 
         _hasDmsSource = config.Sources.Contains(Source.DMS);
 

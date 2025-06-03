@@ -62,7 +62,7 @@ ml.RecipeReceived += (s, e) => Print(e);
 await Task.Delay(300);  
 await ml.Config(new string[] { Source.DMS }, new ChannelProps[]
 {
-    new(0, "nButanol", new() { { "maxFlow", 50 }, { "criticalFlow", 70 } }),
+    new(0, "nButanol", new() { { "minFlow", 10 }, { "maxFlow", 50 }, { "criticalFlow", 70 } }),
     new(1, "IPA", new() { { "maxFlow", 50 }, { "criticalFlow", 55 } }),
 });
 await Task.Delay(300);

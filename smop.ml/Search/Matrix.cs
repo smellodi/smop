@@ -55,15 +55,16 @@ public class Matrix<T> : IEnumerable<T>, IEnumerator<T>
         _m = m;
     }
 
-    public Matrix(int rows, int cols, T initialValue = default)
+    public Matrix(int rows, int cols, T? initialValue = default)
     {
         _rows = rows;
         _cols = cols;
         _m = new T[_rows, _cols];
 
+        T value = initialValue ?? T.Zero;
         for (int r = 0; r < _rows; r++)
             for (int c = 0; c < _cols; c++)
-                _m[r, c] = initialValue;
+                _m[r, c] = value;
     }
 
     public Matrix(int rows, int cols, Func<int, int, T> getValue)

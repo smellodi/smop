@@ -11,7 +11,7 @@ internal abstract class Server : IDisposable
     public event EventHandler<string>? Error;
 
     public virtual bool IsConnected { get; }
-    public virtual string DisplayName { get; }
+    public virtual string DisplayName { get; } = string.Empty;
 
     public abstract void Dispose();
 

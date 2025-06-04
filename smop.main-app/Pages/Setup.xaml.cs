@@ -54,6 +54,7 @@ public partial class Setup : Page, IPage<object?>
 
         odorReproductionSettings.OdorNameChanging += (s, e) => _indicatorController.ApplyOdorChannelProps(e);
         odorReproductionSettings.OdorNameChanged += (s, e) => _ctrl.SaveSetup();
+        odorReproductionSettings.OdorFlowChanged += (s, e) => _ctrl.SaveSetup();
 
         Settings.HumidityAutoAdjustmentChanged += (s, e) =>
         {

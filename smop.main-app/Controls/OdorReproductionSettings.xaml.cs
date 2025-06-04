@@ -128,6 +128,7 @@ public partial class OdorReproductionSettings : UserControl
 
     public event EventHandler<OdorChannel>? OdorNameChanging;
     public event EventHandler<OdorChannel>? OdorNameChanged;
+    public event EventHandler<OdorChannel>? OdorFlowChanged;
 
     public OdorReproductionSettings()
     {
@@ -169,6 +170,7 @@ public partial class OdorReproductionSettings : UserControl
         {
             Style = FindResource("Value") as Style
         };
+        txbFlow.LostFocus += (s, e) => OdorFlowChanged?.Invoke(this, odorChannel);
 
 
         var nameBinding = new Binding(nameof(OdorChannel.Name))
@@ -190,6 +192,7 @@ public partial class OdorReproductionSettings : UserControl
             Source = odorChannel,
             StringFormat = "0.#",
             Mode = BindingMode.TwoWay,
+            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
         };
         flowBinding.ValidationRules.Add(new Utils.RangeRule() { Min = 0, IsInteger = false });
         BindingOperations.SetBinding(txbFlow, TextBox.TextProperty, flowBinding);

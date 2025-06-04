@@ -26,7 +26,6 @@
         <Style x:Key="SidePanel" TargetType="{x:Type Border}">
             <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="4"/>
         </Style>
         <Style x:Key="LogHeader" TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
             <Setter Property="Background" Value="{StaticResource BrushPanel}"/>
@@ -79,8 +78,10 @@
                 <ColumnDefinition Width="250"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Style="{StaticResource SidePanel}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Border Grid.Column="0" Style="{StaticResource SidePanel}"
+                    Margin="4,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"
+                              Padding="4">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -267,7 +268,8 @@
                     Margin="0,12,0,0"/>
             </Grid>
 
-            <Grid x:Name="grdStatuses" Grid.Column="2">
+            <Grid x:Name="grdStatuses" Grid.Column="2"
+                  Margin="0,0,4,0">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition x:Name="rdfDmsStatus"/>

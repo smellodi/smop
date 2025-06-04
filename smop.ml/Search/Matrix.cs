@@ -518,11 +518,12 @@ public class Matrix<T> : IEnumerable<T>, IEnumerator<T>
         List<string> lines = [];
         if (IsColumn)
         {
+            string s = string.Empty;
             for (int r = 0; r < RowCount; r++)
             {
-                var s = $"{_m[r,0],-8:F2}";
-                lines.Add(s.Trim());
+                s += $"{_m[r,0],-8:F2}";
             }
+            lines.Add(s.Trim());
         }
         else
         {

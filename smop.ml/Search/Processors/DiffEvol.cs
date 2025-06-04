@@ -28,7 +28,7 @@ internal class DiffEvol : IDisposable
     }
 
     /// <summary>
-    /// Requests from the general search procedure (the parent)
+    /// Requests the general search procedure (the parent)
     /// to format vectors so that they are ready to display for debugging purposes
     /// </summary>
     public event EventHandler<RequestFormatEventArgs>? RequestFormat;
@@ -42,10 +42,9 @@ internal class DiffEvol : IDisposable
         Round(_bestVectors, _parameters.Decimals);
 
         _iterationVectors = _bestVectors.Copy();
+        _vectorCount = _bestVectors.ColumnCount;
 
-        _candidateIndices = Enumerable.Range(0, _bestVectors.ColumnCount).ToArray();    // range of X and U
-
-        _valueDelta = 0.2 * (VALUE_MAX - VALUE_MIN);
+        _candidateIndices = Enumerable.Range(0, _vectorCount).ToArray();    // range of X and U
 
         _debugDisplay.Show();
     }
@@ -68,7 +67,7 @@ internal class DiffEvol : IDisposable
         // with the vector that was used for this measurement and calculated distance to the target
 
         var candidateId = _testedCandidates.Count;
-        int vectorId = candidateId % _candidateIndices.Length;
+        int vectorId = candidateId % _vectorCount;
 
         _lastDistance = GetDistance(_parameters.Kernel, _target, measurement);
 
@@ -78,6 +77,8 @@ internal class DiffEvol : IDisposable
 
         string[] info = ["  ", "  ", ""];
 
+        // Update and print minimas
+
         // Global minima
         if (_lastDistance < _grandMinima)
         {
@@ -86,7 +87,7 @@ internal class DiffEvol : IDisposable
             info[0] = "GM";
         }
 
-        if (candidateId >= _bestVectors.ColumnCount) // after all vectors were initialized (iterations 2+)
+        if (candidateId >= _vectorCount) // after all vectors were initialized
         {
             // Iteration minima
             if (_lastDistance < _iterationMinima)
@@ -119,101 +120,46 @@ internal class DiffEvol : IDisposable
     {
         TestCandidate result;
 
-        if (_testedCandidates.Count < _candidateIndices.Length)  // Provide initial recipes
+        int vectorId = _testedCandidates.Count % _vectorCount;
+        int iterationId = _testedCandidates.Count / _vectorCount;
+
+        if (iterationId > 0 && vectorId == 0)   // new iteration starts: create a new set of vectors to test and store them into _iterationVectors
         {
-            var index = _testedCandidates.Count;
-            var vector = _bestVectors.Column(index);
+            PrintIterationResultInfo();
+            PrintSearchResultInfo();
 
-            var formatArgs = new RequestFormatEventArgs(vector);
-            RequestFormat?.Invoke(this, formatArgs);
-            _debugDisplay.Write($"[{index + 1}] {formatArgs.Result}");
+            TestCandidate? bestCandidate = GetBestCandidate(iterationId);
+            if (bestCandidate != null)
+            {
+                return bestCandidate;
+            }
 
-            result = new TestCandidate($"Reference #{index + 1}", vector, false, _lastDistance);
+            _debugDisplay.WriteLine($"Iteration #{iterationId}:");
+
+            _iterationMinima = 1e8;
+            _iterationMinimaIndex = -1;
+
+            var mutatedVectors = Mutate(_bestVectors, _parameters.MutationFactor, VALUE_MIN, VALUE_MAX);   // generate new vectors
+            _iterationVectors = Crossover(_bestVectors, mutatedVectors, _parameters.CrossoverRate);        // mix old and new vectors
+            Validate(_iterationVectors, VALUE_DELTA, VALUE_MIN, VALUE_MAX);          // remove repetitions
+            Round(_iterationVectors, _parameters.Decimals);                          // round values
+
+            PrintIterationStartInfo();
         }
-        else
+
+        var vector = _iterationVectors.Column(vectorId);
+
+        if (iterationId == 0)   // first iteration
         {
-            int vectorId = _testedCandidates.Count % _bestVectors.ColumnCount;
-            int iterationId = _testedCandidates.Count / _bestVectors.ColumnCount;
-
-            if (vectorId == 0)   // new iteration starts
-            {
-                if (iterationId > 0)
-                {
-                    if (_iterationMinimaIndex >= 0)
-                    {
-                        var vector = _iterationVectors.Column(_iterationMinimaIndex);
-                        var formatArgs = new RequestFormatEventArgs(vector);
-                        RequestFormat?.Invoke(this, formatArgs);
-                        _debugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{formatArgs.Result}]");
-                    }
-
-                    {
-                        var vector = _testedCandidates[_grandMinimaIndex].Vector;
-                        var formatArgs = new RequestFormatEventArgs(vector);
-                        RequestFormat?.Invoke(this, formatArgs);
-                        _debugDisplay.WriteLine($"GM: {_grandMinima:F4} [{formatArgs.Result}]");
-                    }
-
-                    // Make a decision about the proximity of the best guess
-
-                    string? bestRecipeName = null;
-                    if (_grandMinima < _parameters.DistanceThreshold)
-                    {
-                        bestRecipeName = "Final recipe";
-                    }
-                    else if (iterationId > _parameters.MaxIterations)
-                    {
-                        bestRecipeName = $"The best vector after {_parameters.MaxIterations} iterations";
-                    }
-
-                    if (!string.IsNullOrEmpty(bestRecipeName))
-                    {
-                        // Send the final recipe
-                        var bestVector = _testedCandidates[_grandMinimaIndex].Vector;
-                        var bestValidVector = LimitValues(bestVector, VALUE_MIN, VALUE_MAX);
-
-                        var formatArgs = new RequestFormatEventArgs(bestVector);
-                        RequestFormat?.Invoke(this, formatArgs);
-                        _debugDisplay.WriteLine($"\n{bestRecipeName}:\n  {formatArgs.Result}\n  DIST = {_grandMinima:F4}\n\nFinished");
-
-                        return new TestCandidate(bestRecipeName, bestValidVector, true, _lastDistance);
-                    }
-                    else
-                    {
-                        _debugDisplay.WriteLine("\nThe best vectors are:");
-
-                        var formatArgs = new RequestFormatEventArgs(_bestVectors);
-                        RequestFormat?.Invoke(this, formatArgs);
-                        _debugDisplay.WriteLine(formatArgs.Result);
-                    }
-                }
-
-                _debugDisplay.WriteLine($"Iteration #{iterationId}:");
-                _iterationMinima = 1e8;
-                _iterationMinimaIndex = -1;
-
-                var mutatedVectors = Mutate(_bestVectors, _parameters.MutationFactor, VALUE_MIN, VALUE_MAX);   // generate new vectors
-                _iterationVectors = Crossover(_bestVectors, mutatedVectors, _parameters.CrossoverRate);        // mix old and new vectors
-                Validate(_iterationVectors, _valueDelta, VALUE_MIN, VALUE_MAX);          // remove repetitions
-                Round(_iterationVectors, _parameters.Decimals);                          // round values
-
-                {
-                    var formatArgs = new RequestFormatEventArgs(_iterationVectors);
-                    RequestFormat?.Invoke(this, formatArgs);
-                    _debugDisplay.WriteLine($"\nVectors to test:\n{formatArgs.Result}");
-                }
-            }
-
-            var validVector = LimitValues(_iterationVectors.Column(vectorId), VALUE_MIN, VALUE_MAX);
-
-            {
-                var formatArgs = new RequestFormatEventArgs(_iterationVectors.Column(vectorId));
-                RequestFormat?.Invoke(this, formatArgs);
-                _debugDisplay.Write($"[{_testedCandidates.Count + 1}] {formatArgs.Result}");
-            }
-
+            result = new TestCandidate($"Initial #{vectorId + 1}", vector, false, _lastDistance);
+        }
+        else                    // all other iterations
+        {
+            var validVector = LimitValues(vector, VALUE_MIN, VALUE_MAX);    // the vector values could be beyound the valid scope after mutation
             result = new TestCandidate($"Iteration #{iterationId}, Search #{vectorId + 1}", validVector, false, _lastDistance);
         }
+        
+        PrintTrialStartInfo(vectorId, vector);
 
         return result;
     }
@@ -224,31 +170,32 @@ internal class DiffEvol : IDisposable
 
     const double VALUE_MIN = 0;
     const double VALUE_MAX = 100;
+    const double VALUE_DELTA = 0.2 * (VALUE_MAX - VALUE_MIN);
+
+    readonly static Random _rnd = new((int)DateTime.Now.Ticks);
 
     readonly DebugDisplay _debugDisplay = new();
 
     readonly DiffEvolParameters _parameters;
-    readonly Random _rnd = new((int)DateTime.Now.Ticks);
 
-    readonly List<Candidate> _testedCandidates = new();
-    readonly int[] _candidateIndices;       // indices of measurements corresponding to vectors of _testedCandidates
-    readonly MatrixD _bestVectors;
+    readonly List<Candidate> _testedCandidates = new(); // all candidates tested by ML; each incudes a vector, a measurement and a distance from the target
+    readonly int[] _candidateIndices;       // indices of best candidates in _testedCandidates; correspond to vectors stored in _bestVectors
+    readonly MatrixD _bestVectors;          // storage for the best vectors
+    readonly int _vectorCount;              // same as _bestVectors.ColumnCount
 
-    readonly double _valueDelta;
+    MatrixD _iterationVectors;          // vectors to test in an iteration
 
-    double[] _target = [];
+    double[] _target = [];              // e-nose measurement of the target mixture
 
     double _grandMinima = 1e8;          // overall minimum distance (global minima)
     int _grandMinimaIndex = -1;         // column of _testedCandidates corresponding to the global minima;
-    double _iterationMinima = 1e8;      // minimum distance for vectors tested in iteration
-    int _iterationMinimaIndex = -1;     // column of _iterationVectors that corresponds to iteration minima
+    double _iterationMinima = 1e8;      // minimum distance for vectors tested in an iteration
+    int _iterationMinimaIndex = -1;     // column of _iterationVectors that corresponds to the iteration minima
 
-    double _lastDistance = 1e8;         // last search distance (measured trials only)
+    double _lastDistance = 1e8;         // distance between the target and the last arrived measurement
 
-    MatrixD _iterationVectors;
-
-    // Creates vector with values close to edges, plus adds a ector with central values
-    private MatrixD CreateInitialVectors(int varCount, double min, double max)
+    // Creates vectors with values close to edges, plus adds a vector with central values
+    private static MatrixD CreateInitialVectors(int varCount, double min, double max)
     {
         var interval = max - min;
         var center = (max + min) / 2;
@@ -261,6 +208,9 @@ internal class DiffEvol : IDisposable
 
         MatrixD? result = null;
 
+        // This is a bit tricky algorithm on how to create vectors with all possible combinations, but it works fine
+
+        // first we create a long set of all possible permutations
         for (int i = varCount; i >= 0; i--)
         {
             var a = new MatrixD(1, i, min);           // [min, min, ...  (or nothing if i == 0)
@@ -273,17 +223,20 @@ internal class DiffEvol : IDisposable
                 result = MatrixD.StackRows(result, ab);   // add to the resulting list
         }
 
+        // ..then we remove the repeating vectors,
         result = result!
             .RemoveDuplicates(Direction.Rows)       // remove duplications produced by permutations
             .Transpose();                           // and transpose the matrix
 
-        var central = new MatrixD(varCount, 1, center);    // add central point
+        // ..and finally add the central vector
+        var central = new MatrixD(varCount, 1, center);
         result = MatrixD.StackColumns(result, central);
 
-        while (result.Size < 4)                     // in case n = 1 that gives only 3 values..
+        // in case varCount = 1 that gives only 3 vectors, a random vector should be added, as DE requires at least 4 vectors
+        while (result.Size < 4)
         {
             var value = _rnd.NextDouble(min, max);
-            result = MatrixD.StackColumns(result, new MatrixD(result.RowCount, 1, value));    // ..add a random value
+            result = MatrixD.StackColumns(result, new MatrixD(result.RowCount, 1, value));
         }
 
         return result;
@@ -308,15 +261,16 @@ internal class DiffEvol : IDisposable
         }
     }
 
-    // A cost function that measures similarity(distance) between dispersion plot 
-    // of the mixture we want to recreate and the training dispesion plot.
+    // A cost function that measures similarity (distance) between e-nose measurements
+    // of the target mixture and the candidate mixture
     private static double GetDistance(Kernel kernel, double[] a, double[] b) => kernel switch
     {
         Kernel.Euclidean => Math.Sqrt((new MatrixD(a) - new MatrixD(b)).Power(2).Mean()),
         _ => throw new NotImplementedException("Kernel not supported")
     };
 
-    // Limits the values to stay within bounds
+    // Limits the values to stay within bounds (this is needed as the mutation algorithm
+    // may produce values slighly outlide the valid range)
     private static MatrixD LimitValues(MatrixD matrix, double min, double max) =>
         new(matrix.RowCount, matrix.ColumnCount, (r, c) =>
         {
@@ -327,13 +281,13 @@ internal class DiffEvol : IDisposable
             return matrix[r, c];
         });
 
-    // Vector mutation procedure that iterated over all vectors
+    // Vector mutation procedure that iterates over all vectors
     private MatrixD Mutate(MatrixD vectors, double f, double min, double max)
     {
         var result = new MatrixD(vectors.RowCount, 0);
 
         // Allow to accept mutated vectors with values slightly beyond the
-        // limits.The values anyway will be adjusted to bring them within
+        // limits. The values anyway will be adjusted to bring them within
         // the scope in the LimitValues function
         var delta = (max - min) * 0.05;   // to each side beyond the limits
         min -= delta;
@@ -348,30 +302,29 @@ internal class DiffEvol : IDisposable
         return result;
     }
 
-    // SIngle vector mutatin procedure
-    private MatrixD MutateOne(MatrixD vectors, int column, double f)
+    // Single vector mutation procedure
+    private static MatrixD MutateOne(MatrixD vectors, int column, double f)
     {
         if (column < 0 || column >= vectors.ColumnCount)
             throw new ArgumentException("Mutation: Invalid column");
 
-        // Pick three distinct vectors that are different from "column"
+        // Pick three distinct vectors that are different from the "column" vector
 
         int[] ids = Enumerable.Range(0, vectors.ColumnCount).ToArray();  // random permutation of integers 0..ColumnCount
         _rnd.Shuffle(ids);
 
-        // remove index "column"
+        // remove index "column" from "ids"
         int[] indices = new int[vectors.ColumnCount - 1];
         for (int i = 0, j = 0; i < ids.Length; i++)
             if (ids[i] != column)
                 indices[j++] = ids[i];
 
-        // Compute donor vector from first three vectors
-        // pick three distinct dispersion plots (also PID, SNT)
+        // Compute donor vector from the first three vectors
         // (need to be distinct from each other and from x)
         return vectors.Column(indices[1]) + f * (vectors.Column(indices[2]) - vectors.Column(indices[3]));
     }
 
-    private MatrixD KeepInRange(MatrixD matrix, int index, double min, double max, Func<MatrixD, int, MatrixD> createVector)
+    private static MatrixD KeepInRange(MatrixD matrix, int index, double min, double max, Func<MatrixD, int, MatrixD> createVector)
     {
         // We try to change vector values so that all stay in the range [min, max]
         // However, we may get scenarios when this is impossible or takes
@@ -389,11 +342,13 @@ internal class DiffEvol : IDisposable
                 break;
 
             // some values are out of range, lets display then and try again
+            /*
             var temp = result.Copy();
             if (temp.RowCount > 1)
                 temp = temp.Transpose();
 
             _debugDisplay.WriteLine($"Rejected: [{index}] {temp}");
+            */
 
             maxTrialCount -= 1;
         }
@@ -405,33 +360,33 @@ internal class DiffEvol : IDisposable
 
             result = new MatrixD(result.RowCount, result.ColumnCount, (r, c) => _rnd.NextDouble(min, max));
 
-            _debugDisplay.WriteLine($"[{index}] Failed to create a vector within the limits. A random vector is generated instead.");
+            //_debugDisplay.WriteLine($"[{index}] Failed to create a vector within the limits. A random vector is generated instead.");
         }
 
         return result;
     }
 
-    // Uses binomial method for combining components from target and donor vectors
-    private MatrixD Crossover(MatrixD originalVectors, MatrixD mutetedVectors, double cr)
+    // Uses binomial method for combining components from donor and mutated vectors
+    private MatrixD Crossover(MatrixD donorVectors, MatrixD mutatedVectors, double cr)
     {
-        // Generate randomly chosen indices to ensure that at least one
-        // component of the donor vector is included in the target vector
-        var randomIndices = originalVectors.Row(0).Select(_ => _rnd.Next(originalVectors.ColumnCount)).ToArray();
+        // Generate random indices of donor vectors
+        var randomIndices = donorVectors.Row(0).Select(_ => _rnd.Next(donorVectors.ColumnCount)).ToArray();
 
-        // Random numbers in [0, 1] for each component of each target vector
-        var crossoverProbabilities = new MatrixD(originalVectors.RowCount, originalVectors.ColumnCount, (r, c) => _rnd.NextDouble());
+        // Random numbers in [0, 1] for each component of each mutated vector
+        var crossoverProbabilities = new MatrixD(donorVectors.RowCount, donorVectors.ColumnCount, (r, c) => _rnd.NextDouble());
 
-        // Combining target and donor vectors to get trial vectors
-        var result = new MatrixD(originalVectors.RowCount, originalVectors.ColumnCount, double.NaN);
+        // Combining mutated and donor vectors to get vectors for the next iteration
 
-        for (int c = 0; c < originalVectors.ColumnCount; c++)
+        var result = new MatrixD(donorVectors.RowCount, donorVectors.ColumnCount);
+
+        for (int c = 0; c < donorVectors.ColumnCount; c++)
         {
-            for (int r = 0; r < originalVectors.RowCount; r++)
+            for (int r = 0; r < donorVectors.RowCount; r++)
             {
                 if (crossoverProbabilities[r, c] <= cr || randomIndices[r] == c)
-                    result[r, c] = mutetedVectors[r, c];
-                else                                // OLEG: extreamly rare if cr = 0.8, but
-                    result[r, c] = originalVectors[r, c];     //% happens in 10 - 30 % cases when cr = 0.5
+                    result[r, c] = mutatedVectors[r, c];
+                else                                        // OLEG: extreamly rare if cr = 0.8, but
+                    result[r, c] = donorVectors[r, c];      // happens in 10 - 30 % cases when cr = 0.5
             }
         }
 
@@ -458,18 +413,18 @@ internal class DiffEvol : IDisposable
                         )
                     );
                     vectors.ReplaceColumn(i, candidate);
-                    _debugDisplay.WriteLine($"Validator: [{i}] '{prevVector}' >> '{vectors.Column(i)}'");
+                    _debugDisplay.WriteLine($"Validator: [{i}] '{prevVector}' >> '{candidate}'");
                 }
             }
         }
 
-        //  If all variable values are the same..
+        // If all variable values are the same..
         bool[] areAllSame = vectors.Column(0).Select(_ => true).ToArray();
         for (int c = 1; c < vectors.ColumnCount; c++)
             for (int r = 0; r < vectors.RowCount; r++)
                 areAllSame[r] = areAllSame[r] && (vectors[r, c - 1] == vectors[r, c]);
 
-        // .. then randomize those values a bit
+        // ..then randomize those values a bit
         for (int r = 0; r < vectors.RowCount; r++)
         {
             if (areAllSame[r])
@@ -484,5 +439,87 @@ internal class DiffEvol : IDisposable
                 _debugDisplay.WriteLine($"Validator: '{variablePreviousValues}' >> '{variableNewValues}'");
             }
         }
+    }
+
+    // Check if some of the search-end criteria is satisfied, and return the best candidate if this is so
+    private TestCandidate? GetBestCandidate(int iterationId)
+    {
+        string? bestRecipeName = null;
+
+        if (_grandMinima < _parameters.DistanceThreshold)
+        {
+            bestRecipeName = "Final recipe";
+        }
+        else if (iterationId > _parameters.MaxIterations)
+        {
+            bestRecipeName = $"The best vector after {_parameters.MaxIterations} iterations";
+        }
+
+        if (!string.IsNullOrEmpty(bestRecipeName))
+        {
+            // Return the final recipe
+            var bestVector = _testedCandidates[_grandMinimaIndex].Vector;
+            var bestValidVector = LimitValues(bestVector, VALUE_MIN, VALUE_MAX);
+
+            PrintBestVectorInfo(bestVector, bestRecipeName);
+            _debugDisplay.WriteLine("\nFinished");
+
+            return new TestCandidate(bestRecipeName, bestValidVector, true, _lastDistance);
+        }
+        else
+        {
+            _debugDisplay.WriteLine("\nThe best vectors are:");
+            PrintVectors(_bestVectors);
+            return null;
+        }
+    }
+
+    // Debug helpers
+
+    private void PrintIterationResultInfo()
+    {
+        if (_iterationMinimaIndex >= 0)
+        {
+            var vector = _iterationVectors.Column(_iterationMinimaIndex);
+            var formatArgs = new RequestFormatEventArgs(vector);
+            RequestFormat?.Invoke(this, formatArgs);
+            _debugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{formatArgs.Result}]");
+        }
+    }
+
+    private void PrintSearchResultInfo()
+    {
+        var vector = _testedCandidates[_grandMinimaIndex].Vector;
+        var formatArgs = new RequestFormatEventArgs(vector);
+        RequestFormat?.Invoke(this, formatArgs);
+        _debugDisplay.WriteLine($"GM: {_grandMinima:F4} [{formatArgs.Result}]");
+    }
+
+    private void PrintIterationStartInfo()
+    {
+        var formatArgs = new RequestFormatEventArgs(_iterationVectors);
+        RequestFormat?.Invoke(this, formatArgs);
+        _debugDisplay.WriteLine($"\nVectors to test:\n{formatArgs.Result}");
+    }
+
+    private void PrintTrialStartInfo(int index, MatrixD vector)
+    {
+        var formatArgs = new RequestFormatEventArgs(vector);
+        RequestFormat?.Invoke(this, formatArgs);
+        _debugDisplay.Write($"[{index + 1}] {formatArgs.Result}");
+    }
+
+    private void PrintBestVectorInfo(MatrixD bestVector, string name)
+    {
+        var formatArgs = new RequestFormatEventArgs(bestVector);
+        RequestFormat?.Invoke(this, formatArgs);
+        _debugDisplay.WriteLine($"\n{name}:\n  {formatArgs.Result}\n  DIST = {_grandMinima:F4}");
+    }
+
+    void PrintVectors(MatrixD vectors)
+    {
+        var formatArgs = new RequestFormatEventArgs(vectors);
+        RequestFormat?.Invoke(this, formatArgs);
+        _debugDisplay.WriteLine(formatArgs.Result);
     }
 }

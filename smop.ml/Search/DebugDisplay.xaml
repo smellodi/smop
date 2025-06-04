@@ -9,10 +9,8 @@
         Height="450"
         Width="800">
     <TextBox x:Name="txbOutput"
-             ScrollViewer.CanContentScroll="False"
              VerticalContentAlignment="Top"
              FontFamily="Consolas"
              FontSize="14"
-             VerticalScrollBarVisibility="Visible"
-             ScrollViewer.ScrollChanged="Output_ScrollChanged"/>
+             VerticalScrollBarVisibility="Visible"/>
 </Window>

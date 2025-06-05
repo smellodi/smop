@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -39,6 +40,8 @@ public partial class Reproduction : Page, IPage<Navigation>
     public void Start(OdorReproducerController.Config config)
     {
         config.MLComm.StatusChanged += (s, e) => SetConnectionColor(cclMLStatus, e == ML.Status.Activated);
+
+        adaAnimation.Init();
 
         _proc = new OdorReproducerController(config);
         _proc.ScanFinished += (s, e) => Dispatcher.Invoke(() => HandleScanFinished(e, config.DataSize));
@@ -379,10 +382,15 @@ public partial class Reproduction : Page, IPage<Navigation>
 
     private void HandleRecipe(object? sender, ML.Recipe recipe)
     {
-        Dispatcher.Invoke(() =>
+        Dispatcher.Invoke(async () =>
         {
             if (_proc == null)
                 return;
+
+            if (_proc.CurrentStep == 0)
+            {
+                await Task.Delay(1000); // Wait for the first recipe to be executed after the animation initialization is finished
+            }
 
             if (recipe.Distance < 10000)
             {
@@ -614,8 +622,6 @@ public partial class Reproduction : Page, IPage<Navigation>
         {
             Focus();
         }
-
-        adaAnimation.Init();
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)

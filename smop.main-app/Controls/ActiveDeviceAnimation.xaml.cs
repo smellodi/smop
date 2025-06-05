@@ -20,9 +20,9 @@ public partial class ActiveDeviceAnimation : UserControl
 
     public void Init()
     {
-        var lastAnim = _anim[^1];
-        lastAnim.Begin(this);
-        lastAnim.Stop(this);
+        var initAnim = FindResource("Initial") as Storyboard;
+        initAnim?.Begin(this);
+        initAnim?.Stop(this);
 
         Storyboard? animPulsing = FindResource("Pulsing") as Storyboard;
         animPulsing?.Begin();

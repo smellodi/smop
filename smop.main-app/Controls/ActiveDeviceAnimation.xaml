@@ -9,6 +9,20 @@
              d:DesignWidth="160">
     
     <UserControl.Resources>
+        <Storyboard x:Key="Initial">
+            <DoubleAnimation
+                Duration="0"
+                Storyboard.TargetName="elpActiveDevice"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)"
+                To="54"/>
+            <DoubleAnimation
+                Duration="0"
+                Storyboard.TargetName="elpActiveDevice"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)"
+                To="118">
+            </DoubleAnimation>
+        </Storyboard>
+
         <Storyboard x:Key="ML2OD">
             <DoubleAnimationUsingPath 
                 Duration="00:00:00.25"

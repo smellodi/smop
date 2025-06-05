@@ -73,7 +73,7 @@ internal class DiffEvol : IDisposable
 
         _lastDistance = GetDistance(_parameters.Kernel, _target, measurement);
 
-        _testedCandidates.Add(new(_iterationVectors.Column(vectorId), measurement, _lastDistance));
+        _testedCandidates.Add(new(_iterationVectors[.., vectorId], measurement, _lastDistance));
 
         _debugDisplay.Write($" DIST = {_lastDistance,6:F3}");
 
@@ -103,7 +103,7 @@ internal class DiffEvol : IDisposable
             var previousDistance = _testedCandidates[_candidateIndices[vectorId]].Distance;
             if (_lastDistance < previousDistance)
             {
-                _bestVectors.ReplaceColumn(vectorId, _iterationVectors.Column(vectorId));
+                _bestVectors.ReplaceColumn(vectorId, _iterationVectors[.., vectorId]);
                 info[2] = $"[{_candidateIndices[vectorId] + 1} >> {candidateId + 1}]";
                 _candidateIndices[vectorId] = candidateId;
             }
@@ -149,7 +149,7 @@ internal class DiffEvol : IDisposable
             PrintIterationStartInfo();
         }
 
-        var vector = _iterationVectors.Column(vectorId);
+        var vector = _iterationVectors[.., vectorId];
 
         if (iterationId == 0)   // first iteration
         {
@@ -220,7 +220,7 @@ internal class DiffEvol : IDisposable
             var b = new MatrixD(1, varCount - i, max);      // ... max, max] (or nothing if i == n)
             var ab = MatrixD.StackColumns(a, b);      // unite both parts
             ab = MatrixD.Permutate(ab);               // save all permutations as rows
-            if (result == null)
+            if (result is null)
                 result = ab;
             else
                 result = MatrixD.StackRows(result, ab);   // add to the resulting list
@@ -317,14 +317,14 @@ internal class DiffEvol : IDisposable
         _rnd.Shuffle(ids);
 
         // remove index "column" from "ids"
-        int[] indices = new int[vectors.ColumnCount - 1];
+        int[] colIndices = new int[vectors.ColumnCount - 1];
         for (int i = 0, j = 0; i < ids.Length; i++)
             if (ids[i] != column)
-                indices[j++] = ids[i];
+                colIndices[j++] = ids[i];
 
         // Compute donor vector from the first three vectors
         // (need to be distinct from each other and from x)
-        return vectors.Column(indices[1]) + f * (vectors.Column(indices[2]) - vectors.Column(indices[3]));
+        return vectors[.., colIndices[0]] + f * (vectors[.., colIndices[1]] - vectors[.., colIndices[2]]);
     }
 
     // Uses "createVector" function to obtain a vector, then checks if all vectors values
@@ -371,7 +371,7 @@ internal class DiffEvol : IDisposable
     private static MatrixD Crossover(MatrixD donorVectors, MatrixD mutatedVectors, double cr)
     {
         // Generate random indices of donor vectors
-        var randomIndices = donorVectors.Row(0).Select(_ => _rnd.Next(donorVectors.ColumnCount)).ToArray();
+        var randomIndices = donorVectors[0, ..].Select(_ => _rnd.Next(donorVectors.ColumnCount)).ToArray();
 
         // Random numbers in [0, 1] for each component of each mutated vector
         var crossoverProbabilities = new MatrixD(donorVectors.RowCount, donorVectors.ColumnCount, (r, c) => _rnd.NextDouble());
@@ -404,12 +404,12 @@ internal class DiffEvol : IDisposable
         {
             for (int i = 0; i < c - 1; i++)
             {
-                var prevVector = vectors.Column(i);
-                if (vectors.Column(c).Equals(prevVector))
+                var prevVector = vectors[.., i];
+                if (vectors[.., c].Equals(prevVector))
                 {
                     // deviate by +- delta
                     var candidate = KeepInRange(min, max, () =>
-                        vectors.Column(i) + new MatrixD(vectors.RowCount, 1, (r, c) =>
+                        vectors[.., i] + new MatrixD(vectors.RowCount, 1, (r, c) =>
                             _rnd.NextDouble(-delta, delta)
                         )
                     );
@@ -420,7 +420,7 @@ internal class DiffEvol : IDisposable
         }
 
         // If all variable values are the same..
-        bool[] areAllSame = vectors.Column(0).Select(_ => true).ToArray();
+        bool[] areAllSame = Enumerable.Repeat(true, vectors.RowCount).ToArray();
         for (int c = 1; c < vectors.ColumnCount; c++)
             for (int r = 0; r < vectors.RowCount; r++)
                 areAllSame[r] = areAllSame[r] && (vectors[r, c - 1] == vectors[r, c]);
@@ -430,9 +430,9 @@ internal class DiffEvol : IDisposable
         {
             if (areAllSame[r])
             {
-                var variablePreviousValues = vectors.Row(r);
+                var variablePreviousValues = vectors[r, ..];
                 var variableNewValues = KeepInRange(min, max, () =>
-                    vectors.Row(r) + new MatrixD(1, vectors.ColumnCount, (r, c) =>
+                    vectors[r, ..] + new MatrixD(1, vectors.ColumnCount, (r, c) =>
                         _rnd.NextDouble(-delta, delta)
                     )
                 );
@@ -481,7 +481,7 @@ internal class DiffEvol : IDisposable
     {
         if (_iterationMinimaIndex >= 0)
         {
-            var vector = _iterationVectors.Column(_iterationMinimaIndex);
+            var vector = _iterationVectors[.., _iterationMinimaIndex];
             var formatArgs = new RequestFormatEventArgs(vector);
             RequestFormat?.Invoke(this, formatArgs);
             _debugDisplay.WriteLine($"IM: {_iterationMinima:F4} [{formatArgs.Result}]");

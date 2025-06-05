@@ -138,6 +138,57 @@ public class DeMatrix
     }
 
     [Fact]
+    public void GetColumnByRange()
+    {
+        M m1 = new(4, 3, new double[,] { { 0, 1, 2 }, { 2, 1, 0 }, { 3, 9, 7 }, { 6, 4, 5 } });
+
+        M m2 = m1[null,1];
+        Assert.False(m2.IsEmpty);
+        Assert.False(m2.IsScalar);
+        Assert.False(m2.IsRow);
+        Assert.True(m2.IsColumn);
+        Assert.True(m2.IsVector);
+        Assert.Equal(4, m2.RowCount);
+        Assert.Equal(1, m2.ColumnCount);
+        Assert.Equal(4, m2.Size);
+        Assert.Equal(new double[] { 1, 1, 9, 4}, m2);
+    }
+
+    [Fact]
+    public void GetRowByRange()
+    {
+        M m1 = new(4, 3, new double[,] { { 0, 1, 2 }, { 2, 1, 0 }, { 3, 9, 7 }, { 6, 4, 5 } });
+
+        M m2 = m1[1, null];
+        Assert.False(m2.IsEmpty);
+        Assert.False(m2.IsScalar);
+        Assert.True(m2.IsRow);
+        Assert.False(m2.IsColumn);
+        Assert.True(m2.IsVector);
+        Assert.Equal(1, m2.RowCount);
+        Assert.Equal(3, m2.ColumnCount);
+        Assert.Equal(3, m2.Size);
+        Assert.Equal(new double[] { 2, 1, 0 }, m2);
+    }
+
+    [Fact]
+    public void GetSubsetByRange()
+    {
+        M m1 = new(4, 3, new double[,] { { 0, 1, 2 }, { 2, 1, 0 }, { 3, 9, 7 }, { 6, 4, 5 } });
+
+        M m2 = m1[1..^1, 1..];
+        Assert.False(m2.IsEmpty);
+        Assert.False(m2.IsScalar);
+        Assert.False(m2.IsRow);
+        Assert.False(m2.IsColumn);
+        Assert.False(m2.IsVector);
+        Assert.Equal(2, m2.RowCount);
+        Assert.Equal(2, m2.ColumnCount);
+        Assert.Equal(4, m2.Size);
+        Assert.Equal(new M(2, 2, new double[,] { { 1, 0 }, { 9, 7} }), m2);
+    }
+
+    [Fact]
     public void Equals_()
     {
         M m1 = new(2, 3, (r, c) => r * 3 + c);
@@ -238,86 +289,6 @@ public class DeMatrix
 
         double[] values = [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5];
         Assert.All(m3, (v, i) => Assert.Equal(values[i], v));
-    }
-
-    [Fact]
-    public void SubSetScalar()
-    {
-        M m = new(4, 5, (r, c) => r * 5 + c);
-
-        M s1 = m.SubSet(1, 1);
-
-        Assert.False(s1.IsEmpty);
-        Assert.True(s1.IsScalar);
-        Assert.False(s1.IsRow);
-        Assert.False(s1.IsColumn);
-        Assert.False(s1.IsVector);
-        Assert.Equal(1, s1.RowCount);
-        Assert.Equal(1, s1.ColumnCount);
-        Assert.Equal(1, s1.Size);
-        Assert.Equal(6, s1[0]);
-    }
-
-    [Fact]
-    public void SubSetRow()
-    {
-        M m = new(4, 5, (r, c) => r * 5 + c);
-
-        M s2 = m.SubSet(1, 1..3);
-
-        Assert.False(s2.IsEmpty);
-        Assert.False(s2.IsScalar);
-        Assert.True(s2.IsRow);
-        Assert.False(s2.IsColumn);
-        Assert.True(s2.IsVector);
-        Assert.Equal(1, s2.RowCount);
-        Assert.Equal(2, s2.ColumnCount);
-        Assert.Equal(2, s2.Size);
-        Assert.Equal(6, s2[0]);
-        Assert.Equal(7, s2[1]);
-    }
-
-    [Fact]
-    public void SubSetColumn()
-    {
-        M m = new(4, 5, (r, c) => r * 5 + c);
-
-        M s3 = m.SubSet(1.., 1);
-
-        Assert.False(s3.IsEmpty);
-        Assert.False(s3.IsScalar);
-        Assert.False(s3.IsRow);
-        Assert.True(s3.IsColumn);
-        Assert.True(s3.IsVector);
-        Assert.Equal(3, s3.RowCount);
-        Assert.Equal(1, s3.ColumnCount);
-        Assert.Equal(3, s3.Size);
-        Assert.Equal(6, s3[0]);
-        Assert.Equal(11, s3[1]);
-        Assert.Equal(16, s3[2]);
-    }
-
-    [Fact]
-    public void SubSetMatrix()
-    {
-        M m = new(4, 5, (r, c) => r * 5 + c);
-
-        Assert.NotNull(Record.Exception(() => m.SubSet(2..5, 2..4)));
-
-        M s4 = m.SubSet(2..4, 2..4);
-
-        Assert.False(s4.IsEmpty);
-        Assert.False(s4.IsScalar);
-        Assert.False(s4.IsRow);
-        Assert.False(s4.IsColumn);
-        Assert.False(s4.IsVector);
-        Assert.Equal(2, s4.RowCount);
-        Assert.Equal(2, s4.ColumnCount);
-        Assert.Equal(4, s4.Size);
-        Assert.Equal(12, s4[0,0]);
-        Assert.Equal(13, s4[0,1]);
-        Assert.Equal(17, s4[1,0]);
-        Assert.Equal(18, s4[1,1]);
     }
 
     [Fact]

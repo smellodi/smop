@@ -9,7 +9,7 @@ public enum Status { Deactivated, Activated }
 public class Communicator : IDisposable
 {
     public static bool IsDemo => false;
-    public static bool CanLaunchML => System.IO.File.Exists(ML_EXECUTABLE);
+    public static bool CanLaunchExternalML => System.IO.File.Exists(ML_EXECUTABLE);
 
     public enum Type
     {
@@ -90,7 +90,12 @@ public class Communicator : IDisposable
 
     public void LaunchMlExe(string cmdParams)
     {
-        if (_simulator != null || !CanLaunchML)
+        if (_server is LocalServer localServer)
+        {
+            localServer.SetSearchAlgorithmParameters(cmdParams);
+            return;
+        }
+        else if (_simulator != null || !CanLaunchExternalML)
         {
             return;
         }

@@ -15,12 +15,13 @@ internal class DiffEvol : IDisposable
     public static double SearchRange => VALUE_MAX - VALUE_MIN;
 
     /// <summary>
-    /// Arguments for RequestFormat event
+    /// Arguments for <see cref="RequestFormat"> event
     /// </summary>
-    /// <param name="matrix">The Matrix stores vectors in columns</param>
+    /// <param name="matrix">the natrix with vectors in columns</param>
     public class RequestFormatEventArgs(MatrixD matrix) : EventArgs
     {
         public MatrixD Matrix => matrix;
+
         /// <summary>
         /// The listener must set this member
         /// </summary>
@@ -28,7 +29,7 @@ internal class DiffEvol : IDisposable
     }
 
     /// <summary>
-    /// Requests the general search procedure (the parent)
+    /// Requests the general search procedure (the owner)
     /// to format vectors so that they are ready to display for debugging purposes
     /// </summary>
     public event EventHandler<RequestFormatEventArgs>? RequestFormat;
@@ -46,6 +47,7 @@ internal class DiffEvol : IDisposable
 
         _candidateIndices = Enumerable.Range(0, _vectorCount).ToArray();    // range of X and U
 
+        _debugDisplay.WriteLine($"Parameters:\n{parameters}\n");
         _debugDisplay.Show();
     }
 
@@ -58,7 +60,7 @@ internal class DiffEvol : IDisposable
     {
         _target = target;
 
-        _debugDisplay.WriteLine("Collecting initial measurements");
+        _debugDisplay.WriteLine("Initializing the pool of vectors");
     }
 
     public void AddMeasurement(double[] measurement)
@@ -171,6 +173,7 @@ internal class DiffEvol : IDisposable
     const double VALUE_MIN = 0;
     const double VALUE_MAX = 100;
     const double VALUE_DELTA = 0.2 * (VALUE_MAX - VALUE_MIN);
+    const int CHECK_MUTATED_MAX_COUUNT = 20;
 
     readonly static Random _rnd = new((int)DateTime.Now.Ticks);
 
@@ -295,7 +298,7 @@ internal class DiffEvol : IDisposable
 
         for (int c = 0; c < vectors.ColumnCount; c++)
         {
-            var candidate = KeepInRange(vectors, c, min, max, (vectors, column) => MutateOne(vectors, column, f));
+            var candidate = KeepInRange(min, max, () => MutateOne(vectors, c, f));
             result = result.StackColumns(candidate);
         }
 
@@ -324,31 +327,29 @@ internal class DiffEvol : IDisposable
         return vectors.Column(indices[1]) + f * (vectors.Column(indices[2]) - vectors.Column(indices[3]));
     }
 
-    private static MatrixD KeepInRange(MatrixD matrix, int index, double min, double max, Func<MatrixD, int, MatrixD> createVector)
+    // Uses "createVector" function to obtain a vector, then checks if all vectors values
+    // stay within a range [min, max]. If not, then it requests another vectors.
+    // If the number of attempts exceed a limit, it returns a random vector
+    private MatrixD KeepInRange(double min, double max, Func<MatrixD> createVector)
     {
         // We try to change vector values so that all stay in the range [min, max]
         // However, we may get scenarios when this is impossible or takes
         // too many trials to complete
 
-        var maxTrialCount = 20;
-
         var result = new MatrixD();
+
+        var maxTrialCount = CHECK_MUTATED_MAX_COUUNT;
 
         while (maxTrialCount > 0)
         {
-            result = createVector(matrix, index);  // the callback create either a column or a row
+            result = createVector();  // the callback create either a column or a row
 
             if (result.All(v => v >= min && v <= max))  // nice, all values are withing the range
                 break;
 
-            // some values are out of range, lets display then and try again
-            /*
-            var temp = result.Copy();
-            if (temp.RowCount > 1)
-                temp = temp.Transpose();
+            // some values are out of range, lets display them and try again
 
-            _debugDisplay.WriteLine($"Rejected: [{index}] {temp}");
-            */
+            _debugDisplay.WriteLine($"Rejected: {result}");
 
             maxTrialCount -= 1;
         }
@@ -360,14 +361,14 @@ internal class DiffEvol : IDisposable
 
             result = new MatrixD(result.RowCount, result.ColumnCount, (r, c) => _rnd.NextDouble(min, max));
 
-            //_debugDisplay.WriteLine($"[{index}] Failed to create a vector within the limits. A random vector is generated instead.");
+            _debugDisplay.WriteLine($"Failed to create a vector within the limits. A random vector is generated instead.");
         }
 
         return result;
     }
 
     // Uses binomial method for combining components from donor and mutated vectors
-    private MatrixD Crossover(MatrixD donorVectors, MatrixD mutatedVectors, double cr)
+    private static MatrixD Crossover(MatrixD donorVectors, MatrixD mutatedVectors, double cr)
     {
         // Generate random indices of donor vectors
         var randomIndices = donorVectors.Row(0).Select(_ => _rnd.Next(donorVectors.ColumnCount)).ToArray();
@@ -407,8 +408,8 @@ internal class DiffEvol : IDisposable
                 if (vectors.Column(c).Equals(prevVector))
                 {
                     // deviate by +- delta
-                    var candidate = KeepInRange(vectors, i, min, max, (vectors, j) =>
-                        vectors.Column(j) + new MatrixD(vectors.RowCount, 1, (r, c) =>
+                    var candidate = KeepInRange(min, max, () =>
+                        vectors.Column(i) + new MatrixD(vectors.RowCount, 1, (r, c) =>
                             _rnd.NextDouble(-delta, delta)
                         )
                     );
@@ -430,8 +431,8 @@ internal class DiffEvol : IDisposable
             if (areAllSame[r])
             {
                 var variablePreviousValues = vectors.Row(r);
-                var variableNewValues = KeepInRange(vectors, r, min, max, (vectors, i) =>
-                    vectors.Row(i) + new MatrixD(1, vectors.ColumnCount, (r, c) =>
+                var variableNewValues = KeepInRange(min, max, () =>
+                    vectors.Row(r) + new MatrixD(1, vectors.ColumnCount, (r, c) =>
                         _rnd.NextDouble(-delta, delta)
                     )
                 );

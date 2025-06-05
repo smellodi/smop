@@ -137,7 +137,7 @@ public partial class OdorReproductionSettings : UserControl
         cmbAlgorithm.ItemsSource = Enum.GetNames(typeof(ML.Algorithm));
         cmbAlgorithm.SelectedValue = nameof(ML.Algorithm.Euclidean);
 
-        txbCmdParams.IsEnabled = ML.Communicator.CanLaunchML;
+        //txbCmdParams.IsEnabled = ML.Communicator.CanLaunchExternalML;
     }
 
     public void SetMeasurementSource(MeasurementSouce sources)

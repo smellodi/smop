@@ -1,6 +1,7 @@
 ﻿using Smop.Common;
-using System.Text.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Smop.ML;
@@ -11,6 +12,77 @@ internal class LocalServer : Server
     public override string DisplayName => "ready";
 
     public LocalServer() : base() { }
+
+    public void SetSearchAlgorithmParameters(string parameters)
+    {
+        _deParams = parameters
+            .Split(' ')
+            .Select(p => p.Trim())
+            .Where(p => !string.IsNullOrEmpty(p) && p.IndexOf('=') > 0)
+            .Select(p =>
+            {
+                var pair = p.Split('=');
+                if (double.TryParse(pair[1], out double value))
+                    return new KeyValuePair<string, double?>(pair[0], value);
+                return new KeyValuePair<string, double?>(pair[0], null);
+            })
+            .ToDictionary();
+    }
+
+    public override async Task SendAsync<T>(T data)
+    {
+        if (data is not Packet packet)
+            return;
+
+        if (packet.Type == PacketType.Config && packet.Content is Config config)
+        {
+            ScreenLogger.Print($"[ML] got {packet.Type}");
+            _searchAlgorithm = new Search.SearchAlgorithm(config, _deParams);
+        }
+        else if (packet.Type == PacketType.Measurement)
+        {
+            if (_searchAlgorithm == null)
+                return;
+
+            Content? content = null;
+            if (packet.Content is DmsMeasurement dms)
+            {
+                ScreenLogger.Print($"[ML] got DMS {dms.Setup.Usv} x {dms.Setup.Ucv}");
+                content = dms;
+            }
+            else if (packet.Content is SntMeasurement snt)
+            {
+                ScreenLogger.Print($"[ML] got SNT {snt.Data.Features.Length} features");
+                content = snt;
+            }
+            else if (packet.Content is PIDMeasurement pid)
+            {
+                ScreenLogger.Print($"[ML] got PID {pid.Data:F3} V");
+                content = pid;
+            }
+            else
+            {
+                ScreenLogger.Print($"[ML] unknown data source: {(packet.Content as Content)?.Source}");
+            }
+
+            Recipe? recipe = null;
+
+            if (content != null && _searchAlgorithm.AddMeasurement(content))
+            {
+                recipe = await _searchAlgorithm.GetRecipe();
+            }
+
+            if (recipe != null)
+            {
+                FireRecipeEvent(recipe);
+                ScreenLogger.Print("[ML] recipe sent");
+            }
+        }
+        else
+        {
+            ScreenLogger.Print($"[ML] unknown packet type: {packet.Type}");
+        }
+    }
 
     public override void Dispose()
     {
@@ -28,66 +100,6 @@ internal class LocalServer : Server
 
     // Internal
 
+    Dictionary<string, double?> _deParams = new();
     Search.SearchAlgorithm? _searchAlgorithm;
-
-    protected override async Task SendTextAsync(string data)
-    {
-        var packet = JsonSerializer.Deserialize<Packet>(data, _serializerOptions)
-            ?? throw new Exception($"packet is not a valid JSON:\n  {data}");
-
-        if (packet.Type == PacketType.Config)
-        {
-            var json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
-            Config config = JsonSerializer.Deserialize<Config>(json, _serializerOptions)!;
-
-            _searchAlgorithm = new Search.SearchAlgorithm(config);
-        }
-        else if (packet.Type == PacketType.Measurement)
-        {
-            if (_searchAlgorithm == null)
-            {
-                return;
-            }
-
-            Recipe? recipe = null;
-
-            var json = JsonSerializer.Serialize(packet.Content, _serializerOptions);
-            Content? content = JsonSerializer.Deserialize<Content>(json, _serializerOptions)!;
-
-            if (content.Source == Source.DMS)
-            {
-                content = JsonSerializer.Deserialize<DmsMeasurement>(json, _serializerOptions)!;
-            }
-            else if (content.Source == Source.SNT)
-            {
-                content = JsonSerializer.Deserialize<SntMeasurement>(json, _serializerOptions)!;
-            }
-            else if (content.Source == Source.PID)
-            {
-                content = JsonSerializer.Deserialize<PIDMeasurement>(json, _serializerOptions)!;
-            }
-            else
-            {
-                ScreenLogger.Print($"[ML] unknown data source: {content.Source}");
-                content = null;
-            }
-
-            if (content != null && _searchAlgorithm.AddMeasurement(content))
-            {
-                recipe = await _searchAlgorithm.GetRecipe();
-            }
-
-            if (recipe != null)
-            {
-                json = JsonSerializer.Serialize(new Packet(PacketType.Recipe, recipe));
-                ScreenLogger.Print("[ML] recipe sent");
-
-                ParseJson(json);
-            }
-        }
-        else
-        {
-            ScreenLogger.Print($"[ML] unknown packet type: {packet.Type}");
-        }
-    }
 }

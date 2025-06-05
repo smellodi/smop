@@ -9,7 +9,7 @@ namespace Smop.ML.Search;
 
 internal class SearchAlgorithm : IDisposable
 {
-    public SearchAlgorithm(Config config)
+    public SearchAlgorithm(Config config, Dictionary<string, double?> parameters)
     {
         _config = config;
 
@@ -35,6 +35,19 @@ internal class SearchAlgorithm : IDisposable
         if (Enum.TryParse(_config.Algorithm, out Kernel kernel))
         {
             diffEvolParameters.Kernel = kernel;
+        }
+
+        if (parameters.TryGetValue("cr", out double? cr) && cr != null)
+        {
+            diffEvolParameters.CrossoverRate = (double)cr;
+        }
+        if (parameters.TryGetValue("f", out double? f) && f != null)
+        {
+            diffEvolParameters.MutationFactor = (double)f;
+        }
+        if (parameters.TryGetValue("d", out double? d) && d != null)
+        {
+            diffEvolParameters.Decimals = (int)d;
         }
 
         _processor = new DiffEvol(diffEvolParameters, _channelIDs.Length);
@@ -80,6 +93,7 @@ internal class SearchAlgorithm : IDisposable
     // Internal
 
     record class MinMax(double Min, double Max);
+    record class Parameters(double Min, double Max);
 
     const int FLOW_DURATION_ENDLESS = -1;
 

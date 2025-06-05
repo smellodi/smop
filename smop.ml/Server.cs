@@ -11,11 +11,11 @@ internal abstract class Server : IDisposable
     public event EventHandler<string>? Error;
 
     public virtual bool IsConnected { get; }
-    public virtual string DisplayName { get; } = string.Empty;
+    public abstract string DisplayName { get; }
 
     public abstract void Dispose();
 
-    public async Task SendAsync<T>(T packet)
+    public virtual async Task SendAsync<T>(T packet)
     {
         if (IsConnected)
         {
@@ -29,13 +29,18 @@ internal abstract class Server : IDisposable
 
     // Internal
 
-    protected abstract Task SendTextAsync(string data);
+    protected virtual Task SendTextAsync(string data) { return Task.CompletedTask; }
 
     protected readonly JsonSerializerOptions _serializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
+
+    protected void FireRecipeEvent(Recipe recipe)
+    {
+        RecipeReceived?.Invoke(this, recipe);
+    }
 
     protected void ParseJson(string json)
     {

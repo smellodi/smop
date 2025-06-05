@@ -8,4 +8,16 @@ public class DiffEvolParameters
     public double MutationFactor { get; set; } = 0.8;
     public int Decimals { get; set; } = 0;
     public Kernel Kernel { get; set; } = Kernel.Euclidean;
+
+    public override string ToString()
+    {
+        return string.Join('\n', [
+            $"  iterations       = {MaxIterations}",
+            $"  threshold        = {DistanceThreshold}",
+            $"  decimals         = {Decimals}",
+            $"  kernel           = {Kernel}",
+            $"  mutation factor  = {MutationFactor}",
+            $"  crossover rate   = {CrossoverRate}",
+            ]);
+    }
 }

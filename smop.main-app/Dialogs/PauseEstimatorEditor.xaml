@@ -6,9 +6,9 @@
         xmlns:local="clr-namespace:Smop.MainApp.Dialogs"
         xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
-        DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
+        DataContext="{Binding PauseEstimator, RelativeSource={RelativeSource Self}, Mode=OneWay}"
         Title="Pulse Interval Estimator"
-        Height="480"
+        d:Height="580"
         Width="220"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterOwner"
@@ -26,20 +26,24 @@
             <Setter Property="Padding" Value="12,4" />
             <Setter Property="MinWidth" Value="58" />
         </Style>
+        <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
         <Style x:Key="Header" TargetType="{x:Type Label}">
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
-        <Style x:Key="Semi" TargetType="{x:Type Separator}">
+        <Style TargetType="{x:Type Separator}" BasedOn="{StaticResource {x:Type Separator}}">
             <Setter Property="Background" Value="LightGray"/>
-            <Setter Property="Margin" Value="12,2"/>
+            <Setter Property="Margin" Value="0,8"/>
         </Style>
         <Style TargetType="{x:Type RadioButton}">
             <Setter Property="Margin" Value="2"/>
         </Style>
     </Window.Resources>
 
-    <StackPanel Margin="0,0,8,0">
+    <StackPanel Margin="8,0">
         <StackPanel.LayoutTransform>
             <ScaleTransform x:Name="sctScale"/>
         </StackPanel.LayoutTransform>
@@ -107,74 +111,114 @@
                    Content="Cleanup"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="5" Grid.ColumnSpan="2">
+            <UniformGrid Grid.Row="5" Grid.ColumnSpan="2" Rows="1" Columns="2">
                 <RadioButton Content="Interval"
+                             HorizontalAlignment="Center"
                              IsChecked="{Binding UseCleanupPidLevel, Mode=TwoWay, Converter={StaticResource inverseBool}}"/>
                 <RadioButton Content="PID level"
+                             HorizontalAlignment="Center"
                              IsChecked="{Binding UseCleanupPidLevel, Mode=TwoWay}"/>
-            </StackPanel>
+            </UniformGrid>
 
-            <Separator Grid.Row="6" Grid.ColumnSpan="2" Style="{StaticResource Semi}"/>
-            
-            <Label Grid.Row="7" Grid.Column="0">Minimum duration (B), sec</Label>
-            <TextBox x:Name="txbMinCleanupDuration" Grid.Row="7" Grid.Column="1"
-                     IsEnabled="{Binding UseCleanupPidLevel, Converter={StaticResource inverseBool}}">
-                <TextBox.Text>
-                    <Binding Path="MinCleanupDuration" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                        <Binding.ValidationRules>
-                            <local:RangeRule Min="0" Max="200" ValidatesOnTargetUpdated="True"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
+            <Separator Grid.Row="6" Grid.ColumnSpan="2"/>
 
-            <Label Grid.Row="8" Grid.Column="0">Gain (G)</Label>
-            <TextBox x:Name="txbCleanupGain" Grid.Row="8" Grid.Column="1"
-                     IsEnabled="{Binding UseCleanupPidLevel, Converter={StaticResource inverseBool}}">
-                <TextBox.Text>
-                    <Binding Path="CleanupGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                        <Binding.ValidationRules>
-                            <local:RangeRule Min="0" Max="100" ValidatesOnTargetUpdated="True"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
+            <Grid Grid.Row="7" Grid.ColumnSpan="2"
+                  IsEnabled="{Binding UseCleanupPidLevel, Mode=OneWay, Converter={StaticResource inverseBool}}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
 
-            <Label Grid.Row="9" Grid.Column="0">Exponential gain (A)</Label>
-            <TextBox x:Name="txbCleanupExpGain" Grid.Row="9" Grid.Column="1"
-                     IsEnabled="{Binding UseCleanupPidLevel, Converter={StaticResource inverseBool}}">
-                <TextBox.Text>
-                    <Binding Path="CleanupExpGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                        <Binding.ValidationRules>
-                            <local:RangeRule Min="0.001" Max="1" ValidatesOnTargetUpdated="True"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
+                <Label Grid.Row="0" Grid.Column="0">Minimum duration (B), sec</Label>
+                <TextBox x:Name="txbMinCleanupDuration" Grid.Row="0" Grid.Column="1">
+                    <TextBox.Text>
+                        <Binding Path="MinCleanupDuration" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding.ValidationRules>
+                                <local:RangeRule Min="0" Max="200" ValidatesOnTargetUpdated="True"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
 
-            <Separator Grid.Row="10" Grid.ColumnSpan="2" Style="{StaticResource Semi}"/>
+                <Label Grid.Row="1" Grid.Column="0">Gain (G)</Label>
+                <TextBox x:Name="txbCleanupGain" Grid.Row="1" Grid.Column="1">
+                    <TextBox.Text>
+                        <Binding Path="CleanupGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding.ValidationRules>
+                                <local:RangeRule Min="0" Max="100" ValidatesOnTargetUpdated="True"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
 
-            <Label Grid.Row="11" Grid.Column="0">PID level, V</Label>
-            <TextBox x:Name="txbCleanupPidLevel" Grid.Row="11" Grid.Column="1"
-                     IsEnabled="{Binding UseCleanupPidLevel}">
-                <TextBox.Text>
-                    <Binding Path="CleanupPidLevel" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                        <Binding.ValidationRules>
-                            <local:RangeRule Min="0.05" Max="0.1" ValidatesOnTargetUpdated="True"/>
-                        </Binding.ValidationRules>
-                    </Binding>
-                </TextBox.Text>
-            </TextBox>
+                <Label Grid.Row="2" Grid.Column="0">Exponential gain (A)</Label>
+                <TextBox x:Name="txbCleanupExpGain" Grid.Row="2" Grid.Column="1">
+                    <TextBox.Text>
+                        <Binding Path="CleanupExpGain" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding.ValidationRules>
+                                <local:RangeRule Min="0.001" Max="1" ValidatesOnTargetUpdated="True"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
+            </Grid>
+
+            <Separator Grid.Row="8" Grid.ColumnSpan="2"/>
+
+            <Grid Grid.Row="9" Grid.ColumnSpan="2"
+                  IsEnabled="{Binding UseCleanupPidLevel, Mode=OneWay}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" Grid.Column="0">PID level, V</Label>
+                <TextBox x:Name="txbCleanupPidLevel" Grid.Row="0" Grid.Column="1">
+                    <TextBox.Text>
+                        <Binding Path="CleanupPidLevel" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                            <Binding.ValidationRules>
+                                <local:RangeRule Min="0.05" Max="0.1" ValidatesOnTargetUpdated="True"/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
+            </Grid>
         </Grid>
 
-        <StackPanel Margin="4,0,0,0">
-            <Separator Margin="0,8"/>
-            <TextBlock TextWrapping="Wrap">Note: both intervals are estimated using the save equation:</TextBlock>
-            <TextBlock HorizontalAlignment="Center" FontStyle="Italic" FontWeight="SemiBold">T = B + G * e^(A * F)</TextBlock>
-            <TextBlock TextWrapping="Wrap">where F is an odor flow in sccm</TextBlock>
-            <Separator Margin="0,8"/>
-            <TextBlock TextWrapping="Wrap">Type a flow value into the box below to inspect the estimated intervals using the parameters above:</TextBlock>
-            <Grid>
+        <StackPanel>
+            <StackPanel.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="TextWrapping" Value="Wrap"/>
+                    <Setter Property="TextAlignment" Value="Center"/>
+                </Style>
+                <Style TargetType="Separator" BasedOn="{StaticResource {x:Type Separator}}">
+                    <Setter Property="Background" Value="#444444"/>
+                </Style>
+            </StackPanel.Resources>
+            
+            <Border Margin="0,8"
+                    Padding="8"
+                    BorderThickness="2"
+                    BorderBrush="#666666">
+                <StackPanel>
+                    <TextBlock>Note: both intervals are estimated using the save equation:</TextBlock>
+                    <TextBlock HorizontalAlignment="Center"
+                           FontStyle="Italic"
+                           FontWeight="SemiBold"
+                           Margin="4"
+                           Text="T = B + G * e^(A * F)"/>
+                    <TextBlock>where F is an odor flow in sccm</TextBlock>
+                </StackPanel>
+            </Border>
+            
+            <TextBlock>Type a flow value into the box below to inspect the estimated intervals using the parameters above:</TextBlock>
+            
+            <Grid Margin="0,8,0,0">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition/>
@@ -199,10 +243,14 @@
                          Text="{Binding ExampleFlow, Converter={StaticResource num2str}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                 <Label Grid.Row="1" Grid.Column="1"
                        FontWeight="Bold"
+                       Background="#EEF4FE"
+                       Margin="2,0"
                        HorizontalContentAlignment="Center"
                        Content="{Binding ExampleSaturation, Mode=OneWay, Converter={StaticResource num2str}}"/>
                 <Label Grid.Row="1" Grid.Column="2"
                        FontWeight="Bold"
+                       Margin="2,0"
+                       Background="#EEF4FE"
                        HorizontalContentAlignment="Center"
                        Content="{Binding ExampleCleanup, Mode=OneWay, Converter={StaticResource num2str}}"/>
             </Grid>

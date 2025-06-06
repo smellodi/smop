@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Smop.MainApp.Controllers;
 
-internal class PauseEstimator: INotifyPropertyChanged
+public class PauseEstimator : INotifyPropertyChanged
 {
     public double MinSaturationDuration
     {

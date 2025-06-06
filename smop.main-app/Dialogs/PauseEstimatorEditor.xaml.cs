@@ -5,6 +5,8 @@ namespace Smop.MainApp.Dialogs;
 
 public partial class PauseEstimatorEditor : Window
 {
+    public PauseEstimator PauseEstimator { get; } = new();
+
     public PauseEstimatorEditor()
     {
         InitializeComponent();
@@ -14,8 +16,6 @@ public partial class PauseEstimatorEditor : Window
     }
 
     // Internal
-
-    PauseEstimator _pauseEstimator = new();
 
     // UI
 
@@ -31,7 +31,7 @@ public partial class PauseEstimatorEditor : Window
 
     private void OK_Click(object sender, RoutedEventArgs e)
     {
-        _pauseEstimator.Save();
+        PauseEstimator.Save();
 
         DialogResult = true;
     }

@@ -378,8 +378,9 @@ internal class DiffEvol : IDisposable
     private static MatrixD Crossover(MatrixD donorVectors, MatrixD mutatedVectors, double cr)
     {
         // Generate random indices of donor vectors
+        var varCount = donorVectors.RowCount;
         var vectorCount = donorVectors.ColumnCount;
-        var randomIndices = _rnd.ArrayInt32(vectorCount, vectorCount);
+        var randomIndices = _rnd.ArrayInt32(vectorCount, varCount);
 
         // Random numbers in [0, 1] for each component of each mutated vector
         var crossoverProbabilities = new MatrixD(donorVectors.RowCount, donorVectors.ColumnCount, (r, c) => _rnd.NextDouble());

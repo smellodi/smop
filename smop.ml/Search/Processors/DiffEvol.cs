@@ -6,9 +6,12 @@ using MatrixD = Smop.ML.Search.Matrix<double>;
 namespace Smop.ML.Search;
 
 /// <summary>
-/// In future, this class may implement interface that would be common
-/// for all iterative algorithms
+/// Differential Evolution (DE) algorithm implementation
 /// </summary>
+/// <remarks>
+/// In future, this class could implement interface that would be common
+/// for all iterative algorithms
+/// </remarks>
 internal class DiffEvol : IDisposable
 {
     public bool HasTarget => _target.Length > 0;
@@ -38,16 +41,17 @@ internal class DiffEvol : IDisposable
     {
         _parameters = parameters;
 
-        // Population size: set of best vectors
+        // create pool of vectors that stores best vectors found so far
         _bestVectors = CreateInitialVectors(varCount, VALUE_MIN, VALUE_MAX);
         Round(_bestVectors, _parameters.Decimals);
 
         _iterationVectors = _bestVectors.Copy();
         _vectorCount = _bestVectors.ColumnCount;
 
-        _candidateIndices = Enumerable.Range(0, _vectorCount).ToArray();    // range of X and U
+        _candidateIndices = Enumerable.Range(0, _vectorCount).ToArray();    // indices of best candidates in _testedCandidates; correspond to vectors stored in _bestVectors
 
         _debugDisplay.WriteLine($"Parameters:\n{parameters}\n");
+        _debugDisplay.WriteLine("Initializing the pool of vectors");
         _debugDisplay.Show();
     }
 
@@ -59,13 +63,18 @@ internal class DiffEvol : IDisposable
     public void SetTarget(double[] target)
     {
         _target = target;
-
-        _debugDisplay.WriteLine("Initializing the pool of vectors");
     }
 
+    /// <summary>
+    /// Pushes the new measurement to the stack of all measurements and updates relevant state variables.
+    /// </summary>
+    /// <remarks>This method processes the provided measurement by calculating its distance to the target
+    /// vector and updating global and iteration-specific minima. It also manages the pool of best vectors by replacing
+    /// existing vectors if the new measurement yields a smaller distance to the target.</remarks>
+    /// <param name="measurement">An array of doubles representing the measurement data.</param>
     public void AddMeasurement(double[] measurement)
     {
-        // Handling the arrived measurement: push it to the stack of candidates
+        // Handling a new e-nose measurement: push it to the stack of candidates
         // with the vector that was used for this measurement and calculated distance to the target
 
         var candidateId = _testedCandidates.Count;
@@ -79,9 +88,7 @@ internal class DiffEvol : IDisposable
 
         string[] info = ["  ", "  ", ""];
 
-        // Update and print minimas
-
-        // Global minima
+        // Update global minima
         if (_lastDistance < _grandMinima)
         {
             _grandMinima = _lastDistance;
@@ -91,7 +98,7 @@ internal class DiffEvol : IDisposable
 
         if (candidateId >= _vectorCount) // after all vectors were initialized
         {
-            // Iteration minima
+            // Update iteration minima
             if (_lastDistance < _iterationMinima)
             {
                 _iterationMinima = _lastDistance;
@@ -99,7 +106,9 @@ internal class DiffEvol : IDisposable
                 info[1] = "IM";
             }
 
-            // replace target vector with trial vector if it has smaller distance
+            // Replace the vector from the pool of best vectors at the current iteration trial index (vectorId)
+            // with the vector that the arrived measurement belongs to
+            // if it has smaller distance to the target
             var previousDistance = _testedCandidates[_candidateIndices[vectorId]].Distance;
             if (_lastDistance < previousDistance)
             {
@@ -125,7 +134,7 @@ internal class DiffEvol : IDisposable
         int vectorId = _testedCandidates.Count % _vectorCount;
         int iterationId = _testedCandidates.Count / _vectorCount;
 
-        if (iterationId > 0 && vectorId == 0)   // new iteration starts: create a new set of vectors to test and store them into _iterationVectors
+        if (iterationId > 0 && vectorId == 0)   // new iteration starts: create a new set of vectors to test and store them in _iterationVectors
         {
             PrintIterationResultInfo();
             PrintSearchResultInfo();
@@ -141,6 +150,8 @@ internal class DiffEvol : IDisposable
             _iterationMinima = 1e8;
             _iterationMinimaIndex = -1;
 
+            // Core of DE algorithm:
+
             var mutatedVectors = Mutate(_bestVectors, _parameters.MutationFactor, VALUE_MIN, VALUE_MAX);   // generate new vectors
             _iterationVectors = Crossover(_bestVectors, mutatedVectors, _parameters.CrossoverRate);        // mix old and new vectors
             Validate(_iterationVectors, VALUE_DELTA, VALUE_MIN, VALUE_MAX);          // remove repetitions
@@ -151,13 +162,13 @@ internal class DiffEvol : IDisposable
 
         var vector = _iterationVectors[.., vectorId];
 
-        if (iterationId == 0)   // first iteration
+        if (iterationId == 0)   // the vectors in the first iteration all have their values within the valid range, no need to apply LimitValues method
         {
             result = new TestCandidate($"Initial #{vectorId + 1}", vector, false, _lastDistance);
         }
-        else                    // all other iterations
+        else
         {
-            var validVector = LimitValues(vector, VALUE_MIN, VALUE_MAX);    // the vector values could be beyound the valid scope after mutation
+            var validVector = LimitValues(vector, VALUE_MIN, VALUE_MAX);    // the vector values could be beyound the valid range after mutation
             result = new TestCandidate($"Iteration #{iterationId}, Search #{vectorId + 1}", validVector, false, _lastDistance);
         }
         
@@ -211,25 +222,25 @@ internal class DiffEvol : IDisposable
 
         MatrixD? result = null;
 
-        // This is a bit tricky algorithm on how to create vectors with all possible combinations, but it works fine
+        // This is a bit tricky algorithm on how to create vectors with all possible combinations, but it works fine:
 
         // first we create a long set of all possible permutations
         for (int i = varCount; i >= 0; i--)
         {
-            var a = new MatrixD(1, i, min);           // [min, min, ...  (or nothing if i == 0)
-            var b = new MatrixD(1, varCount - i, max);      // ... max, max] (or nothing if i == n)
-            var ab = MatrixD.StackColumns(a, b);      // unite both parts
-            ab = MatrixD.Permutate(ab);               // save all permutations as rows
+            var a = new MatrixD(1, i, min);             // [min, min, ...  (or nothing if i == 0)
+            var b = new MatrixD(1, varCount - i, max);  // ... max, max] (or nothing if i == varCount)
+            var ab = MatrixD.StackColumns(a, b);        // unite both parts
+            ab = MatrixD.Permutate(ab);                 // save all permutations as rows
             if (result is null)
                 result = ab;
             else
-                result = MatrixD.StackRows(result, ab);   // add to the resulting list
+                result = MatrixD.StackRows(result, ab); // add to the resulting list
         }
 
         // ..then we remove the repeating vectors,
         result = result!
             .RemoveDuplicates(Direction.Rows)       // remove duplications produced by permutations
-            .Transpose();                           // and transpose the matrix
+            .Transpose();                           // and transpose the matrix to have vectors in columns
 
         // ..and finally add the central vector
         var central = new MatrixD(varCount, 1, center);
@@ -238,8 +249,7 @@ internal class DiffEvol : IDisposable
         // in case varCount = 1 that gives only 3 vectors, a random vector should be added, as DE requires at least 4 vectors
         while (result.Size < 4)
         {
-            var value = _rnd.NextDouble(min, max);
-            result = MatrixD.StackColumns(result, new MatrixD(result.RowCount, 1, value));
+            result = MatrixD.StackColumns(result, new MatrixD(result.RowCount, 1, (r, c) => _rnd.NextDouble(min, max)));
         }
 
         return result;
@@ -265,15 +275,15 @@ internal class DiffEvol : IDisposable
     }
 
     // A cost function that measures similarity (distance) between e-nose measurements
-    // of the target mixture and the candidate mixture
+    // of the target mixture and a tested mixture
     private static double GetDistance(Kernel kernel, double[] a, double[] b) => kernel switch
     {
         Kernel.Euclidean => Math.Sqrt((new MatrixD(a) - new MatrixD(b)).Power(2).Mean()),
         _ => throw new NotImplementedException("Kernel not supported")
     };
 
-    // Limits the values to stay within bounds (this is needed as the mutation algorithm
-    // may produce values slighly outlide the valid range)
+    // Limits the values to stay within a valid range (this is needed as
+    // the mutation algorithm may produce values slighly outside this range)
     private static MatrixD LimitValues(MatrixD matrix, double min, double max) =>
         new(matrix.RowCount, matrix.ColumnCount, (r, c) =>
         {
@@ -291,11 +301,12 @@ internal class DiffEvol : IDisposable
 
         // Allow to accept mutated vectors with values slightly beyond the
         // limits. The values anyway will be adjusted to bring them within
-        // the scope in the LimitValues function
+        // the valid range using the LimitValues function
         var delta = (max - min) * 0.05;   // to each side beyond the limits
         min -= delta;
         max += delta;
 
+        // Mutate all vectors
         for (int c = 0; c < vectors.ColumnCount; c++)
         {
             var candidate = KeepInRange(min, max, () => MutateOne(vectors, c, f));
@@ -313,21 +324,17 @@ internal class DiffEvol : IDisposable
 
         // Pick three distinct vectors that are different from the "column" vector
 
-        int[] ids = Enumerable.Range(0, vectors.ColumnCount).ToArray();  // random permutation of integers 0..ColumnCount
-        _rnd.Shuffle(ids);
+        // Create random permutation of integers 0..ColumnCount
+        int[] colIndices = Enumerable.Range(0, vectors.ColumnCount).ToArray();
+        _rnd.Shuffle(colIndices);
 
-        // remove index "column" from "ids"
-        int[] colIndices = new int[vectors.ColumnCount - 1];
-        for (int i = 0, j = 0; i < ids.Length; i++)
-            if (ids[i] != column)
-                colIndices[j++] = ids[i];
+        colIndices = Array.RemoveValue(colIndices, column);
 
-        // Compute donor vector from the first three vectors
-        // (need to be distinct from each other and from x)
+        // Compute donor vector from three random vectors
         return vectors[.., colIndices[0]] + f * (vectors[.., colIndices[1]] - vectors[.., colIndices[2]]);
     }
 
-    // Uses "createVector" function to obtain a vector, then checks if all vectors values
+    // Uses "createVector" function to obtain a vector, then checks if all vector values
     // stay within a range [min, max]. If not, then it requests another vectors.
     // If the number of attempts exceed a limit, it returns a random vector
     private MatrixD KeepInRange(double min, double max, Func<MatrixD> createVector)
@@ -342,12 +349,12 @@ internal class DiffEvol : IDisposable
 
         while (maxTrialCount > 0)
         {
-            result = createVector();  // the callback create either a column or a row
+            result = createVector();  // creates either a column or a row
 
-            if (result.All(v => v >= min && v <= max))  // nice, all values are withing the range
+            if (result.All(v => v >= min && v <= max))  // nice, all values are withing the range, accept this vectors
                 break;
 
-            // some values are out of range, lets display them and try again
+            // some values are out of the range, lets display them and try again
 
             _debugDisplay.WriteLine($"Rejected: {result}");
 
@@ -371,7 +378,8 @@ internal class DiffEvol : IDisposable
     private static MatrixD Crossover(MatrixD donorVectors, MatrixD mutatedVectors, double cr)
     {
         // Generate random indices of donor vectors
-        var randomIndices = donorVectors[0, ..].Select(_ => _rnd.Next(donorVectors.ColumnCount)).ToArray();
+        var vectorCount = donorVectors.ColumnCount;
+        var randomIndices = _rnd.ArrayInt32(vectorCount, vectorCount);
 
         // Random numbers in [0, 1] for each component of each mutated vector
         var crossoverProbabilities = new MatrixD(donorVectors.RowCount, donorVectors.ColumnCount, (r, c) => _rnd.NextDouble());
@@ -384,7 +392,7 @@ internal class DiffEvol : IDisposable
         {
             for (int r = 0; r < donorVectors.RowCount; r++)
             {
-                if (crossoverProbabilities[r, c] <= cr || randomIndices[r] == c)
+                if (crossoverProbabilities[r, c] <= cr || randomIndices[c] == r)
                     result[r, c] = mutatedVectors[r, c];
                 else                                        // OLEG: extreamly rare if cr = 0.8, but
                     result[r, c] = donorVectors[r, c];      // happens in 10 - 30 % cases when cr = 0.5
@@ -399,7 +407,7 @@ internal class DiffEvol : IDisposable
     {
         double[] interval = [-delta, delta];
 
-        // Replace repeated pairs with random pairs
+        // Replace the repeating pairs with random pairs
         for (int c = 1; c < vectors.ColumnCount; c++)
         {
             for (int i = 0; i < c - 1; i++)

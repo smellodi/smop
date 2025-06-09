@@ -9,9 +9,9 @@
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
         Title="Known odors"
         Height="560"
-        Width="374"
+        Width="384"
         MinHeight="560"
-        MinWidth="374"
+        MinWidth="384"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterOwner"
         Icon="/Assets/icons/main.png"
@@ -20,12 +20,15 @@
         Unloaded="Window_Unloaded">
 
     <Window.Resources>
-        <Style x:Key="GridItem" TargetType="TextBlock">
+        <Style x:Key="GridItem" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
             <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="Padding" Value="6,5"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="6,7"/>
         </Style>
-        
+
+        <Style x:Key="GridEditItem" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
         <DataTemplate x:Key="ShortKnownNameViewTemplate">
             <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=ShortKnownName}" MinWidth="60"/>
         </DataTemplate>
@@ -43,13 +46,13 @@
         </DataTemplate>
 
         <DataTemplate x:Key="ShortKnownNameEditTemplate">
-            <TextBox Text="{Binding Path=ShortKnownName, Mode=TwoWay}"/>
+            <TextBox Style="{StaticResource GridEditItem}" Text="{Binding Path=ShortKnownName, Mode=TwoWay}"/>
         </DataTemplate>
         <DataTemplate x:Key="FullKnownNameEditTemplate">
-            <TextBox Text="{Binding Path=FullKnownName, Mode=TwoWay}"/>
+            <TextBox Style="{StaticResource GridEditItem}" Text="{Binding Path=FullKnownName, Mode=TwoWay}"/>
         </DataTemplate>
         <DataTemplate x:Key="PidCheckLevelEditTemplate">
-            <TextBox>
+            <TextBox Style="{StaticResource GridEditItem}">
                 <TextBox.Text>
                     <Binding Path="PidCheckLevel"
                              Mode="TwoWay">
@@ -61,7 +64,7 @@
             </TextBox>
         </DataTemplate>
         <DataTemplate x:Key="MinFlowEditTemplate">
-            <TextBox>
+            <TextBox Style="{StaticResource GridEditItem}">
                 <TextBox.Text>
                     <Binding Path="MinFlow"
                              Mode="TwoWay">
@@ -73,7 +76,7 @@
             </TextBox>
         </DataTemplate>
         <DataTemplate x:Key="MaxFlowEditTemplate">
-            <TextBox>
+            <TextBox Style="{StaticResource GridEditItem}">
                 <TextBox.Text>
                     <Binding Path="MaxFlow"
                              Mode="TwoWay">
@@ -202,6 +205,8 @@
                   AutoGenerateColumns="False"
                   HeadersVisibility="Column"
                   Margin="4,0"
+                  HorizontalGridLinesBrush="{StaticResource BrushBorder}"
+                  VerticalGridLinesBrush="{StaticResource BrushBorder}"
                   VerticalScrollBarVisibility="Visible">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Header="Abbr."

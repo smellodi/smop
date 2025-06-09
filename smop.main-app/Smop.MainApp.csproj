@@ -13,14 +13,14 @@
     <RootNamespace>Smop.MainApp</RootNamespace>
     <AssemblyName>smop</AssemblyName>
     <AssemblyTitle>Smellodi Odor Printer</AssemblyTitle>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <Version>1.6</Version>
+    <Version>1.7</Version>
     <Authors>Oleg Špakov</Authors>
     <Company>Tampere University</Company>
     <Title>SMOP: Smellodi Odor Printer</Title>
     <Description>Main app of Smellodi Odor Printer</Description>
-    <Copyright>(c) 2023-2024</Copyright>
+    <Copyright>(c) 2023-2025</Copyright>
     <ApplicationIcon>Assets\icons\main.ico</ApplicationIcon>
     <PackageId>smop</PackageId>
     <PackageIcon>main.png</PackageIcon>
@@ -31,7 +31,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <Prefer32Bit>true</Prefer32Bit>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <NoWarn>1701;1702</NoWarn>

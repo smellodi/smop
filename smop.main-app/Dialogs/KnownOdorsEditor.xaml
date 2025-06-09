@@ -4,13 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Smop.MainApp.Dialogs"
+        xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
         Title="Known odors"
         Height="560"
-        Width="444"
+        Width="374"
         MinHeight="560"
-        MinWidth="444"
+        MinWidth="374"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterOwner"
         Icon="/Assets/icons/main.png"
@@ -19,7 +20,72 @@
         Unloaded="Window_Unloaded">
 
     <Window.Resources>
-        <DataTemplate x:Key="KnownOdorTemplate">
+        <Style x:Key="GridItem" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Padding" Value="6,5"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        
+        <DataTemplate x:Key="ShortKnownNameViewTemplate">
+            <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=ShortKnownName}" MinWidth="60"/>
+        </DataTemplate>
+        <DataTemplate x:Key="FullKnownNameViewTemplate">
+            <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=FullKnownName}" MinWidth="124"/>
+        </DataTemplate>
+        <DataTemplate x:Key="PidCheckLevelViewTemplate">
+            <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=PidCheckLevel}" MinWidth="46"/>
+        </DataTemplate>
+        <DataTemplate x:Key="MinFlowViewTemplate">
+            <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=MinFlow}" MinWidth="42"/>
+        </DataTemplate>
+        <DataTemplate x:Key="MaxFlowViewTemplate">
+            <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=MaxFlow}" MinWidth="42"/>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShortKnownNameEditTemplate">
+            <TextBox Text="{Binding Path=ShortKnownName, Mode=TwoWay}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="FullKnownNameEditTemplate">
+            <TextBox Text="{Binding Path=FullKnownName, Mode=TwoWay}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="PidCheckLevelEditTemplate">
+            <TextBox>
+                <TextBox.Text>
+                    <Binding Path="PidCheckLevel"
+                             Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0.05" Max="3.3" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </DataTemplate>
+        <DataTemplate x:Key="MinFlowEditTemplate">
+            <TextBox>
+                <TextBox.Text>
+                    <Binding Path="MinFlow"
+                             Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </DataTemplate>
+        <DataTemplate x:Key="MaxFlowEditTemplate">
+            <TextBox>
+                <TextBox.Text>
+                    <Binding Path="MaxFlow"
+                             Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <utils:RangeRule Min="0" Max="100" IsInteger="False"/>
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+        </DataTemplate>
+
+        <!--DataTemplate x:Key="KnownOdorTemplate">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="60"/>
@@ -47,7 +113,7 @@
                 <TextBox Grid.Column="5"
                          Text="{Binding Path=CriticalFlow, Mode=TwoWay}"
                          Margin="2,0,0,0"/>
-                <Button Grid.Column="6"
+                <Button Grid.Column="5"
                         Tag="{Binding Path=ShortKnownName}"
                         Margin="2,0,0,0"
                         Width="32"
@@ -60,14 +126,15 @@
             </Grid>
         </DataTemplate>
 
+        <Style x:Key="ColHeader" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style-->
+
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="4,0" />
             <Setter Property="Padding" Value="12,4" />
             <Setter Property="MinWidth" Value="58" />
-        </Style>
-        <Style x:Key="ColHeader" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
     </Window.Resources>
 
@@ -77,14 +144,14 @@
         </Grid.LayoutTransform>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="42"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="8,0,0,0">
+        <!--Grid Grid.Row="0" Margin="8,0,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="60"/>
                 <ColumnDefinition Width="128"/>
@@ -122,11 +189,53 @@
                 <LineBreak/>
                 <Run>sccm</Run>
             </TextBlock>
-        </Grid>
+        </Grid-->
 
-        <ListBox Grid.Row="1"
-                 ItemTemplate="{StaticResource KnownOdorTemplate}"
-                 ItemsSource="{Binding Items, Mode=OneWay}"/>
+        <!--ListView Grid.Row="1"
+                  Margin="4,0"
+                  ItemTemplate="{StaticResource KnownOdorTemplate}"
+                  ItemsSource="{Binding Items, Mode=OneWay}"
+                  ScrollViewer.VerticalScrollBarVisibility="Visible"/-->
+
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding Items, Mode=OneWay}"
+                  AutoGenerateColumns="False"
+                  HeadersVisibility="Column"
+                  Margin="4,0"
+                  VerticalScrollBarVisibility="Visible">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Abbr."
+                                        CellTemplate="{StaticResource ShortKnownNameViewTemplate}"
+                                        CellEditingTemplate="{StaticResource ShortKnownNameEditTemplate}"/>
+                <DataGridTemplateColumn Header="Full name"
+                                        CellTemplate="{StaticResource FullKnownNameViewTemplate}"
+                                        CellEditingTemplate="{StaticResource FullKnownNameEditTemplate}"/>
+                <DataGridTemplateColumn CellTemplate="{StaticResource PidCheckLevelViewTemplate}"
+                                        CellEditingTemplate="{StaticResource PidCheckLevelEditTemplate}">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock Text="PID"
+                                   ToolTipService.InitialShowDelay="0"
+                                   ToolTip="change from the base level at 40 sccm flow rate"/>
+                    </DataGridTemplateColumn.Header>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn CellTemplate="{StaticResource MinFlowViewTemplate}"
+                                        CellEditingTemplate="{StaticResource MinFlowEditTemplate}">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock Text="Min"
+                                   ToolTipService.InitialShowDelay="0"
+                                   ToolTip="minimum flow rate, sccm"/>
+                    </DataGridTemplateColumn.Header>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn CellTemplate="{StaticResource MaxFlowViewTemplate}"
+                                        CellEditingTemplate="{StaticResource MaxFlowEditTemplate}">
+                    <DataGridTemplateColumn.Header>
+                        <TextBlock Text="Max"
+                                   ToolTipService.InitialShowDelay="0"
+                                   ToolTip="maximum flow rate, sccm"/>
+                    </DataGridTemplateColumn.Header>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
 
         <Button Grid.Row="2"
                 Content="Add"
@@ -240,10 +349,10 @@
         <WrapPanel Grid.Row="4"
                    Margin="12"
                    HorizontalAlignment="Center">
-            <Button Content="OK"
+            <Button Content="Save"
                     IsDefault="True"
                     Click="OK_Click"/>
-            <Button Content="Cancel"
+            <Button Content="Close"
                     IsCancel="True"/>
         </WrapPanel>
     </Grid>

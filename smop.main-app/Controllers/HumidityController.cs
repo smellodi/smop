@@ -42,8 +42,11 @@ internal class HumidityController
 
     // Internal
 
-    const float CONTROL_GAIN = 0.75f;
     const float UPDATE_INTERVAL = 5000; // ms
+    const float CONTROL_GAIN = 0.75f;
+    const float SENSITIVITY = 0.1f; // RH will not be altered if the difference with the target RH is within +-SENSITIVITY range
+    const float RH_MIN = -2;    // allow minor negative values for RH
+    const float RH_MAX = 70;    // this is around the maximum possble RH available if 100% of the clean air flow comes from the humidification branch.
 
     static HumidityController? _instance = null;
 
@@ -107,9 +110,16 @@ internal class HumidityController
     private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs? e)
     {
         var diff = _targetHumidity - (_measuredHumidity ?? _targetHumidity);
-        if (Math.Abs(diff) > 0.1)
+        if (Math.Abs(diff) > SENSITIVITY)
         {
             _currentHumidity += CONTROL_GAIN * diff;
+            
+            // Limit the value
+            if (_currentHumidity < RH_MIN)
+                _currentHumidity = RH_MIN;
+            else if (_currentHumidity > RH_MAX)
+                _currentHumidity = RH_MAX;
+
             _ctrl.SetHumidity(_currentHumidity);
             System.Diagnostics.Debug.WriteLine($"[HC] Corrected humidity: {_currentHumidity:F2}");
         }

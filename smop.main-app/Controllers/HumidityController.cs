@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Smop.MainApp.Logging;
+using Smop.MainApp.Utils;
+using System;
 using System.Linq;
 
 namespace Smop.MainApp.Controllers;
@@ -29,7 +31,7 @@ internal class HumidityController
         set 
         {
             _targetHumidity = value;
-            System.Diagnostics.Debug.WriteLine($"[HC] Target humidity: {_targetHumidity:F2}");
+            _nlog.Info(LogIO.Text(Timestamp.Ms, "Target humidity", _targetHumidity));
             if (_timer.Enabled)
             {
                 _timer.Stop();
@@ -49,6 +51,8 @@ internal class HumidityController
     const float RH_MAX = 70;    // this is around the maximum possble RH available if 100% of the clean air flow comes from the humidification branch.
 
     static HumidityController? _instance = null;
+
+    static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumidityController));
 
     readonly OdorDisplayController _ctrl = new();
     readonly System.Timers.Timer _timer = new();
@@ -81,7 +85,7 @@ internal class HumidityController
     private void Start()
     {
         _currentHumidity = _targetHumidity;
-        System.Diagnostics.Debug.WriteLine($"[HC] Current humidity: {_measuredHumidity:F2}");
+        _nlog.Info(LogIO.Text(Timestamp.Ms, "Humidity at start", _measuredHumidity));
 
         _timer.Start();
         Timer_Elapsed(this, null);
@@ -121,7 +125,7 @@ internal class HumidityController
                 _currentHumidity = RH_MAX;
 
             _ctrl.SetHumidity(_currentHumidity);
-            System.Diagnostics.Debug.WriteLine($"[HC] Corrected humidity: {_currentHumidity:F2}");
+            _nlog.Info(LogIO.Text(Timestamp.Ms, "Set humidity", _currentHumidity));
         }
     }
 }

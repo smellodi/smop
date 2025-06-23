@@ -184,10 +184,14 @@ public partial class MainWindow : Window
         {
             if (sender == _humanTestsComparisonPage)
             {
-                _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsOneOutPage.Name));
+                //_nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsOneOutPage.Name));
 
-                Content = _humanTestsOneOutPage;
-                _humanTestsOneOutPage.Start(_humanTestsComparisonPage.Settings!);
+                //Content = _humanTestsOneOutPage;
+                //_humanTestsOneOutPage.Start(_humanTestsComparisonPage.Settings!);
+
+                _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsRatingPage.Name));
+                Content = _humanTestsRatingPage;
+                _humanTestsRatingPage.Start(_humanTestsComparisonPage.Settings!);
             }
             else if (sender == _humanTestsOneOutPage)
             {

@@ -1,14 +1,15 @@
 ﻿using Smop.Common;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ODPackets = Smop.OdorDisplay.Packets;
 using IV = Smop.IonVision;
-using Smop.MainApp.Dialogs;
-using System.IO;
+using ODPackets = Smop.OdorDisplay.Packets;
 
 namespace Smop.MainApp.Controllers;
 
@@ -85,7 +86,7 @@ public class OdorReproducerController
         var cachedDmsScan = _dmsCache.Find(recipe, out string? dmsFilename);
 
         // send command to OD
-        if (cachedDmsScan == null)
+        if (cachedDmsScan == null && !recipe.IsFinal)
         {
             var actuators = recipe.ToOdorPrinterActuators();
             if (actuators.Length > 0)
@@ -124,7 +125,7 @@ public class OdorReproducerController
 
             if (_odorDisplayLogger.HasRecords)
             {
-                var (result, folder) = Logger.Save(new ILog[] { _odorDisplayLogger });
+                var (result, folder) = Logger.Save(new ILog[] { _odorDisplayLogger, _ionVisionLogger });
                 if (result == SavingResult.None)
                 {
                     MsgBox.Warn(App.Name, "No data to save", MsgBox.Button.OK);
@@ -187,6 +188,7 @@ public class OdorReproducerController
     readonly OdorDisplay.CommPort _odorDisplay = OdorDisplay.CommPort.Instance;
     readonly SmellInsp.DataCollector _sntDataCollector = new();
     readonly OdorDisplayLogger _odorDisplayLogger = OdorDisplayLogger.Instance;
+    readonly IonVisionLogger _ionVisionLogger = IonVisionLogger.Instance;
 
     readonly OdorDisplayController _odController = new();
     readonly PauseEstimator _pauseEstimator = new();
@@ -310,6 +312,11 @@ public class OdorReproducerController
             if (useDelays)
                 await Task.Delay(300);
             LogIO.Add(await ionVision.GetScanResult(), "GetScanResult", out IV.Defs.ScanResult? scan);
+
+            if (scan != null)
+            {
+                _ionVisionLogger.Add(scan);
+            }
 
             return scan;
         }

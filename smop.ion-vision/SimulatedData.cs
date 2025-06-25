@@ -67,12 +67,12 @@ public static class SimulatedData
                 1
             ),
             new PointConfiguration(
-                MakeArray((row, col) => USV_START + row * (USV_STOP - USV_START) / (DATA_ROWS - 1)),
-                MakeArray((row, col) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_COLS - 1)),
-                MakeArray((row, col) => VB_START),
-                MakeArray((row, col) => DATA_PP),
-                MakeArray((row, col) => DATA_PW),
-                MakeArray((row, col) => DATA_SAMPLE_COUNT)
+                MakeArray((col, row) => USV_START + row * (USV_STOP - USV_START) / (DATA_ROWS - 1)),
+                MakeArray((col, row) => UCV_START + col * (UCV_STOP - UCV_START) / (DATA_COLS - 1)),
+                MakeArray((col, row) => VB_START),
+                MakeArray((col, row) => DATA_PP),
+                MakeArray((col, row) => DATA_PW),
+                MakeArray((col, row) => DATA_SAMPLE_COUNT)
             )
         ),
         6
@@ -86,48 +86,48 @@ public static class SimulatedData
     };
 
     public static ScanResult ScanResult => new(
-        Guid.NewGuid().ToString(),
-        User.Name,
-        DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
-        DateTime.Now.ToString("yyyy-MM-ddTHH-mm-ss.fffZ"),
-        Parameter1.Id,
-        Project1.Name,
-        new(),
-        3,
+        Id: Guid.NewGuid().ToString(),
+        Measurer: User.Name,
+        StartTime: DateTime.Now.AddSeconds(-10).ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+        FinishTime: DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+        Parameters: Parameter1.Id,
+        Project: Project1.Name,
+        Comments: new(),
+        FormatVersion: 3,
         new SystemData(
-            new ErrorRegister(false, false, false, false, false, false,
+            ErrorRegister: new ErrorRegister(false, false, false, false, false, false,
                 false, false,
                 true, false, false, false, false, false, false, false,
                 true, false, false, false, false, false, false, false,
                 false, false,
                 false, false
             ),
-            new(0, 17657, 0),
-            new FlowDetector(
-                new(0.11, 301.26, 0),
-                new(21.81, 0, 21.75),
-                new(1100, 21.78, 1018.5),
-                new(20.12, 0.67, 17.84),
-                new(90, 30, 90)
+            FetTemperature: new(23.8, 23.63, 23.97),
+            Sample: new FlowDetector(
+                Flow: new(2.11, 2.07, 2.12),
+                Temperature: new(21.81, 21.70, 21.83),
+                Pressure: new(1100, 1018.5, 1102),
+                Humidity: new(20.12, 19.98, 21.03),
+                PumpPWM: new(90, 90, 90)
             ),
-            new FlowDetector(
-                new(3.92, 578.74, 3.29),
-                new(21.68, 589.82, 21.6),
-                new(1019.96, 21.68, 960.51),
-                new(17.4, 2.16, 0.93),
-                new(90, 1, 90)
+            Sensor: new FlowDetector(
+                Flow: new(2.11, 2.07, 2.12),
+                Temperature: new(21.81, 21.70, 21.83),
+                Pressure: new(1100, 1018.5, 1102),
+                Humidity: new(20.12, 19.98, 21.03),
+                PumpPWM: new(90, 90, 90)
             ),
-            new Detector(
-                new(26, 589.82, 25.94),
-                new(1017.33, 25.99, 1017.12),
-                new(17.34, 99.34, 17.24)
+            Ambient: new Detector(
+                Temperature: new(21.81, 21.70, 21.83),
+                Pressure: new(1100, 1018.5, 1102),
+                Humidity: new(20.12, 19.98, 21.03)
             )
         ),
         new MeasurementData(
-            true,
-            Usv.Steps * Ucv.Steps,
-            MakeArray(GetImitatedPixel),
-            MakeArray((x, y) => 100f * x),
+            DataValid: true,
+            DataPoints: Usv.Steps * Ucv.Steps,
+            IntensityTop: MakeArray(GetImitatedPixel),
+            IntensityBottom: MakeArray((x, y) => 100f * x),
             ParameterDefinition.MeasurementParameters.PointConfiguration.Usv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Ucv,
             ParameterDefinition.MeasurementParameters.PointConfiguration.Vb,

@@ -27,6 +27,7 @@
                     <ColumnDefinition Width="151*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBox x:Name="txbSetupFile" Grid.Column="0" Grid.ColumnSpan="2"
                          Margin="4,0"
@@ -37,8 +38,15 @@
                         Width="32"
                         Height="32"
                         ToolTip="Select a Pulse Generator setup file"
-                        Click="ChoosePulseSetupFile_Click"/>
+                        Click="LoadPulseSetupFile_Click"/>
                 <Button Grid.Column="3"
+                        Content="//"
+                        Width="32"
+                        Height="32"
+                        Margin="2,0,0,0"
+                        ToolTip="Load a Pulse Generator setup file from server"
+                        Click="LoadPulseSetupFileFromServer_Click"/>
+                <Button Grid.Column="4"
                         Margin="2,0,0,0"
                         Width="32"
                         Height="32"
@@ -53,6 +61,11 @@
                   Content="Randomize pulse order"
                   Checked="Randomize_CheckedChanged"
                   Unchecked="Randomize_CheckedChanged"/>
+        <CheckBox x:Name="chkSaveDmsToServer"
+                  Content="Save collected DMS data to server"
+                  Checked="SaveToServer_Checked"
+                  Unchecked="SaveToServer_Checked"/>
+
 
         <Separator Margin="0,8,0,0"/>
         <StackPanel Grid.Column="0">

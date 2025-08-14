@@ -100,7 +100,7 @@ public class SetupController
         LogOD?.Invoke(this, new LogHandlerArgs("Cleaning up: started."));
 
         var setupFilename = _storage.Simulating.HasFlag(SimulationTarget.OdorDisplay) ? "debug.txt" : $"{filename}.txt";
-        var setup = PulseSetup.Load(Path.Combine("Assets", "cleanup", setupFilename));
+        var setup = PulseSetup.LoadFromFile(Path.Combine("Assets", "cleanup", setupFilename));
         if (setup != null)
         {
             using var controller = new PulseController(setup, null);
@@ -365,45 +365,55 @@ public class SetupController
 
         if (File.Exists(filename) && ParamDefinition != null)
         {
-            bool isDmsSingleVS = Properties.Settings.Default.Reproduction_DmsSingleSV > 0;
-
-            int expectedDataSize = isDmsSingleVS ? IVDefs.ScopeParameters.DATA_SIZE : 
-                ParamDefinition.MeasurementParameters.SteppingControl.Usv.Steps * ParamDefinition.MeasurementParameters.SteppingControl.Ucv.Steps;
+            bool isDmsSingleSV = Properties.Settings.Default.Reproduction_DmsSingleSV > 0;
 
             using StreamReader reader = new(filename);
             var json = reader.ReadToEnd();
-
-            int? loadedDataSize = null;
-            if (isDmsSingleVS)
-            {
-                try
-                {
-                    var dms = JsonSerializer.Deserialize<IVDefs.ScopeResult>(json);
-                    loadedDataSize = dms?.IntensityTop?.Length;
-                    result = dms;
-                }
-                catch { }
-            }
-            else
-            {
-                try
-                {
-                    var dms = JsonSerializer.Deserialize<IVDefs.ScanResult>(json);
-                    loadedDataSize = dms?.MeasurementData?.IntensityTop.Length;
-                    result = dms;
-                }
-                catch { }
-            }
-
-            if (loadedDataSize != expectedDataSize)
-            {
-                result = null;
-                MsgBox.Error(App.Name, "The DMS data size does not match the size defined in the current parameter");
-            }
-
-            DmsScan = result;
+            result = LoadDmsFromJson(json, isDmsSingleSV);
         }
 
+        return result;
+    }
+
+    public Common.IMeasurement? LoadDmsFromJson(string json, bool isDmsSingleSV = false)
+    {
+        int? loadedDataSize = null;
+        Common.IMeasurement? result = null;
+
+        if (isDmsSingleSV)
+        {
+            try
+            {
+                var dms = JsonSerializer.Deserialize<IVDefs.ScopeResult>(json);
+                loadedDataSize = dms?.IntensityTop?.Length;
+                result = dms;
+            }
+            catch { }
+        }
+        else
+        {
+            try
+            {
+                var dms = JsonSerializer.Deserialize<IVDefs.ScanResult>(json);
+                loadedDataSize = dms?.MeasurementData?.IntensityTop.Length;
+                result = dms;
+            }
+            catch { }
+        }
+
+        int expectedDataSize = 0;
+        if (ParamDefinition?.MeasurementParameters.SteppingControl is IVDefs.SteppingControl sc)
+            expectedDataSize = isDmsSingleSV ? 
+                IVDefs.ScopeParameters.DATA_SIZE :
+                sc.Usv.Steps * sc.Ucv.Steps;
+
+        if (expectedDataSize > 0 && loadedDataSize != expectedDataSize)
+        {
+            result = null;
+            MsgBox.Error(App.Name, "The DMS data size does not match the size defined in the current parameter");
+        }
+
+        DmsScan = result;
         return result;
     }
 

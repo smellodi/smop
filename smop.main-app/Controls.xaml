@@ -399,7 +399,7 @@
                                 Width="{Binding ActualHeight, ElementName=Decorator}">
                                 <Border Name="CheckOuter"
                                         Margin="4"
-                                        Background="Transparent"
+                                        Background="{TemplateBinding Background}"
                                         BorderBrush="{TemplateBinding BorderBrush}"
                                         BorderThickness="{TemplateBinding BorderThickness}"
                                         CornerRadius="2"/>

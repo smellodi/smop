@@ -230,6 +230,9 @@ public partial class Pulse : Page, IPage<Navigation>, IDisposable, INotifyProper
 
         if (stage == PulseStage.Finished)
         {
+            if (Properties.Settings.Default.Pulses_SaveDmsToServer)
+                _controller?.SaveDmsToServer();
+
             CleanUp();
             Next?.Invoke(this, Navigation.Finished);
         }

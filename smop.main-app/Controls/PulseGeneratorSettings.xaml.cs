@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Smop.Common;
 using Smop.MainApp.Controllers;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Utils;
 using Smop.MainApp.Utils.Extensions;
 using System;
@@ -96,22 +97,8 @@ public partial class PulseGeneratorSettings : UserControl
         _currentInput = input;
     }
 
-    private void LoadPulseSetup(string filename)
+    private void SetSetup(PulseSetup? setup, string filename, bool isLocal)
     {
-        _setupFileName = null;
-
-        if (string.IsNullOrEmpty(filename))
-        {
-            DispatchOnce.Do(0.5, () => Dispatcher.Invoke(() => EditPulseSetup_Click(this, new RoutedEventArgs())));
-            return;
-        }
-
-        if (!File.Exists(filename))
-        {
-            return;
-        }
-
-        Setup = PulseSetup.Load(filename);
         if (Setup == null)
         {
             return;
@@ -127,16 +114,38 @@ public partial class PulseGeneratorSettings : UserControl
         txbSetupFile.ToolTip = _setupFileName;
         txbSetupFile.ScrollToHorizontalOffset(double.MaxValue);
 
-        var settings = Properties.Settings.Default;
-        settings.Pulses_SetupFilename = _setupFileName;
-        settings.Save();
+        if (isLocal)
+        {
+            var settings = Properties.Settings.Default;
+            settings.Pulses_SetupFilename = _setupFileName;
+            settings.Save();
+        }
 
         SetupChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    private void LoadPulseSetup(string filename)
+    {
+        _setupFileName = null;
+
+        if (string.IsNullOrEmpty(filename))
+        {
+            DispatchOnce.Do(0.5, () => Dispatcher.Invoke(() => EditPulseSetup_Click(this, new RoutedEventArgs())));
+            return;
+        }
+
+        if (!File.Exists(filename))
+        {
+            return;
+        }
+
+        Setup = PulseSetup.LoadFromFile(filename);
+        SetSetup(Setup, filename, true);
+    }
+
     // UI
 
-    private void ChoosePulseSetupFile_Click(object? sender, RoutedEventArgs e)
+    private void LoadPulseSetupFile_Click(object? sender, RoutedEventArgs e)
     {
         var settings = Properties.Settings.Default;
         var ofd = new OpenFileDialog
@@ -150,6 +159,50 @@ public partial class PulseGeneratorSettings : UserControl
         {
             var filename = IoHelper.GetShortestFilePath(ofd.FileName);
             LoadPulseSetup(filename);
+        }
+    }
+
+    private async void LoadPulseSetupFileFromServer_Click(object? sender, RoutedEventArgs e)
+    {
+        string text = string.Empty;
+        string filename = string.Empty;
+
+        try
+        {
+            GoogleDriveService gdrive = GoogleDriveService.Instance;
+            var files = gdrive.Texts;
+
+            if (files.Length > 0)
+            {   
+                var filePicker = new GoogleDriveFilePicker(files);
+                if (filePicker.ShowDialog() == true)
+                {
+                    var id = filePicker.SelectedFile?.Id;
+                    if (!string.IsNullOrEmpty(id))
+                    {
+                        filename = filePicker.SelectedFile!.Name;
+                        text = await gdrive.ReadFile(id);
+                    }
+                }
+            }
+            else
+            {
+                MsgBox.Error(App.Name, "No recipe files found in Google Drive");
+            }
+        }
+        catch (ApplicationException ex)
+        {
+            MsgBox.Error(App.Name, "Failed to access Google Drive service. Please check your credentials and try again.");
+        }
+        catch (Exception ex)
+        {
+            MsgBox.Error(App.Name, $"Unexpected error while accessing Google Drive service: {ex.Message}");
+        }
+
+        if (!string.IsNullOrEmpty(text))
+        {
+            Setup = PulseSetup.LoadFromContent(text);
+            SetSetup(Setup, filename, isLocal: false);
         }
     }
 
@@ -187,10 +240,18 @@ public partial class PulseGeneratorSettings : UserControl
     {
         var settings = Properties.Settings.Default;
         chkRandomize.IsChecked = settings.Pulses_Randomize;
+        chkSaveDmsToServer.IsChecked = settings.Pulses_SaveDmsToServer;
 
         if (Visibility == Visibility.Visible)
         {
             LoadPulseSetup(settings.Pulses_SetupFilename.Trim());
         }
+    }
+
+    private void SaveToServer_Checked(object sender, RoutedEventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+        settings.Pulses_SaveDmsToServer = chkSaveDmsToServer.IsChecked == true;
+        settings.Save();
     }
 }

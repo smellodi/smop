@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Smop.MainApp.Controllers;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -84,6 +85,10 @@ public partial class App : Application
         EventManager.RegisterClassHandler(typeof(TextBox),
             UIElement.GotFocusEvent,
             new RoutedEventHandler(TextBox_GotFocus));
+
+        // Initialize Goolge Drive service
+        var gdrive = GoogleDriveService.Instance;
+        gdrive.Initialize();
     }
 
     private void TextBox_GotFocus(object sender, RoutedEventArgs e)

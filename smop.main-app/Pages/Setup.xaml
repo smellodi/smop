@@ -360,11 +360,18 @@
                             Margin="0,8,0,0"
                             Content="Measure"
                             Click="TargetMeasure_Click"/>
-                    <Button x:Name="btnTargetLoad"
-                            IsEnabled="False"
-                            Margin="0,8,0,0"
-                            Content="Load..."
-                            Click="TargetLoad_Click"/>
+                    <UniformGrid Columns="2">
+                        <Button x:Name="btnTargetLoad"
+                                IsEnabled="False"
+                                Margin="0,8,4,0"
+                                Content="Load from disk..."
+                                Click="TargetLoad_Click"/>
+                        <Button x:Name="btnTargetLoadFromServer"
+                                IsEnabled="False"
+                                Margin="4,8,0,0"
+                                Content="Load from server..."
+                                Click="TargetLoadFromServer_Click"/>
+                    </UniformGrid>
                 </StackPanel>
             </Grid>
         </Grid>

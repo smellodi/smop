@@ -1,4 +1,7 @@
-﻿namespace Smop.IonVision.Defs;
+﻿using System.Collections.Generic;
+using System.Text.Json;
+
+namespace Smop.IonVision.Defs;
 
 public record class RangeAvg(
     double Avg,
@@ -47,4 +50,37 @@ public record class ScanResult(
     int FormatVersion,
     SystemData SystemData,
     MeasurementData MeasurementData
-) : Common.IMeasurement;
+) : Common.IMeasurement
+{
+    public string Info
+    {
+        get
+        {
+            List<string> lines = new()
+            {
+                $"Timestamp: {StartTime.Replace('T', ' ').Replace('Z', ' ')}"
+            };
+
+            float uc = MeasurementData.Usv[0];
+            int cols = 1;
+            while (cols < MeasurementData.DataPoints && uc == MeasurementData.Usv[cols])
+                cols += 1;
+            int rows = MeasurementData.DataPoints / cols;
+            lines.Add($"Size: {rows} x {cols}");
+
+            if (Comments != null)
+            {
+                JsonSerializerOptions options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                };
+                var comments = JsonSerializer.Serialize(Comments, options);
+                if (comments != "{}")
+                    lines.Add($"Comments: \n{comments}");
+            }
+
+            return string.Join("\n", lines);
+        }
+    }
+}

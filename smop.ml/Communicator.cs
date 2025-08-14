@@ -88,7 +88,7 @@ public class Communicator : IDisposable
         }
     }
 
-    public void LaunchMlExe(string cmdParams)
+    public void LaunchMl(string cmdParams)
     {
         if (_server is LocalServer localServer)
         {

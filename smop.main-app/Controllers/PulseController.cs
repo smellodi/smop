@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Smop.MainApp.Controllers;
 
@@ -102,6 +103,39 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         _odorDisplay.StopFlows(channelIDs.ToArray());
     }
 
+    public async Task SaveDmsToServer()
+    {
+        if (_dmses.Count == 0)
+            return;
+
+        var dmsSaveDialog = new Dialogs.DmsSaveDialog(_dmses);
+        if (dmsSaveDialog.ShowDialog() == false)
+            return;
+
+        var dmsDataList = dmsSaveDialog.Items;
+
+        try
+        {
+            var gdrive = GoogleDriveService.Instance;
+
+            foreach (var dmsData in dmsDataList)
+            {
+                if (dmsData.IsEnabled)
+                    await gdrive.Create($"{dmsData.Name}.json", System.Text.Json.JsonSerializer.Serialize(dmsData.Data));
+            }
+        }
+        catch (ApplicationException ex)
+        {
+            _nlog.Error(ex, "Failed to access Google Drive service.");
+            MessageBox.Show("Failed to access Google Drive service. Please check your credentials and try again.", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        catch (Exception ex)
+        {
+            _nlog.Error(ex, $"Unexpected error while accessing Google Drive service: {ex.Message}");
+            MessageBox.Show($"Unexpected error while accessing Google Drive service: {ex.Message}", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     // Internal
 
     static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(PulseController));
@@ -110,6 +144,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
     readonly OdorDisplayController _odorDisplay = new();
     readonly IonVision.Communicator? _ionVision = ionVision;
+    readonly List<IonVision.Defs.ScanResult> _dmses = [];
 
     readonly PulseSetup _setup = setup;
 
@@ -279,6 +314,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
             if ((scan?.Success ?? false) && (scan.Value != null))
             {
                 _ionVisionLogger.Add(scan.Value);
+                _dmses.Add(scan.Value);
             }
         }
     }

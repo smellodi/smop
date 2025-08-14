@@ -89,7 +89,7 @@ public partial class Setup : Page, IPage<object?>
                 _ctrl.EnumOdorChannels(odorReproductionSettings.AddOdorChannel);
             }
 
-            App.ML?.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
+            App.ML?.LaunchMl(Properties.Settings.Default.Reproduction_ML_CmdParams);
         }
         else if (task == TaskType.HumanTests)
         {
@@ -226,6 +226,7 @@ public partial class Setup : Page, IPage<object?>
                 !_isOdorDisplayCleaningRunning &&
                 !isMeasuringSomething;
             btnTargetLoad.IsEnabled = btnTargetMeasure.IsEnabled;
+            btnTargetLoadFromServer.IsEnabled = btnTargetMeasure.IsEnabled && App.IonVision != null;
             stpTargetOdorActions.IsEnabled = !isMeasuringSomething;
 
             odorReproductionSettings.MLStatus = App.ML != null && _mlIsConnected ? App.ML.ConnectionMean.ToString() : "not connected";
@@ -489,7 +490,7 @@ public partial class Setup : Page, IPage<object?>
 
         if (App.ML != null && App.ML.CmdParams != settings.Reproduction_ML_CmdParams)
         {
-            App.ML.LaunchMlExe(settings.Reproduction_ML_CmdParams);
+            App.ML.LaunchMl(settings.Reproduction_ML_CmdParams);
         }
 
         //if (!_ctrl.SetHumidityLevel(Settings.Humidity))
@@ -528,7 +529,7 @@ public partial class Setup : Page, IPage<object?>
 
         if (App.ML != null && App.ML.CmdParams != Properties.Settings.Default.Reproduction_ML_CmdParams)
         {
-            App.ML.LaunchMlExe(Properties.Settings.Default.Reproduction_ML_CmdParams);
+            App.ML.LaunchMl(Properties.Settings.Default.Reproduction_ML_CmdParams);
         }
 
         var ofd = new Microsoft.Win32.OpenFileDialog();
@@ -570,6 +571,64 @@ public partial class Setup : Page, IPage<object?>
             else if (System.IO.Path.GetExtension(ofd.FileName).ToLower() == ".txt")
             {
                 _ctrl.LoadSnt(ofd.FileName);
+            }
+        }
+
+        UpdateUI();
+    }
+
+    private async void TargetLoadFromServer_Click(object sender, RoutedEventArgs e)
+    {
+        UpdateUI();
+
+        if (App.ML != null && App.ML.CmdParams != Properties.Settings.Default.Reproduction_ML_CmdParams)
+        {
+            App.ML.LaunchMl(Properties.Settings.Default.Reproduction_ML_CmdParams);
+        }
+
+        string json = string.Empty;
+        try
+        {
+            GoogleDriveService gdrive = GoogleDriveService.Instance;
+            var files = gdrive.Jsons;
+
+            if (files.Length > 0)
+            {
+                var filePicker = new GoogleDriveFilePicker(files);
+                if (filePicker.ShowDialog() == true)
+                {
+                    var id = filePicker.SelectedFile?.Id;
+                    if (!string.IsNullOrEmpty(id))
+                        json = await gdrive.ReadFile(id);
+                }
+            }
+            else
+            {
+                MsgBox.Error(Title, "No files found in Google Drive");
+            }
+        }
+        catch (ApplicationException ex)
+        {
+            _nlog.Error(ex, "Failed to access Google Drive service.");
+            MsgBox.Error(Title, "Failed to access Google Drive service. Please check your credentials and try again.");
+        }
+        catch (Exception ex)
+        {
+            _nlog.Error(ex, $"Unexpected error while accessing Google Drive service: {ex.Message}");
+            MsgBox.Error(Title, $"Unexpected error while accessing Google Drive service: {ex.Message}");
+        }
+
+        if (!string.IsNullOrEmpty(json))
+        {
+            var scan = _ctrl.LoadDmsFromJson(json);
+            if (scan is IonVision.Defs.ScanResult fullScan)
+            {
+                _dmsScans.Add(fullScan);
+
+                if (_dmsPlotType == Plot.ComparisonOperation.None || _dmsScans.Count > 1)
+                {
+                    ShowDmsPlot();
+                }
             }
         }
 

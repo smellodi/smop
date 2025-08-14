@@ -1,6 +1,8 @@
 ﻿using Smop.Common;
 using Smop.MainApp.Controllers;
 using Smop.MainApp.Controls;
+using Smop.MainApp.Dialogs;
+using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -110,6 +112,8 @@ public partial class Reproduction : Page, IPage<Navigation>
             AddFlowsRecordToSearchSpaceTable(channelNames, "Dist");
         }
 
+        btnSaveRecipe.Visibility = Visibility.Hidden;
+
         DispatchOnce.Do(0.4, () => Dispatcher.Invoke(() =>
         {
             _plotScale = config.TargetMeasurement switch
@@ -194,6 +198,7 @@ public partial class Reproduction : Page, IPage<Navigation>
     OdorReproducerController.Config? _procConfig = null;
 
     ActiveElement _activeElement = ActiveElement.None;
+    ML.Recipe? _finalRecipe = null;
 
     float _plotScale = 0;
 
@@ -412,9 +417,15 @@ public partial class Reproduction : Page, IPage<Navigation>
             SetActiveElement(recipe.IsFinal ? ActiveElement.None : ActiveElement.OdorDisplay);
 
             if (recipe.IsFinal)
+            {
                 adaAnimation.Visibility = Visibility.Collapsed;
+                btnSaveRecipe.Visibility = Visibility.Visible;
+                _finalRecipe = recipe;
+            }
             else
+            {
                 adaAnimation.Next();
+            }
         });
     }
 
@@ -630,6 +641,26 @@ public partial class Reproduction : Page, IPage<Navigation>
             .UnbindScaleToZoomLevel(sctScale)
             .UnbindContentToZoomLevel(lblZoom)
             .UnbindVisibilityToDebug(lblDebug);
+    }
+
+    private void SaveRecipe_Click(object sender, RoutedEventArgs e)
+    {
+        if (_finalRecipe == null)
+            return;
+
+        var recipeName = InputBox.Show(Title, "Enter the recipe name.", "") ?? "";
+        if (!string.IsNullOrEmpty(recipeName))
+        {
+            var humidity = Properties.Settings.Default.Setup_Humidity;
+            string pulse = $"init: humidity={humidity:F0} delay=15 duration=30 final=15\npulse:";
+            foreach (var ch in _finalRecipe.Channels ?? [])
+            {
+                pulse += $" {ch.Id}={ch.Flow:F1}";
+            }
+
+            var gdrive = GoogleDriveService.Instance;
+            gdrive.Create($"{recipeName.ToPath()}.txt", pulse);
+        }
     }
 
     private void Continue_Click(object sender, RoutedEventArgs e)

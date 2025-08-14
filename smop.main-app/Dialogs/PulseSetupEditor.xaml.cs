@@ -160,7 +160,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     public void Load(string filename)
     {
-        var setup = PulseSetup.Load(filename);
+        var setup = PulseSetup.LoadFromFile(filename);
         if (setup != null)
         {
             Filename = filename;

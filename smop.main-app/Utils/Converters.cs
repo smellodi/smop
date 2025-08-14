@@ -1,7 +1,8 @@
-﻿using Smop.MainApp.Controllers.HumanTests;
-using Smop.MainApp.Pages;
+﻿using Smop.MainApp.Controllers;
+using Smop.MainApp.Controllers.HumanTests;
 using System;
 using System.Globalization;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Data;
 
@@ -153,4 +154,18 @@ public class TrialStageToBoxBrush : IValueConverter
     }
 
     public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => new TrialStage(Stage.Initial, 0);
+}
+
+public class ItemToDmsInfo : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        IonVision.Defs.ScanResult? dms = null;
+        if (value is Dialogs.DmsSaveDialog.DmsData dmsData)
+            return dmsData.Data.Info;
+        
+        return string.Empty;
+    }
+
+    public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
 }

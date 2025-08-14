@@ -108,19 +108,38 @@ public class PulseSetup
 {
     public SessionProps[] Sessions { get; init; } = Array.Empty<SessionProps>();
 
-    public static PulseSetup? Load(string filename)
+    public static PulseSetup? LoadFromFile(string filename)
+    {
+        string content;
+
+        try
+        {
+            using (var reader = new StreamReader(filename))
+            {
+                content = reader.ReadToEnd();
+            }
+        }
+        catch (Exception ex)
+        {
+            _nlog.Error(ex, "Cannot read or parse the pulse setup file");
+            MsgBox.Error(App.Name, $"Cannot read or parse the pulse setup file:\n{ex.Message}");
+            return null;
+        }
+
+        return LoadFromContent(content);
+    }
+
+    public static PulseSetup? LoadFromContent(string content)
     {
         var sessions = new List<SessionProps>();
         SessionProps? lastSession = null;
 
         try
-        {
+        { 
             var linesWithInvalidData = new List<int>();
 
-            using var reader = new StreamReader(filename);
             int lineIndex = 0;
-
-            foreach (var line in reader.ReadToEnd().Split('\n').Where(p => !string.IsNullOrEmpty(p)).ToArray())
+            foreach (var line in content.Split('\n').Where(p => !string.IsNullOrEmpty(p)).ToArray())
             {
                 lineIndex += 1;
 

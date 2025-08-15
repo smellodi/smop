@@ -88,7 +88,7 @@ public partial class App : Application
 
         // Initialize Goolge Drive service
         var gdrive = GoogleDriveService.Instance;
-        gdrive.Initialize();
+        _ = gdrive.Initialize();
     }
 
     private void TextBox_GotFocus(object sender, RoutedEventArgs e)

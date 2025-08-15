@@ -230,7 +230,7 @@ public class COMUtils : IDisposable
             ManagementBaseObject[]? records = searcher.Get().Cast<ManagementBaseObject>().ToArray();
             ports = records.Select(rec =>
                 {
-                    var id = rec["DeviceID"]?.ToString();
+                    var id = rec["DeviceID"]?.ToString() ?? string.Empty;
                     var name =
                         portNames.FirstOrDefault(name => rec["Caption"]?.ToString()?.Contains($"({name})") ?? false) ??
                         portNames.FirstOrDefault(name => rec["DeviceID"]?.ToString()?.Contains($"{name}") ?? false) ??

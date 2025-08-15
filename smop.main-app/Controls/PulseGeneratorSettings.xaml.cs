@@ -190,7 +190,7 @@ public partial class PulseGeneratorSettings : UserControl
                 MsgBox.Error(App.Name, "No recipe files found in Google Drive");
             }
         }
-        catch (ApplicationException ex)
+        catch (ApplicationException)
         {
             MsgBox.Error(App.Name, "Failed to access Google Drive service. Please check your credentials and try again.");
         }

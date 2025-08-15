@@ -51,8 +51,8 @@
 
         <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140"/>
                 <ColumnDefinition/>
-                <ColumnDefinition Width="108"/>
             </Grid.ColumnDefinitions>
             <CheckBox x:Name="chkPractice" Grid.Column="0"
                       Content="Practicing"

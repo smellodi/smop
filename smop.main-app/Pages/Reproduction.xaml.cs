@@ -659,7 +659,7 @@ public partial class Reproduction : Page, IPage<Navigation>
             }
 
             var gdrive = GoogleDriveService.Instance;
-            gdrive.Create($"{recipeName.ToPath()}.txt", pulse);
+            _ = gdrive.Create($"{recipeName.ToPath()}.txt", pulse);
         }
     }
 

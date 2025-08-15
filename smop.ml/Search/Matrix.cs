@@ -423,7 +423,7 @@ public class Matrix<T> : IEnumerable<T>, IEnumerator<T>
         return new(a.RowCount, a.ColumnCount, (r, c) => a[r, c] + b[r, c]);
     }
 
-    public static bool operator ==(Matrix<T> a, Matrix<T> b)
+    public static bool operator ==(Matrix<T>? a, Matrix<T>? b)
     {
         if (a is null && b is null)
             return true;
@@ -432,7 +432,7 @@ public class Matrix<T> : IEnumerable<T>, IEnumerator<T>
         if (a is not null && b is null)
             return false;
 
-        if (a.RowCount != b.RowCount || a.ColumnCount != b.ColumnCount)
+        if (a!.RowCount != b!.RowCount || a.ColumnCount != b.ColumnCount)
             return false;
 
         for (int r = 0; r < a.RowCount; r++)

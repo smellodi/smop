@@ -160,7 +160,6 @@ public class ItemToDmsInfo : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        IonVision.Defs.ScanResult? dms = null;
         if (value is Dialogs.DmsSaveDialog.DmsData dmsData)
             return dmsData.Data.Info;
         

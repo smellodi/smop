@@ -276,7 +276,7 @@ public partial class Setup : Page, IPage<object?>
         }
         catch (Exception ex)
         {
-            MsgBox.Error("DMS scan", ex.Message);
+            MsgBox.Error(App.Name, $"Cannot create DMS plot: {ex.Message}");
         }
     }
 
@@ -472,7 +472,7 @@ public partial class Setup : Page, IPage<object?>
         var channelsWithInvalidFlows = _ctrl.GetOdorsWithFlowOutOfRange();
         if (channelsWithInvalidFlows.Length > 0)
         {
-            MsgBox.Error(Title, $"Target flow of {string.Join(", ", channelsWithInvalidFlows)} is outside the flow range.");
+            MsgBox.Error(App.Name, $"Target flow of {string.Join(", ", channelsWithInvalidFlows)} is outside the flow range.");
             return;
         }
 
@@ -604,18 +604,18 @@ public partial class Setup : Page, IPage<object?>
             }
             else
             {
-                MsgBox.Error(Title, "No files found in Google Drive");
+                MsgBox.Error(App.Name, "Google Drive is unaccessible or has no DMS data.");
             }
         }
         catch (ApplicationException ex)
         {
             _nlog.Error(ex, "Failed to access Google Drive service.");
-            MsgBox.Error(Title, "Failed to access Google Drive service. Please check your credentials and try again.");
+            MsgBox.Error(App.Name, "Failed to access Google Drive service. Please check your credentials and try again.");
         }
         catch (Exception ex)
         {
             _nlog.Error(ex, $"Unexpected error while accessing Google Drive service: {ex.Message}");
-            MsgBox.Error(Title, $"Unexpected error while accessing Google Drive service: {ex.Message}");
+            MsgBox.Error(App.Name, $"Unexpected error while accessing Google Drive service: {ex.Message}");
         }
 
         if (!string.IsNullOrEmpty(json))
@@ -730,11 +730,11 @@ public partial class Setup : Page, IPage<object?>
         var msg = string.Join("\n", lines);
         if (chemicalLevels?.All(level => level.Level >= ChemicalLevel.Threshold) ?? false)
         {
-            MsgBox.Notify(Title, $"All odor levels are sufficient:\n\n{msg}");
+            MsgBox.Notify(App.Name, $"All odor levels are sufficient:\n\n{msg}");
         }
         else
         {
-            MsgBox.Custom(Title, $"Some odor levels are insufficient:\n\n{msg}\n\nPlease add chemicals!", MsgBox.MsgIcon.Warning, null, null, MsgBox.Button.OK);
+            MsgBox.Custom(App.Name, $"Some odor levels are insufficient:\n\n{msg}\n\nPlease add chemicals!", MsgBox.MsgIcon.Warning, null, null, MsgBox.Button.OK);
         }
 
         brdMeasurementProgress.Visibility = Visibility.Collapsed;

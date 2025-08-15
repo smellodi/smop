@@ -64,8 +64,7 @@ internal class GoogleDriveService
             _rootFolderId = CreateRootFolder();
 
         var files = await GetFiles();
-        if (files != null)
-            _files.AddRange(files);
+        _files.AddRange(files);
     }
 
     public async Task<Google.Apis.Drive.v3.Data.File> Create(string remoteFilename, string content)
@@ -99,7 +98,42 @@ internal class GoogleDriveService
         return request.ResponseBody;
     }
 
-    public async Task<Google.Apis.Drive.v3.Data.File> Upload(string localFilename, string? remoteFilename = null)
+    public Google.Apis.Drive.v3.Data.File CreateSync(string remoteFilename, string content)
+    {
+        var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+        {
+            Name = remoteFilename,
+            Parents = new List<string> { _rootFolderId } // Upload to the root folder
+        };
+
+        var mimeType = "application/octet-stream";
+        if (remoteFilename.EndsWith(".json"))
+            mimeType = "application/json";
+        else if (remoteFilename.EndsWith(".txt"))
+            mimeType = "text/plain";
+
+        FilesResource.CreateMediaUpload request;
+        byte[] byteArray = Encoding.UTF8.GetBytes(content);
+        using (var stream = new MemoryStream(byteArray))
+        {
+            request = _service.Files.Create(fileMetadata, stream, mimeType);
+            request.Fields = "id";
+            try
+            {
+                request.Upload();
+            }
+            catch { }
+        }
+
+        _files.Clear();
+        var files = GetFilesSync();
+        if (files != null)
+            _files.AddRange(files);
+
+        return request.ResponseBody;
+    }
+
+    /*public async Task<Google.Apis.Drive.v3.Data.File> Upload(string localFilename, string? remoteFilename = null)
     {
         if (string.IsNullOrEmpty(remoteFilename))
             remoteFilename = Path.GetFileName(localFilename);
@@ -131,9 +165,9 @@ internal class GoogleDriveService
             _files.AddRange(files);
 
         return request.ResponseBody;
-    }
+    }*/
 
-    public async Task<IList<Google.Apis.Drive.v3.Data.File>?> GetFiles(string? mimeType = null)
+    public async Task<IList<Google.Apis.Drive.v3.Data.File>> GetFiles(string? mimeType = null)
     {
         List<Google.Apis.Drive.v3.Data.File> result = [];
         var nextPageToken = string.Empty;
@@ -152,6 +186,34 @@ internal class GoogleDriveService
             result.AddRange(response.Files);
 
             nextPageToken = response.NextPageToken;
+
+        } while (!string.IsNullOrEmpty(nextPageToken));
+
+        return result;
+    }
+
+    public IList<Google.Apis.Drive.v3.Data.File> GetFilesSync(string? mimeType = null)
+    {
+        List<Google.Apis.Drive.v3.Data.File> result = [];
+        var nextPageToken = string.Empty;
+        var filter = $"'{_rootFolderId}' in parents"; // Filter files by the root folder
+        if (!string.IsNullOrEmpty(mimeType))
+        {
+            filter += $" and mimeType = '{mimeType}'"; // Add mime type filter if specified
+        }
+
+        do
+        {
+            var request = _service.Files.List();
+            request.Fields = "nextPageToken, files(id, name, mimeType, trashed)";
+            request.Q = filter;
+            try
+            {
+                var response = request.Execute();
+                result.AddRange(response.Files);
+                nextPageToken = response.NextPageToken;
+            }
+            catch { break; }
 
         } while (!string.IsNullOrEmpty(nextPageToken));
 
@@ -182,6 +244,13 @@ internal class GoogleDriveService
     {
         var request = _service.Files.Delete(id);
         var response = await request.ExecuteAsync();
+        Console.WriteLine($"File with ID '{id}' deleted successfully: {response}");
+    }
+
+    public void DeleteFileSync(string id)
+    {
+        var request = _service.Files.Delete(id);
+        var response = request.Execute();
         Console.WriteLine($"File with ID '{id}' deleted successfully: {response}");
     }
 

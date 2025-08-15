@@ -1,4 +1,5 @@
 ﻿using Smop.Common;
+using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using System;
 using System.Collections.Generic;
@@ -118,21 +119,35 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         {
             var gdrive = GoogleDriveService.Instance;
 
+            bool isSuccess = true;
             foreach (var dmsData in dmsDataList)
             {
                 if (dmsData.IsEnabled)
-                    await gdrive.Create($"{dmsData.Name}.json", System.Text.Json.JsonSerializer.Serialize(dmsData.Data));
+                {
+                    var file = await gdrive.Create($"{dmsData.Name}.json", System.Text.Json.JsonSerializer.Serialize(dmsData.Data));
+                    if (string.IsNullOrEmpty(file?.Id))
+                    {
+                        isSuccess = false;
+                        MsgBox.Error(App.Name, "Cannot save DMS data to Google Drive.");
+                        break;
+                    }
+                }
+            }
+
+            if (isSuccess)
+            {
+                MsgBox.Notify(App.Name, "DMS data saved to Google Drive.");
             }
         }
         catch (ApplicationException ex)
         {
             _nlog.Error(ex, "Failed to access Google Drive service.");
-            MessageBox.Show("Failed to access Google Drive service. Please check your credentials and try again.", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+            MsgBox.Error(App.Name, "Failed to access Google Drive service. Please check your credentials and try again.");
         }
         catch (Exception ex)
         {
             _nlog.Error(ex, $"Unexpected error while accessing Google Drive service: {ex.Message}");
-            MessageBox.Show($"Unexpected error while accessing Google Drive service: {ex.Message}", App.Name, MessageBoxButton.OK, MessageBoxImage.Error);
+            MsgBox.Error(App.Name, $"Unexpected error while accessing Google Drive service: {ex.Message}");
         }
     }
 

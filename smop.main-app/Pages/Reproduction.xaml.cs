@@ -658,8 +658,21 @@ public partial class Reproduction : Page, IPage<Navigation>
                 pulse += $" {ch.Id}={ch.Flow:F1}";
             }
 
-            var gdrive = GoogleDriveService.Instance;
-            _ = gdrive.Create($"{recipeName.ToPath()}.txt", pulse);
+            Task.Run(() =>
+            {
+                var gdrive = GoogleDriveService.Instance;
+                var filename = $"{recipeName.ToPath()}.txt";
+                var file = gdrive.CreateSync(filename, pulse);
+                if (string.IsNullOrEmpty(file?.Id))
+                {
+                    MsgBox.Error(App.Name, "Cannot save the recipe to Google Drive.");
+                }
+                else
+                {
+                    MsgBox.Notify(App.Name, $"The recipe '{filename}' was saved to Google Drive.");
+                    Dispatcher.Invoke(() => btnSaveRecipe.Visibility = Visibility.Hidden);
+                }
+            });
         }
     }
 

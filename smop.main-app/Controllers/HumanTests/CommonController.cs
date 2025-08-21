@@ -22,7 +22,7 @@ internal abstract class CommonController : IDisposable
     {
         Name = name;
         _settings = settings;
-        _usedChannelIds = OdorDisplayHelper.GetChannelIds(_settings.Channels);
+        _usedChannelIds = OdorDisplayHelper.GetChannelIds(_settings.Channels, Settings.Mode);
     }
 
     public void Dispose()

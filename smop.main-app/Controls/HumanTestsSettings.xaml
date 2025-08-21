@@ -178,14 +178,14 @@
 
         <Separator VerticalAlignment="Top"/>
 
-        <Grid>
+        <Grid x:Name="grdMixtures">
             <Grid.RowDefinitions>
                 <RowDefinition/>
+                <!--RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
                 <RowDefinition/>
-                <RowDefinition/>
-                <RowDefinition/>
+                <RowDefinition/-->
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
@@ -194,9 +194,8 @@
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
             
-            <Label Grid.Row="0" Grid.Column="0"
-                   Content="MIXTURES"/>
-            <Label Grid.Row="0" Grid.Column="1">Lim</Label>
+            <Label Grid.Row="0" Grid.Column="0" Content="MIXTURES"/>
+            <!--Label Grid.Row="0" Grid.Column="1">Lim</Label>
             <Label Grid.Row="0" Grid.Column="2">C-hex</Label>
             <Label Grid.Row="0" Grid.Column="3">Cit.a.</Label>
 
@@ -378,7 +377,7 @@
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>
-            </TextBox>
+            </TextBox-->
         </Grid>
     </StackPanel>
 </UserControl>

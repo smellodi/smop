@@ -34,8 +34,8 @@ public partial class KnownOdorsEditor : Window
 
     private void OK_Click(object sender, RoutedEventArgs e)
     {
-        var newKnwonOdors = new KnownOdors(Items);
-        newKnwonOdors.Save();
+        var newKnownOdors = new KnownOdors(Items);
+        newKnownOdors.Save();
         
         ChemicalLevelInspector.Save();
         

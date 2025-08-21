@@ -6,31 +6,45 @@ namespace Smop.MainApp.Controllers.HumanTests;
 
 internal static class OdorDisplayHelper
 {
-    public static int[] GetChannelIds(Dictionary<OdorDisplay.Device.ID, string> channels) => channels
-        .Where(ch =>
-            ch.Value.Contains(LIMONENE, StringComparison.CurrentCultureIgnoreCase) ||
-            ch.Value.Contains(CYCLOHEX, StringComparison.CurrentCultureIgnoreCase) ||
-            ch.Value.Contains(CITRONEL, StringComparison.CurrentCultureIgnoreCase))
-        .Select(ch => (int)ch.Key)
-        .ToArray();
-
-    public static Mixture[] GetAllMixtures(Dictionary<OdorDisplay.Device.ID, string> channels)
+    public static int[] GetChannelIds(Dictionary<OdorDisplay.Device.ID, string> channels, HumanTestsMode mode)
     {
-        static KeyValuePair<string, float>[] ToKeyValue(MixtureComponents comp) =>
-        [
-            new(LIMONENE, comp.Limonene),
-            new(CYCLOHEX, comp.Cyclohexanone),
-            new(CITRONEL, comp.CitronellylAcetate),
-        ];
-
-        var settings = new Settings();
-
-        return settings.Mixtures.Select(mix => new Mixture(mix.Name, ToKeyValue(mix), channels)).ToArray();
+        var odorShortNames = new MixtureComponents().GetPairs(mode).Select(kv => kv.Key);
+        return channels
+            .Where(ch => odorShortNames.Any(shortName => ch.Value.Contains(shortName, StringComparison.CurrentCultureIgnoreCase)))
+            .Select(ch => (int)ch.Key)
+            .ToArray();
     }
 
-    // Internal
+    public static StressControlMixture[] GetStressControlMixtures(Dictionary<OdorDisplay.Device.ID, string> channels)
+    {
+        var settings = new Settings();
+        return settings.MixtureComponents
+            .Select(mixComp => new StressControlMixture(mixComp.Name, mixComp.GetPairs(Settings.Mode), channels))
+            .ToArray();
+    }
 
-    const string LIMONENE = "lim";
-    const string CYCLOHEX = "hex";
-    const string CITRONEL = "citron";
+    public static Mixture[] GetDemoMixtures(Dictionary<OdorDisplay.Device.ID, string> channels)
+    {
+        var settings = new Settings();
+        return settings.MixtureComponents
+            .Select(mixComp => new Mixture(mixComp.Name, mixComp.GetPairs(Settings.Mode), channels))
+            .ToArray();
+    }
+
+    public static string[] GetOdorAbbreviations(string[] odorShortNames)
+    {
+        var result = new List<string>();
+
+        var knownOdors = new KnownOdors();
+        foreach (var odorShortName in odorShortNames)
+        {
+            var knownOdor = knownOdors.FirstOrDefault(o => o.FullKnownName.Contains(odorShortName, StringComparison.CurrentCultureIgnoreCase));
+            if (knownOdor != null)
+            {
+                result.Add(knownOdor.Abbreviation);
+            }
+        }
+
+        return result.ToArray();
+    }
 }

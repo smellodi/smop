@@ -9,7 +9,12 @@ internal class ComparisonController : CommonController
 
     public ComparisonController(Settings settings) : base("comparison", settings)
     {
-        _session = new ComparisonSession(settings);
+        _session = Settings.Mode switch
+        {
+            HumanTestsMode.StressControl => new StressControlComparisonSession(settings),
+            HumanTestsMode.Demo => new DemoComparisonSession(settings),
+            _ => throw new System.NotImplementedException($"Mode '{Settings.Mode}' is not implemented yet")
+        };
     }
 
     public override void Start()
@@ -62,7 +67,7 @@ internal class ComparisonController : CommonController
 
     //static readonly NLog.Logger _nlog = NLog.LogManager.GetLogger(nameof(HumanTestsComparisonController));
 
-    readonly ComparisonSession _session;
+    readonly IComparisonSession _session;
 
     int _blockIndex = -1;
     int _comparisonIndex = -1;

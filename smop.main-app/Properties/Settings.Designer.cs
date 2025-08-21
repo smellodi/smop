@@ -669,5 +669,17 @@ namespace Smop.MainApp.Properties {
                 this["Pulses_SaveDmsToServer"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int HumanTest_Mode {
+            get {
+                return ((int)(this["HumanTest_Mode"]));
+            }
+            set {
+                this["HumanTest_Mode"] = value;
+            }
+        }
     }
 }

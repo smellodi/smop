@@ -2,14 +2,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
 
 namespace Smop.MainApp.Controllers;
 
 
-public record class OdorChannelProperties(float MinFlow, float MaxFlow, float CriticalFlow, float PidCheckLevel, string ShortKnownName = "", string FullKnownName = "")
+public record class OdorChannelProperties(float MinFlow, float MaxFlow,
+    float CriticalFlow,
+    float PidCheckLevel, 
+    string ShortKnownName = "",
+    string FullKnownName = "",
+    string Abbreviation = "")
 {
     public bool IsKnownOdor => !string.IsNullOrEmpty(FullKnownName);
     public Dictionary<string, object> ToDict()
@@ -29,6 +33,8 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
     public IEnumerator<OdorChannelProperties> GetEnumerator() => new EnumOdorChannels(_items);
 
     public string[] FullNames => _items.Select(item => item.FullKnownName).ToArray();
+    public string[] ShortNames => _items.Select(item => item.ShortKnownName).ToArray();
+    public string[] Abbreviations => _items.Select(item => item.Abbreviation).ToArray();
 
     public KnownOdors()
     {
@@ -41,7 +47,7 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
         Load();
     }
 
-    public KnownOdors(ObservableCollection<OdorChannelProperties> coll) : this()
+    public KnownOdors(IEnumerable<OdorChannelProperties> coll) : this()
     {
         _items.Clear();
         _items.AddRange(coll);
@@ -70,13 +76,13 @@ public class KnownOdors : IEnumerable<OdorChannelProperties>
 
     readonly List<OdorChannelProperties> _items = new()
     {
-        new OdorChannelProperties(0, 50, 55, 1.730f, "ipa", "Isopropanol"),
-        new OdorChannelProperties(0, 50, 65, 1.200f, "eth", "Ethanol"),
-        new OdorChannelProperties(0, 50, 70, 0.600f, "nbut", "nButanol"),
-        new OdorChannelProperties(0, 50, 70, 1.18f, "cyclohex", "Cyclohexanone"),
-        new OdorChannelProperties(0, 50, 70, 1.18f, "hex", "Cyclohexanone"),
-        new OdorChannelProperties(0, 50, 120, 0.084f, "citron", "Citronellol"),
-        new OdorChannelProperties(0, 50, 75, 0.990f, "limon", "Limonene"),
+        new OdorChannelProperties(0, 50, 55, 1.730f, "ipa", "Isopropanol", "Ipa"),
+        new OdorChannelProperties(0, 50, 65, 1.200f, "eth", "Ethanol", "Eth"),
+        new OdorChannelProperties(0, 50, 70, 0.600f, "nbut", "nButanol", "But"),
+        new OdorChannelProperties(0, 50, 70, 1.18f, "hex", "Cyclohexanone", "Hex"),
+        new OdorChannelProperties(0, 50, 120, 0.084f, "citron", "Citronellol", "Cit"),
+        new OdorChannelProperties(0, 50, 75, 0.990f, "limon", "Limonene", "Lim"),
+        new OdorChannelProperties(0, 50, 75, 1.0f, "caren", "3-Carene", "3Cr"),
     };
 
     class EnumOdorChannels(List<OdorChannelProperties> odorChannels) : IEnumerator<OdorChannelProperties>

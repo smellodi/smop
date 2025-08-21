@@ -88,7 +88,7 @@ public partial class HumanTestComparison : Page, IPage<Navigation>, IHumanTestPa
         }
         catch
         {
-            MessageBox.Show("Failed to initialize the test. Make sure the following odors are loaded:\nCyclohexanone, Limonene, Cytronellyl acetate",
+            MessageBox.Show("Failed to initialize the test. Make sure all required odors are loaded.",
                 "Human test", MessageBoxButton.OK, MessageBoxImage.Error);
             Next?.Invoke(this, Navigation.Setup);
         }

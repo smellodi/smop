@@ -12,7 +12,11 @@ namespace Smop.MainApp.Controllers.HumanTests
                     .Range(0, _settings.PracticingTrialCount)
                     .Select(i => new Mixture($"empty{i}", [], _settings.Channels))
                     .ToArray()
-                : OdorDisplayHelper.GetAllMixtures(_settings.Channels);
+                : Settings.Mode switch {
+                    HumanTestsMode.StressControl => OdorDisplayHelper.GetStressControlMixtures(_settings.Channels),
+                    HumanTestsMode.Demo => OdorDisplayHelper.GetDemoMixtures(_settings.Channels),
+                    _ => throw new System.NotImplementedException($"Mode '{Settings.Mode}' is not implemented yet.")
+                };
         }
 
         public override void Start()

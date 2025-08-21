@@ -20,7 +20,7 @@ internal class GoogleDriveService
 
     public bool IsReady => _service != null;
 
-    public GoogleDriveService()
+    public void Initialize()
     {
         UserCredential credential;
 
@@ -54,21 +54,24 @@ internal class GoogleDriveService
             HttpClientInitializer = credential,
             ApplicationName = _applicationName,
         });
-    }
 
-    public async Task Initialize()
-    {
         // Get or create the root folder if it doesn't exist
         _rootFolderId = GetRootFolder();
         if (string.IsNullOrEmpty(_rootFolderId))
             _rootFolderId = CreateRootFolder();
+    }
 
+    public async Task RetrieveFiles()
+    {
         var files = await GetFiles();
         _files.AddRange(files);
     }
 
     public async Task<Google.Apis.Drive.v3.Data.File> Create(string remoteFilename, string content)
     {
+        if (_service == null)
+            return new();
+
         var fileMetadata = new Google.Apis.Drive.v3.Data.File()
         {
             Name = remoteFilename,
@@ -100,6 +103,9 @@ internal class GoogleDriveService
 
     public Google.Apis.Drive.v3.Data.File CreateSync(string remoteFilename, string content)
     {
+        if (_service == null)
+            return new();
+
         var fileMetadata = new Google.Apis.Drive.v3.Data.File()
         {
             Name = remoteFilename,
@@ -169,6 +175,9 @@ internal class GoogleDriveService
 
     public async Task<IList<Google.Apis.Drive.v3.Data.File>> GetFiles(string? mimeType = null)
     {
+        if (_service == null)
+            return [];
+
         List<Google.Apis.Drive.v3.Data.File> result = [];
         var nextPageToken = string.Empty;
         var filter = $"'{_rootFolderId}' in parents"; // Filter files by the root folder
@@ -194,6 +203,9 @@ internal class GoogleDriveService
 
     public IList<Google.Apis.Drive.v3.Data.File> GetFilesSync(string? mimeType = null)
     {
+        if (_service == null)
+            return [];
+
         List<Google.Apis.Drive.v3.Data.File> result = [];
         var nextPageToken = string.Empty;
         var filter = $"'{_rootFolderId}' in parents"; // Filter files by the root folder
@@ -222,6 +234,9 @@ internal class GoogleDriveService
 
     public async Task<string> ReadFile(string id)
     {
+        if (_service == null)
+            return string.Empty;
+
         var request = _service.Files.Get(id);
         request.Alt = DriveBaseServiceRequest<Google.Apis.Drive.v3.Data.File>.AltEnum.Media; // Get the file content
         using var stream = new MemoryStream();
@@ -232,6 +247,9 @@ internal class GoogleDriveService
 
     public string ReadFileSync(string id)
     {
+        if (_service == null)
+            return string.Empty;
+
         var request = _service.Files.Get(id);
         request.Alt = DriveBaseServiceRequest<Google.Apis.Drive.v3.Data.File>.AltEnum.Media; // Get the file content
         using var stream = new MemoryStream();
@@ -242,6 +260,9 @@ internal class GoogleDriveService
 
     public async Task DeleteFile(string id)
     {
+        if (_service == null)
+            return;
+
         var request = _service.Files.Delete(id);
         var response = await request.ExecuteAsync();
         Console.WriteLine($"File with ID '{id}' deleted successfully: {response}");
@@ -249,6 +270,9 @@ internal class GoogleDriveService
 
     public void DeleteFileSync(string id)
     {
+        if (_service == null)
+            return;
+
         var request = _service.Files.Delete(id);
         var response = request.Execute();
         Console.WriteLine($"File with ID '{id}' deleted successfully: {response}");
@@ -264,13 +288,16 @@ internal class GoogleDriveService
     readonly string _appCredentialsFilename = "credentials.json";
     //readonly string _appKeyFilename = "key.json";
 
-    readonly DriveService _service;
     readonly List<Google.Apis.Drive.v3.Data.File> _files = [];
 
+    DriveService? _service;
     string _rootFolderId = string.Empty;
 
     private string GetRootFolder()
     {
+        if (_service == null)
+            return string.Empty;
+
         // Ensure the root folder exists
         var request = _service.Files.List();
         request.Q = "name = 'SMOP' and mimeType = 'application/vnd.google-apps.folder'";
@@ -281,6 +308,9 @@ internal class GoogleDriveService
 
     private string CreateRootFolder()
     {
+        if (_service == null)
+            return string.Empty;
+
         var fileMetadata = new Google.Apis.Drive.v3.Data.File()
         {
             Name = "SMOP",

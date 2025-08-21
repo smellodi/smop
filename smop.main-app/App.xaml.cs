@@ -1,4 +1,5 @@
 ﻿using Smop.MainApp.Controllers;
+using Smop.MainApp.Dialogs;
 using System;
 using System.Globalization;
 using System.Windows;
@@ -86,9 +87,21 @@ public partial class App : Application
             UIElement.GotFocusEvent,
             new RoutedEventHandler(TextBox_GotFocus));
 
-        // Initialize Goolge Drive service
-        var gdrive = GoogleDriveService.Instance;
-        _ = gdrive.Initialize();
+        // Initialize Google Drive service
+        System.Threading.Tasks.Task.Run(async () =>
+        {
+            await System.Threading.Tasks.Task.Delay(3000);
+            try
+            {
+                var gdrive = GoogleDriveService.Instance;
+                gdrive.Initialize();
+                await gdrive.RetrieveFiles();
+            }
+            catch (ApplicationException ex)
+            {
+                MsgBox.Error(App.Name, $"Google Drive is not accessible:\n\n{ex.Message}");
+            }
+        });
     }
 
     private void TextBox_GotFocus(object sender, RoutedEventArgs e)

@@ -9,9 +9,9 @@
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
         Title="Known odors"
         Height="560"
-        Width="384"
+        Width="444"
         MinHeight="560"
-        MinWidth="384"
+        MinWidth="444"
         WindowStyle="ToolWindow"
         WindowStartupLocation="CenterOwner"
         Icon="/Assets/icons/main.png"
@@ -32,6 +32,9 @@
         <DataTemplate x:Key="ShortKnownNameViewTemplate">
             <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=ShortKnownName}" MinWidth="60"/>
         </DataTemplate>
+        <DataTemplate x:Key="AbbreviationViewTemplate">
+            <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=Abbreviation}" MinWidth="32"/>
+        </DataTemplate>
         <DataTemplate x:Key="FullKnownNameViewTemplate">
             <TextBlock Style="{StaticResource GridItem}" Text="{Binding Path=FullKnownName}" MinWidth="124"/>
         </DataTemplate>
@@ -47,6 +50,9 @@
 
         <DataTemplate x:Key="ShortKnownNameEditTemplate">
             <TextBox Style="{StaticResource GridEditItem}" Text="{Binding Path=ShortKnownName, Mode=TwoWay}"/>
+        </DataTemplate>
+        <DataTemplate x:Key="AbbreviationEditTemplate">
+            <TextBox Style="{StaticResource GridEditItem}" Text="{Binding Path=Abbreviation, Mode=TwoWay}"/>
         </DataTemplate>
         <DataTemplate x:Key="FullKnownNameEditTemplate">
             <TextBox Style="{StaticResource GridEditItem}" Text="{Binding Path=FullKnownName, Mode=TwoWay}"/>
@@ -88,52 +94,6 @@
             </TextBox>
         </DataTemplate>
 
-        <!--DataTemplate x:Key="KnownOdorTemplate">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="60"/>
-                    <ColumnDefinition Width="124"/>
-                    <ColumnDefinition Width="46"/>
-                    <ColumnDefinition Width="42"/>
-                    <ColumnDefinition Width="42"/>
-                    <ColumnDefinition Width="46"/>
-                    <ColumnDefinition Width="36"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0"
-                         Text="{Binding Path=ShortKnownName, Mode=TwoWay}"/>
-                <TextBox Grid.Column="1"
-                         Text="{Binding Path=FullKnownName, Mode=TwoWay}"
-                         Margin="2,0,0,0"/>
-                <TextBox Grid.Column="2"
-                         Text="{Binding Path=PidCheckLevel, Mode=TwoWay}"
-                         Margin="2,0,0,0"/>
-                <TextBox Grid.Column="3"
-                         Text="{Binding Path=MinFlow, Mode=TwoWay}"
-                         Margin="2,0,0,0"/>
-                <TextBox Grid.Column="4"
-                         Text="{Binding Path=MaxFlow, Mode=TwoWay}"
-                         Margin="2,0,0,0"/>
-                <TextBox Grid.Column="5"
-                         Text="{Binding Path=CriticalFlow, Mode=TwoWay}"
-                         Margin="2,0,0,0"/>
-                <Button Grid.Column="5"
-                        Tag="{Binding Path=ShortKnownName}"
-                        Margin="2,0,0,0"
-                        Width="32"
-                        Height="32"
-                        HorizontalContentAlignment="Center"
-                        Click="DeleteItem_Click">
-                    <Image Source="/Assets/images/delete.png"
-                           Margin="-22,0,0,0"/>
-                </Button>
-            </Grid>
-        </DataTemplate>
-
-        <Style x:Key="ColHeader" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
-            <Setter Property="FontWeight" Value="Bold" />
-            <Setter Property="VerticalAlignment" Value="Center" />
-        </Style-->
-
         <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Margin" Value="4,0" />
             <Setter Property="Padding" Value="12,4" />
@@ -154,52 +114,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!--Grid Grid.Row="0" Margin="8,0,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="60"/>
-                <ColumnDefinition Width="128"/>
-                <ColumnDefinition Width="44"/>
-                <ColumnDefinition Width="44"/>
-                <ColumnDefinition Width="42"/>
-                <ColumnDefinition Width="48"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0"
-                       Style="{StaticResource ColHeader}"
-                       Text="Abbr."/>
-            <TextBlock Grid.Column="1"
-                       Style="{StaticResource ColHeader}"
-                       Text="Full name"/>
-            <TextBlock Grid.Column="2"
-                       Style="{StaticResource ColHeader}"
-                       Text="PID"
-                       ToolTip="change from the base level at 40 sccm flow rate"/>
-            <TextBlock Grid.Column="3"
-                       Style="{StaticResource ColHeader}">
-                <Run>Min</Run>
-                <LineBreak/>
-                <Run>sccm</Run>
-            </TextBlock>
-            <TextBlock Grid.Column="4"
-                       Style="{StaticResource ColHeader}">
-                <Run>Max</Run>
-                <LineBreak/>
-                <Run>sccm</Run>
-            </TextBlock>
-            <TextBlock Grid.Column="5"
-                       Style="{StaticResource ColHeader}"
-                       ToolTip="(set to 120 for any other chemicals)">
-                <Run>Critical</Run>
-                <LineBreak/>
-                <Run>sccm</Run>
-            </TextBlock>
-        </Grid-->
-
-        <!--ListView Grid.Row="1"
-                  Margin="4,0"
-                  ItemTemplate="{StaticResource KnownOdorTemplate}"
-                  ItemsSource="{Binding Items, Mode=OneWay}"
-                  ScrollViewer.VerticalScrollBarVisibility="Visible"/-->
-
         <DataGrid Grid.Row="1"
                   ItemsSource="{Binding Items, Mode=OneWay}"
                   AutoGenerateColumns="False"
@@ -209,9 +123,12 @@
                   VerticalGridLinesBrush="{StaticResource BrushBorder}"
                   VerticalScrollBarVisibility="Visible">
             <DataGrid.Columns>
-                <DataGridTemplateColumn Header="Abbr."
+                <DataGridTemplateColumn Header="Name"
                                         CellTemplate="{StaticResource ShortKnownNameViewTemplate}"
                                         CellEditingTemplate="{StaticResource ShortKnownNameEditTemplate}"/>
+                <DataGridTemplateColumn Header="Abbr."
+                                        CellTemplate="{StaticResource AbbreviationViewTemplate}"
+                                        CellEditingTemplate="{StaticResource AbbreviationEditTemplate}"/>
                 <DataGridTemplateColumn Header="Full name"
                                         CellTemplate="{StaticResource FullKnownNameViewTemplate}"
                                         CellEditingTemplate="{StaticResource FullKnownNameEditTemplate}"/>

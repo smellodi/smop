@@ -8,7 +8,7 @@ namespace Smop.MainApp.Utils;
 
 internal static class Resources
 {
-    public readonly static string UriBase = Path.GetDirectoryName(Application.Current.StartupUri.LocalPath) ?? "";
+    public static string UriBase => Path.GetDirectoryName(Application.Current.StartupUri.LocalPath) ?? "";
 
     public static Uri GetUri(string filename, UriKind kind = UriKind.Relative) => new(Path.Combine(UriBase, filename), kind);
 

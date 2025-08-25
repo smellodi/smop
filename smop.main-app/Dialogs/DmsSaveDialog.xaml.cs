@@ -28,6 +28,17 @@ public partial class DmsSaveDialog : Window
 
     // Internal
 
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance.BindScaleToZoomLevel(sctScale);
+    }
+
+    private void Window_Unloaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance.UnbindScaleToZoomLevel(sctScale);
+    }
+
+
     private void Ok_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = true;

@@ -32,6 +32,16 @@ public partial class GoogleDriveFilePicker : Window
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
 
+    private void Window_Loaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance.BindScaleToZoomLevel(sctScale);
+    }
+
+    private void Window_Unloaded(object sender, RoutedEventArgs e)
+    {
+        Storage.Instance.UnbindScaleToZoomLevel(sctScale);
+    }
+
     private void Select_Click(object sender, RoutedEventArgs e)
     {
         DialogResult = true;

@@ -16,7 +16,7 @@
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
     <Window.Resources>
-        <conv:ItemToDmsInfo x:Key="Item2DmsInfo"/>
+        <conv:DmsDataToInfo x:Key="DmsData2Info"/>
     </Window.Resources>
     
     <Grid>
@@ -60,7 +60,7 @@
         </ListView>
 
         <Label Grid.Row="1" Grid.Column="1"
-               Content="{Binding SelectedItem, ElementName=lsvItems, Converter={StaticResource Item2DmsInfo}}"
+               Content="{Binding SelectedItem, ElementName=lsvItems, Converter={StaticResource DmsData2Info}}"
                Margin="4"/>
 
         <StackPanel Grid.Row="2" Grid.ColumnSpan="2"

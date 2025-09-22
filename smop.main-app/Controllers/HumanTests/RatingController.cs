@@ -14,7 +14,9 @@ namespace Smop.MainApp.Controllers.HumanTests
                     .ToArray()
                 : Settings.Mode switch {
                     HumanTestsMode.StressControl => OdorDisplayHelper.GetStressControlMixtures(_settings.Channels),
-                    HumanTestsMode.Demo => OdorDisplayHelper.GetDemoMixtures(_settings.Channels),
+                    HumanTestsMode.Demo => OdorDisplayHelper.GetDemoMixtures(_settings.Channels,
+                        _settings.AskRatingsForOriginalMixtures,
+                        _settings.AskRatingsForRecreatedMixtures),
                     _ => throw new System.NotImplementedException($"Mode '{Settings.Mode}' is not implemented yet.")
                 };
         }

@@ -1,5 +1,4 @@
 ﻿using Smop.Common;
-using Smop.MainApp.Controllers;
 using Smop.MainApp.Dialogs;
 using Smop.MainApp.Logging;
 using Smop.MainApp.Pages;
@@ -134,14 +133,17 @@ public partial class MainWindow : Window
         }
         else if (param is Controllers.HumanTests.Settings humanTestSettings)
         {
-            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, _humanTestsComparisonPage.Name));
+            IHumanTestPage humanTestPage = _humanTestsComparisonPage;
 
-            Content = _humanTestsComparisonPage;
-            _humanTestsComparisonPage.Start(humanTestSettings);
-            //Content = _humanTestsOneOutPage;
-            //_humanTestsOneOutPage.Start(humanTestSettings);
-            //Content = _humanTestsRatingPage;
-            //_humanTestsRatingPage.Start(humanTestSettings);
+            if (humanTestSettings.OnlyRatings)
+            {
+                humanTestPage = _humanTestsRatingPage;
+            }
+
+            _nlog.Info(LogIO.Text(Utils.Timestamp.Ms, "Navigator", Navigation.Test, ((FrameworkElement)humanTestPage).Name));
+
+            Content = humanTestPage;
+            humanTestPage.Start(humanTestSettings);
         }
         else
         {

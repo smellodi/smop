@@ -64,7 +64,7 @@ internal class OneOutSession
             var allMixtures = Settings.Mode switch
             {
                 HumanTestsMode.StressControl => OdorDisplayHelper.GetStressControlMixtures(settings.Channels),
-                HumanTestsMode.Demo => OdorDisplayHelper.GetDemoMixtures(settings.Channels),
+                HumanTestsMode.Demo => OdorDisplayHelper.GetDemoMixtures(settings.Channels, true, true),
                 _ => throw new NotImplementedException($"Mode '{Settings.Mode}' is not implemented yet.")
             };
 

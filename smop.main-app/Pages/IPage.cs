@@ -11,6 +11,7 @@ internal interface IPage<T>
 internal interface IHumanTestPage
 {
     Settings? Settings { get; }
+    void Start(Settings Settings);
 }
 
 public enum Navigation

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text.Json;
 
 namespace Smop.MainApp.Controllers.HumanTests;
@@ -10,7 +11,7 @@ public enum HumanTestsMode
     Demo
 }
 
-public class Settings
+public class Settings : INotifyPropertyChanged
 {
     public static HumanTestsMode Mode { get; set; } = HumanTestsMode.Demo; // hardcoded!
 
@@ -30,6 +31,46 @@ public class Settings
         set
         {
             Properties.Settings.Default.HumanTest_Randomize = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public bool OnlyRatings
+    {
+        get => Properties.Settings.Default.HumanTest_OnlyRatings;
+        set
+        {
+            Properties.Settings.Default.HumanTest_OnlyRatings = value;
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public bool AskRatingsForOriginalMixtures
+    {
+        get => Properties.Settings.Default.HumanTest_AskRatingsForOriginalMixtures;
+        set
+        {
+            Properties.Settings.Default.HumanTest_AskRatingsForOriginalMixtures = value;
+            if (!value)
+            {
+                Properties.Settings.Default.HumanTest_AskRatingsForRecreatedMixtures = true;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AskRatingsForRecreatedMixtures)));
+            }
+            Properties.Settings.Default.Save();
+        }
+    }
+
+    public bool AskRatingsForRecreatedMixtures
+    {
+        get => Properties.Settings.Default.HumanTest_AskRatingsForRecreatedMixtures;
+        set
+        {
+            Properties.Settings.Default.HumanTest_AskRatingsForRecreatedMixtures = value;
+            if (!value)
+            {
+                Properties.Settings.Default.HumanTest_AskRatingsForOriginalMixtures = true;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AskRatingsForOriginalMixtures)));
+            }
             Properties.Settings.Default.Save();
         }
     }
@@ -107,6 +148,8 @@ public class Settings
     public MixtureComponents[] MixtureComponents => _mixComponenets;
 
     public Dictionary<OdorDisplay.Device.ID, string> Channels { get; } = new();
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     // Internal
 

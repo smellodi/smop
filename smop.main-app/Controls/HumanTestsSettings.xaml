@@ -75,6 +75,24 @@
             </WrapPanel>
         </Grid>
 
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="136"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            
+            <CheckBox Grid.Column="0"
+                      Content="Only rating"
+                      IsChecked="{Binding OnlyRatings, Mode=TwoWay}"/>
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal">
+                <CheckBox Content="OM"
+                          IsChecked="{Binding AskRatingsForOriginalMixtures, Mode=TwoWay}"/>
+                <CheckBox Content="RM"
+                          IsChecked="{Binding AskRatingsForRecreatedMixtures, Mode=TwoWay}"/>
+            </StackPanel>
+        </Grid>
+
         <UserControl Style="{StaticResource Setting}"
                      Tag="Participant ID">
             <TextBox Width="Auto"

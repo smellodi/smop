@@ -139,7 +139,7 @@ internal class DemoComparisonSession : IComparisonSession
         }
         else
         {
-            var allMixtures = OdorDisplayHelper.GetDemoMixtures(settings.Channels);
+            var allMixtures = OdorDisplayHelper.GetDemoMixtures(settings.Channels, true, true);
             Comparison[] pairs = [
                 new Comparison(allMixtures[0], allMixtures[3]),
                 new Comparison(allMixtures[1], allMixtures[4]),

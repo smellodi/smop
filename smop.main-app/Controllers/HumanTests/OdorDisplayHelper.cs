@@ -23,10 +23,17 @@ internal static class OdorDisplayHelper
             .ToArray();
     }
 
-    public static Mixture[] GetDemoMixtures(Dictionary<OdorDisplay.Device.ID, string> channels)
+    public static Mixture[] GetDemoMixtures(Dictionary<OdorDisplay.Device.ID, string> channels, bool includeOriginal, bool includeRecreated)
     {
         var settings = new Settings();
-        return settings.MixtureComponents
+
+        var mc = settings.MixtureComponents;
+        if (!includeOriginal)
+            mc = mc.Where(mixComp => !mixComp.Name.Contains("OM")).ToArray();
+        if (!includeRecreated)
+            mc = mc.Where(mixComp => !mixComp.Name.Contains("RM")).ToArray();
+
+        return mc
             .Select(mixComp => new Mixture(mixComp.Name, mixComp.GetPairs(Settings.Mode), channels))
             .ToArray();
     }

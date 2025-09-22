@@ -681,5 +681,41 @@ namespace Smop.MainApp.Properties {
                 this["HumanTest_Mode"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool HumanTest_OnlyRatings {
+            get {
+                return ((bool)(this["HumanTest_OnlyRatings"]));
+            }
+            set {
+                this["HumanTest_OnlyRatings"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HumanTest_AskRatingsForOriginalMixtures {
+            get {
+                return ((bool)(this["HumanTest_AskRatingsForOriginalMixtures"]));
+            }
+            set {
+                this["HumanTest_AskRatingsForOriginalMixtures"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool HumanTest_AskRatingsForRecreatedMixtures {
+            get {
+                return ((bool)(this["HumanTest_AskRatingsForRecreatedMixtures"]));
+            }
+            set {
+                this["HumanTest_AskRatingsForRecreatedMixtures"] = value;
+            }
+        }
     }
 }

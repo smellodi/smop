@@ -44,23 +44,31 @@ internal static class UiStrings
 
 internal class EnglishStrings : IUiStrings
 {
-    public string ComparisonInstruction => "Sniff several pairs of odors as instructed and answer the questions";
-    public string RatingInstruction => "Sniff an odor as many times as needed, select the words that describe the odor and then press “Submit” button";
-    public string OneOutInstruction => "Next, you will be presented with a total of 3 scents. Two of the scents presented are the same and one is different. Your task is to judge which of the scents you think was different.";
-    public string ComparisonQuestion => "Are the presented odors identical?";
-    public string OneOutQuestion => "Choose a scent that stands out from the rest";
+    public string ComparisonInstruction => "Next, you will be presented with pairs of scents. Evaluate whether the scents in the pair are the same or different.";
+    public string RatingInstruction => "Next, it's time to evaluate the scents using descriptive words. Remember, you can smell each scent as many times as you like. Carefully go through the list of words that describe the scent and select all the words that you think describe the scent by clicking with your mouse. You can also choose not to select any words. Then, click the 'Done' button.";
+    public string OneOutInstruction => "Next, you will be presented with a total of 3 scents. Two of the scents are the same, and one is different. Your task is to determine which of the scents is different from the others.";
+    public string ComparisonQuestion => "Were the presented scents the same?";
+    public string OneOutQuestion => "Select the box where the scent differed from the others.";
+    
     public string[] RatingWords => [
         "sweaty", "sour", "strong",
         "pungent", "musky", "salty",
         "sweet", "fresh", "stinky",
         "smelly", "musty", "clean",
-        "fishy", "warm", "foul",
+        "fishy", "warm", "rotten",
         "unpleasant", "neutral", "gross",
         "bad", "natural", "stale",
         "sharp", "dirty", "wet",
         "cheesy"
         //"biting", "flowery", "deodorized",
         //"subtle", "damp", "individual", "cold",
+        
+        // Same in Finnish and English:
+        //  "sweaty","pungent", "neutral", "stale", "fresh", "strong", "clean", "unpleasant", "bad", "musty", "dirty", "sour", "salty", "wet", "fishy", "warm", "sweet", 
+
+        // English only: "musky", "stinky", "smelly", "gross", "natural", "sharp", "cheesy"
+        
+        // Finnish only: "mild", "deodorant", "pleasant", "luscious", "foody", "characteristic", "uriney" 
     ];
     public string Yes => "Yes";
     public string No => "No";

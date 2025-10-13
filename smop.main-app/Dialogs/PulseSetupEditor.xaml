@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ctrl="clr-namespace:Smop.MainApp.Controllers"
         xmlns:utils="clr-namespace:Smop.MainApp.Utils"
         mc:Ignorable="d"
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
@@ -107,7 +108,20 @@
                           KeyUp="Sessions_KeyUp"
                           Drop="Sessions_Drop"
                           PreviewMouseLeftButtonDown="Sessions_PreviewMouseLeftButtonDown"
-                          MouseMove="Sessions_MouseMove"/>
+                          MouseMove="Sessions_MouseMove">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="ctrl:SessionProps">
+                            <Grid>
+                                <TextBlock Text="{Binding Id, Mode=OneWay}"/>
+                                <TextBlock HorizontalAlignment="Right">
+                                    <Run Text="["/>
+                                    <Run Text="{Binding Path=Pulses.Count, Mode=OneWay}"/>
+                                    <Run Text="]"/>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
                 <Button Grid.Row="2"
                         Margin="0,2"
                         Content="Add"
@@ -128,7 +142,15 @@
                           KeyUp="Pulses_KeyUp"
                           Drop="Pulses_Drop"
                           PreviewMouseLeftButtonDown="Pulses_PreviewMouseLeftButtonDown"
-                          MouseMove="Pulses_MouseMove"/>
+                          MouseMove="Pulses_MouseMove">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="ctrl:PulseProps">
+                            <Grid>
+                                <TextBlock Text="{Binding Id, Mode=OneWay}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
                 <Button x:Name="btnAddPulse" Grid.Row="2"
                         Margin="0,2"
                         Content="Add"
@@ -155,9 +177,16 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0" Grid.Column="0">Humidity, %</Label>
-                    <TextBox x:Name="txbSessionHumidity" Grid.Row="0" Grid.Column="1"
+
+                    <Label Grid.Row="0" Grid.Column="0">ID</Label>
+                    <TextBox Grid.Row="0" Grid.Column="1"
+                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}"
+                             Text="{Binding SessionId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Label Grid.Row="1" Grid.Column="0">Humidity, %</Label>
+                    <TextBox x:Name="txbSessionHumidity" Grid.Row="1" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionHumidity" UpdateSourceTrigger="PropertyChanged">
@@ -168,8 +197,8 @@
                         </TextBox.Text>
                     </TextBox>
                     
-                    <Label Grid.Row="1" Grid.Column="0">Initial pause, s</Label>
-                    <TextBox x:Name="txbSessionInitialPause" Grid.Row="1" Grid.Column="1"
+                    <Label Grid.Row="2" Grid.Column="0">Initial pause, s</Label>
+                    <TextBox x:Name="txbSessionInitialPause" Grid.Row="2" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionInitialPause" UpdateSourceTrigger="PropertyChanged">
@@ -180,8 +209,8 @@
                         </TextBox.Text>
                     </TextBox>
 
-                    <Label Grid.Row="2" Grid.Column="0">Pulse duration, s</Label>
-                    <TextBox x:Name="txbSessionPulseDuration" Grid.Row="2" Grid.Column="1"
+                    <Label Grid.Row="3" Grid.Column="0">Pulse duration, s</Label>
+                    <TextBox x:Name="txbSessionPulseDuration" Grid.Row="3" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionPulseDuration" UpdateSourceTrigger="PropertyChanged">
@@ -192,8 +221,8 @@
                         </TextBox.Text>
                     </TextBox>
                     
-                    <Label Grid.Row="3" Grid.Column="0">DMS start delay, s</Label>
-                    <TextBox x:Name="txbSessionDMSDelay" Grid.Row="3" Grid.Column="1"
+                    <Label Grid.Row="4" Grid.Column="0">DMS start delay, s</Label>
+                    <TextBox x:Name="txbSessionDMSDelay" Grid.Row="4" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}"
                              IsEnabled="{Binding IsChecked, ElementName=chkUseDMS}">
                         <TextBox.Text>
@@ -204,14 +233,14 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
-                    <CheckBox x:Name="chkUseDMS" Grid.Row="3" Grid.Column="1"
+                    <CheckBox x:Name="chkUseDMS" Grid.Row="4" Grid.Column="1"
                               Height="24"
                               Width="24"
                               HorizontalAlignment="Right"
-                              IsChecked="{Binding UseSessionDMS}"/>
+                              IsChecked="{Binding UseSessionDMS, Mode=TwoWay}"/>
 
-                    <Label Grid.Row="4" Grid.Column="0">Final pause, s</Label>
-                    <TextBox x:Name="txbSessionFinalPause" Grid.Row="4" Grid.Column="1"
+                    <Label Grid.Row="5" Grid.Column="0">Final pause, s</Label>
+                    <TextBox x:Name="txbSessionFinalPause" Grid.Row="5" Grid.Column="1"
                              Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}">
                         <TextBox.Text>
                             <Binding Path="SessionFinalPause" UpdateSourceTrigger="PropertyChanged">

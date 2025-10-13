@@ -152,7 +152,7 @@ public partial class HumanTestsSettings : UserControl
     {
         try
         {
-            if (pulseSetup.Sessions.Length <= sessionId || pulseSetup.Sessions[sessionId].Pulses.Length <= pulseId)
+            if (pulseSetup.Sessions.Length <= sessionId || pulseSetup.Sessions[sessionId].Pulses.Count <= pulseId)
             {
                 throw new Exception("No pulse data found in the file.");
             }

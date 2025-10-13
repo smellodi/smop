@@ -1,8 +1,8 @@
 ﻿using Smop.MainApp.Controllers;
-using Smop.MainApp.Pages;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -20,6 +20,11 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     public string? Filename { get; private set; } = null;
 
     // Session props
+    public string SessionId
+    {
+        get => Session?.Id ?? $"{_sessions.Count + 1}";
+        set => Session?.Id = string.IsNullOrEmpty(value) ? $"{_sessions.Count + 1}" : value;
+    }
     public string SessionHumidity
     {
         get => Session?.Humidity.ToString("F1") ?? "";
@@ -35,7 +40,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         set
         {
             if (Session != null && float.TryParse(value, out float v))
-                Session.Intervals = Session.Intervals with { InitialPause = v };
+                Session.Intervals.InitialPause = v;
         }
     }
 
@@ -45,7 +50,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         set
         {
             if (Session != null && float.TryParse(value, out float v))
-                Session.Intervals = Session.Intervals with { Pulse = v };
+                Session.Intervals.Pulse = v;
         }
     }
 
@@ -58,11 +63,11 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             {
                 if (string.IsNullOrEmpty(value))
                 {
-                    Session.Intervals = Session.Intervals with { DmsDelay = -1 };
+                    Session.Intervals.DmsDelay = -1;
                 }
                 else if (float.TryParse(value, out float v))
                 {
-                    Session.Intervals = Session.Intervals with { DmsDelay = v };
+                    Session.Intervals.DmsDelay = v;
                 }
             }
         }
@@ -79,13 +84,13 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
                 {
                     if (Session.Intervals.DmsDelay < 0)
                     {
-                        Session.Intervals = Session.Intervals with { DmsDelay = _lastDmsDelay };
+                        Session.Intervals.DmsDelay = _lastDmsDelay;
                     }
                 }
                 else
                 {
                     _lastDmsDelay = Session.Intervals.DmsDelay >= 0 ? Session.Intervals.DmsDelay : 5f;
-                    Session.Intervals = Session.Intervals with { DmsDelay = -1 };
+                    Session.Intervals.DmsDelay = -1;
                 }
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionDMSDelay)));
             }
@@ -98,7 +103,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         set
         {
             if (Session != null && float.TryParse(value, out float v))
-                Session.Intervals = Session.Intervals with { FinalPause = v };
+                Session.Intervals.FinalPause = v;
         }
     }
 
@@ -110,6 +115,8 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
         DialogTools.HideWindowButtons(this);
         DialogTools.SetCentralPosition(this);
+
+        lsvSessions.ItemsSource = _sessions;
 
         _pulseChannelFlowValid = FindResource("TextBoxWithoutError") as Style;
         _pulseChannelFlowInvalid = FindResource("TextBoxWithError") as Style;
@@ -170,7 +177,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             foreach (var session in sessions)
             {
                 _sessions.Add(session);
-                lsvSessions.Items.Add($"#{_sessions.Count}");
+                //lsvSessions.Items.Add($"#{_sessions.Count}");
             }
 
             _sessionIndex = 0;
@@ -191,7 +198,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     readonly Style? _pulseChannelFlowValid;
     readonly Style? _pulseChannelFlowInvalid;
 
-    List<SessionProps> _sessions = new();
+    ObservableCollection<SessionProps> _sessions = [];
     int _sessionIndex = -1;
     int _pulseIndex = -1;
     float _lastDmsDelay = 5f;
@@ -245,8 +252,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
                 UpdateChannelFlow(id, value);
 
                 var (chk, _) = _pulseChannelControls.FirstOrDefault(kv => kv.Item2 == txb);
-                if (chk != null)
-                    chk.IsChecked = value > 0;
+                chk?.IsChecked = value > 0;
             }
             else
             {
@@ -261,7 +267,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         if (hitTestResult != null)
         {
             DependencyObject current = hitTestResult.VisualHit;
-            while (current != null && !(current is ListViewItem))
+            while (current != null && current is not ListViewItem)
             {
                 current = VisualTreeHelper.GetParent(current);
             }
@@ -270,9 +276,9 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         return null;
     }
 
-    static void OnMouseMove(MouseEventArgs e, ListView listview)
+    private static void OnMouseMove(MouseEventArgs e, ListView listview)
     {
-        if (e.LeftButton == MouseButtonState.Pressed)
+        if (e.LeftButton == MouseButtonState.Pressed && e.OriginalSource.GetType() == typeof(TextBlock))
         {
             Point currentPosition = e.GetPosition(null);
             Vector diff = _dragStartPoint - currentPosition;
@@ -288,42 +294,6 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         }
     }
 
-
-    static void OnDropItem(DragEventArgs e, ListView listview, Action<int, int> action)
-    {
-        if (e.Data.GetDataPresent(typeof(string)))
-        {
-            var droppedData = e.Data.GetData(typeof(string));
-            var target = GetListViewItemUnderMouse(listview, e.GetPosition(listview));
-
-            if (droppedData != null)
-            {
-                var targetIndex = target != null ? listview.Items.IndexOf(target) : listview.Items.Count;
-                var sourceIndex = listview.Items.IndexOf(droppedData);
-
-                if (sourceIndex != targetIndex)
-                {
-                    var itemsSource = listview.ItemsSource as System.Collections.IList ?? listview.Items;
-                    if (itemsSource != null)
-                    {
-                        if (targetIndex < sourceIndex)
-                            itemsSource.Remove(droppedData);
-                        itemsSource.Insert(targetIndex, droppedData);
-                        if (targetIndex > sourceIndex)
-                            itemsSource.Remove(droppedData);
-
-                        action(sourceIndex, targetIndex);
-
-                        listview.SelectedIndex = targetIndex < listview.Items.Count ? targetIndex : listview.Items.Count - 1;
-                    }
-                }
-            }
-        }
-        else
-        {
-            System.Diagnostics.Debug.WriteLine(string.Join("\n", e.Data.GetFormats()));
-        }
-    }
 
     // UI
 
@@ -377,12 +347,14 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         Filename = pathToNewFilename;
         tblFileName.Text = Filename;
 
-        lsvPulses.Items.Clear();
-        lsvSessions.Items.Clear();
+        Session?.Pulses.Clear();
+        _sessions.Clear();
 
         _pulseIndex = -1;
         _sessionIndex = -1;
-        _sessions = new List<SessionProps> { };
+        _sessions = [];
+
+        lsvSessions.ItemsSource = _sessions;
 
         SessionAdd_Click(this, new RoutedEventArgs());
     }
@@ -396,42 +368,29 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     private void SessionAdd_Click(object sender, RoutedEventArgs e)
     {
-        var newSession = new SessionProps(40, new PulseIntervals(10, 60, 10, 10));
+        var newSession = new SessionProps((_sessions.Count + 1).ToString(), 40, new PulseIntervals(10, 60, 10, 10));
         var currentSession = Session;
         
         if (currentSession != null)
         {
             newSession.Humidity = currentSession.Humidity;
-            newSession.Intervals = currentSession.Intervals with { };
+            newSession.Intervals = new PulseIntervals(
+                currentSession.Intervals.InitialPause,
+                currentSession.Intervals.Pulse,
+                currentSession.Intervals.DmsDelay,
+                currentSession.Intervals.FinalPause);
         }
 
-        /*
-        if (currentSession != null)     // lets copy pulse to the newly created session
-        {
-            foreach (var pulse in currentSession.Pulses)
-            {
-                List<PulseChannelProps> channels = new();
-                foreach (var channel in pulse.Channels)
-                {
-                    channels.Add(new PulseChannelProps(channel.Id, channel.Flow, channel.Active));
-                }
-                newSession.AddPulse(new PulseProps(channels.ToArray()));
-            }
-        }
-        else      // if there is no current session, we must create one pulse
-        {*/     
         var pulseChannelProps = new List<PulseChannelProps>() { new(1, 10f, true) };
         for (int i = 2; i <= PulseChannels.MaxCount; i++)
         {
             pulseChannelProps.Add(new PulseChannelProps(i, 0f, false));
         }
-        newSession.AddPulse(new PulseProps(pulseChannelProps.ToArray()));
-        //}
+        newSession.AddPulse(new PulseProps($"{newSession.Pulses.Count + 1}", pulseChannelProps.ToArray()));
 
         _sessions.Add(newSession);
         _sessionIndex = _sessions.Count - 1;
 
-        lsvSessions.Items.Add($"#{_sessions.Count}");
         lsvSessions.SelectedIndex = _sessionIndex;
 
         grdSession.IsEnabled = true;
@@ -441,6 +400,7 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     private void Sessions_SelectionChanged(object sender, SelectionChangedEventArgs? e)
     {
         _sessionIndex = lsvSessions.SelectedIndex;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionId)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionHumidity)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionInitialPause)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionPulseDuration)));
@@ -448,21 +408,17 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseSessionDMS)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SessionFinalPause)));
 
-        lsvPulses.Items.Clear();
-
         if (Session != null)
         {
+            lsvPulses.SelectedIndex = -1;
+            lsvPulses.ItemsSource = Session.Pulses;
+
             _pulseIndex = 0;
-            int i = 0;
-            foreach (var pulse in Session.Pulses)
-            {
-                lsvPulses.Items.Add($"#{i + 1}");
-                i++;
-            }
             lsvPulses.SelectedIndex = _pulseIndex;
         }
         else
         {
+            lsvPulses.ItemsSource = null;
             _pulseIndex = -1;
         }
     }
@@ -473,15 +429,12 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
         {
             if (_sessionIndex >= 0 && lsvSessions.Items.Count > 1)
             {
-                _sessions.RemoveAt(_sessionIndex);
-                var sessionIndex = Math.Min(_sessionIndex, _sessions.Count - 1);
+                var sessionIndex = Math.Min(_sessionIndex, _sessions.Count - 2);
 
-                _sessionIndex = -1;     // to disable UI update
-                lsvSessions.Items.RemoveAt(lsvSessions.SelectedIndex);
+                _sessions.RemoveAt(_sessionIndex);
 
                 _sessionIndex = sessionIndex;
-                lsvSessions.SelectedIndex = sessionIndex;   // funny that this line does not trigger Sessions_SelectionChanged automatically
-                Sessions_SelectionChanged(sender, null);
+                lsvSessions.SelectedIndex = sessionIndex;
             }
         }
     }
@@ -498,16 +451,33 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     private void Sessions_Drop(object sender, DragEventArgs e)
     {
-        OnDropItem(e, lsvSessions, (from, to) =>
+        if (e.Data.GetDataPresent(typeof(SessionProps)))
         {
-            var temp = _sessions[from];
+            var droppedData = e.Data.GetData(typeof(SessionProps)) as SessionProps;
+            var target = GetListViewItemUnderMouse(lsvSessions, e.GetPosition(lsvSessions));
 
-            if (to < from)
-                _sessions.RemoveAt(from);
-            _sessions.Insert(to, temp);
-            if (to > from)
-                _sessions.RemoveAt(from);
-        });
+            if (droppedData != null && lsvSessions.ItemsSource is ObservableCollection<SessionProps> sessions)
+            {
+                var targetIndex = target != null ? lsvSessions.Items.IndexOf(target) : lsvSessions.Items.Count;
+                var sourceIndex = lsvSessions.Items.IndexOf(droppedData);
+
+                if (sourceIndex != targetIndex)
+                {
+                    if (targetIndex < sourceIndex)
+                    {
+                        sessions.RemoveAt(sourceIndex);
+                        sessions.Insert(targetIndex, droppedData);
+                    }
+                    else
+                    {
+                        sessions.Insert(targetIndex + 1, droppedData);
+                        sessions.RemoveAt(sourceIndex);
+                    }
+
+                    lsvSessions.SelectedIndex = targetIndex < lsvSessions.Items.Count ? targetIndex : lsvSessions.Items.Count - 1;
+                }
+            }
+        }
     }
 
     // Pulses
@@ -523,10 +493,9 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
         if (Session != null)
         {
-            Session.AddPulse(new PulseProps(channels.ToArray()));
-            _pulseIndex = Session.Pulses.Length - 1;
+            Session.AddPulse(new PulseProps($"{Session.Pulses.Count + 1}", channels.ToArray()));
+            _pulseIndex = Session.Pulses.Count - 1;
 
-            lsvPulses.Items.Add($"#{Session.Pulses.Length}");
             lsvPulses.SelectedIndex = _pulseIndex;
         }
     }
@@ -553,11 +522,8 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
             var currentSession = Session;
             if (currentSession != null && _pulseIndex >= 0 && lsvPulses.Items.Count > 1)
             {
+                int pulseIndex = Math.Min(_pulseIndex, currentSession.Pulses.Count - 2);
                 currentSession.RemovePulse(_pulseIndex);
-                int pulseIndex = Math.Min(_pulseIndex, currentSession.Pulses.Length - 1);
-
-                _pulseIndex = -1;
-                lsvPulses.Items.RemoveAt(lsvPulses.SelectedIndex);
 
                 _pulseIndex = pulseIndex;
                 lsvPulses.SelectedIndex = pulseIndex;
@@ -577,9 +543,36 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
 
     private void Pulses_Drop(object sender, DragEventArgs e)
     {
-        OnDropItem(e, lsvPulses, (from, to) =>
+        if (e.Data.GetDataPresent(typeof(PulseProps)))
         {
-            Session?.Move(from, to);
-        });
+            var droppedData = e.Data.GetData(typeof(PulseProps)) as PulseProps;
+            var target = GetListViewItemUnderMouse(lsvPulses, e.GetPosition(lsvPulses));
+
+            if (droppedData != null && lsvPulses.ItemsSource is ObservableCollection<PulseProps> pulses)
+            {
+                var targetIndex = target != null ? lsvPulses.Items.IndexOf(target) : lsvPulses.Items.Count;
+                var sourceIndex = lsvPulses.Items.IndexOf(droppedData);
+
+                if (sourceIndex != targetIndex)
+                {
+                    var itemsSource = lsvPulses.ItemsSource as System.Collections.IList ?? lsvPulses.Items;
+                    if (itemsSource != null)
+                    {
+                        if (targetIndex < sourceIndex)
+                        {
+                            pulses.RemoveAt(sourceIndex);
+                            pulses.Insert(targetIndex, droppedData);
+                        }
+                        else
+                        {
+                            pulses.Insert(targetIndex + 1, droppedData);
+                            pulses.RemoveAt(sourceIndex);
+                        }
+
+                        lsvPulses.SelectedIndex = targetIndex < lsvPulses.Items.Count ? targetIndex : lsvPulses.Items.Count - 1;
+                    }
+                }
+            }
+        }
     }
 }

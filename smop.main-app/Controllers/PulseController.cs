@@ -39,7 +39,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
     public int SessionId => _sessionIndex + 1;
     public int PulseId => _pulseIndex + 1;
     public int SessionCount => _setup.Sessions.Length;
-    public int PulseCount => 0 <= _sessionIndex && _sessionIndex < _setup.Sessions.Length ? _setup.Sessions[_sessionIndex].Pulses.Length : 0;
+    public int PulseCount => 0 <= _sessionIndex && _sessionIndex < _setup.Sessions.Length ? _setup.Sessions[_sessionIndex].Pulses.Count : 0;
 
     public void Dispose()
     {
@@ -87,9 +87,9 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
         {
             _sessionIndex = _setup.Sessions.Length - 1;
             var session = _setup.Sessions[_sessionIndex];
-            if (session.Pulses.Length > 0)
+            if (session.Pulses.Count > 0)
             {
-                _pulseIndex = session.Pulses.Length - 1;
+                _pulseIndex = session.Pulses.Count - 1;
             }
         }
     }
@@ -212,7 +212,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
         _pulseIndex += 1;
 
-        if (session.Pulses.Length > _pulseIndex)
+        if (session.Pulses.Count > _pulseIndex)
         {
             var pulse = session.Pulses[_pulseIndex];
             _eventLogger.Add("pulse", _pulseIndex.ToString(), string.Join(' ', PulseSetup.PulseChannelsAsStrings(pulse)));
@@ -307,7 +307,7 @@ internal class PulseController(PulseSetup setup, IonVision.Communicator? ionVisi
 
         if (session.Intervals.InitialPause == 0 && session.Intervals.FinalPause == 0)
         {
-            if (_pulseIndex == session.Pulses.Length - 1)
+            if (_pulseIndex == session.Pulses.Count - 1)
             {
                 _odorDisplay.CloseValves(session.GetActiveChannelIds());
             }

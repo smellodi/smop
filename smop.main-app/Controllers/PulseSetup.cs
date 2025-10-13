@@ -1,8 +1,9 @@
 ﻿using Smop.MainApp.Dialogs;
-using Smop.MainApp.Pages;
 using Smop.MainApp.Utils.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 
@@ -25,7 +26,11 @@ public record class PulseChannelProps(int Id, float Flow, bool Active);
 /// Pulse parameters
 /// </summary>
 /// <param name="Channels">List of pulse channels</param>
-public record class PulseProps(PulseChannelProps[] Channels);
+public class PulseProps(string id, PulseChannelProps[] channels)
+{
+    public string Id { get; } = id;
+    public PulseChannelProps[] Channels { get; } = channels;
+}
 
 /// <summary>
 /// Pulse intervals
@@ -34,8 +39,12 @@ public record class PulseProps(PulseChannelProps[] Channels);
 /// <param name="Pulse">Pulse duration from the valves are open till the valves are closed</param>
 /// <param name="DmsDelay">Interval between valves are opened and the DMS measurement starts</param>
 /// <param name="FinalPause">Internal between the valves are close and the next pulse starts</param>
-public record class PulseIntervals(float InitialPause, float Pulse, float DmsDelay, float FinalPause)
+public class PulseIntervals(float initialPause, float pulse, float dmsDelay, float finalPause)
 {
+    public float InitialPause { get; set; } = initialPause;
+    public float Pulse { get; set; } = pulse;
+    public float DmsDelay { get; set; } = dmsDelay; // -1 = no DMS
+    public float FinalPause { get; set; } = finalPause;
     public bool HasDms => DmsDelay >= 0;
 }
 
@@ -43,50 +52,47 @@ public record class PulseIntervals(float InitialPause, float Pulse, float DmsDel
 /// <summary>
 /// Session properties: humidity, intervals, list of pulses
 /// </summary>
-public class SessionProps(float humidity, PulseIntervals intervals)
+public class SessionProps(string id, float humidity, PulseIntervals intervals) : INotifyPropertyChanged
 {
+    public string Id
+    {
+        get => field;
+        set
+        {
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Id)));
+        }
+    } = id;
+
     /// <summary>
     /// 0..100, or -1 or not set
     /// </summary>
     public float Humidity { get; set; } = humidity;
     public PulseIntervals Intervals { get; set; } = intervals;
-    public PulseProps[] Pulses => _pulses.ToArray();
+    public ObservableCollection<PulseProps> Pulses { get; } = [];
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public void AddPulse(PulseProps pulse)
     {
-        _pulses.Add(pulse);
+        Pulses.Add(pulse);
     }
 
     public void RemovePulse(int index)
     {
-        _pulses.RemoveAt(index);
-    }
-
-    public void Move(int sourceIndex, int targetIndex)
-    {
-        if (sourceIndex >= 0 && sourceIndex < _pulses.Count &&
-            targetIndex >= 0 && sourceIndex != targetIndex)
-        {
-            var temp = _pulses[sourceIndex];
-
-            if (targetIndex < sourceIndex)
-                _pulses.RemoveAt(sourceIndex);
-            _pulses.Insert(targetIndex, temp);
-            if (targetIndex > sourceIndex)
-                _pulses.RemoveAt(sourceIndex);
-        }
+        Pulses.RemoveAt(index);
     }
 
     public void RandomizePulses()
     {
         var r = new Random();
-        r.Shuffle(_pulses);
+        r.Shuffle(Pulses);
     }
 
     public int[] GetActiveChannelIds()
     {
         var activeChannelIds = new HashSet<int>();
-        foreach (var pulse in _pulses)
+        foreach (var pulse in Pulses)
             foreach (var channel in pulse.Channels)
                 if ((channel.Flow > 0 || channel.Active) && !activeChannelIds.Contains(channel.Id))
                 {
@@ -95,10 +101,6 @@ public class SessionProps(float humidity, PulseIntervals intervals)
 
         return activeChannelIds.ToArray();
     }
-
-    // Internal
-
-    readonly List<PulseProps> _pulses = new();
 }
 
 /// <summary>
@@ -154,7 +156,7 @@ public class PulseSetup
                 if (key == SESSION_INIT)
                 {
                     var props = value.Trim().Split(' ').Where(p => !string.IsNullOrEmpty(p)).ToArray();
-                    var sessionProps = CreateSessionProps(props, lastSession, lineIndex);
+                    var sessionProps = CreateSessionProps($"{sessions.Count + 1}", props, lastSession, lineIndex);
                     lastSession = sessionProps;
 
                     if (sessionProps != null)
@@ -171,7 +173,7 @@ public class PulseSetup
                     if (lastSession != null)
                     {
                         var props = value.Trim().Split(' ').Where(p => !string.IsNullOrEmpty(p)).ToArray();
-                        var (pulseProps, hasInvalidValues) = CreatePulseProps(props);
+                        var (pulseProps, hasInvalidValues) = CreatePulseProps(lastSession.Pulses.Count + 1, props);
 
                         if (pulseProps != null)
                         {
@@ -221,6 +223,7 @@ public class PulseSetup
         {
             writer.WriteLine(string.Join("",
                 $"{SESSION_INIT}:",
+                int.TryParse(session.Id, out int id) ? "" : $" {SESSION_ID}={session.Id}",
                 session.Humidity >= 0 ? $" {SESSION_HUMIDITY}={session.Humidity}" : "",
                 $" {PULSE_INITIAL_PAUSE}={session.Intervals.InitialPause}",
                 session.Intervals.DmsDelay >= 0 ? $" {DMS_DELAY}={session.Intervals.DmsDelay}" : "",
@@ -271,18 +274,19 @@ public class PulseSetup
     static readonly string PULSE_CHANNEL_ON = "on";
     static readonly string PULSE_CHANNEL_OFF = "off";
     static readonly string DMS_DELAY = "dms";
+    static readonly string SESSION_ID = "id";
 
     const float MAX_INTERVAL = 60 * 60; // seconds
     const float MAX_FLOW = 1000; // nccm
 
     private static string BoolToState(bool value) => value ? PULSE_CHANNEL_ON : PULSE_CHANNEL_OFF;
 
-    private static SessionProps? CreateSessionProps(string[] p, SessionProps? lastSessionProps, int lineIndex)
+    private static SessionProps? CreateSessionProps(string id, string[] p, SessionProps? lastSessionProps, int lineIndex)
     {
         float humidity = lastSessionProps?.Humidity ?? -1;
         float delay = lastSessionProps?.Intervals.InitialPause ?? 0;
         float duration = lastSessionProps?.Intervals.Pulse ?? 1000;
-        float dmsDelay = lastSessionProps?.Intervals.DmsDelay ?? -1;
+        float dmsDelay = /*lastSessionProps?.Intervals.DmsDelay ??*/ -1;
         float finalPause = lastSessionProps?.Intervals.FinalPause ?? 0;
 
         foreach (var field in p)
@@ -320,6 +324,10 @@ public class PulseSetup
             {
                 finalPause = float.Parse(value);
             }
+            else if (key == SESSION_ID)
+            {
+                id = value;
+            }
             else
             {
                 _nlog.Warn(Logging.LogIO.Text("Pulse", $"unknown field '{field}' on line {lineIndex}"));
@@ -335,10 +343,10 @@ public class PulseSetup
             finalPause < 0 || finalPause > MAX_INTERVAL ||
             dmsDelay > duration
                 ? null
-                : new SessionProps(humidity, new PulseIntervals(delay, duration, dmsDelay, finalPause));
+                : new SessionProps(id, humidity, new PulseIntervals(delay, duration, dmsDelay, finalPause));
     }
 
-    private static (PulseProps?, bool) CreatePulseProps(string[] fields)
+    private static (PulseProps?, bool) CreatePulseProps(int pulseID, string[] fields)
     {
         bool hasInvalidValues = false;
         var channels = new List<PulseChannelProps>();
@@ -387,6 +395,6 @@ public class PulseSetup
             }
         }
 
-        return (channels.Count > 0 ? new PulseProps(channels.ToArray()) : null, hasInvalidValues);
+        return (channels.Count > 0 ? new PulseProps(pulseID.ToString(), channels.ToArray()) : null, hasInvalidValues);
     }
 }

@@ -9,8 +9,9 @@
         DataContext="{Binding Mode=OneWay, RelativeSource={RelativeSource Self}}"
         Title="Pulse setup file editor"
         MinHeight="594"
-        MinWidth="310"
-        SizeToContent="Width"
+        MinWidth="338"
+        MaxWidth="338"
+        Width="338"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         Icon="/Assets/icons/main.png"
@@ -71,7 +72,7 @@
         <Grid Grid.Row="0"
               Margin="8,8,8,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" MinWidth="100"/>
+                <ColumnDefinition Width="100"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
@@ -103,6 +104,8 @@
                 <Label Style="{StaticResource Header}" Grid.Row="0">Sessions</Label>
                 <ListView x:Name="lsvSessions" Grid.Row="1"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                          HorizontalContentAlignment="Stretch"
                           AllowDrop="True"
                           SelectionChanged="Sessions_SelectionChanged"
                           KeyUp="Sessions_KeyUp"
@@ -111,10 +114,20 @@
                           MouseMove="Sessions_MouseMove">
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="ctrl:SessionProps">
-                            <Grid>
-                                <TextBlock Text="{Binding Id, Mode=OneWay}"/>
-                                <TextBlock HorizontalAlignment="Right">
-                                    <Run Text="["/>
+                            <Grid Width="90">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextWrapping="NoWrap"
+                                           HorizontalAlignment="Stretch">
+                                    <Run Text="{Binding Id, Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock Grid.Column="1"
+                                           HorizontalAlignment="Right">
+                                    <Run Text=" ["/>
                                     <Run Text="{Binding Path=Pulses.Count, Mode=OneWay}"/>
                                     <Run Text="]"/>
                                 </TextBlock>
@@ -182,8 +195,8 @@
 
                     <Label Grid.Row="0" Grid.Column="0">ID</Label>
                     <TextBox Grid.Row="0" Grid.Column="1"
-                             Validation.ErrorTemplate="{StaticResource TextBoxValidationTemplate}"
-                             Text="{Binding SessionId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding SessionId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             MaxLength="25"/>
 
                     <Label Grid.Row="1" Grid.Column="0">Humidity, %</Label>
                     <TextBox x:Name="txbSessionHumidity" Grid.Row="1" Grid.Column="1"

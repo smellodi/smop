@@ -193,6 +193,8 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
     const float PULSE_CHANNEL_MIN = 0;
     const float PULSE_CHANNEL_MAX = 1500;
 
+    readonly string[] FORBIDDEN_CHARS = [ " ", "=", ":", "\n", "\r" ];
+
     readonly List<(CheckBox, TextBox)> _pulseChannelControls = new();
 
     readonly Style? _pulseChannelFlowValid;
@@ -573,6 +575,33 @@ public partial class PulseSetupEditor : Window, INotifyPropertyChanged
                     }
                 }
             }
+        }
+    }
+
+    private void SessionId_PreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        foreach (var c in FORBIDDEN_CHARS)
+        {
+            if (e.Text.Contains(c))
+            {
+                e.Handled = true; // Mark the input as handled => it won't appear
+                return;
+            }
+        }
+    }
+
+    private void SessionId_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        // Block spacebar key
+        if (e.Key == Key.Space)
+        {
+            e.Handled = true;
+        }
+
+        // Optionally block '=' key directly (Shift + 0 on some layouts)
+        if (e.Key == Key.OemPlus && Keyboard.Modifiers == ModifierKeys.Shift)
+        {
+            e.Handled = true;
         }
     }
 }

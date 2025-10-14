@@ -114,7 +114,7 @@
                           MouseMove="Sessions_MouseMove">
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="ctrl:SessionProps">
-                            <Grid Width="90">
+                            <Grid Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="Auto"/>
@@ -196,7 +196,9 @@
                     <Label Grid.Row="0" Grid.Column="0">ID</Label>
                     <TextBox Grid.Row="0" Grid.Column="1"
                              Text="{Binding SessionId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             MaxLength="25"/>
+                             MaxLength="25"
+                             PreviewTextInput="SessionId_PreviewTextInput"
+                             PreviewKeyDown="SessionId_PreviewKeyDown"/>
 
                     <Label Grid.Row="1" Grid.Column="0">Humidity, %</Label>
                     <TextBox x:Name="txbSessionHumidity" Grid.Row="1" Grid.Column="1"

@@ -2,7 +2,7 @@
 
 public class Simulation
 {
-    public static float DmsWaterGain => 100;
+    public static float DmsWaterGain => 60;
 
     public static float[] DmsGains { get; set; } = new float[OdorPrinter.MaxOdorCount] { 100, 90, 40, 30, 20 };
 

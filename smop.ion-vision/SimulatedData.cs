@@ -7,13 +7,13 @@ namespace Smop.IonVision;
 
 public static class SimulatedData
 {
-    const int DATA_ROWS = 3;
+    const int DATA_ROWS = 60;//3
     const int DATA_COLS = ScopeParameters.DATA_SIZE;
     const float DATA_PP = 1000;
     const float DATA_PW = 200;
     const short DATA_SAMPLE_COUNT = 64;
-    const float USV_START = 420;
-    const float USV_STOP = 760;
+    const float USV_START = 200;//420;
+    const float USV_STOP = 800;//760;
     const float UCV_START = -3;
     const float UCV_STOP = 13;
     const float VB_START = -6;
@@ -164,12 +164,15 @@ public static class SimulatedData
         var colCount = config?.Ucv.Steps ?? DATA_COLS;
         var count = rowCount * colCount;
 
+        var yStart = (config?.Usv.Min ?? USV_START) / 1000;
+        var dy = ((config?.Usv.Max ?? USV_STOP) - (config?.Usv.Min ?? USV_START)) / rowCount / 1000;
+
         var result = new T[count];
         for (int row = 0; row < rowCount; row++)
             for (int col = 0; col < colCount; col++)
                 result[row * colCount + col] = callback(
                     (float)col / (colCount - 1),
-                    (float)row / (rowCount - 0.5f));    // avoid row=max, as in simulation all signals vanish at this level.
+                    yStart + row * dy);  //(float)row / (rowCount - 0.5f));    // avoid row=max, as in simulation all signals vanish at this level.
         return result;
     }
 
@@ -190,27 +193,27 @@ public static class SimulatedData
     private static float Hyperbola(float x, float y, float a, float b, float s, float h = -0.1f, float k = 0)
     {
         var vy = Math.Max(0, (x - h) * (x - h) / a / a - 1);
-        var dy = Math.Abs(b * Math.Sqrt(vy) + k - y);
+        var dy = b * Math.Sqrt(vy) + k - y;
 
         var vx = (y - k) * (y - k) / b / b + 1;
-        var dx = Math.Abs(a * Math.Sqrt(vx) + h - x);
+        var dx = a * Math.Sqrt(vx) + h - x;
 
-        var d = Math.Sqrt(dx * dx + dy * dy);
+        var d2 = dx * dx + dy * dy;
 
-        return (float)Math.Exp(-(d * d / s / s));
+        return (float)Math.Exp(-(d2 / s / s));
     }
 
     private static float Line(float x, float y, float a, float b, float s)
     {
         var vy = a * x + b;
-        var dy = Math.Abs(vy - y);
+        var dy = vy - y;
 
         var vx = (y - b) / a;
-        var dx = Math.Abs(vx - x);
+        var dx = vx - x;
 
-        var d = Math.Sqrt(dx * dx + dy * dy);
+        var d2 = dx * dx + dy * dy;
 
-        return (float)Math.Exp(-(d * d / s / s));
+        return (float)Math.Exp(-(d2 / s / s));
     }
 
     /// <summary>
@@ -223,12 +226,12 @@ public static class SimulatedData
         new float[1 + OdorPrinter.MaxOdorCount]
         {
             // The water/moisture line
-            (Simulation.DmsWaterGain - 0.5f * Simulation.DmsWaterGain * x) * Hyperbola(x, y, 0.4f, 0.3f, 0.1f),
+            (Simulation.DmsWaterGain - 0.5f * Simulation.DmsWaterGain * x) * Hyperbola(x, y, 0.4f, 0.2f, 0.05f),
 
             (Simulation.DmsGains[0] - Simulation.DmsGains[0] * (float)Math.Sqrt(y)) * Line(x, y, -7f, 1.75f, 0.6f),
             (Simulation.DmsGains[1] - Simulation.DmsGains[1] * (float)Math.Sqrt(y)) * Line(x, y, 8f, -2f, 0.5f),
             (Simulation.DmsGains[2] - Simulation.DmsGains[2] * y) * Hyperbola(x, y, HyperbolaParams1[0], HyperbolaParams1[1], HyperbolaParams1[2]),
             (Simulation.DmsGains[3] - Simulation.DmsGains[3] * y) * Hyperbola(x, y, HyperbolaParams2[0], HyperbolaParams2[1], HyperbolaParams2[2]),
             (Simulation.DmsGains[4] - Simulation.DmsGains[4] * y) * Hyperbola(x, y, HyperbolaParams3[0], HyperbolaParams3[1], HyperbolaParams3[2]),
-        }.Max();
+        }.Sum();
 }

@@ -245,9 +245,23 @@
                                              Content="Bland-Altman"
                                              Click="DmsPlotType_Click"/>
                             </WrapPanel>
-                            <Canvas x:Name="cnvDmsScan"
-                                    Background="{StaticResource BrushPanelLightest}"
-                                    Height="416"/>
+                            <Grid>
+                                <Canvas x:Name="cnvDmsScan"
+                                        Background="{StaticResource BrushPanelLightest}"
+                                        Height="416"/>
+                                <Button x:Name="btnDmsScanSave"
+                                        VerticalAlignment="Bottom"
+                                        HorizontalAlignment="Right"
+                                        Width="32"
+                                        Height="32"
+                                        IsEnabled="False"
+                                        Padding="4"
+                                        Margin="4"
+                                        ToolTip="Save DMS into a file"
+                                        Click="DmsScanSave_Click">
+                                    <Image Source="/Assets/images/download.png"/>
+                                </Button>
+                            </Grid>
                         </StackPanel>
                     </TabItem>
                 </TabControl>

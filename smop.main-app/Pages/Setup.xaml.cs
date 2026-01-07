@@ -6,6 +6,7 @@ using Smop.MainApp.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -505,6 +506,7 @@ public partial class Setup : Page, IPage<object?>
             if (_dmsPlotType == Plot.ComparisonOperation.None || _dmsScans.Count > 1)
             {
                 ShowDmsPlot();
+                btnDmsScanSave.IsEnabled = true;
             }
         }
         else if (_ctrl.DmsScan is IonVision.Defs.ScopeResult scopeScan)
@@ -830,6 +832,29 @@ public partial class Setup : Page, IPage<object?>
             {
                 _ctrl.SetHumidityLevel(value);
                 HumidityController.Instance.TargetHumidity = value;
+            }
+        }
+    }
+
+    private void DmsScanSave_Click(object sender, RoutedEventArgs e)
+    {
+        var dms = _dmsScans[^1];
+        var ofd = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "JSON files (DMS)|*.json|Any file|*.*",
+            FileName = $"DMS_Scan_{DateTime.Now:yyyyMMdd_HHmmss}.json"
+        };
+        if (ofd.ShowDialog() ?? false)
+        {
+            try
+            {
+                using var writer = new System.IO.StreamWriter(ofd.FileName);
+                writer.Write(JsonSerializer.Serialize(dms));
+                MsgBox.Notify(App.Name, "DMS scan saved successfully.");
+            }
+            catch (Exception ex)
+            {
+                MsgBox.Error(App.Name, $"Failed to save DMS scan: {ex.Message}");
             }
         }
     }

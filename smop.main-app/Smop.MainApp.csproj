@@ -49,6 +49,7 @@
     <None Remove="Assets\images\conn-ml-od.png" />
     <None Remove="Assets\images\delete.png" />
     <None Remove="Assets\images\dms.png" />
+    <None Remove="Assets\images\download.png" />
     <None Remove="Assets\images\edit.png" />
     <None Remove="Assets\images\gas.gif" />
     <None Remove="Assets\images\od.png" />
@@ -76,6 +77,7 @@
     <Resource Include="Assets\images\conn-ml-od.png" />
     <Resource Include="Assets\images\delete.png" />
     <Resource Include="Assets\images\dms.png" />
+    <Resource Include="Assets\images\download.png" />
     <Resource Include="Assets\images\edit.png" />
     <Resource Include="Assets\images\error.png" />
     <Resource Include="Assets\images\exclamation.png" />
